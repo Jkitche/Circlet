@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Circlet
 ## Notes: Progress rings for XP, quests, skills, reputation and more: they pop up and fill as you play. Also casts, flights, breath, totems, crafting and gathering.
-## Author: Jae
+## Author: Jkitche
 ## Version: @project-version@
 ## SavedVariables: CircletDB, CircletProfiles
 ## X-License: MIT

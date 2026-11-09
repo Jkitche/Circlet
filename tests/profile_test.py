@@ -1,6 +1,6 @@
 exec(open('breath_test.py').read().split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0].replace("lua.eval('function(s) return load(s, \"@b\") end')","PRE = 1; lua.eval('function(s) return load(s, \"@b\") end')"))
 lua.execute('''
-UnitName = function() return CHAR or "Jae" end; GetRealmName = function() return "Forever" end
+UnitName = function() return CHAR or "Hero" end; GetRealmName = function() return "Forever" end
 ''')
 lua.execute('''
 -- existing install: settings already in CircletDB, no profiles yet
@@ -14,13 +14,13 @@ ns.SwitchProfile("Default"); P("back to Default: xpSize=" .. CircletDB.xpSize ..
 ns.SwitchProfile("Hunter"); P("Hunter again: xpSize=" .. CircletDB.xpSize .. " exalted.b=" .. CircletDB.repColors.custom.b)
 CircletDB.flightTimes = { a = 1 }
 ns.CopyProfile("Default"); P("copied Default into Hunter: xpSize=" .. CircletDB.xpSize .. " flightTimes kept=" .. tostring(CircletDB.flightTimes.a))
-CircletDB.xpSize = 175; ns.RenameProfile("Alt"); P("renamed: " .. ns.CurrentProfile() .. " chars=" .. CircletProfiles.chars["Jae - Forever"] .. " hunter gone=" .. tostring(CircletProfiles.profiles.Hunter == nil) .. " saved=" .. CircletProfiles.profiles.Alt.xpSize)
+CircletDB.xpSize = 175; ns.RenameProfile("Alt"); P("renamed: " .. ns.CurrentProfile() .. " chars=" .. CircletProfiles.chars["Hero - Forever"] .. " hunter gone=" .. tostring(CircletProfiles.profiles.Hunter == nil) .. " saved=" .. CircletProfiles.profiles.Alt.xpSize)
 Fire("PLAYER_LOGOUT")
 -- second character logs in (simulate reload with the saved tables)
 CHAR = "Other"; ns.LoadProfile(); ns.FillDefaults(); P("Other logs in: " .. ns.CurrentProfile() .. " xpSize=" .. CircletDB.xpSize)
 ns.ProfileStore().newChars = "Alt"; CHAR = "Third"; ns.LoadProfile(); ns.FillDefaults(); P("Third (new chars=Alt): " .. ns.CurrentProfile() .. " xpSize=" .. CircletDB.xpSize)
-CHAR = "Jae"; ns.LoadProfile(); P("Jae again: " .. ns.CurrentProfile() .. " xpSize=" .. CircletDB.xpSize)
-ns.SwitchProfile("Default"); ns.DeleteProfile("Alt"); P("deleted Alt: profiles=" .. table.concat(select(2, ns.ProfileList()), ",") .. " Jae=" .. tostring(CircletProfiles.chars["Jae - Forever"]) .. " Third=" .. tostring(CircletProfiles.chars["Third - Forever"]))
+CHAR = "Hero"; ns.LoadProfile(); P("Hero again: " .. ns.CurrentProfile() .. " xpSize=" .. CircletDB.xpSize)
+ns.SwitchProfile("Default"); ns.DeleteProfile("Alt"); P("deleted Alt: profiles=" .. table.concat(select(2, ns.ProfileList()), ",") .. " Hero=" .. tostring(CircletProfiles.chars["Hero - Forever"]) .. " Third=" .. tostring(CircletProfiles.chars["Third - Forever"]))
 Slash("profile"); Slash("profile nope"); ns.NewProfile("PvP"); Slash("profile default"); P("slash switched: " .. ns.CurrentProfile())
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
