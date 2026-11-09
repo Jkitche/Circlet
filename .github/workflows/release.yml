@@ -2,7 +2,7 @@
 # tag is pushed: git tag v0.62.0 && git push origin v0.62.0
 #
 # Needs, once:
-#   - the CurseForge project ID in Circlet.toc (## X-Curse-Project-ID: 123456)
+#   - the CurseForge project ID in Circlet.toc (## X-Curse-Project-ID, set)
 #   - a CurseForge API token as the repository secret CF_API_KEY
 #     (CurseForge: profile > My API Tokens; GitHub: Settings > Secrets and variables > Actions)
 name: Release
