@@ -30,9 +30,9 @@ segmented quest ring visible lines: 189
 thin thickness ok
 edit all:
    Level 16 / +1,237 XP / +22.0% / 62.0% / Rested 25% / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
+   Screecher Feather / +2 / 5 / 8 / Feathers for Grek / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
    Mining / +3 / 115 / 150 / Profession / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
    Swords / +2 / 143 / 150 / Weapon skill / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
-   Screecher Feather / +2 / 5 / 8 / Feathers for Grek / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
    Stormwind / +250 / 2,400 / 6,000 / Friendly / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
    Sharp Arrow / -50 / 150 / 1,000 / Low ammo / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0
    Wolf / +850 / 5,050 / 9,800 / Level 23 / Drag to move  ·  Shift: no snap  ·  Right-click to reset @x=0

@@ -24,7 +24,7 @@ chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__
 NSX = lua.table()
 chunk("Circlet", NSX)
 lua.globals().NSX = NSX
-lua.execute('function RING_EDITORS_GET(k) return NSX.RING_EDITORS[k].get() end')
+lua.execute('function RING_EDITORS_GET(k) return NSX.FindRing(k).edit.get() end')
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); XP = 300; XPMAX = 1000; Fire("PLAYER_ENTERING_WORLD"); Advance(1)
 local reg = LibStub("AceConfigRegistry-3.0")
@@ -85,7 +85,7 @@ CircletDB.pin2X = 5; CircletDB.pinSize = 33
 opts.args.pin.args.resetRing.func({})
 table.insert(OUT, "after pin reset: pin2X=" .. tostring(rawget(CircletDB, "pin2X")) .. " pinSize=" .. CircletDB.pinSize .. " pinned kept=" .. tostring(CircletDB.pinned ~= nil))
 -- auto edit
-for _, k in ipairs(NSX.EDIT_ORDER) do NSX.SetRingEditing(k, false, true) end
+for _, d in ipairs(NSX.RINGS) do NSX.SetRingEditing(d.key, false, true) end
 Slash(""); Advance(0.5)
 STATUS.groups.selected = "progress\001skill"; Advance(0.5)
 table.insert(OUT, "skill page: skill editing=" .. tostring(RING_EDITORS_GET("skill")))
