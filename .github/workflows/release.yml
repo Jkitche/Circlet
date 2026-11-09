@@ -27,7 +27,8 @@ jobs:
 
       - name: Tests
         run: |
-          pip install lupa
+          sudo apt-get install -y -qq fonts-dejavu-core # the image tests label their renders
+          pip install lupa pillow
           python3 tests/run_tests.py
 
       - name: Package and upload
