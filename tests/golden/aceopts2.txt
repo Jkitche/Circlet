@@ -1,0 +1,38 @@
+registered: true
+validate: true nil
+counts: color=39 execute=92 range=149 select=55 toggle=102
+general (General)
+progress (Progress rings)
+  xp (XP)
+  quest (Quest)
+  skill (Professions)
+  weapon (Weapon skills)
+  rep (Reputation)
+  pet (Pet)
+status (Travel & status)
+  flight (Flight)
+  timed (Timed)
+  corpse (Corpse)
+  breath (Breath)
+  ammo (Ammo)
+professions (Professions & casting)
+  craft (Crafting)
+  gather (Gathering)
+  cast (Casting)
+pin (Quest rings)
+totem (Totems) [hidden]
+profiles (Profiles)
+xp boxes: size=Appearance position=Position _position leftover=nil
+rotation min/max 0/359 get(-90)=270
+after apply: gatherShape=arc totemRotation=45 pinBorder=4 totemSize kept=50
+after quest reset: shape=ring rot=180 size=120 r=1.0 X=-170 rep untouched=222
+after pin reset: pin2X=nil pinSize=100 pinned kept=true
+skill page: skill editing=true
+gather page: skill=false gather=true
+general page: gather=false
+pin page: pin=true
+window closed: pin=false
+auto off: xp=false
+tree expanded: true width=180
+compartment opens: true
+ERRORS: {}

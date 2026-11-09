@@ -1,0 +1,47 @@
+ring a=1.00 holderAlpha=0.7 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=0.4 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=0.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=0.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=0.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+ring a=1.00 holderAlpha=1.0 holder~=UIParent=true
+after: 0.7
+after: 1.0
+after: 1.0
+after: 0.62222222222222234
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+after: 1.0
+ERRORS: {}

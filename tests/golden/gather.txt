@@ -1,0 +1,14 @@
+mining half: Mining / 50% / Mining
+mined: Copper Ore / ×2 / Gathered
+later: (hidden)
+herb interrupted: Herb Gathering / Interrupted
+smelting (should be hidden): Smelting / 1.0 / Casting
+fishing: Fishing / 16s / Bobber
+reeling: Fishing / Reeling in
+caught: Raw Brilliant Smallfish / Caught!
+no catch: Fishing / Got away
+session gathers: 2
+preview: Mining / 40% / Mining
+preview2: Copper Ore / ×2 / Gathered
+edit: Mining / 20% / Mining
+ERRORS: {}

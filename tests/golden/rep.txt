@@ -1,0 +1,2 @@
+ERRORS: none
+known factions: [21, 47, 69, 72]

@@ -1,0 +1,293 @@
+rings found: 23
+quest editing t=0.5
+  #1 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #2 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+quest editing t=4
+  #1 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #2 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+quest t=8
+  #1 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #2 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+quest+skill
+  #1 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / +3 / 115 / 150 / Profession / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+skill cycled
+  #1 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Fishing / +1 / 41 / 150 / Secondary skill / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+all four
+  #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,237 XP / +22.0% / 62.0% / Rested 25% / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Fishing / +1 / 41 / 150 / Secondary skill / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Complete! / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=true a=1.00 strata=TOOLTIP mouse=true | Stormwind / +250 / 2,400 / 6,000 / Friendly / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+xp gain during edit (should keep sample)
+  #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,240 XP / +22.0% / 62.0% / Normal / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Cooking / +1 / 75 / 75 / Visit a trainer / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=true a=1.00 strata=TOOLTIP mouse=true | Darnassus / +470 / 350 / 12,000 / Now Honored! / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+xpX, xpFromTop: 540 310
+after right-click: 0 40
+after /sq edit (all off)
+  #1 shown=true a=1.00 strata=HIGH mouse=false | Level 16 / +123 XP / +12.3% / 42.3% / Normal
+  #2 shown=true a=0.25 strata=HIGH mouse=false | Cooking / +1 / 75 / 75 / Visit a trainer
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=true a=0.25 strata=HIGH mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
+  #5 shown=true a=0.25 strata=HIGH mouse=false | Darnassus / +470 / 350 / 12,000 / Now Honored!
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+t+4 after edit off (xp queued gain should play)
+  #1 shown=true a=0.67 strata=HIGH mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
+  #2 shown=false a=0.00 strata=HIGH mouse=false | Cooking / +1 / 75 / 75 / Visit a trainer
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=false a=0.00 strata=HIGH mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
+  #5 shown=false a=0.00 strata=HIGH mouse=false | Darnassus / +470 / 350 / 12,000 / Now Honored!
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+settled
+  #1 shown=false a=0.00 strata=HIGH mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
+  #2 shown=false a=0.00 strata=HIGH mouse=false | Cooking / +1 / 75 / 75 / Visit a trainer
+  #3 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #4 shown=false a=0.00 strata=HIGH mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
+  #5 shown=false a=0.00 strata=HIGH mouse=false | Darnassus / +470 / 350 / 12,000 / Now Honored!
+  #6 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #7 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #8 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #9 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #10 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #11 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #12 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #13 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #14 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #15 shown=false a=0.00 strata=HIGH mouse=true | 
+  #16 shown=false a=0.00 strata=HIGH mouse=true | 
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #21 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #22 shown=false a=0.00 strata=HIGH mouse=nil | 
+  #23 shown=false a=0.00 strata=HIGH mouse=nil | 
+all on again
+  #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +739 XP / +13.1% / 53.1% / Rested 25% / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / +2 / 114 / 150 / Profession / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #3 shown=true a=1.00 strata=TOOLTIP mouse=true | Swords / +2 / 143 / 150 / Weapon skill / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #5 shown=true a=1.00 strata=TOOLTIP mouse=true | Stormwind / +194 / 2,344 / 6,000 / Friendly / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #6 shown=true a=1.00 strata=TOOLTIP mouse=true | Sharp Arrow / -38 / 162 / 1,000 / Low ammo / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #7 shown=true a=1.00 strata=TOOLTIP mouse=true | Wolf / +579 / 4,779 / 9,800 / Level 23 / Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #8 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / to Ironforge / 1:57 / remaining
+  #9 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Protecting the Shipment / 2:26 / remaining
+  #10 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Your corpse / 408 yd / Resurrect in 0:14
+  #11 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Breath / 58s / Underwater
+  #12 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Heavy Linen Bandage / 0 / 8 / 8 to go
+  #13 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Mining / 12% / Mining
+  #14 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Fireball / 2.2 / Casting
+  #15 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
+  #16 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / Feathers for Grek / 1 / 1 / Ready to turn in
+  #17 shown=false a=0.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #18 shown=false a=0.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #19 shown=false a=0.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset
+  #20 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / 1:35
+  #21 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / 8
+  #22 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / 40
+  #23 shown=true a=1.00 strata=TOOLTIP mouse=true | Drag to move  ·  Shift: no snap  ·  Right-click to reset / 1:50
+after Esc
+  #1 shown=true a=0.67 strata=HIGH mouse=false | Level 16 / 58.0% / Normal
+  #2 shown=true a=0.50 strata=HIGH mouse=false | Mining / +3 / 115 / 150 / Profession
+  #3 shown=true a=0.50 strata=HIGH mouse=false | Swords / +2 / 143 / 150 / Weapon skill
+  #4 shown=true a=0.50 strata=HIGH mouse=false | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
+  #5 shown=true a=0.50 strata=HIGH mouse=false | Stormwind / +239 / 2,389 / 6,000 / Friendly
+  #6 shown=true a=0.50 strata=HIGH mouse=false | Sharp Arrow / -47 / 153 / 1,000 / Low ammo
+  #7 shown=true a=0.50 strata=HIGH mouse=false | Wolf / +761 / 4,961 / 9,800 / Level 23
+  #8 shown=true a=0.60 strata=HIGH mouse=false | to Ironforge / 1:57 / remaining
+  #9 shown=true a=0.60 strata=HIGH mouse=false | Protecting the Shipment / 2:26 / remaining
+  #10 shown=true a=0.60 strata=HIGH mouse=false | Your corpse / 408 yd / Resurrect in 0:14
+  #11 shown=true a=1.00 strata=HIGH mouse=false | Breath / 58s / Underwater
+  #12 shown=true a=0.60 strata=HIGH mouse=false | Heavy Linen Bandage / 0 / 8 / 8 to go
+  #13 shown=true a=0.60 strata=HIGH mouse=false | Mining / 12% / Mining
+  #14 shown=true a=1.00 strata=HIGH mouse=false | Fireball / 2.2 / Casting
+  #15 shown=true a=0.60 strata=HIGH mouse=true | The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
+  #16 shown=true a=0.60 strata=HIGH mouse=true | Feathers for Grek / 1 / 1 / Ready to turn in
+  #17 shown=false a=0.00 strata=HIGH mouse=true | 
+  #18 shown=false a=0.00 strata=HIGH mouse=true | 
+  #19 shown=false a=0.00 strata=HIGH mouse=true | 
+  #20 shown=true a=0.60 strata=HIGH mouse=false | 1:35
+  #21 shown=true a=0.60 strata=HIGH mouse=false | 8
+  #22 shown=true a=0.60 strata=HIGH mouse=false | 40
+  #23 shown=true a=0.60 strata=HIGH mouse=false | 1:50
+ERRORS: {}
+UNDEF: ['ALL_FS', 'ALL_LINES', 'BackdropTemplateMixin', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetInventoryItemID', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestTimers', 'GetText', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TotemFrame', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']

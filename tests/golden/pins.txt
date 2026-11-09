@@ -1,0 +1,24 @@
+pinX from screen: 630
+menus hooked: MENU_OBJECTIVE_TRACKER_QUEST, MENU_QUEST_LOG_TITLE, MENU_QUEST_MAP_LOG_TITLE, MENU_QUEST_OBJECTIVE_TRACKER, MENU_QUEST_TRACKER
+menu item: Create Quest Ring
+after pinning 77:
+   pin1 [The Defias Brotherhood / 0 / 2 / Defias Thug slain 9/12] bgsegs=72
+after pinning 88:
+   pin1 [The Defias Brotherhood / 0 / 2 / Defias Thug slain 9/12] bgsegs=72
+   pin2 [Feathers for Grek / 0 / 1 / Screecher Feather 3/8] bgsegs=72
+menu on pinned: Remove Quest Ring
+77 complete:
+   pin1 [The Defias Brotherhood / 2 / 2 / Ready to turn in] bgsegs=72
+   pin2 [Feathers for Grek / 0 / 1 / Screecher Feather 3/8] bgsegs=72
+77 turned in:
+   pin1 [Feathers for Grek / 0 / 1 / Screecher Feather 3/8] bgsegs=72
+pinned list: 88
+editing (samples):
+   pin1 [The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12] bgsegs=72
+   pin2 [Feathers for Grek / 1 / 1 / Ready to turn in] bgsegs=72
+dragged pin2 centre to y=700 -> pinX=-260 pinFromTop=218 (ring 2 top = 330, expect 330)
+after reset: pinX=630 pinFromTop=200
+after /sq ring feathers (unpin):
+   pin1 [Feathers for Grek / 0 / 1 / Screecher Feather 3/8] bgsegs=72
+after /sq ring feath (pin):
+ERRORS: {}

@@ -1,0 +1,15 @@
+none down:
+fire + earth:
+   totem1 x=-96 [1:59] fill=72
+   totem2 x=-32 [30] fill=70
+fire at ~7s (pulsing):
+   totem1 x=-96 [1:37] fill=59
+   totem2 x=-32 [8] fill=17
+fire expired:
+   totem1 x=-96 [1:29] fill=54
+preview:
+   totem1 x=-96 [1:34] fill=57
+   totem2 x=-32 [7] fill=26
+   totem3 x=32 [39] fill=47
+   totem4 x=96 [1:49] fill=66
+ERRORS: {}

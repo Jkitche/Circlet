@@ -1,0 +1,11 @@
+ooc cast 1s: Fireball / 1.0 / Casting
+ooc done: Fireball / Cast learned=2.0
+combat cast 1s: Fireball / 1.5 / Casting*
+interrupted: Fireball / Interrupted
+instant: (hidden)
+ooc channel 2s: Arcane Missiles / 3.0 / Channeling
+channel done: Arcane Missiles / Done
+combat channel 1s: Arcane Missiles / 4.0 / Channeling*
+channel cut short: Arcane Missiles / Interrupted
+preview: Fireball / 1.5 / Casting
+ERRORS: {}

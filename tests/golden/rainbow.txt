@@ -1,0 +1,3 @@
+style none, effect shown: False
+style gold, effect shown: True
+ERRORS: none

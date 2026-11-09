@@ -1,0 +1,9 @@
+migrated: weaponColors.fill.b=0.3 weaponSize=150 weaponStyle=segmented skillColors.weapon=nil weaponX=-510
+sword up: weapon
+mining up: skill
+sword in combat: 
+after combat: weapon
+weapon ring off: ''
+preview weapon: weapon
+preview skill: skill
+ERRORS: {}

@@ -1,0 +1,8 @@
+before edit: grid shown=false lines=0 snap=true size=20
+editing: grid shown=true lines=152 | nil:72:true nil:72:true nil:72:true nil:72:true nil:12:false nil:12:false nil:12:false nil:12:false LOW:152:true bar=true
+snapped drop: xpX=260 xpFromTop=310  (center 260,160 from screen centre)
+shift drop: xpX=253 xpFromTop=307
+grid 50: grid shown=true lines=60
+snap off: grid shown=false lines=60
+after edit off: grid shown=false lines=60
+ERRORS: {}

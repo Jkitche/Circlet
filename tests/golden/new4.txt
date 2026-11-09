@@ -1,0 +1,35 @@
+timed quest, 130s left:
+    Feathers for Grek / 2:10 / remaining
+timed 40s left:
+    Feathers for Grek / 0:40 / remaining
+timed done:
+ghost, delay:
+    Your corpse / 270 yd / Resurrect in 0:12
+ghost walking:
+    Your corpse / 270 yd / to your corpse
+ghost near:
+    Your corpse / 1 yd / In range: resurrect!
+alive:
+resting at inn:
+    Level 16 / Resting / Fully rested / 30.0% / Rested 150%
+left inn:
+session: xp=400 quests=1 deaths=1 levels=0
+summary shown=true title=This session / 0m played
+   tile text: +400
+   tile text: Experience
+   tile text: 40% of a level
+   tile text: 1
+   tile text: Quests done
+   tile text: +2|cffffd100g|r 34|cffc7c7cfs|r
+   tile text: Money
+   tile text: 1
+   tile text: Death
+timed preview:
+    Protecting the Shipment / 2:16 / remaining
+corpse preview:
+    Your corpse / 380 yd / Resurrect in 0:08
+editing:
+    Protecting the Shipment / 2:16 / remaining
+    Your corpse / 380 yd / Resurrect in 0:08
+logout summary shown=true
+ERRORS: {}

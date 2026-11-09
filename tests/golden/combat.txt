@@ -1,0 +1,5 @@
+before: rep a=1.00 shown=true | quest a=0.50 shown=true | xp a=1.00 shown=true
+mid-fade: rep a=0.56 shown=true
+combat: rep a=0.00 shown=false | quest a=0.50 shown=true | xp a=1.00 shown=true | totem1 a=0.00 shown=false
+after: rep a=1.00 shown=true | quest a=0.50 shown=true | totem1 a=1.00 shown=true
+ERRORS: {}

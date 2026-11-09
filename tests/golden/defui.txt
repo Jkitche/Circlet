@@ -1,0 +1,9 @@
+defaults: Main=1 Secondary=1 PlayerCastingBarFrame=1 MirrorTimerContainer=1 TotemFrame=1 QuestTimerFrame=1
+xp hide: Main=0(nomouse) Secondary=1 PlayerCastingBarFrame=1 MirrorTimerContainer=1 TotemFrame=1 QuestTimerFrame=1
+all hide: Main=0(nomouse) Secondary=0(nomouse) PlayerCastingBarFrame=1 MirrorTimerContainer=0(nomouse) TotemFrame=0(nomouse) QuestTimerFrame=0(nomouse)
+main shows rep (rep off), sec honor: Main=1 Secondary=1 PlayerCastingBarFrame=1 MirrorTimerContainer=0(nomouse) TotemFrame=0(nomouse) QuestTimerFrame=0(nomouse)
+gathering: PlayerCastingBarFrame=0(nomouse)
+done, bar still fading: PlayerCastingBarFrame=1
+bar hidden -> restored: PlayerCastingBarFrame=1
+all off: Main=1 Secondary=1 PlayerCastingBarFrame=1 MirrorTimerContainer=1 TotemFrame=1 QuestTimerFrame=1
+ERRORS: {}

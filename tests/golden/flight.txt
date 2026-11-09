@@ -1,0 +1,18 @@
+idle                       shown=false a=0.00 fill=0 | 
+first flight, 1s           shown=true a=1.00 fill=19 | to Ironforge / 0:01 / Timing route
+first flight, 21s          shown=true a=1.00 fill=19 | to Ironforge / 0:21 / Timing route
+landed                     shown=true a=1.00 fill=72 | to Ironforge / 0:21 / Arrived
+after hold                 shown=false a=0.00 fill=72 | to Ironforge / 0:21 / Arrived
+saved: 21
+second flight, 5s          shown=true a=1.00 fill=18 | to Ironforge / 0:16 / remaining
+second flight, 20s         shown=true a=1.00 fill=69 | to Ironforge / 0:01 / remaining
+overdue 30s                shown=true a=1.00 fill=72 | to Ironforge / 0:00 / landing
+landed 2                   shown=true a=1.00 fill=72 | to Ironforge / 0:30 / Arrived
+saved after 2nd: 28
+flight w/o map click       shown=true a=1.00 fill=19 | Flying / 0:03 / Timing route
+preview                    shown=true a=1.00 fill=24 | to Ironforge / 1:42 / remaining
+preview learning part      shown=true a=1.00 fill=19 | to Southshore / 0:26 / Timing route
+editing                    shown=true a=1.00 fill=19 | to Ironforge / 1:51 / remaining
+edit off                   shown=false a=0.00 fill=19 | to Ironforge / 1:51 / remaining
+disabled                   shown=false a=0.00 fill=19 | to Ironforge / 1:51 / remaining
+ERRORS: {}

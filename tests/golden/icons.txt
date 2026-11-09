@@ -1,0 +1,2 @@
+weapon cap rise shows a ring: False
+ERRORS: none

@@ -1,0 +1,12 @@
+first load: profile=Default xpSize=222 default saved=222
+new: Hunter xpSize=222
+back to Default: xpSize=222 exalted.b=0.3
+Hunter again: xpSize=150 exalted.b=1
+copied Default into Hunter: xpSize=222 flightTimes kept=1
+renamed: Alt chars=Alt hunter gone=true saved=175
+Other logs in: Default xpSize=222
+Third (new chars=Alt): Alt xpSize=175
+Jae again: Alt xpSize=175
+deleted Alt: profiles=Default Jae=Default Third=nil
+slash switched: Default
+ERRORS: {}
