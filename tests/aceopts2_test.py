@@ -3,7 +3,7 @@ lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 s = open('liveedit_test.py').read()
 exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-L='/mnt/user-data/uploads/AddOns/SideQuest/Libs/'
+L='../Libs/'
 load = lua.eval('function(s, n) local f, e = load(s, "@"..n); if not f then error(e) end; return f end')
 for f in ['LibStub/LibStub.lua','CallbackHandler-1.0/CallbackHandler-1.0.lua','AceConfig-3.0/AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua']:
     load(open(L+f).read(), f)()
