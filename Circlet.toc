@@ -1,9 +1,11 @@
 ## Interface: 16001
 ## Title: Circlet
-## Notes: Progress rings for quests, XP, skills, reputation, pet and ammo, plus flight, timed-quest, corpse, breath, crafting and gathering rings and a session summary.
+## Notes: Progress rings for XP, quests, skills, reputation and more: they pop up and fill as you play. Also casts, flights, breath, totems, crafting and gathering.
 ## Author: Jae
-## Version: 0.62.0
+## Version: @project-version@
 ## SavedVariables: CircletDB, CircletProfiles
+## X-License: MIT
+## X-Category: Quests & Leveling
 ## IconTexture: Interface\Icons\INV_Jewelry_Ring_03
 ## AddonCompartmentFunc: Circlet_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Circlet_OnAddonCompartmentEnter

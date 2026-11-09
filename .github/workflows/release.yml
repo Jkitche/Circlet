@@ -1,0 +1,34 @@
+# Packages Circlet and uploads it to CurseForge (and as a GitHub release) whenever a version
+# tag is pushed: git tag v0.62.0 && git push origin v0.62.0
+#
+# Needs, once:
+#   - the CurseForge project ID in Circlet.toc (## X-Curse-Project-ID: 123456)
+#   - a CurseForge API token as the repository secret CF_API_KEY
+#     (CurseForge: profile > My API Tokens; GitHub: Settings > Secrets and variables > Actions)
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the GitHub release
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the packager reads tags for the version
+
+      - name: Tests
+        run: |
+          pip install lupa
+          python3 tests/run_tests.py
+
+      - name: Package and upload
+        uses: BigWigsMods/packager@v2

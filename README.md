@@ -23,7 +23,8 @@ or hide the game's own bar it replaces. Profiles keep separate setups per charac
 
 ## Install
 
-Copy this folder to `World of Warcraft\_forever_\Interface\AddOns\Circlet`.
+Install from CurseForge, or copy the `Circlet` folder from a release zip to
+`World of Warcraft\_forever_\Interface\AddOns\`.
 
 ## Use
 
@@ -54,6 +55,20 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
 `python3 tests/run_tests.py` runs every test against a mock of the game's API and compares the
 output with `tests/golden/` (needs Python 3 and `pip install lupa`). After an intended change,
 `python3 tests/run_tests.py --update <test>` accepts the new output; check the diff first.
+
+## Releasing
+
+Releases go to CurseForge from GitHub: bump the version in `CHANGELOG.md` (newest at the top),
+commit, then tag and push it:
+
+    git tag v0.62.1 && git push origin v0.62.1
+
+`.github/workflows/release.yml` runs the tests and the BigWigs packager, which builds the zip
+(see `.pkgmeta`), puts the changelog on the file and uploads it to CurseForge and as a GitHub
+release. It needs the project's ID in `Circlet.toc` (`## X-Curse-Project-ID`) and a
+CurseForge API token as the `CF_API_KEY` repository secret. `python3 tools/package.py` builds
+the same zip locally (into `dist/`) for a manual upload or a test install. The CurseForge page
+text is in `docs/curseforge.md`.
 
 ## Libraries
 

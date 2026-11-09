@@ -217,7 +217,10 @@ end
 ---------------------------------------------------------------- the window
 local function Version()
     local get = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
-    return get and get(ADDON_NAME, "Version") or nil
+    local version = get and get(ADDON_NAME, "Version") or nil
+    -- A copy straight from the repository, not a packaged release.
+    if version and version:find("@project%-version@") then version = "dev" end
+    return version
 end
 
 local function SetupOptions()
