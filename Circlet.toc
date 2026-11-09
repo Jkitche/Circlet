@@ -1,0 +1,44 @@
+## Interface: 16001
+## Title: Circlet
+## Notes: Progress rings for quests, XP, skills, reputation, pet and ammo, plus flight, timed-quest, corpse, breath, crafting and gathering rings and a session summary.
+## Author: Jae
+## Version: 0.61.0
+## SavedVariables: CircletDB, CircletProfiles
+## IconTexture: Interface\Icons\INV_Jewelry_Ring_03
+## AddonCompartmentFunc: Circlet_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Circlet_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Circlet_OnAddonCompartmentLeave
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfigRegistry-3.0\AceConfigRegistry-3.0.xml
+Libs\AceConfig-3.0\AceConfigDialog-3.0\AceConfigDialog-3.0.xml
+
+Circlet.lua
+Modules\XPRing.lua
+Modules\Glyphs.lua
+Modules\ProgressRing.lua
+Modules\SkillRing.lua
+Modules\QuestRing.lua
+Modules\RepRing.lua
+Modules\AmmoPetRings.lua
+Modules\FlightRing.lua
+Modules\LiveRing.lua
+Modules\TimedQuestRing.lua
+Modules\CorpseRing.lua
+Modules\BreathRing.lua
+Modules\CraftRing.lua
+Modules\GatherRing.lua
+Modules\CastRing.lua
+Modules\QuestPins.lua
+Modules\TotemRings.lua
+Modules\Discovery.lua
+Modules\Welcome.lua
+Modules\Summary.lua
+Modules\IconGrid.lua
+Modules\EditMode.lua
+Modules\DefaultUI.lua
+Modules\Profiles.lua
+Modules\Options.lua
+Modules\Events.lua
