@@ -2,10 +2,8 @@
 -- as it lasts, rather than popping up for a gain. Used by the timed quest and corpse rings.
 local ADDON_NAME, ns = ...
 
-local db, RingHolder, MakeRingDraggable, NewRingLayer, DrawArc = ns.db, ns.RingHolder, ns.MakeRingDraggable, ns.NewRingLayer, ns.DrawArc
-local XP_SEGMENTS, TRACK, ArrangeX, RingThickness, ApplyOpacity = ns.XP_SEGMENTS, ns.TRACK, ns.ArrangeX, ns.RingThickness, ns.ApplyOpacity
+local db, NewRingLayer, DrawArc = ns.db, ns.NewRingLayer, ns.DrawArc
 local EDIT_STRATA = ns.EDIT_STRATA
-local FormatTime = ns.FormatTime
 
 -- Lost-progress flash: blinks between the track and white FLASH_BLINKS times over
 -- FLASH_TIME seconds, each blink fainter than the last.
@@ -35,12 +33,9 @@ local function CreateLiveRing(cfg)
     local key = cfg.key
     local function opt(name) return db[key .. name] end
 
-    local frame = CreateFrame("Frame", nil, RingHolder(key))
-    frame:SetFrameStrata("HIGH")
-    frame:SetSize(1, 1)
-    frame:SetAlpha(0)
-    frame:Hide()
-    MakeRingDraggable(frame, key)
+    -- Extra segments so a ring can be split into up to MAX_NOTCHES notches.
+    local frame = ns.NewRingFrame(key, LINES)
+    local geom = frame.geom
 
     -- Right-click menu (outside edit mode, where right-click resets the position).
     local editMouseUp = frame:GetScript("OnMouseUp")
@@ -66,9 +61,6 @@ local function CreateLiveRing(cfg)
     end
     frame.isLocked = cfg.locked
 
-    local geom = { R = 0, T = 0, step = 2 * math.pi / XP_SEGMENTS }
-    -- Extra segments so a ring can be split into up to MAX_NOTCHES notches.
-    frame.bg = NewRingLayer("BACKGROUND", 0, TRACK, 1, frame, LINES)
     frame.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, frame, LINES)
     frame.flash = NewRingLayer("ARTWORK", 1, { r = 1, g = 1, b = 1 }, 1, frame, LINES)
 
@@ -168,32 +160,14 @@ local function CreateLiveRing(cfg)
     local last -- last real state, shown while fading out
 
     local function Layout(st)
-        ApplyOpacity(key)
         local notches = st and st.notches
         if notches and (notches < 1 or notches > MAX_NOTCHES) then notches = nil end
         local size = opt("Size")
-        frame:SetSize(size, size)
-        if not frame.dragging then
-            frame:ClearAllPoints()
-            frame:SetPoint("CENTER", UIParent, "TOP", opt("X") + ArrangeX(key, frame), -(opt("FromTop") + size / 2))
-        end
-        frame.editHint:ClearAllPoints()
-        frame.editHint:SetPoint("TOP", frame, "CENTER", 0, -(size / 2 + 4))
-
-        local lk = size .. ":" .. opt("Thickness") .. ":" .. tostring(opt("Style")) .. ":" .. tostring(notches)
-            .. ":" .. ns.BorderKey(key)
-        if frame.layoutKey == lk then return end
-        frame.layoutKey = lk
+        ns.PlaceRing(frame, key, size)
+        if notches ~= geom.notches then frame.layoutKey = nil end -- the track's notches change too
         geom.notches = notches
-
-        local textT
-        geom.T, textT = RingThickness(key, size)
-        geom.R = size / 2 - geom.T / 2
-        geom.style = opt("Style")
-        ns.ApplyShape(geom, key)
-        ns.DrawTrack(frame, frame.bg, geom)
-
-        local inner = size - 2 * textT
+        local inner = ns.UpdateGeometry(frame, key, size, notches)
+        if not inner then return end
         frame.value:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * (cfg.valueScale or 0.25))), "OUTLINE")
         frame.title:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.12)), "OUTLINE")
         frame.label:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.115)), "OUTLINE")

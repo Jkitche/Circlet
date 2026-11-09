@@ -1,7 +1,7 @@
 -- Circlet: Cast ring: your own casts and channels, timed even when combat hides them.
 local ADDON_NAME, ns = ...
 
-local db, IsSecret, CreateLiveRing = ns.db, ns.IsSecret, ns.CreateLiveRing
+local db, CreateLiveRing = ns.db, ns.CreateLiveRing
 local SafeCall, Clean = ns.SafeCall, ns.Clean
 
 ---------------------------------------------------------------------------

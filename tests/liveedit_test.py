@@ -30,7 +30,7 @@ function Dump(label)
   local parts = {}
   for i, f in ipairs(RINGS) do
     local texts = {}
-    for _, g in ipairs(ALL_FS) do if g._parent == f and g._shown ~= false and g._text and g._text ~= "" then table.insert(texts, tostring(g._text)) end end
+    for _, g in ipairs(ALL_FS) do if g._parent == f and g ~= f.editHint and g._shown ~= false and g._text and g._text ~= "" then table.insert(texts, tostring(g._text)) end end
     table.insert(parts, string.format("  #%d shown=%s a=%.2f strata=%s mouse=%s | %s", i, tostring(f._shown), f._alpha or 1, tostring(f._strata), tostring(f._mouse), table.concat(texts, " / ")))
   end
   P(label); P(table.concat(parts, "\\n"))

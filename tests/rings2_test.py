@@ -35,7 +35,7 @@ function RingByText(pat)
     for _, g in ipairs(ALL_FS) do if g._parent == f and tostring(g._text or ""):match(pat) then return f end end
   end end
 end
-function Texts(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and g._text ~= "Drag to move  ·  Right-click to reset" then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
+function Texts(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and g ~= f.editHint then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
 function Shown() local t = {} for _, f in ipairs(allFrames) do if f.editHint and f._shown then table.insert(t, Texts(f) .. string.format(" @x=%.0f", f.arrangeX or 0)) end end return t end
 function Dump(label) P(label) for _, l in ipairs(Shown()) do P("   " .. l) end end
 

@@ -26,6 +26,7 @@ Layout\Holders.lua
 Layout\Arrange.lua
 Layout\Drag.lua
 
+Rings\Base\RingFrame.lua
 Rings\Base\ProgressRing.lua
 Rings\Base\LiveRing.lua
 Rings\XP.lua

@@ -1,9 +1,9 @@
 -- Circlet: The shared pop-up ring used by the quest, skill, reputation, pet and ammo rings.
 local ADDON_NAME, ns = ...
 
-local ApplyOpacity, ArrangeX, DrawArc, DrawGlyph, EDIT_STRATA = ns.ApplyOpacity, ns.ArrangeX, ns.DrawArc, ns.DrawGlyph, ns.EDIT_STRATA
-local ICON_CELEBRATE, IconPose, MakeRingDraggable, NewRingLayer, RingHolder = ns.ICON_CELEBRATE, ns.IconPose, ns.MakeRingDraggable, ns.NewRingLayer, ns.RingHolder
-local RingThickness, TRACK, XP_SEGMENTS, db = ns.RingThickness, ns.TRACK, ns.XP_SEGMENTS, ns.db
+local DrawArc, DrawGlyph, EDIT_STRATA = ns.DrawArc, ns.DrawGlyph, ns.EDIT_STRATA
+local ICON_CELEBRATE, IconPose, NewRingLayer, RingHolder = ns.ICON_CELEBRATE, ns.IconPose, ns.NewRingLayer, ns.RingHolder
+local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 
 ---------------------------------------------------------------------------
 -- Progress ring: one donut shared by the skill ring and the quest ring
@@ -32,14 +32,8 @@ local function CreateProgressRing(cfg)
     local function opt(name) return db[key .. name] end
 
     local holder = RingHolder(key)
-    local frame = CreateFrame("Frame", nil, holder)
-    frame:SetFrameStrata("HIGH")
-    frame:SetSize(1, 1)
-    frame:SetAlpha(0)
-    frame:Hide()
-
-    local geom = { R = 0, T = 0, step = 2 * math.pi / XP_SEGMENTS }
-    frame.bg   = NewRingLayer("BACKGROUND", 0, TRACK, 1, frame)
+    local frame = ns.NewRingFrame(key)
+    local geom = frame.geom
     frame.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, frame)
 
     frame.nameText  = frame:CreateFontString(nil, "OVERLAY")
@@ -58,7 +52,6 @@ local function CreateProgressRing(cfg)
     -- state can be seen while settings change. Real progress waits in the queue.
     local editing = false
     local sampleIndex, sampleSwitchAt = 1, 0
-    MakeRingDraggable(frame, key)
 
     -- Centre icon: its own frame one level below the ring so the ring's text draws
     -- on top. It follows the ring's position and fade.
@@ -213,31 +206,11 @@ local function CreateProgressRing(cfg)
     end
 
     local function Layout()
-        ApplyOpacity(key)
-        frame:SetSize(opt("Size"), opt("Size")) -- hit area for dragging in edit mode
-        if not frame.dragging then
-            frame:ClearAllPoints()
-            frame:SetPoint("CENTER", UIParent, "TOP", opt("X") + ArrangeX(key, frame),
-                -(opt("FromTop") + opt("Size") / 2))
-        end
-        frame.editHint:ClearAllPoints()
-        frame.editHint:SetPoint("TOP", frame, "CENTER", 0, -(opt("Size") / 2 + 4))
-
-        local showDelta = opt("ShowDelta") and true or false
-        local layoutKey = opt("Size") .. ":" .. opt("Thickness") .. ":" .. tostring(showDelta) .. ":" .. ns.BorderKey(key)
-            .. ":" .. tostring(opt("Style"))
-        if frame.layoutKey == layoutKey then return end
-        frame.layoutKey = layoutKey
-
         local size = opt("Size")
-        local textT
-        geom.T, textT = RingThickness(key, size)
-        geom.R = size / 2 - geom.T / 2
-        geom.style = opt("Style")
-        ns.ApplyShape(geom, key)
-        ns.DrawTrack(frame, frame.bg, geom)
-
-        local inner = size - 2 * textT
+        ns.PlaceRing(frame, key, size)
+        local showDelta = opt("ShowDelta") and true or false
+        local inner = ns.UpdateGeometry(frame, key, size, showDelta)
+        if not inner then return end
         frame.gainText:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.22)), "OUTLINE")
         frame.deltaText:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.11)), "OUTLINE")
         frame.nameText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.12)), "OUTLINE")

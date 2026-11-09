@@ -31,6 +31,30 @@ Copy this folder to `World of Warcraft\_forever_\Interface\AddOns\Circlet`.
 - `/sq help` lists the commands: previews for every ring (`/sq xp`, `/sq cast`, ...),
   `/sq edit <ring>` to see a ring live and drag it, `/sq profile [name]`, and more.
 
+## Code layout
+
+Files load in `Circlet.toc` order and share everything through the addon's `ns` table.
+
+- `Core/`: helpers (`Init.lua`), saved settings and the `db` table (`Settings.lua`), the ring
+  registry (`Registry.lua`), the `/sq` command (`Slash.lua`) and startup (`Events.lua`).
+- `Draw/`: drawing rings (segments, arcs, track, border, styles, shapes, gradients) and glyphs.
+- `Layout/`: each ring's holder frame (opacity, hiding in combat), auto-arrange, dragging.
+- `Rings/Base/`: what every ring frame shares (`RingFrame.lua`) and the two ring builders:
+  `ProgressRing.lua` (pops up when something changes) and `LiveRing.lua` (shows a live state).
+- `Rings/`: one file per ring. Each ends with `ns.RegisterRing{...}`: its defaults, edit mode
+  hooks, preview and slash names, options page, class filter and the game bar it can hide.
+  Edit mode, `/sq` and its help, the options window and the defaults are built from these, so
+  a new ring is one new file (plus its line in the TOC).
+- `Features/`: edit mode, profiles, one-time settings migrations, hiding the game's bars, the
+  welcome and discovery animations, the session summary.
+- `UI/`: option builders (`OptionsKit.lua`), the options window, the icon list.
+
+## Tests
+
+`python3 tests/run_tests.py` runs every test against a mock of the game's API and compares the
+output with `tests/golden/` (needs Python 3 and `pip install lupa`). After an intended change,
+`python3 tests/run_tests.py --update <test>` accepts the new output; check the diff first.
+
 ## Libraries
 
 Embeds LibStub, CallbackHandler-1.0, AceGUI-3.0 and AceConfig-3.0 (see their LICENSE files in

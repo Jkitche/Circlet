@@ -1,9 +1,9 @@
 -- Circlet: Flight ring: a countdown to landing while you're on a flight path.
 local ADDON_NAME, ns = ...
 
-local db, Print, IsSecret, RingHolder, MakeRingDraggable = ns.db, ns.Print, ns.IsSecret, ns.RingHolder, ns.MakeRingDraggable
-local NewRingLayer, DrawArc, XP_SEGMENTS, TRACK, ArrangeX = ns.NewRingLayer, ns.DrawArc, ns.XP_SEGMENTS, ns.TRACK, ns.ArrangeX
-local RingThickness, ApplyOpacity, EDIT_STRATA = ns.RingThickness, ns.ApplyOpacity, ns.EDIT_STRATA
+local db, Print, IsSecret = ns.db, ns.Print, ns.IsSecret
+local NewRingLayer, DrawArc = ns.NewRingLayer, ns.DrawArc
+local EDIT_STRATA = ns.EDIT_STRATA
 local FormatTime = ns.FormatTime
 
 ---------------------------------------------------------------------------
@@ -19,26 +19,14 @@ local FormatTime = ns.FormatTime
 
 local MIN_FLIGHT = 5 -- shorter trips (cancelled right away) aren't saved as a route time
 
-local flight = CreateFrame("Frame", nil, RingHolder("flight"))
-flight:SetFrameStrata("HIGH")
-flight:SetSize(1, 1)
-flight:SetAlpha(0)
-flight:Hide()
-MakeRingDraggable(flight, "flight")
-
-local geom = { R = 0, T = 0, step = 2 * math.pi / XP_SEGMENTS }
-flight.bg = NewRingLayer("BACKGROUND", 0, TRACK, 1, flight)
+local flight = ns.NewRingFrame("flight")
+local geom = flight.geom
 flight.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, flight)
 flight.fill2 = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, flight) -- the spinner's wrap-around piece
 
-local function Text(layer)
-    local fs = flight:CreateFontString(nil, layer or "OVERLAY")
-    fs:SetShadowOffset(1, -1)
-    return fs
-end
-flight.dest = Text()  -- destination, small, above the time
-flight.time = Text()  -- 1:23, big
-flight.label = Text() -- "remaining" / "Timing route" / "Arrived"
+flight.dest = ns.RingText(flight)  -- destination, small, above the time
+flight.time = ns.RingText(flight)  -- 1:23, big
+flight.label = ns.RingText(flight) -- "remaining" / "Timing route" / "Arrived"
 
 -- What's being shown. Real flights fill `trip`; edit mode and previews use samples.
 local trip = nil      -- { origin, dest, key, start, total (nil = unknown), landed }
@@ -73,29 +61,10 @@ end
 
 ---------------------------------------------------------------- drawing
 local function Layout()
-    ApplyOpacity("flight")
     local size = db.flightSize
-    flight:SetSize(size, size)
-    if not flight.dragging then
-        flight:ClearAllPoints()
-        flight:SetPoint("CENTER", UIParent, "TOP", db.flightX + ArrangeX("flight", flight),
-            -(db.flightFromTop + size / 2))
-    end
-    flight.editHint:ClearAllPoints()
-    flight.editHint:SetPoint("TOP", flight, "CENTER", 0, -(size / 2 + 4))
-
-    local key = size .. ":" .. db.flightThickness .. ":" .. tostring(db.flightStyle) .. ":" .. ns.BorderKey("flight")
-    if flight.layoutKey == key then return end
-    flight.layoutKey = key
-
-    local textT
-    geom.T, textT = RingThickness("flight", size)
-    geom.R = size / 2 - geom.T / 2
-    geom.style = db.flightStyle
-    ns.ApplyShape(geom, "flight")
-    ns.DrawTrack(flight, flight.bg, geom)
-
-    local inner = size - 2 * textT
+    ns.PlaceRing(flight, "flight", size)
+    local inner = ns.UpdateGeometry(flight, "flight", size)
+    if not inner then return end
     flight.time:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.27)), "OUTLINE")
     flight.dest:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.13)), "OUTLINE")
     flight.label:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.12)), "OUTLINE")

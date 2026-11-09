@@ -1,8 +1,8 @@
 -- Circlet: XP ring: fills when you gain experience, colored by rest state.
 local ADDON_NAME, ns = ...
 
-local ApplyOpacity, ArrangeX, EDIT_STRATA, IsSecret, MakeRingDraggable = ns.ApplyOpacity, ns.ArrangeX, ns.EDIT_STRATA, ns.IsSecret, ns.MakeRingDraggable
-local RingHolder, RingThickness, TRACK, XP_SEGMENTS, db = ns.RingHolder, ns.RingThickness, ns.TRACK, ns.XP_SEGMENTS, ns.db
+local EDIT_STRATA, IsSecret = ns.EDIT_STRATA, ns.IsSecret
+local RingHolder, RingThickness, XP_SEGMENTS, db = ns.RingHolder, ns.RingThickness, ns.XP_SEGMENTS, ns.db
 local ns = ns.ns
 
 ---------------------------------------------------------------------------
@@ -28,11 +28,7 @@ local REST_BAND = { r = 0.16, g = 0.28, b = 0.48 }   -- dim rested blue
 local GOLD      = { r = 1.00, g = 0.82, b = 0.00 }
 
 
-local xpRing = CreateFrame("Frame", nil, RingHolder("xp"))
-xpRing:SetFrameStrata("HIGH")
-xpRing:SetSize(1, 1)
-xpRing:SetAlpha(0)
-xpRing:Hide()
+local xpRing = ns.NewRingFrame("xp")
 
 
 xpRing.levelText = xpRing:CreateFontString(nil, "OVERLAY")
@@ -48,7 +44,7 @@ for _, fs in ipairs(XP_TEXTS) do
     fs:SetShadowOffset(1, -1)
 end
 
-local ring = { R = 0, T = 0, step = 2 * math.pi / XP_SEGMENTS }
+local ring = xpRing.geom
 
 -- The XP ring's own calls leave out its frame and geometry.
 local NewRingLayer = function(drawLayer, subLevel, c, a, parent)
@@ -58,7 +54,6 @@ local DrawArc = function(lines, from, to, frame, geom, noOverlap, shade)
     return ns.DrawArc(lines, from, to, frame or xpRing, geom or ring, noOverlap, shade)
 end
 
-xpRing.bg         = NewRingLayer("BACKGROUND", 0, TRACK, 1)
 xpRing.restBand   = NewRingLayer("BORDER", 0, REST_BAND, 1)
 xpRing.fillNormal = NewRingLayer("ARTWORK", 0, STATE_COLORS.normal, 1)
 xpRing.fillRested = NewRingLayer("ARTWORK", 1, STATE_COLORS.rested, 1)
@@ -109,37 +104,22 @@ local function RingStrata(mm)
 end
 
 local function LayoutXPRing()
-    ApplyOpacity("xp")
     local mm = MinimapFrame()
     local strata = RingStrata(mm)
     if xpRing:GetFrameStrata() ~= strata then xpRing:SetFrameStrata(strata) end
     local size = XPSize()
-    xpRing:SetSize(size, size) -- hit area for dragging in edit mode
+    ns.PlaceRing(xpRing, "xp", size)
     if mm then
+        -- Around the minimap instead of its saved spot.
         xpRing:ClearAllPoints()
         xpRing:SetPoint("CENTER", mm, "CENTER", 0, 0)
-    elseif not xpRing.dragging then
-        xpRing:ClearAllPoints()
-        -- Anchored to the top edge so it stays put across UI scales and resolutions.
-        xpRing:SetPoint("CENTER", UIParent, "TOP", db.xpX + ArrangeX("xp", xpRing), -(db.xpFromTop + db.xpSize / 2))
     end
-    xpRing.editHint:ClearAllPoints()
-    xpRing.editHint:SetPoint("TOP", xpRing, "CENTER", 0, -(size / 2 + 4))
 
     local showDelta = db.xpShowDelta and true or false
-    local key = size .. ":" .. db.xpThickness .. ":" .. tostring(showDelta) .. ":" .. tostring(db.xpStyle)
-        .. ":" .. ns.BorderKey("xp") .. ":" .. tostring(mm ~= nil)
-    if xpRing.layoutKey == key then return end
-    xpRing.layoutKey = key
-
-    local textT
-    ring.T, textT = RingThickness("xp", mm and db.xpSize or size)
-    ring.R = size / 2 - ring.T / 2
-    ring.style = db.xpStyle
-    ns.ApplyShape(ring, "xp")
-    ns.DrawTrack(xpRing, xpRing.bg, ring)
-
-    local inner = mm and 100 or (size - 2 * textT) -- room inside the donut for text (fixed size under a minimap)
+    local inner = ns.UpdateGeometry(xpRing, "xp", size, tostring(showDelta) .. ":" .. tostring(mm ~= nil),
+        mm and db.xpSize or nil)
+    if not inner then return end
+    if mm then inner = 100 end -- text below the minimap: a fixed size
     xpRing.gainText:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.18)), "OUTLINE")
     xpRing.deltaText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.10)), "OUTLINE")
     xpRing.levelText:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * 0.12)), "OUTLINE")
@@ -181,7 +161,6 @@ local anim = { from = 0, to = 0, shown = 0, t = 1, dur = 0.9, session = 0, holdU
 local combatQueue = { from = nil, to = nil, gain = 0, rest = nil, max = nil }
 local xpInCombat = false
 local xpSampleAt, xpSampleRested = 0, true
-MakeRingDraggable(xpRing, "xp")
 
 local function XPFraction(cur, max)
     if not max or max <= 0 then return 0 end
