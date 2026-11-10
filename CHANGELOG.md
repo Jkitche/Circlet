@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
 - **Ammo ring: Always show** (off by default; Ammo > Always show). The ring shows every time you
   shoot and counts down what's left, instead of only at the warning steps. Nothing shows while the
