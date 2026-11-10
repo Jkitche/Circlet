@@ -36,6 +36,7 @@ RINGS = {
     "gather":  ("gather", "WARRIOR", 1.2, ""),
     "cast":    ("cast", "MAGE", 1.0, ""),
     "totems":  ("totems", "SHAMAN", 2.0, ""),
+    "food":    ("food", "WARRIOR", 9.0, ""),
 }
 
 PRELUDE = r'''
@@ -51,6 +52,10 @@ RegionMethods.SetPoint = function(s, p, rel, rp, x, y)
   if type(rel) == "string" then rel = _G[rel] end
   s._anchor = { p = p, rel = rel, rp = rp or p, x = x or 0, y = y or 0 }
 end
+RegionMethods.SetColorTexture = function(s, r, g, b, a) s._solid = { r, g, b, a or 1 } end
+RegionMethods.SetVertexColor = function(s, r, g, b, a) s._vc = { r, g, b, a } end
+local cfx = RegionMethods.CreateTexture
+RegionMethods.CreateTexture = function(self, ...) local t = cfx(self, ...); t._parent = self; ALL_TEX = ALL_TEX or {}; table.insert(ALL_TEX, t); return t end
 RegionMethods.SetAllPoints = function(s, rel) s._anchor = { p = "CENTER", rel = rel, rp = "CENTER", x = 0, y = 0 } end
 ERRORS = {}
 local function guard(where, fn, ...) local ok, err = pcall(fn, ...)
@@ -177,6 +182,17 @@ def snapshot(name):
         ring = ring_of(f)
         if ring is not None and tostr(ring) in rings:
             rings[tostr(ring)]["texts"].append((f, a))
+    for t in (lua.eval("ALL_TEX") or {}).values():
+        if t._solid is None or t._pt is None:
+            continue
+        if max(t._solid[1], t._solid[2], t._solid[3]) < 0.1:
+            continue  # a badge's dark backing: masked to a circle under the icon in game
+        a = visible(t)
+        if a <= 0.02:
+            continue
+        ring = ring_of(t)
+        if ring is not None and tostr(ring) in rings:
+            rings[tostr(ring)].setdefault("solids", []).append((t, a))
     for entry in rings.values():
         lay = Layout(entry["ring"], tostr)
         lines = []
@@ -185,6 +201,7 @@ def snapshot(name):
             lines.append((l, a, dx, dy))
         entry["lines"] = lines
         entry["texts"] = [(f, a) + lay.center(f) for f, a in entry["texts"]]
+        entry["solids"] = [(t, a) + lay.center(t) for t, a in entry.get("solids", [])]
     return rings
 
 
@@ -192,6 +209,8 @@ def draw_ring(parts):
     lines = parts["lines"]
     ext = max(max(abs(l._x1 + dx), abs(l._x2 + dx), abs(l._y1 + dy), abs(l._y2 + dy)) + (l._t or 1)
               for l, a, dx, dy in lines)
+    for t, a, tx, ty in parts.get("solids", []):
+        ext = max(ext, abs(tx) + 4, abs(ty) + 4)
     half = ext + 8
     W = int(2 * half * SCALE)
     im = Image.new("RGBA", (W, W), BG + (255,))
@@ -209,6 +228,26 @@ def draw_ring(parts):
         poly = [P(x1 + nx, y1 + ny), P(x2 + nx, y2 + ny), P(x2 - nx, y2 - ny), P(x1 - nx, y1 - ny)]
         ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
         ImageDraw.Draw(ov).polygon(poly, fill=(int(c[1] * 255), int(c[2] * 255), int(c[3] * 255), int(alpha * 255)))
+        im = Image.alpha_composite(im, ov)
+
+    for t, a, tx, ty in parts.get("solids", []):
+        c = t._solid
+        vc = t._vc
+        r, g, b = c[1] * (vc[1] if vc else 1), c[2] * (vc[2] if vc else 1), c[3] * (vc[3] if vc else 1)
+        half = (t._w or 2) / 2
+        rot = t._rot or 0
+        pts = []
+        for px, py in [(-half, -half), (half, -half), (half, half), (-half, half)]:
+            x = px * math.cos(rot) - py * math.sin(rot)
+            y = px * math.sin(rot) + py * math.cos(rot)
+            pts.append(P(tx + x, ty + y))
+        ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        fill = (int(r * 255), int(g * 255), int(b * 255), int(255 * a * (c[4] or 1)))
+        if t._mask is not None:  # masked to a circle in game (badge rims)
+            (x0, y0), (x1, y1) = P(tx - half, ty + half), P(tx + half, ty - half)
+            ImageDraw.Draw(ov).ellipse([x0, y0, x1, y1], fill=fill)
+        else:
+            ImageDraw.Draw(ov).polygon(pts, fill=fill)
         im = Image.alpha_composite(im, ov)
 
     d = ImageDraw.Draw(im)

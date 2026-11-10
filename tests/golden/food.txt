@@ -1,0 +1,14 @@
+not eating: (hidden)
+eating: Eating / 18s / Health 30% bubbles=0
+eating more: Eating / 13s / Health 65%
+full: Eating / 12s / Full!
+stood up: Eating / 12s / Full!
+after the hold: (hidden)
+drinking: Drinking / 24s / Mana 20% bubbles=6
+both: Eating & drinking / 30s / 50% · 30% bubbles=6
+animations off: bubbles=0
+another buff: (hidden)
+ring off: (hidden)
+preview: Eating / 16s / Health 39% bubbles=0
+preview 8s: Drinking / 17s / Mana 30%
+ERRORS: {}

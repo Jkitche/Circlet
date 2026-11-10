@@ -38,6 +38,10 @@ then fade away, or stay up as a permanent display.
 - **Flight paths**: a countdown to landing. Route times are learned the first time you fly them.
 - **Timed quests**: escort and other quest timers, changing color near the end.
 
+**Food and drink**
+- **Eating and drinking**: health or mana filling back up and the buff counting down, bursting
+  when you're full. Crumbs fly with every bite; bubbles rise and a ripple rolls out with every gulp.
+
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.
 - **Breath, fatigue and Feign Death**, with rising bubbles while you hold your breath.
@@ -94,7 +98,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 
 - `/circ edit [ring]`: see a ring live and drag it into place.
 - Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
-  `timed`, `corpse`, `breath`, `craft`, `gather`, `cast`, `totems`.
+  `timed`, `corpse`, `breath`, `food`, `craft`, `gather`, `cast`, `totems`.
 - Effect previews: `/circ levelup`, `rested`, `complete`, `hello`, `discover`.
 - `/circ summary`: this session's summary.
 - `/circ profile [name]`: list or switch profiles.
