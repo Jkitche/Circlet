@@ -25,7 +25,7 @@ around the minimap.
 
 ## Make them yours
 
-- Style (smooth, segmented, thin), shape (full ring, arc, half arc), rotation, solid or gradient
+- Style (smooth, segmented, thin), shape (full ring, arc, half arc), rotation, fill direction, solid or gradient
   fill, black border, opacity, size and colors, per ring; or apply one ring's look to all.
 - Edit mode shows each ring live while you change it; drag rings into place with a snap grid.
 - Hide any ring in combat, or hide the game's own bar a ring replaces (XP bar, cast bar...).

@@ -56,7 +56,7 @@ then fade away, or stay up as a permanent display.
 Per ring:
 
 - Style (smooth, segmented, thin) and shape (full ring, three-quarter arc, half arc).
-- Rotation in degrees.
+- Rotation in degrees, and filling clockwise or counter-clockwise.
 - Solid or gradient fill, with adjustable gradient strength.
 - Black border width, size, thickness, opacity and colors.
 - The icon as a badge on the ring's edge, or filling its middle at a chosen opacity.

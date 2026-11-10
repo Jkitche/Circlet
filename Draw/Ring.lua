@@ -43,8 +43,11 @@ end
 
 -- frac 0 = the start of the ring (12 o'clock for a full ring), increasing clockwise.
 -- geom.start / geom.sweep (fractions of a full circle) turn the ring into an arc.
+-- geom.reverse: fill counter-clockwise instead, from the arc's other end.
 local function RingPoint(geom, frac)
-    local a = math.pi / 2 - 2 * math.pi * ((geom.start or 0) + frac * (geom.sweep or 1))
+    local sweep = geom.sweep or 1
+    local pos = geom.reverse and ((geom.start or 0) + sweep - frac * sweep) or ((geom.start or 0) + frac * sweep)
+    local a = math.pi / 2 - 2 * math.pi * pos
     return geom.R * math.cos(a), geom.R * math.sin(a)
 end
 
@@ -147,18 +150,20 @@ local RING_SHAPES = {
 local RING_SHAPE_NAMES = { ring = "Ring", arc = "Arc (three quarters)", half = "Half arc" }
 local RING_SHAPE_ORDER = { "ring", "arc", "half" }
 
--- Sets a ring's geometry to its shape (<key>Shape) and rotation (<key>Rotation, degrees
--- clockwise from the shape's base position; the default is 180).
+-- Sets a ring's geometry to its shape (<key>Shape), rotation (<key>Rotation, degrees
+-- clockwise from the shape's base position; the default is 180) and fill direction
+-- (<key>Reverse: counter-clockwise).
 local function ApplyShape(geom, key)
     local shape = RING_SHAPES[key and db[key .. "Shape"]] or RING_SHAPES.ring
     local rot = key and tonumber(db[key .. "Rotation"]) or 0
     geom.start, geom.sweep = shape.start + rot / 360, shape.sweep
+    geom.reverse = key and db[key .. "Reverse"] and true or nil
 end
 
 -- Part of each ring's layout key: changes when its border or shape does.
 local function BorderKey(key)
     return "b" .. BorderWidth(key) .. ":" .. tostring(key and db[key .. "Shape"])
-        .. ":" .. tostring(key and db[key .. "Rotation"])
+        .. ":" .. tostring(key and db[key .. "Rotation"]) .. ":" .. tostring(key and db[key .. "Reverse"])
 end
 
 -- Draws a ring's track (the full background circle) and its border, if it has one.
@@ -182,7 +187,7 @@ local function DrawTrack(frame, bg, geom, width)
             frame.sqBorder = border
         end
         local outer = { R = geom.R, T = geom.T + 2 * b, step = geom.step, style = geom.style, notches = geom.notches,
-                        start = geom.start, sweep = geom.sweep }
+                        start = geom.start, sweep = geom.sweep, reverse = geom.reverse }
         if geom.style ~= "segmented" and (geom.sweep or 1) < 1 then
             -- An arc's border runs a little past each end, so the ends are outlined too.
             local e = b / (2 * math.pi * math.max(geom.R, 1))

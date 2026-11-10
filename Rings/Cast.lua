@@ -155,7 +155,7 @@ end
 
 -- A full ring (or the ring's arc) of radius R and band T, in color r, g, b at alpha a.
 local function DrawBand(lines, g, geom, frame, R, T, r, gr, b, a)
-    g.R, g.T, g.start, g.sweep, g.step = R, T, geom.start, geom.sweep, geom.step
+    g.R, g.T, g.start, g.sweep, g.step, g.reverse = R, T, geom.start, geom.sweep, geom.step, geom.reverse
     for _, l in ipairs(lines) do l:SetColorTexture(r, gr, b, a) end
     ns.DrawArc(lines, 0, 1, frame, g, true)
 end

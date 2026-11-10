@@ -24,6 +24,7 @@ local DEFAULTS = {
 local RING_COMMON = {
     Shape    = "ring",     -- full ring, three-quarter arc or half arc (Draw/Ring.lua)
     Rotation = 180,        -- degrees clockwise to turn the ring (or arc)
+    Reverse  = false,      -- true: the ring fills counter-clockwise, from the other end
     Combat   = true,       -- false: the ring fades out while you're in combat
     Fill     = "gradient", -- "solid" color or a "gradient" along the ring
     Gradient = 50,         -- gradient: % darker at the ring's start than its end

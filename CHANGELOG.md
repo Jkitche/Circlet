@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Fill backwards** (every ring, in its Appearance box): the ring fills counter-clockwise from
+  the other end. The gradient and segments follow the fill; "Apply this look to all rings" copies it.
 - **`/sq` is gone**: use `/circ` (or `/circlet`) for the options and every command.
 - **Cast ring: spell school effects** (on by default; Casting > Spell school effects). While you
   cast, the ring glows in the school's color with an aura round its band and particles that spill

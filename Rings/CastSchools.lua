@@ -218,7 +218,7 @@ local function DrawSchoolFx(st, frame, geom)
     -- Aura: hugs the ring's band, pulsing.
     local pulse = 0.65 + 0.35 * math.sin(now * (school == "fire" and 5 or 2.4))
     local g = fx.auraGeom
-    g.R, g.T, g.start, g.sweep, g.step = geom.R, geom.T * 2.6, geom.start, geom.sweep, geom.step
+    g.R, g.T, g.start, g.sweep, g.step, g.reverse = geom.R, geom.T * 2.6, geom.start, geom.sweep, geom.step, geom.reverse
     for _, l in ipairs(fx.aura) do l:SetColorTexture(c.r, c.g, c.b, A(0.4 * pulse)) end
     ns.DrawArc(fx.aura, 0, 1, frame, g, true)
 

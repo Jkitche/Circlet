@@ -109,7 +109,7 @@ local function ResetRing(key)
 end
 
 -- The settings that make up a ring's look, copied by "Apply this look to all rings".
-local LOOK_FIELDS = { "Style", "Fill", "Shape", "Rotation", "Thickness", "Border", "Opacity", "Gradient" }
+local LOOK_FIELDS = { "Style", "Fill", "Shape", "Rotation", "Reverse", "Thickness", "Border", "Opacity", "Gradient" }
 
 local function ApplyLookToAll(key)
     for _, def in ipairs(ns.RINGS) do
@@ -152,12 +152,19 @@ local function SizeBox(order, key, what, xTip)
             "Solid: one flat color. Gradient: the color shades from darker at the ring's start to full at its end."),
         shape     = Select(0.55, key .. "Shape", "Shape", ns.RING_SHAPE_NAMES, ns.RING_SHAPE_ORDER,
             "Ring: a full circle. Arc: three quarters of a circle. Half arc: half a circle. "
-            .. "The ring fills clockwise from one end to the other."),
+            .. "The ring fills clockwise from one end to the other, or counter-clockwise with Fill backwards."),
         rotation  = Range(0.58, key .. "Rotation", "Rotation (degrees)", 0, 359, 1,
             "Turn the " .. what .. " clockwise by this many degrees. At 0 a ring's fill starts at 12 o'clock "
             .. "and an arc opens at the bottom; at the default, 180, the fill starts at 6 o'clock and an arc "
             .. "opens at the top. Drag snaps to 15 degrees; type in the box under the slider for any value.",
             { bigStep = 15, get = function() return (tonumber(db[key .. "Rotation"]) or 0) % 360 end }),
+        reverse   = {
+            type = "toggle", order = 0.59, width = 0.75, name = "Fill backwards",
+            desc = "Fill the " .. what .. " counter-clockwise, starting from the other end. The gradient "
+                .. "and segments follow the fill.",
+            get = function() return db[key .. "Reverse"] end,
+            set = function(_, v) db[key .. "Reverse"] = v end,
+        },
         styleGap  = { type = "description", order = 0.6, name = "", width = "full" },
         size      = Range(1, key .. "Size", "Ring size", 60, 300, 10, "Diameter of the " .. what .. "."),
         thickness = Range(2, key .. "Thickness", "Ring thickness", 4, 40, 2, "Width of the " .. what .. "."),
@@ -173,9 +180,9 @@ local function SizeBox(order, key, what, xTip)
             "How long the ring stays after a change."),
         applyAll  = {
             type = "execute", order = 9, width = 1.6, name = "Apply this look to all rings",
-            desc = "Copy this ring's style, shape, rotation, thickness, border, opacity and fill to every other ring. "
+            desc = "Copy this ring's style, shape, rotation, fill direction, thickness, border, opacity and fill to every other ring. "
                 .. "Sizes, colors and positions stay as they are.",
-            confirm = true, confirmText = "Give every ring the " .. what .. "'s style, shape, rotation, "
+            confirm = true, confirmText = "Give every ring the " .. what .. "'s style, shape, rotation, fill direction, "
                 .. "thickness, border, opacity and fill?",
             func = function() ApplyLookToAll(key) end,
         },
