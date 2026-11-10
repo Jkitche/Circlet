@@ -5,6 +5,9 @@
 - **Ammo ring: Always show** (off by default; Ammo > Always show). The ring shows every time you
   shoot and counts down what's left, instead of only at the warning steps. Nothing shows while the
   game keeps the count hidden; the next readable count carries on from the last one.
+- **Ammo ring: Keep up in combat** (off by default; Ammo > Keep up in combat). When a fight
+  starts the ring comes up with what you have, counts down every shot and stays until the fight
+  is over, then fades after its hold time. Overrides Wait until combat ends; needs Show in combat.
 - **Ammo ring: flash when low** (Ammo > Flash at or below, default 15%). The ring flashes once
   what's left is at or below that share of a full supply (the most carried since the last restock),
   with Always show or with the warnings. 0 turns it off.

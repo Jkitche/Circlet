@@ -80,6 +80,20 @@ P("flash set to 0: flashing " .. tostring(a ~= b))
 CircletDB.ammoFlash = 15; CircletDB.ammoAlways = false; issecretvalue = nil
 Advance(8)
 
+-- ammo, keep up in combat (Always show off, Wait until combat ends on): up for the whole fight
+CircletDB.ammoCombatShow = true; CircletDB.ammoAfterCombat = true; AMMO = 500
+Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(8)
+function AmmoNow(label) local f = RingByText("Sharp Arrow") P(label .. ": " .. (f and f._shown and Texts(f) or "(hidden)")) end
+IN_COMBAT = true; Fire("PLAYER_REGEN_DISABLED"); Advance(1); AmmoNow("fight starts")
+for _, n in ipairs({ 499, 497, 494 }) do AMMO = n; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(1.5) end
+AmmoNow("three shots in")
+Advance(20); AmmoNow("20s later, still fighting")
+IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(1); AmmoNow("fight over")
+Advance(6); AmmoNow("after the hold")
+CircletDB.ammoCombat = false; IN_COMBAT = true; Fire("PLAYER_REGEN_DISABLED"); Advance(1); AmmoNow("Show in combat off")
+IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(8)
+CircletDB.ammoCombat = true; CircletDB.ammoCombatShow = false; CircletDB.ammoAfterCombat = false
+
 -- pet
 PET = { cur = 4200, max = 9800, level = 23 }; Fire("UNIT_PET", "player"); Advance(0.5)
 PET.cur = 4600; Fire("UNIT_PET_EXPERIENCE", "player"); Advance(1.5); Dump("pet gain:")

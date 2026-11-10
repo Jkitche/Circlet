@@ -23,6 +23,12 @@ readable again: Sharp Arrow / -8 / 982 / 1,000 / Ammo left
 at 20% (Sharp Arrow / -780 / 200 / 1,000 / Low ammo): flashing false
 at 14% (Sharp Arrow / -840 / 140 / 1,000 / Low ammo): flashing true
 flash set to 0: flashing false
+fight starts: Sharp Arrow / 500 / 500 / Ammo left
+three shots in: Sharp Arrow / -6 / 494 / 500 / Ammo left
+20s later, still fighting: Sharp Arrow / -6 / 494 / 500 / Ammo left
+fight over: Sharp Arrow / -6 / 494 / 500 / Ammo left
+after the hold: (hidden)
+Show in combat off: (hidden)
 pet gain:
    Wolf / +400 / 4,600 / 9,800 / Level 23 @x=0
 pet level:

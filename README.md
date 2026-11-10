@@ -30,7 +30,7 @@ then fade away, or stay up as a permanent display.
 **Class and inventory**
 - **Pet XP** (hunters), with your pet's portrait.
 - **Ammo and soul shards**: shows when you're at or below a warning amount, or on every shot
-  with Always show, and flashes when you're nearly out.
+  with Always show, or kept up for the whole fight; flashes when you're nearly out.
 - **Totems** (shamans): one small ring per element, pulsing in the last 10 seconds. Durations are
   learned, so they keep counting in combat.
 

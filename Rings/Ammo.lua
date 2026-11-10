@@ -13,6 +13,8 @@ local CreateProgressRing, IsSecret, SafeCall, db = ns.CreateProgressRing, ns.IsS
 --
 -- ammoAlways: it shows on every shot instead, counting down (ammo only, not shards).
 -- ammoFlash: at or below this % of that most-carried amount the ring flashes (0 = never).
+-- ammoCombatShow: the ring comes up when a fight starts, counts down every shot and stays
+-- up until the fight is over (its hold time after that), whatever "Wait until combat ends" says.
 -- When the game hides the count (a secret value), nothing shows and the last count is
 -- kept, so the next one that can be read carries on from it.
 
@@ -55,6 +57,17 @@ end
 
 local ammoRing -- created below; CheckAmmoKind queues into it
 
+local function InFight() return InCombatLockdown and InCombatLockdown() or UnitAffectingCombat("player") end
+-- Keeping the ring up for the fight: on, and the ring is allowed on screen in combat.
+local function CombatShow() return db.ammoCombatShow and db.ammoCombat ~= false and InFight() end
+
+-- Queues an ammo entry; in a fight with "Keep up in combat" it shows at once (forced past
+-- "Wait until combat ends").
+local function QueueAmmo(entry)
+    if not db.ammoEnabled then return end
+    ammoRing.Queue(entry, entry.kind == "ammo" and CombatShow() and true or nil)
+end
+
 -- kind: "ammo" or "shards". warn: the level at or below which the ring shows.
 -- hidden: the game is keeping the count secret right now; keep what we had.
 -- always: show every change, not just the warnings.
@@ -77,7 +90,7 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
         st.step, st.alertFrom = nil, nil
         -- A real restock (not just picking a few back up), or anything that gets you out of the red.
         if wasLow or count - prev >= math.max(5, step) then
-            ammoRing.Queue({ id = kind, kind = kind, name = name, icon = icon, change = "restock",
+            QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = "restock",
                              from = prev, to = count, max = math.max(st.peak, count), warn = warn })
         end
         return
@@ -87,7 +100,7 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
     if always then
         -- Every shot: one ring that keeps counting down while you fire.
         if count <= warn then st.step = bucket end
-        ammoRing.Queue({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "shot",
+        QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "shot",
                          from = prev, to = count, max = math.max(st.peak, 1), warn = warn })
         return
     end
@@ -96,13 +109,13 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
     st.step = bucket
     local from = st.alertFrom or prev
     st.alertFrom = count
-    ammoRing.Queue({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "low",
+    QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "low",
                      from = from, to = count, max = math.max(st.peak, warn, 1), warn = warn })
 end
 
 local function CheckAmmo()
     local count, name, icon, itemID, hidden = ReadAmmo()
-    CheckAmmoKind("ammo", count, name, icon, itemID, db.ammoWarn, hidden, db.ammoAlways)
+    CheckAmmoKind("ammo", count, name, icon, itemID, db.ammoWarn, hidden, db.ammoAlways or CombatShow())
     local _, class = UnitClass("player")
     if db.ammoShards and class == "WARLOCK" then
         local shards = ItemCount(SOUL_SHARD)
@@ -128,6 +141,7 @@ end
 
 ammoRing = CreateProgressRing({
     key = "ammo",
+    holdWhile = function(e) return e.kind == "ammo" and CombatShow() end,
     samples = function()
         return {
             { id = "edit-a0", kind = "ammo", name = "Sharp Arrow", change = "shot", from = 640, to = 628, max = 1000, warn = 200 },
@@ -161,7 +175,7 @@ ammoRing = CreateProgressRing({
         elseif e.to <= 0 then
             label = shards and "Out of shards!" or "Out of ammo!"
         elseif e.to > (e.warn or db.ammoWarn) then
-            label = "Ammo left" -- every shot, above the warning level
+            label = "Ammo left" -- every shot (or the fight's start), above the warning level
         else
             label = shards and "Low on shards" or "Low ammo"
         end
@@ -187,6 +201,22 @@ local function PreviewAmmoRing()
         { id = "p-a3", kind = "ammo", name = "Sharp Arrow", change = "restock", from = 0, to = 1000, max = 1000, warn = 200 },
     })
 end
+
+-- A fight starts: with "Keep up in combat", bring the ring up with what you have.
+local function OnCombatStart()
+    if not CombatShow() then return end
+    local st = ammoState.ammo
+    local count, name, icon, itemID, hidden = ReadAmmo()
+    if not hidden and count then
+        if st.count == nil or st.itemID ~= itemID then st.count, st.itemID, st.peak = count, itemID, count end
+    end
+    if st.count == nil then return end -- nothing equipped (or never readable)
+    name = name or ItemName(st.itemID) or "Ammo"
+    icon = icon or select(3, ReadAmmo())
+    QueueAmmo({ id = "ammo", kind = "ammo", name = name, icon = icon, change = (st.count == 0) and "out" or "shot",
+                from = st.count, to = st.count, max = math.max(st.peak or st.count, 1), warn = db.ammoWarn, gainText = "" })
+end
+ns.Listen({ "PLAYER_REGEN_DISABLED" }, function() C_Timer.After(0.05, OnCombatStart) end)
 
 -- Ammo used, bought or swapped, and a first read on login.
 ns.Listen({ "UNIT_INVENTORY_CHANGED:player", "BAG_UPDATE_DELAYED", "PLAYER_EQUIPMENT_CHANGED", "PLAYER_ENTERING_WORLD" }, function() QueueCheckAmmo() end)
@@ -214,6 +244,7 @@ ns.RegisterRing({
         ammoWarn        = 200, -- show the ring at or below this much ammo
         ammoAlways      = false, -- show on every shot, counting down
         ammoFlash       = 15,  -- flash at or below this % of a full supply (0 = never)
+        ammoCombatShow  = false, -- keep the ring up for the whole fight, counting down
         ammoShards      = true,
         ammoShardWarn   = 5,   -- ...and at or below this many soul shards
         ammoSize        = 110,
@@ -247,6 +278,15 @@ ns.RegisterRing({
                         always = Toggle(1.5, "ammoAlways", "Always show",
                             "Show the ring every time you shoot, counting down what's left, instead of only at the "
                             .. "warnings. Nothing shows while the game keeps your ammo count hidden."),
+                        combatShow = {
+                            type = "toggle", order = 1.6, width = "full", name = "Keep up in combat",
+                            desc = "When a fight starts the ring comes up with what you have, counts down every "
+                                .. "shot and stays until the fight is over. Overrides Wait until combat ends. "
+                                .. "Needs Show in combat on.",
+                            get = function() return db.ammoCombatShow end,
+                            set = function(_, v) db.ammoCombatShow = v end,
+                            disabled = function() return db.ammoCombat == false end,
+                        },
                         warn = Range(2, "ammoWarn", "Warn at or below", 20, 1000, 10,
                             "How much ammo is left when the ring starts showing up (every quarter of this, "
                             .. "not every shot). With Always show it's where the ring turns the Low color."),

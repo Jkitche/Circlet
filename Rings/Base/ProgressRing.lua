@@ -29,6 +29,8 @@ local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 -- cfg.style(entry, finished) returns { fill, rank, label, labelColor, flash } every frame,
 -- so color changes in the options panel show up live. flash: the fill pulses toward white
 -- (FLASH_HZ times a second) to grab attention.
+-- cfg.holdWhile(entry), optional: while it returns true the ring stays up (its hold time
+-- starts counting once it returns false).
 
 local FLASH_HZ = 1.5
 
@@ -370,6 +372,9 @@ local function CreateProgressRing(cfg)
             return
         end
 
+        if cfg.holdWhile and anim.entry and cfg.holdWhile(anim.entry) then
+            anim.holdUntil = math.max(anim.holdUntil, now + opt("Hold"))
+        end
         -- With more entries waiting, hold only a second after the fill so the queue moves along.
         local holdUntil = anim.holdUntil
         if #queue > 0 then holdUntil = math.min(holdUntil, anim.animEndAt + 1.0) end
@@ -408,7 +413,7 @@ local function CreateProgressRing(cfg)
 
         if frame:IsShown() and anim.entry and anim.entry.id == entry.id
             and anim.entry.segment == entry.segment
-            and not (inCombat and opt("AfterCombat")) then
+            and (force or not (inCombat and opt("AfterCombat"))) then
             Play(entry) -- extend the ring that's already up
             return
         end
