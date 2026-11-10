@@ -63,17 +63,6 @@ local function FillDefaults()
     end
 end
 
--- Saved settings from removed features; cleared on load. From the nameplate highlighting:
-local OBSOLETE = { "ringBorder", "ringBorderSize", "cleanupNotice", "enabled", "border", "thickness", "radius", "icon", "iconSize", "progress", "xpY",
-    -- ...and from the floating progress text, replaced by the quest ring.
-    "popEnabled", "popSize", "popHeight", "color",
-    -- ...and the old level-up checkbox, now a style choice.
-    "xpLevelFx",
-    -- ...and spell schools learned from the combat log, which addons can't use here.
-    "castSchools",
-    -- ...and the gathering ring following what you gather (the cast ring's follow stays).
-    "gatherFollow" }
-
 -- Saved settings. CircletDB only exists once the addon has loaded, so every file
 -- reads and writes it through this table, which forwards to whatever CircletDB is.
 --
@@ -122,7 +111,6 @@ local db = setmetatable({}, {
 
 -- Shared with the files loaded after this one.
 ns.DEFAULTS = DEFAULTS
-ns.OBSOLETE = OBSOLETE
 ns.FinalizeDefaults = FinalizeDefaults
 ns.FillDefaults = FillDefaults
 ns.db = db

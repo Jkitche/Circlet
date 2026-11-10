@@ -1,6 +1,5 @@
 cvar before: 0
 option off, skinning: home spot
-old gatherFollow cleared: nil
 mining: home spot
 opening a chest, option off: home spot
 opening a chest: on it at 650,350

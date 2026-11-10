@@ -15,7 +15,7 @@ function Advance(seconds, fps) fps = fps or 30
   end end
 ''')
 chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
-lua.execute('CircletDB = { popEnabled = true, popSize = 26, popHeight = 180, color = { r = 1, g = 0, b = 0 }, xpSize = 160 }')
+lua.execute('CircletDB = { xpSize = 160 }')
 chunk("Circlet", lua.table())
 lua.execute('Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)')
 lua.execute('''
@@ -65,7 +65,6 @@ def render(label):
     return im
 
 
-# Old saved vars from the pops era, to check migration
 imgs = []
 lua.execute('''
 QUEST = { objectives = { { text = "3/8 Screecher Feather", type = "item", numFulfilled = 3, numRequired = 8, finished = false },

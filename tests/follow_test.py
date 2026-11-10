@@ -38,7 +38,6 @@ C_NamePlate = {
 }
 ''')
 lua.execute('''
-CircletDB = CircletDB or {}; CircletDB.gatherFollow = true -- saved by an older version
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 local sp = RegionMethods.SetPoint
 RegionMethods.SetPoint = function(s, p, rel, rp, x, y) s._rel, s._anchor = rel, rp; return sp(s, p, rel, rp, x, y) end
@@ -72,8 +71,7 @@ Thing("GameObject-far", "Peacebloom", 100, 100, false)
 P("cvar before: " .. CVARS.SoftTargetNameplateInteract)
 Face("Creature-wolf"); local c = Cast(8613, "Skinning", "Plainstrider", "same"); Advance(0.5); P("option off, skinning: " .. Where("gather")); Done(c, 8613); Advance(5)
 
--- Gathering never follows (the option was removed); an old saved setting is cleared on load.
-P("old gatherFollow cleared: " .. tostring(CircletDB.gatherFollow))
+-- Gathering never follows: the ring stays in its own spot.
 Face("GameObject-vein"); c = Cast(2575, "Mining", "Copper Vein", "same"); Advance(0.5); P("mining: " .. Where("gather")); Done(c, 2575); Advance(5)
 Face(nil)
 

@@ -1,7 +1,7 @@
 -- Circlet: One-time updates to saved settings, run on login before defaults fill in.
 local ADDON_NAME, ns = ...
 
-local DEFAULTS, OBSOLETE = ns.DEFAULTS, ns.OBSOLETE
+local DEFAULTS = ns.DEFAULTS
 
 ---------------------------------------------------------------------------
 -- Migrations
@@ -83,11 +83,6 @@ local MIGRATIONS = {
         if db.pinX == nil and UIParent and UIParent.GetWidth then
             db.pinX = math.max(0, math.floor(UIParent:GetWidth() / 2 - 330))
         end
-    end },
-
-    -- Settings of removed features (see OBSOLETE in Core/Settings.lua).
-    { flag = nil, run = function(db)
-        for _, key in ipairs(OBSOLETE) do db[key] = nil end
     end },
 }
 
