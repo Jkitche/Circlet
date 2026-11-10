@@ -12,15 +12,19 @@ def lerp(a, b, t): return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 def arc(img, r, w, start, frac, c0, c1, steps=720):
     """A thick arc from `start` degrees (0 = bottom, clockwise), `frac` of the circle,
-    colour fading c0 -> c1 along it, with round caps."""
+    colour fading c0 -> c1 along it. Its starting end is cut straight across, as the game
+    draws it; the head is rounded."""
     d = ImageDraw.Draw(img)
     n = max(2, int(steps * frac))
-    for i in range(n + 1):
-        t = i / n
+    ri, ro = r - w / 2, r + w / 2
+    def pt(rad, t):
         a = math.radians(start + 360 * frac * t)
-        x, y = C - math.sin(a) * r, C + math.cos(a) * r
-        col = lerp(c0, c1, t)
-        d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=col + (255,))
+        return (C - math.sin(a) * rad, C + math.cos(a) * rad)
+    for i in range(n):
+        t0, t1 = i / n, min(1, (i + 1.6) / n)  # overlap a little so the quads leave no seams
+        d.polygon([pt(ri, t0), pt(ro, t0), pt(ro, t1), pt(ri, t1)], fill=lerp(c0, c1, i / n) + (255,))
+    x, y = pt(r, 1)
+    d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=c1 + (255,))
 
 def ring_track(img, r, w, col):
     d = ImageDraw.Draw(img)
