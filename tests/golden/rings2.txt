@@ -55,7 +55,7 @@ edit all:
    Protecting the Shipment / 2:16 / remaining @x=0
    Your corpse / 380 yd / Resurrect in 0:08 @x=0
    Breath / 53s / Underwater @x=0
-   Eating / 16s / Health 39% @x=0
+   Eating / 5s / Restoring health @x=0
    Heavy Linen Bandage / 0 / 8 / 8 to go @x=0
    Mining / 40% / Mining @x=0
    Fireball / 1.5 / Casting @x=0

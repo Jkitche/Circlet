@@ -2,12 +2,10 @@
 
 ## Unreleased
 
-- **Food & Drink ring** (new; on by default). While you eat or drink, the ring fills with your
-  health or mana (whichever is further from full when you do both), counts down the buff and
-  bursts when you're full. Eating throws crumbs off the ring with every bite; drinking fills
-  its middle with water that rises with your mana and sloshes with every gulp (Food & Drink > Animations). Preview
-  with `/circ food`. When the game keeps your health or mana hidden from addons, the ring (and the
-  water) fill with how far through the buff you are instead, labelled "Restoring".
+- **Food & Drink ring** (new; on by default). While you eat or drink, the ring fills as the food
+  or drink buff runs, counts down what's left and bursts when it's done. Eating throws crumbs off
+  the ring with every bite; drinking fills its middle with water that rises as you drink and
+  sloshes with every gulp (Food & Drink > Animations). Preview with `/circ food`.
 - **Removed: follow what you're interacting with.** The cast ring no longer moves onto the
   chest or quest object you're using (it didn't work reliably), and `/circ follow` is gone. Interaction
   casts still get the finish burst.

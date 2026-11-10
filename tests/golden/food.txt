@@ -1,19 +1,19 @@
 not eating: (hidden)
-eating: Eating / 18s / Health 30% water=no
-eating more: Eating / 13s / Health 65%
-full: Eating / 12s / Full!
-stood up: Eating / 12s / Full!
+eating 1s: Eating / 20s / Restoring health fill=4 water=no
+eating 10s: Eating / 11s / Restoring health fill=36
+eating 19.5s: Eating / 1s / Full! fill=72
+buff gone: Eating / 1s / Full!
 after the hold: (hidden)
-drinking: Drinking / 24s / Mana 20% water=yes
-both: Eating & drinking / 30s / 50% · 30% water=yes
+stood up early: Eating / 16s / Restoring health
+drinking 1s: Drinking / 20s / Restoring mana water top=-42 water=yes
+drinking 10s: water top=-1
+drinking 18s: water top=36
+both (drink started later): Eating & drinking / 25s / Restoring water=yes
 animations off: water=no
 another buff: (hidden)
 ring off: (hidden)
-secret, drinking 1s: Drinking / 20s / Restoring mana water=yes
-secret, drinking 10s: Drinking / 11s / Restoring mana
-secret, buff ran out: Drinking / 0s / Full!
 secret times, eating 1s: Eating / 24s / Restoring health
-secret times, eating 12s: Eating / 13s / Restoring health
-preview: Eating / 16s / Health 39% water=no
-preview 8s: Drinking / 17s / Mana 30%
+secret times, eating 12s: Eating / 13s / Restoring health fill=36
+preview: Eating / 5s / Restoring health water=no
+preview 8s: Drinking / 5s / Restoring mana
 ERRORS: {}

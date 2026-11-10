@@ -263,7 +263,7 @@ all on again
   #9 shown=true a=1.00 strata=TOOLTIP mouse=true | Protecting the Shipment / 2:26 / remaining
   #10 shown=true a=1.00 strata=TOOLTIP mouse=true | Your corpse / 408 yd / Resurrect in 0:14
   #11 shown=true a=1.00 strata=TOOLTIP mouse=true | Breath / 58s / Underwater
-  #12 shown=true a=1.00 strata=TOOLTIP mouse=true | Eating / 18s / Health 29%
+  #12 shown=true a=1.00 strata=TOOLTIP mouse=true | Eating / 6s / Restoring health
   #13 shown=true a=1.00 strata=TOOLTIP mouse=true | Heavy Linen Bandage / 0 / 8 / 8 to go
   #14 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / 12% / Mining
   #15 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Casting
@@ -288,7 +288,7 @@ after Esc
   #9 shown=true a=0.60 strata=HIGH mouse=false | Protecting the Shipment / 2:26 / remaining
   #10 shown=true a=0.60 strata=HIGH mouse=false | Your corpse / 408 yd / Resurrect in 0:14
   #11 shown=true a=1.00 strata=HIGH mouse=false | Breath / 58s / Underwater
-  #12 shown=true a=1.00 strata=HIGH mouse=false | Eating / 18s / Health 29%
+  #12 shown=true a=1.00 strata=HIGH mouse=false | Eating / 6s / Restoring health
   #13 shown=true a=0.60 strata=HIGH mouse=false | Heavy Linen Bandage / 0 / 8 / 8 to go
   #14 shown=true a=0.60 strata=HIGH mouse=false | Mining / 12% / Mining
   #15 shown=true a=1.00 strata=HIGH mouse=false | Fireball / 2.2 / Casting

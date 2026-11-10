@@ -39,8 +39,8 @@ then fade away, or stay up as a permanent display.
 - **Timed quests**: escort and other quest timers, changing color near the end.
 
 **Food and drink**
-- **Eating and drinking**: health or mana filling back up and the buff counting down, bursting
-  when you're full. Crumbs fly with every bite; while drinking, water fills the
+- **Eating and drinking**: the food or drink buff filling the ring and counting down, bursting
+  when it's done. Crumbs fly with every bite; while drinking, water fills the
   ring and sloshes with every gulp.
 
 **Death and breath**

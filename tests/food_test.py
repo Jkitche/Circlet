@@ -28,33 +28,29 @@ function Fx()
 end
 function C() local f = Ring() return f and T(f) or "(hidden)" end
 
-HP, HPMAX, PW, PWMAX = 300, 1000, 200, 1000
+function Fill() local r = Ring() local n = 0 for _, l in ipairs(ALL_LINES) do if r and l._parent == r and l._layer == "ARTWORK" and l._sub == 0 and l._shown then n = n + 1 end end return n end
+function Level() local r = Ring() local top for _, l in ipairs(ALL_LINES) do if r and l._parent == r and l._layer == "BORDER" and l._shown and l._y2 then top = math.max(top or -999, l._y2) end end return top and string.format("%.0f", top) or "-" end
 P("not eating: " .. C())
-Buff("Food", 18); Advance(1); P("eating: " .. C() .. " " .. Fx())
-HP = 650; Advance(5); P("eating more: " .. C())
-HP = 1000; Advance(1); P("full: " .. C())
-Unbuff(); Advance(0.5); P("stood up: " .. C()); Advance(4); P("after the hold: " .. C())
-Buff("Drink", 24); Advance(1); P("drinking: " .. C() .. " " .. Fx())
+Buff("Food", 20); Advance(1); P("eating 1s: " .. C() .. " fill=" .. Fill() .. " " .. Fx())
+Advance(9); P("eating 10s: " .. C() .. " fill=" .. Fill())
+Advance(9.5); P("eating 19.5s: " .. C() .. " fill=" .. Fill())
+Unbuff(); Advance(0.5); P("buff gone: " .. C()); Advance(4); P("after the hold: " .. C())
+Buff("Food", 20); Advance(5); Unbuff(); Advance(0.5); P("stood up early: " .. C()); Advance(4)
+Buff("Drink", 20); Advance(1); P("drinking 1s: " .. C() .. " water top=" .. Level() .. " " .. Fx())
+Advance(9); P("drinking 10s: water top=" .. Level())
+Advance(8); P("drinking 18s: water top=" .. Level())
 Unbuff(); Advance(4)
-HP, PW = 500, 300; Buff("Food", 30); Buff("Drink", 27); Advance(1); P("both: " .. C() .. " " .. Fx())
+Buff("Food", 30); Advance(10); Buff("Drink", 30); Advance(6); P("both (drink started later): " .. C() .. " " .. Fx())
 CircletDB.foodFx = false; Advance(0.2); P("animations off: " .. Fx())
 CircletDB.foodFx = true; Unbuff(); Advance(4)
 Buff("Mark of the Wild", 1800); Advance(1); P("another buff: " .. C()); Unbuff(); Advance(1)
 CircletDB.foodEnabled = false; Buff("Food", 18); Advance(1); P("ring off: " .. C()); Unbuff(); CircletDB.foodEnabled = true; Advance(4)
--- The client keeps health and mana secret: the ring goes by how far through the buff you are.
+-- The buff's times secret too: timed from when it showed up, over a usual 24 seconds.
 SECRET = {}; issecretvalue = function(v) return v == SECRET end
-local uh, up = UnitHealth, UnitPower
-UnitHealth = function() return SECRET end; UnitPower = function() return SECRET end
-Buff("Drink", 20); Advance(1); P("secret, drinking 1s: " .. C() .. " " .. Fx())
-Advance(9); P("secret, drinking 10s: " .. C())
-Advance(10.5); P("secret, buff ran out: " .. C())
-Unbuff(); Advance(4)
--- ...and the buff's times too: timed from when it showed up, over a usual 24 seconds.
 AURAS[1] = { name = "Food", icon = 133945, duration = SECRET, expirationTime = SECRET }; Fire("UNIT_AURA", "player")
 Advance(1); P("secret times, eating 1s: " .. C())
-Advance(11); P("secret times, eating 12s: " .. C())
-Unbuff(); Advance(4)
-UnitHealth, UnitPower, issecretvalue = uh, up, nil
+Advance(11); P("secret times, eating 12s: " .. C() .. " fill=" .. Fill())
+Unbuff(); Advance(4); issecretvalue = nil
 
 Slash("food"); Advance(1); P("preview: " .. C() .. " " .. Fx()); Advance(7); P("preview 8s: " .. C()); Advance(14)
 ''')

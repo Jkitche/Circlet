@@ -6,14 +6,14 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 ---------------------------------------------------------------------------
 -- Food & Drink ring
 ---------------------------------------------------------------------------
--- While the game's Food or Drink buff is on you, the ring fills with your health (eating)
--- or mana (drinking), counts down the buff and bursts when you're full. The client can keep
--- health and mana secret from addons (and the buff's times too); then the ring fills with
--- how far through the buff you are instead, since a full buff restores you over its length. Eating and
+-- While the game's Food or Drink buff is on you, the ring fills with how far through the buff
+-- you are, counts down what's left and bursts when it's done. (A full buff restores you over
+-- its length; the client keeps your health and mana themselves secret from addons.) When the
+-- buff's own times are secret too, it's timed from when the buff showed up. Eating and
 -- drinking at once fills with whichever is further from full. With foodFx on it plays:
 --   eating:   a chomp every CHOMP seconds throws crumbs off the top of the ring, which arc
 --             out, tumble and fall; a warm glow pulses in the middle with each bite.
---   drinking: the middle of the ring fills with water up to your mana, rising as you drink.
+--   drinking: the middle of the ring fills with water, rising with the buff as you drink.
 --             Its surface rocks with a gentle wave, and every GULP seconds a gulp sloshes it.
 -- All worked out from the time, so edit mode's sample plays them too.
 
@@ -84,15 +84,7 @@ local function Scan()
     end
 end
 
-local function Pct(f) return string.format("%d%%", math.floor(f * 100 + 0.5)) end
-
-local function Frac(cur, max)
-    cur, max = CleanNumber(cur), CleanNumber(max)
-    if not (cur and max and max > 0) then return nil end
-    return math.max(0, math.min(1, cur / max))
-end
-
-local fullAt -- when what you're refilling reached full (for the burst); nil while it isn't
+local fullAt -- when the buff finished (for the burst); nil until it has
 
 -- How far through a buff (0..1) and the seconds left, from its own times when they can be read.
 local function Progress(kind, aura, now)
@@ -102,37 +94,20 @@ local function Progress(kind, aura, now)
     return math.max(0, math.min(1, 1 - left / duration)), left
 end
 
--- kinds: "eat", "drink" or "both"; health / mana: fractions (nil if unknown); left: seconds.
--- guessed: health / mana are worked out from the buff's progress, not read from the game.
-local function State(kinds, health, mana, left, icon, doneAt, guessed)
+-- kinds: "eat", "drink" or "both"; frac: how far through the buff (0..1); left: seconds.
+local function State(kinds, frac, left, icon, doneAt)
     local c = db.foodColors
-    local st = { kinds = kinds, icon = icon, hold = 1.5, mana = mana }
+    local st = { kinds = kinds, icon = icon, hold = 1.5, frac = frac }
     local eat, drink = kinds ~= "drink", kinds ~= "eat"
     st.title = (eat and drink) and "Eating & drinking" or (eat and "Eating" or "Drinking")
-    local frac
-    if eat and drink then
-        frac = (health and mana) and math.min(health, mana) or health or mana
-        st.label = guessed and "Restoring" or ((health and Pct(health) or "?") .. " · " .. (mana and Pct(mana) or "?"))
-    elseif eat then
-        frac = health
-        st.label = guessed and "Restoring health" or (health and ("Health " .. Pct(health)) or "Health")
-    else
-        frac = mana
-        st.label = guessed and "Restoring mana" or (mana and ("Mana " .. Pct(mana)) or "Mana")
-    end
-    st.frac = frac
-    st.color = drink and not eat and c.drink or c.eat
-    if eat and drink then st.color = c.both end
-    if frac and frac >= 0.999 then
+    st.label = (eat and drink) and "Restoring" or (eat and "Restoring health" or "Restoring mana")
+    st.color = (eat and drink) and c.both or (eat and c.eat or c.drink)
+    if frac >= 0.999 then
         st.color, st.label, st.labelColor = c.full, "Full!", c.full
         st.doneAt = doneAt
     end
-    if left then
-        st.value = left >= 60 and string.format("%d:%02d", math.floor(left / 60), math.floor(left % 60))
-            or string.format("%ds", math.ceil(left))
-    else
-        st.value = ""
-    end
+    st.value = left >= 60 and string.format("%d:%02d", math.floor(left / 60), math.floor(left % 60))
+        or string.format("%ds", math.ceil(left))
     return st
 end
 
@@ -146,19 +121,16 @@ local foodRing = CreateLiveRing({
         local eat, drink = buffs.eat, buffs.drink
         if not (eat or drink) then fullAt = nil return nil end
         local kinds = (eat and drink) and "both" or (eat and "eat" or "drink")
-        local health = eat and Frac(SafeCall(UnitHealth, "player"), SafeCall(UnitHealthMax, "player")) or nil
-        local mana = drink and Frac(SafeCall(UnitPower, "player", 0), SafeCall(UnitPowerMax, "player", 0)) or nil
-        -- Secret (or unreadable): go by how far through the buff you are.
-        local guessed = false
-        local left = 0
+        -- How far through the buff: the one with longer to go, when you eat and drink at once.
+        local frac, left = 1, 0
         for kind, aura in pairs(buffs) do
             local p, l = Progress(kind, aura, now)
-            left = math.max(left, l)
-            if kind == "eat" and not health then health, guessed = p, true end
-            if kind == "drink" and not mana then mana, guessed = p, true end
+            frac, left = math.min(frac, p), math.max(left, l)
         end
-        local st = State(kinds, health, mana, left, (eat or drink).icon, nil, guessed)
-        if st.frac and st.frac >= 0.999 then
+        -- The game removes the buff the moment it runs out, so its last moments count as done.
+        if frac >= 0.97 then frac = 1 end
+        local st = State(kinds, frac, left, (eat or drink).icon, nil)
+        if frac >= 0.999 then
             fullAt = fullAt or now
             st.doneAt = fullAt
         else
@@ -170,13 +142,10 @@ local foodRing = CreateLiveRing({
         -- Eat back to full, then drink, then both at once: 7 seconds each.
         local cycle = t % 21
         local kinds = cycle < 7 and "eat" or (cycle < 14 and "drink" or "both")
-        local u = (cycle % 7) / 5.5
-        local frac = math.min(1, 0.25 + 0.75 * u)
-        local health = kinds ~= "drink" and frac or nil
-        local mana = kinds ~= "eat" and math.min(1, 0.15 + 0.85 * u) or nil
-        local left = 18 - (cycle % 7) * 2
+        local frac = math.min(1, (cycle % 7) / 5.5)
+        local left = math.max(0, 5.5 - (cycle % 7))
         local start = t - (cycle % 7)
-        return State(kinds, health, mana, left, SAMPLE_ICONS[kinds], start + 5.5)
+        return State(kinds, frac, left, SAMPLE_ICONS[kinds], start + 5.5)
     end,
     decorate = function(st, frame, geom) ns.DrawFoodFx(st, frame, geom) end,
 })
@@ -257,8 +226,8 @@ local function DrawCrumbs(frame, now, ri, ro)
     end
 end
 
--- The water: filling the hollow up to `level` (0..1 of its height, eased toward the mana
--- you have), its surface rocking, and sloshing harder just after each gulp.
+-- The water: filling the hollow up to `level` (0..1 of its height, eased toward how far
+-- through the drink you are), its surface rocking, and sloshing harder just after each gulp.
 local shownLevel
 local function DrawWater(frame, now, ri, level, c)
     shownLevel = shownLevel and (shownLevel + (level - shownLevel) * 0.08) or level
@@ -338,7 +307,7 @@ local function DrawFoodFx(st, frame, geom)
 
     if eat then DrawCrumbs(frame, now, ri, ro) else for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end end
     if drink then
-        DrawWater(frame, now, ri, st.mana or st.frac or 0.5, c.drink)
+        DrawWater(frame, now, ri, st.frac or 0.5, c.drink)
     else
         shownLevel = nil
         for _, l in ipairs(fx.water) do l:Hide() end
@@ -365,7 +334,7 @@ ns.RegisterRing({
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = foodRing,
     preview = ns.PreviewFoodRing, slash = { "food", "drink", "eat" }, help = "preview the food & drink ring",
-    toggle = { "Food & Drink ring", "Eating and drinking: your health or mana filling back up." },
+    toggle = { "Food & Drink ring", "Eating and drinking: the food or drink buff filling up." },
     defaults = {
         -- Food & Drink ring: while you eat or drink. Left of the breath ring.
         foodEnabled   = true,
@@ -389,9 +358,9 @@ ns.RegisterRing({
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.6, "Food & Drink", "Food & Drink Ring",
-                "While you eat or drink, the ring fills with your health or mana and counts down the buff, then "
-                .. "bursts when you're full. Eating throws crumbs off the ring with every bite; drinking fills the "
-                .. "middle with water that rises with your mana and sloshes with every gulp.",
+                "While you eat or drink, the ring fills as the food or drink buff runs and counts down what's "
+                .. "left, then bursts when it's done. Eating throws crumbs off the ring with every bite; drinking fills the "
+                .. "middle with water that rises as you drink and sloshes with every gulp.",
                 MergeTop(TopRow("food", "food & drink ring", ns.PreviewFoodRing,
                     "Show a sample meal: eating, drinking, then both. Also /circ food."), {
                     general = Box(2, "General", {
