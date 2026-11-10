@@ -34,9 +34,6 @@ local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch 
 -- cfg.watchEvery: seconds between checks while hidden (default 0.25).
 -- cfg.decorate(st, frame, geom): optional, called every frame once the ring is laid out (st is nil when there's
 -- nothing to draw) so a ring can add effects of its own (the cast ring's resurrection).
--- cfg.follow(frame): optional; returns where the ring's center should be (x, y from the
--- bottom-left of the screen, in the ring frame's units) to stick it to something in the
--- world, or nil for its usual spot. Not used in edit mode or previews.
 -- cfg.centerIcon: draw the state's icon filling the middle of the ring (small rings).
 -- <key>IconBg (rings registered with iconBg): the icon fills the ring's middle behind its
 -- text, at <key>IconBgAlpha % opacity, instead of sitting on the top edge.
@@ -272,13 +269,6 @@ local function CreateLiveRing(cfg)
         if notches and (notches < 1 or notches > MAX_NOTCHES) then notches = nil end
         local size = opt("Size")
         ns.PlaceRing(frame, key, size)
-        if cfg.follow and not editing and not frame.dragging and GetTime() >= previewUntil then
-            local x, y = cfg.follow(frame)
-            if x then
-                frame:ClearAllPoints()
-                frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
-            end
-        end
         if notches ~= geom.notches then frame.layoutKey = nil end -- the track's notches change too
         geom.notches = notches
         local inner = ns.UpdateGeometry(frame, key, size, notches)

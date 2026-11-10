@@ -49,8 +49,6 @@ then fade away, or stay up as a permanent display.
   shadow, nature, holy) with a strength setting, and a resurrection animation.
 - **Finish burst**: when a gather, craft or interaction finishes, the icon swells and throws
   off sparks.
-- **Follow the target**: the cast ring can sit on the chest or quest object you're opening or
-  using and move with the camera.
 
 ## Look
 
@@ -101,7 +99,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 - `/circ summary`: this session's summary.
 - `/circ profile [name]`: list or switch profiles.
 - `/circ ring <quest>` / `/circ ring clear`: pin or clear quest rings.
-- `/circ follow`, `/circ icons`: check the follow-the-target setup and the icons the rings use.
+- `/circ icons`: list the game icons the rings use.
 
 ## Code layout
 
@@ -110,8 +108,7 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
 - `Core/`: helpers (`Init.lua`), saved settings and the `db` table (`Settings.lua`), the ring
   registry (`Registry.lua`), the `/circ` command (`Slash.lua`) and startup (`Events.lua`).
 - `Draw/`: drawing rings (segments, arcs, track, border, styles, shapes, gradients) and glyphs.
-- `Layout/`: each ring's holder frame (opacity, hiding in combat), auto-arrange, dragging,
-  following the interact target (`Follow.lua`).
+- `Layout/`: each ring's holder frame (opacity, hiding in combat), auto-arrange, dragging.
 - `Rings/Base/`: what every ring frame shares (`RingFrame.lua`) and the two ring builders:
   `ProgressRing.lua` (pops up when something changes) and `LiveRing.lua` (shows a live state).
 - `Rings/`: one file per ring. Each ends with `ns.RegisterRing{...}`: its defaults, edit mode

@@ -21,6 +21,7 @@ Libs\AceConfig-3.0\AceConfigDialog-3.0\AceConfigDialog-3.0.xml
 Core\Init.lua
 Core\Settings.lua
 Core\Registry.lua
+Core\Interact.lua
 
 Draw\Ring.lua
 Draw\Glyphs.lua
@@ -28,7 +29,6 @@ Draw\Glyphs.lua
 Layout\Holders.lua
 Layout\Arrange.lua
 Layout\Drag.lua
-Layout\Follow.lua
 
 Rings\Base\RingFrame.lua
 Rings\Base\ProgressRing.lua

@@ -38,7 +38,6 @@ around the minimap.
   Rings that pop up together slide apart instead of overlapping.
 - Hide any ring in combat, or hide the game's own bar a ring replaces (XP bar, cast bar,
   breath bar...).
-- The cast ring can sit on the chest or quest object you're using and move with the camera.
 - Profiles per character.
 
 ## Extras

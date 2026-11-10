@@ -18,8 +18,7 @@ local SafeCall, Clean = ns.SafeCall, ns.Clean
 -- it can't see in combat is pushback, so a pushed-back cast runs a little long.
 -- Crafts and gathers are left to their own rings. Resurrect spells get an animation of
 -- their own (below), and with castSchoolFx on other spells get an effect for their school
--- (Rings/CastSchools.lua). With castFollow on, a cast at something you're interacting with (a
--- chest, a quest object, a corpse...) puts the ring on it (Layout/Follow.lua).
+-- (Rings/CastSchools.lua).
 
 local function Learned()
     db.castTimes = db.castTimes or {}
@@ -382,9 +381,6 @@ local castRing = CreateLiveRing({
         DrawRezFx(st, frame, geom)
         ns.DrawSchoolFx(st, frame, geom)
     end,
-    follow = function(frame)
-        if cast and db.castFollow then return ns.FollowPoint(cast.follow, frame) end -- (x, y: no and/or)
-    end,
 })
 
 local function Begin(spellID, guid, channel)
@@ -401,10 +397,8 @@ local function Begin(spellID, guid, channel)
     local now = GetTime()
     cast = { spellID = spellID, guid = Clean(guid), name = name, icon = icon, channel = channel,
              rez = IsResurrect(spellID, name) }
-    -- At something you're interacting with? (It bursts when done, and the ring can follow it.)
-    local target = ns.InteractTarget(guid, spellID)
-    cast.interact = target ~= nil
-    cast.follow = db.castFollow and target or nil
+    -- At something you're interacting with? (It bursts when done: Core/Interact.lua.)
+    cast.interact = ns.IsInteraction(guid, spellID)
     local s, f = RealTimes(channel)
     if s then
         cast.start, cast.finish, cast.real = s, f, true
@@ -486,7 +480,6 @@ ns.RegisterRing({
         castRezFx     = true, -- the resurrection animation (resurrect spells)
         castSchoolFx  = true, -- an effect for the spell's school (Rings/CastSchools.lua)
         castSchoolFxStrength = 100, -- % brightness of that effect
-        castFollow    = false, -- a cast at what you're interacting with puts the ring on it (Layout/Follow.lua)
         castStyle     = "smooth",
         castBorder    = 2,
         castColors = {
@@ -522,12 +515,6 @@ ns.RegisterRing({
                         rezFx = Toggle(3, "castRezFx", "Resurrection animation",
                             "When you cast a resurrect, motes of light rise through the ring, and a pillar of "
                             .. "light shoots up when it goes off."),
-                        follow = Toggle(4, "castFollow", "Follow what you're interacting with",
-                            "When a cast is at something you're interacting with (opening a chest, using a quest "
-                            .. "object, a corpse), the ring sits on it and moves with it as you turn the camera. Turns "
-                            .. "on the game's nameplate for what you're facing (soft interact must be on); turning "
-                            .. "this off sets it back. If it doesn't follow, /circ follow shows why.",
-                            function() ns.ApplyFollowCVar() end),
                     }),
                     colors = Box(3, "Colors", {
                         cast = Color(1, "castColors", "cast", "Casting", "Ring color while casting."),

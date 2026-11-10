@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Removed: follow what you're interacting with.** The cast ring no longer moves onto the
+  chest or quest object you're using (it didn't work reliably), and `/circ follow` is gone. Interaction
+  casts still get the finish burst.
+
 ## 1.0.0
 
 - **Ammo ring: Always show** (off by default; Ammo > Always show). The ring shows every time you
@@ -28,10 +34,6 @@
   motes of light rising through it. When it goes off a pillar of light shoots up, the ring
   flashes and a wave rolls out; if it's interrupted the light gutters out. On by default
   (Casting > Resurrection animation), with its own color. Shown in the cast ring's preview.
-- **Follow what you're interacting with** (off by default; Casting > Follow what you're
-  interacting with). The cast ring sits on the chest or quest object you're casting at and moves
-  with it as you turn the camera. It rides the game's soft-interact nameplate, so the option turns
-  on SoftTargetNameplateInteract (and sets it back when it's off). `/circ follow` shows what it saw.
 - **Icon as background** for every ring with an icon (cast, gathering, crafting, ammo, pet,
   reputation, profession and weapon skill): the icon fills the middle of the ring behind its
   text instead of sitting on the top edge, with its own opacity setting. Off by default; in
