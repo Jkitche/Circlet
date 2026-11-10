@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **`/sq` is gone**: use `/circ` (or `/circlet`) for the options and every command.
 - **Cast ring: spell school effects** (on by default; Casting > Spell school effects). While you
   cast, the ring glows in the school's color with an aura round its band and particles that spill
   out past it: embers rising for fire, snowflakes drifting down for frost, motes orbiting for
@@ -18,7 +19,7 @@
   you're gathering, Casting > Follow what you're interacting with). The ring sits on the corpse,
   vein, herb, chest or quest object you're casting at and moves with it as you turn the camera.
   It rides the game's soft-interact nameplate, so these options turn on
-  SoftTargetNameplateInteract (and set it back when both are off). `/sq follow` shows what it saw.
+  SoftTargetNameplateInteract (and set it back when both are off). `/circ follow` shows what it saw.
 - **Icon as background** for every ring with an icon (cast, gathering, crafting, ammo, pet,
   reputation, profession and weapon skill): the icon fills the middle of the ring behind its
   text instead of sitting on the top edge, with its own opacity setting. Off by default; in
@@ -28,7 +29,7 @@
   icon swells, flashes and throws off a ring of sparks, at a random angle each time with a little
   variety in each spark. Spells don't burst. A dimmed background icon turns fully opaque when
   anything finishes, spells included. The crafting preview now shows the finishing batch first,
-  so `/sq craft` shows it.
+  so `/circ craft` shows it.
 
 ## 0.62.0
 

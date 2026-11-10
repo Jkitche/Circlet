@@ -1,4 +1,4 @@
-"""Renders each ring's /sq preview from the test mock into PNGs (docs/images/<ring>.png).
+"""Renders each ring's /circ preview from the test mock into PNGs (docs/images/<ring>.png).
 
 The mock records the lines and text a ring draws, so these show the ring itself: its fill,
 track, border, segments and text. Game textures (item and spell icons, glows) aren't drawn.

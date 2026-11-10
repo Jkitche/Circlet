@@ -218,7 +218,7 @@ ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function
     end
 end)
 
--- /sq totemdebug: which totem values the client is hiding right now.
+-- /circ totemdebug: which totem values the client is hiding right now.
 local function TotemDebug()
     for _, e in ipairs(ELEMENTS) do
         local r = { SafeCall(GetTotemInfo, e.slot) }
@@ -285,7 +285,7 @@ ns.RegisterRing({
                 "Shamans: a small ring for each totem you have down, in the totem bar's order (earth, fire, water, "
                 .. "air). The totem's icon sits in the middle with the time left, and the ring drains in the element's "
                 .. "color.",
-                MergeTop(TopRow("totem", "totem rings", ns.PreviewTotems, "Show four sample totems. Also /sq totems."), {
+                MergeTop(TopRow("totem", "totem rings", ns.PreviewTotems, "Show four sample totems. Also /circ totems."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "totemEnabled", "Show totem rings", "Show a ring for each active totem."),
                         warn = Toggle(2, "totemWarn", "Pulse when ending", "Pulse a totem's ring in its last 10 seconds."),

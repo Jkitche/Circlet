@@ -1,6 +1,6 @@
 progress 8->9, '!' shown: False
 '!' ran 2.25s (fill landed after 1.10s) | ring stayed up until after the '!': True
 option off, '!' shown: False
-/sq complete, '!' shown: True
+/circ complete, '!' shown: True
 frame levels: ring = 2 | "!" = 1 | same strata: True
 ERRORS: none

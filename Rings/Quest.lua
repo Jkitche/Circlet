@@ -311,7 +311,7 @@ ns.RegisterRing({
             local tab = RingTab(3, "Quest", "Quest Ring",
                 "A donut that fills when a kill or drop advances a quest objective, e.g. Screecher Feather 5 / 8.",
                 MergeTop(TopRow("quest", "quest ring", PreviewQuestRing, "Show example progress: a drop, a percentage "
-                    .. "objective, and an objective finishing. Also /sq quest."), {
+                    .. "objective, and an objective finishing. Also /circ quest."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "questEnabled", "Show quest ring", "Pop up and fill when an objective advances."),
                         afterCombat = Toggle(2, "questAfterCombat", "Wait until combat ends",

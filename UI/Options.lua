@@ -6,7 +6,7 @@ local O = ns.O
 local Toggle, Range, Execute, Box, Spacer, Intro = O.Toggle, O.Range, O.Execute, O.Box, O.Spacer, O.Intro
 
 ---------------------------------------------------------------------------
--- Options window  (/sq, or Esc > Options > AddOns > Circlet)
+-- Options window  (/circ, or Esc > Options > AddOns > Circlet)
 ---------------------------------------------------------------------------
 -- A standalone window built with AceConfig/AceGUI (embedded in Libs), the same toolkit
 -- Questie's options use: a list of pages on the left. The General and Profiles pages
@@ -63,7 +63,7 @@ local function GeneralPage()
                         end
                         return "Edit all rings"
                     end,
-                    desc = "Put every ring on screen at once to arrange them. Also /sq edit.",
+                    desc = "Put every ring on screen at once to arrange them. Also /circ edit.",
                     func = function() ns.ToggleAllEditing() end,
                 },
                 autoEdit = Toggle(0.4, "optionsAutoEdit", "Edit mode on ring pages",
@@ -80,24 +80,24 @@ local function GeneralPage()
                     "Spacing of the snap grid. It's measured out from the centre of the screen.",
                     { disabled = function() return not db.snapGrid end }),
                 resetAll = Execute(2, "Reset all positions", function() ns.ResetPositions() end,
-                    "Move every ring back to its default spot across the top of the screen. Also /sq resetpos."),
+                    "Move every ring back to its default spot across the top of the screen. Also /circ resetpos."),
             }),
             effects = Box(3.4, "Effects", {
                 discover = Toggle(1, "discoverFx", "Discovered area animation",
                     "When you discover a new area, a gold compass ring sweeps closed under the zone text with "
                     .. "the area's name and the exploration XP."),
                 preview = Execute(2, "Preview", function() ns.PreviewDiscovery() end,
-                    "Play the discovered area animation. Also /sq discover."),
+                    "Play the discovered area animation. Also /circ discover."),
                 login = Toggle(3, "loginFx", "Welcome animation",
                     "When you log in (not on /reload), rings in the addon's colors spin open, your name types "
                     .. "itself out, and your level, zone, rested XP and when you last played fade in."),
                 loginPreview = Execute(4, "Preview welcome", function() ns.PreviewWelcome() end,
-                    "Play the welcome animation. Also /sq hello."),
+                    "Play the welcome animation. Also /circ hello."),
             }),
             summary = Box(3.5, "Session summary", {
                 show = Execute(1, "Show summary", function() ns.ToggleSummary() end,
                     "Everything you've gained this session: XP, quests, money, skill-ups, reputation, flights. "
-                    .. "Also /sq summary."),
+                    .. "Also /circ summary."),
                 onLogout = Toggle(2, "summaryOnLogout", "Show when logging out",
                     "Pop up the summary when the logout countdown starts."),
             }),
@@ -234,7 +234,7 @@ local function SetupOptions()
     configFrame:Hide()
     configFrame:SetTitle("Circlet")
     local version = Version()
-    configFrame:SetStatusText(version and ("Version " .. version .. "   ·   /sq help for commands") or "/sq help for commands")
+    configFrame:SetStatusText(version and ("Version " .. version .. "   ·   /circ help for commands") or "/circ help for commands")
     configFrame:SetLayout("Fill")
     configFrame:SetWidth(820)
     configFrame:SetHeight(660)
@@ -290,7 +290,7 @@ local function SetupOptions()
                 configFrame:Show()
                 AceConfigDialog:Open(APP, configFrame)
             end
-        end, "Open the Circlet options window. Also /sq.", true))
+        end, "Open the Circlet options window. Also /circ.", true))
         Settings.RegisterAddOnCategory(category)
     end
 end
@@ -305,7 +305,7 @@ end
 
 local function OpenOptions()
     if not configFrame then
-        Print("The options window failed to load; slash commands still work (/sq help).")
+        Print("The options window failed to load; slash commands still work (/circ help).")
     elseif configFrame:IsShown() then
         configFrame:Hide()
     else
@@ -325,7 +325,7 @@ function Circlet_OnAddonCompartmentEnter(_, button)
     GameTooltip:SetOwner(button or UIParent, "ANCHOR_LEFT")
     GameTooltip:SetText("Circlet")
     GameTooltip:AddLine("Click to open the options.", 1, 1, 1)
-    GameTooltip:AddLine("/sq help for commands", 0.7, 0.7, 0.7)
+    GameTooltip:AddLine("/circ help for commands", 0.7, 0.7, 0.7)
     GameTooltip:Show()
 end
 

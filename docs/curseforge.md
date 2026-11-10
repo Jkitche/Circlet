@@ -33,7 +33,7 @@ around the minimap.
 
 ## Commands
 
-`/sq` (or `/circlet`) opens the options. `/sq help` lists the rest: a preview for every ring,
-`/sq edit` to arrange them, `/sq summary` for this session's gains.
+`/circ` (or `/circlet`) opens the options. `/circ help` lists the rest: a preview for every ring,
+`/circ edit` to arrange them, `/circ summary` for this session's gains.
 
 No other addons needed.

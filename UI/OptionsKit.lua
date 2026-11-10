@@ -129,7 +129,7 @@ local function TopRow(key, what, preview, previewDesc)
             name = function() return ns.FindRing(key).edit.get() and "|cff33ff33Finish editing|r" or "Edit mode" end,
             desc = "Keep the " .. what .. " on screen cycling through sample changes, so color, size and other "
                 .. "settings show live as you change them here, and drag the ring to move it "
-                .. "(right-click it to reset its position). Also /sq edit " .. key .. ".",
+                .. "(right-click it to reset its position). Also /circ edit " .. key .. ".",
             func = function() ns.ToggleRingEditing(key) end,
         },
         preview = Execute(2, "Preview", preview, previewDesc),
@@ -186,7 +186,7 @@ local function SizeBox(order, key, what, xTip)
         fromTop   = Range(6, key .. "FromTop", "Distance from top", 0, 1400, 10,
             "Gap between the top of the screen and the top of the ring."),
         reset     = Execute(7, "Reset position", function() ns.ResetPosition(key) end,
-            "Move only the " .. what .. " back to its default spot. Also /sq resetpos " .. key .. "."),
+            "Move only the " .. what .. " back to its default spot. Also /circ resetpos " .. key .. "."),
     })
     return look
 end

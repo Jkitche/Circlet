@@ -171,7 +171,7 @@ end
 
 ns.Listen({ "PLAYER_LOGOUT" }, SaveProfile)
 
--- /sq profile: list the profiles; /sq profile <name>: switch.
+-- /circ profile: list the profiles; /circ profile <name>: switch.
 ns.RegisterCommand({ "profile", "profiles" }, function(arg)
     if arg ~= "" then
         local match
@@ -180,7 +180,7 @@ ns.RegisterCommand({ "profile", "profiles" }, function(arg)
     else
         local _, order = ProfileList()
         Print("Profile: |cffffd100" .. tostring(current) .. "|r. All: " .. table.concat(order, ", ")
-            .. ". Switch with /sq profile <name>.")
+            .. ". Switch with /circ profile <name>.")
     end
 end, "show or switch profiles", "profile [name]")
 

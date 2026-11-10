@@ -19,9 +19,9 @@ local DEFAULTS = ns.DEFAULTS
 --             look settings (Core/Settings.lua: RING_COMMON).
 --   edit      { set = function(on), get = function() } for edit mode, or
 --   ring      a ring built by CreateProgressRing / CreateLiveRing (has SetEditing/IsEditing)
---   preview   function that shows a sample; slash = { "quest", "pop" } runs it as /sq quest
---             (the first name is the one shown in /sq help; all of them work with /sq edit
---             and /sq resetpos)
+--   preview   function that shows a sample; slash = { "quest", "pop" } runs it as /circ quest
+--             (the first name is the one shown in /circ help; all of them work with /circ edit
+--             and /circ resetpos)
 --   toggle    { "Quest ring", "Fills when ...", onSet } for the General page's list of rings
 --   page      { folder = "progress" | "status" | "professions" | nil, order = n,
 --               build = function(O) return O.RingTab(...) end } for its options page
@@ -70,8 +70,8 @@ end
 ---------------------------------------------------------------------------
 -- Other slash commands
 ---------------------------------------------------------------------------
--- Features add their own /sq commands: names = { "summary", "session" }, fn(arg),
--- help = "this session's summary" (nil: not listed in /sq help).
+-- Features add their own /circ commands: names = { "summary", "session" }, fn(arg),
+-- help = "this session's summary" (nil: not listed in /circ help).
 local COMMANDS = {}
 
 local function RegisterCommand(names, fn, help, usage)

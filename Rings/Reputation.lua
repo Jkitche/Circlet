@@ -271,7 +271,7 @@ ns.RegisterRing({
             local tab = RingTab(5, "Reputation", "Reputation Ring",
                 "A donut that fills (or drains) when your reputation with a faction changes, colored by standing.",
                 MergeTop(TopRow("rep", "reputation ring", PreviewRepRing, "Show examples: a gain, reaching a new "
-                    .. "standing, and a loss. Also /sq rep."), {
+                    .. "standing, and a loss. Also /circ rep."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "repEnabled", "Show reputation ring", "Pop up and fill when your reputation changes."),
                         afterCombat = Toggle(2, "repAfterCombat", "Wait until combat ends",
@@ -281,7 +281,7 @@ ns.RegisterRing({
                         icons = Toggle(4, "repIcons", "Show faction icon",
                             "The faction's icon as a round badge on the ring's top edge. Border in the standing color, red for a loss."),
                         list = Execute(5, "Show icon list", function() ns.ToggleIconGrid() end,
-                            "Show every game icon the rings use, marked found or missing in this client. Also /sq icons."),
+                            "Show every game icon the rings use, marked found or missing in this client. Also /circ icons."),
                     }),
                     colors = Box(3, "Colors", {
                         standing = Toggle(1, "repUseStanding", "Color by standing",

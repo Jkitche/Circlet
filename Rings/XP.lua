@@ -1045,7 +1045,7 @@ ns.RegisterRing({
             local tab = RingTab(2, "XP", "XP Ring",
                 "A donut that pops up and fills when you gain experience, colored by rest state.",
                 MergeTop(TopRow("xp", "XP ring", PreviewXPRing, "Show example XP gains: rested, rested running out, "
-                    .. "and a level-up. Also /sq xp."), {
+                    .. "and a level-up. Also /circ xp."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "xpEnabled", "Show XP ring", "Pop up and fill when you gain experience.",
                             OnXPAlwaysChanged),
@@ -1106,9 +1106,9 @@ ns.RegisterRing({
                             "Gold: a gold flash, shockwaves and sparks. Rainbow: a rainbow swirl around the ring, "
                             .. "then a rainbow flash, shockwaves and sparks. Off: no effect."),
                         preview = Execute(2, "Preview level-up", PreviewLevelUp,
-                            "Show a level-up with the selected effect. Also /sq levelup."),
+                            "Show a level-up with the selected effect. Also /circ levelup."),
                         restedPreview = Execute(3, "Preview rested gain", function() ns.PreviewRestedGain() end,
-                            "Show what leaving an inn looks like after gaining rested XP. Also /sq rested."),
+                            "Show what leaving an inn looks like after gaining rested XP. Also /circ rested."),
                     }),
                     size = SizeBox(4, "xp", "XP ring", "Offset from the center of the screen."),
                 }))

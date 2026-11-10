@@ -508,7 +508,7 @@ ns.RegisterRing({
                 .. "\"Casting\" means the time is the ring's own. Spells get an effect for their school, and resurrects an "
                 .. "animation of their own. Crafts and gathers use their own rings.",
                 MergeTop(TopRow("cast", "cast ring", ns.PreviewCastRing,
-                    "Show a sample cast that goes off, one that's interrupted, then a resurrect. Also /sq cast."), {
+                    "Show a sample cast that goes off, one that's interrupted, then a resurrect. Also /circ cast."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "castEnabled", "Show cast ring", "Show the ring while you cast or channel."),
                         icon = Toggle(2, "castIcon", "Show spell icon", "The spell's icon on the ring."),
@@ -526,7 +526,7 @@ ns.RegisterRing({
                             "When a cast is at something you're interacting with (opening a chest, using a quest "
                             .. "object, a corpse), the ring sits on it and moves with it as you turn the camera. Turns "
                             .. "on the game's nameplate for what you're facing (soft interact must be on); turning "
-                            .. "this off sets it back. If it doesn't follow, /sq follow shows why.",
+                            .. "this off sets it back. If it doesn't follow, /circ follow shows why.",
                             function() ns.ApplyFollowCVar() end),
                     }),
                     colors = Box(3, "Colors", {

@@ -83,7 +83,7 @@ print(f"'!' ran {ex_end - start:.2f}s (fill landed after {start:.2f}s) | ring st
 lua.execute('Advance(8); SetObj(5); Fire("QUEST_LOG_UPDATE"); Advance(6); CircletDB.questCompleteFx = false; SetObj(10); Fire("QUEST_LOG_UPDATE"); Advance(2.5)')
 print("option off, '!' shown:", lua.eval('ExclaimFrame()._shown'))
 lua.execute('CircletDB.questCompleteFx = true; Advance(8); Slash("complete"); Advance(2.0)')
-print("/sq complete, '!' shown:", lua.eval('ExclaimFrame()._shown'))
+print("/circ complete, '!' shown:", lua.eval('ExclaimFrame()._shown'))
 print('frame levels: ring =', lua.eval('QuestRingFrame():GetFrameLevel()'), '| "!" =', lua.eval('ExclaimFrame():GetFrameLevel()'), '| same strata:', lua.eval('QuestRingFrame():GetFrameStrata() == ExclaimFrame():GetFrameStrata()'))
 out = Image.new("RGB",(sum(f.width for f in frames), frames[0].height))
 x=0

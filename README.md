@@ -17,7 +17,7 @@ then fade away, or stay up as a permanent display.
 **Quests**
 - Objective progress ("Screecher Feather 5 / 8"), a "!" animation when an objective completes,
   and a "Ready to turn in" alert once every objective is done.
-- **Quest rings**: right-click a quest in the quest log (or `/sq ring <name>`) to give it its
+- **Quest rings**: right-click a quest in the quest log (or `/circ ring <name>`) to give it its
   own ring, with one notch per objective. They stack by the quest tracker, can be dragged, and
   are removed from their right-click menu.
 
@@ -91,23 +91,23 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 
 ## Commands
 
-`/sq` (or `/circlet`, `/circ`) opens the options. `/sq help` lists everything.
+`/circ` (or `/circlet`) opens the options. `/circ help` lists everything.
 
-- `/sq edit [ring]`: see a ring live and drag it into place.
-- Ring previews: `/sq xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
+- `/circ edit [ring]`: see a ring live and drag it into place.
+- Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
   `timed`, `corpse`, `breath`, `craft`, `gather`, `cast`, `totems`.
-- Effect previews: `/sq levelup`, `rested`, `complete`, `hello`, `discover`.
-- `/sq summary`: this session's summary.
-- `/sq profile [name]`: list or switch profiles.
-- `/sq ring <quest>` / `/sq ring clear`: pin or clear quest rings.
-- `/sq follow`, `/sq icons`: check the follow-the-target setup and the icons the rings use.
+- Effect previews: `/circ levelup`, `rested`, `complete`, `hello`, `discover`.
+- `/circ summary`: this session's summary.
+- `/circ profile [name]`: list or switch profiles.
+- `/circ ring <quest>` / `/circ ring clear`: pin or clear quest rings.
+- `/circ follow`, `/circ icons`: check the follow-the-target setup and the icons the rings use.
 
 ## Code layout
 
 Files load in `Circlet.toc` order and share everything through the addon's `ns` table.
 
 - `Core/`: helpers (`Init.lua`), saved settings and the `db` table (`Settings.lua`), the ring
-  registry (`Registry.lua`), the `/sq` command (`Slash.lua`) and startup (`Events.lua`).
+  registry (`Registry.lua`), the `/circ` command (`Slash.lua`) and startup (`Events.lua`).
 - `Draw/`: drawing rings (segments, arcs, track, border, styles, shapes, gradients) and glyphs.
 - `Layout/`: each ring's holder frame (opacity, hiding in combat), auto-arrange, dragging,
   following the interact target (`Follow.lua`).
@@ -115,7 +115,7 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
   `ProgressRing.lua` (pops up when something changes) and `LiveRing.lua` (shows a live state).
 - `Rings/`: one file per ring. Each ends with `ns.RegisterRing{...}`: its defaults, edit mode
   hooks, preview and slash names, options page, class filter and the game bar it can hide.
-  Edit mode, `/sq` and its help, the options window and the defaults are built from these, so
+  Edit mode, `/circ` and its help, the options window and the defaults are built from these, so
   a new ring is one new file (plus its line in the TOC).
 - `Features/`: edit mode, profiles, one-time settings migrations, hiding the game's bars, the
   welcome and discovery animations, the session summary.

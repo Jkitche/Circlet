@@ -8,7 +8,7 @@ local DEFAULTS, EDIT_STRATA, Print, db, RINGS = ns.DEFAULTS, ns.EDIT_STRATA, ns.
 ns.RefreshOptions = function() end
 
 ---------------------------------------------------------------------------
--- Edit mode: the real rings, one at a time (/sq edit [ring])
+-- Edit mode: the real rings, one at a time (/circ edit [ring])
 ---------------------------------------------------------------------------
 -- Each ring's page has its own Edit mode button. The ring stays on screen showing
 -- sample content (above the options window), so color, size and other changes show
@@ -179,7 +179,7 @@ local function StopAllEditing()
     for _, def in ipairs(RINGS) do SetRingEditing(def.key, false) end
 end
 
--- /sq edit with no ring: start all of them, or finish if any are being edited.
+-- /circ edit with no ring: start all of them, or finish if any are being edited.
 local function ToggleAllEditing()
     if #EditingKeys() > 0 then
         StopAllEditing()

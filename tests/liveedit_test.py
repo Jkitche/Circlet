@@ -57,7 +57,7 @@ P("after right-click:", CircletDB.xpX, CircletDB.xpFromTop)
 ''')
 # settings change live
 lua.execute('CircletDB.questSize = 200; Advance(0.2)')
-lua.execute('Slash("edit"); Advance(0.3); Dump("after /sq edit (all off)")')
+lua.execute('Slash("edit"); Advance(0.3); Dump("after /circ edit (all off)")')
 lua.execute('Advance(4); Dump("t+4 after edit off (xp queued gain should play)")')
 lua.execute('Advance(8); Dump("settled")')
 lua.execute('Slash("edit"); Advance(0.3); Dump("all on again"); local bar = _G.CircletEditModeFrame; bar._scripts.OnHide(bar); Advance(0.2); Dump("after Esc")')

@@ -29,7 +29,7 @@ local RECENT = 1.5 -- seconds a soft target that just went away still counts
 
 local function FollowWanted() return db.gatherFollow or db.castFollow end
 
--- Diagnostics for /sq follow: the last few things that happened.
+-- Diagnostics for /circ follow: the last few things that happened.
 local log = {}
 local function Log(fmt, ...)
     table.insert(log, string.format("%.1f  " .. fmt, GetTime() % 1000, ...))
@@ -178,7 +178,7 @@ ns.Listen({ "UNIT_SPELLCAST_SENT:player", "PLAYER_SOFT_INTERACT_CHANGED", "PLAYE
         end
     end)
 
--- /sq follow: what the follow saw lately, and how things stand now.
+-- /circ follow: what the follow saw lately, and how things stand now.
 ns.RegisterCommand({ "follow" }, function()
     local P = ns.Print
     P("follow: gathering " .. (db.gatherFollow and "on" or "off") .. ", interactions " .. (db.castFollow and "on" or "off")
@@ -188,7 +188,7 @@ ns.RegisterCommand({ "follow" }, function()
     local plate = guid and FindPlate(guid)
     P("now facing: " .. (guid and (tostring(name) .. " (" .. guid .. "), plate "
         .. (PlateCenter(plate) and "on screen" or (plate and "hidden" or "none"))) or "nothing"))
-    if #log == 0 then P("nothing logged yet: gather or interact with something, then /sq follow again.") end
+    if #log == 0 then P("nothing logged yet: gather or interact with something, then /circ follow again.") end
     for _, line in ipairs(log) do P("  " .. line) end
 end, "what following a corpse / node / object saw lately")
 

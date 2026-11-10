@@ -257,7 +257,7 @@ ns.RegisterRing({
                 .. "Fishing drains as the bobber waits. When it finishes it shows what you got (Copper Ore ×2). "
                 .. "Interrupting a gather flashes the progress you lost.",
                 MergeTop(TopRow("gather", "gathering ring", ns.PreviewGatherRing,
-                    "Show a sample mining and herb gather. Also /sq gather."), {
+                    "Show a sample mining and herb gather. Also /circ gather."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "gatherEnabled", "Show gathering ring", "Show the ring while gathering or fishing."),
                         icon = Toggle(2, "gatherIcon", "Show icon",
@@ -268,7 +268,7 @@ ns.RegisterRing({
                             "The ring sits on the corpse, vein or herb you're gathering and moves with it as you turn "
                             .. "the camera. Turns on the game's nameplate for what you're facing (soft interact must be "
                             .. "on), which also shows at other times; turning this off sets it back. If it doesn't "
-                            .. "follow, /sq follow shows why.",
+                            .. "follow, /circ follow shows why.",
                             function() ns.ApplyFollowCVar() end),
                     }),
                     colors = Box(3, "Colors", {

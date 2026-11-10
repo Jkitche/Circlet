@@ -95,7 +95,7 @@ panel.reset:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -12, 10)
 panel.reset:SetText("Start new session")
 panel.footer = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 panel.footer:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 14, 16)
-panel.footer:SetText("/sq summary  ·  also shown when you log out")
+panel.footer:SetText("/circ summary  ·  also shown when you log out")
 
 local tiles = {}
 

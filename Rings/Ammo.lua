@@ -209,7 +209,7 @@ ns.RegisterRing({
                 "Stays out of the way while you have plenty. At or below the warning level it pops up each time "
                 .. "you're another quarter of the way down, again when you run out, and when you restock.",
                 MergeTop(TopRow("ammo", "ammo ring", PreviewAmmoRing, "Show examples: running low, running out, "
-                    .. "and restocking. Also /sq ammo."), {
+                    .. "and restocking. Also /circ ammo."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "ammoEnabled", "Show ammo ring",
                             "Arrows, bullets and thrown weapons in your ammo or ranged slot."),

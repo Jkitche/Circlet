@@ -209,7 +209,7 @@ if hooksecurefunc and QuestLogTitleButton_OnClick and MenuUtil and MenuUtil.Crea
     end)
 end
 
--- /sq ring [name]: pin or unpin a quest whose name contains the text; /sq ring clear.
+-- /circ ring [name]: pin or unpin a quest whose name contains the text; /circ ring clear.
 local function SlashRing(arg)
     arg = arg and arg:lower() or ""
     if arg == "clear" then
@@ -220,7 +220,7 @@ local function SlashRing(arg)
     local log = QuestLog()
     snapshotAt = -1
     if arg == "" or not log then
-        Print("Right-click a quest in your quest log and choose Create Quest Ring, or /sq ring <part of the quest name>.")
+        Print("Right-click a quest in your quest log and choose Create Quest Ring, or /circ ring <part of the quest name>.")
         return
     end
     for questID, q in pairs(log) do
@@ -232,7 +232,7 @@ local function SlashRing(arg)
     Print("No quest in your log matches '" .. arg .. "'.")
 end
 
-ns.RegisterCommand({ "ring" }, SlashRing, "pin a quest to its own ring (or right-click it in the quest log); /sq ring clear", "ring <name>")
+ns.RegisterCommand({ "ring" }, SlashRing, "pin a quest to its own ring (or right-click it in the quest log); /circ ring clear", "ring <name>")
 
 -- Shared with the files loaded after this one.
 ns.SetPinsEditing = SetPinsEditing
@@ -276,13 +276,13 @@ ns.RegisterRing({
             local tab = RingTab(5, "Quest rings", "Quest Rings",
                 "Right-click a quest in your quest log and choose Create Quest Ring to give it its own ring, stacked "
                 .. "by the quest list. Each shows objectives done, with one notch per objective (segmented style), and "
-                .. "the next objective to do. It goes away once the quest leaves your log. Up to 5; also /sq ring <name>.",
+                .. "the next objective to do. It goes away once the quest leaves your log. Up to 5; also /circ ring <name>.",
                 MergeTop(TopRow("pin", "quest rings", ns.PreviewPins, "Show two sample quest rings."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "pinEnabled", "Show quest rings", "Show the rings for pinned quests."),
                         menu = Toggle(1.2, "pinMenu", "Right-click menu",
                             "Right-click a quest ring for a menu to remove it. Turn off so the rings ignore the mouse "
-                            .. "entirely (remove them from the quest log's menu or /sq ring instead).",
+                            .. "entirely (remove them from the quest log's menu or /circ ring instead).",
                             function() ns.RefreshPinClicks() end),
                         movable = Toggle(1.4, "pinMovable", "Movable",
                             "Let the quest rings be dragged (and reset with right-click) in edit mode. Turn off to lock "

@@ -126,7 +126,7 @@ ns.RegisterRing({
                 "Up while you have an escort or other timed quest: it drains as time runs out and turns the warning "
                 .. "color near the end. With more than one, it shows the one with the least time left.",
                 MergeTop(TopRow("timed", "timed quest ring", ns.PreviewTimedRing,
-                    "Show a sample timer running down into the warning range. Also /sq timed."), {
+                    "Show a sample timer running down into the warning range. Also /circ timed."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "timedEnabled", "Show timed quest ring", "Count down timed quests."),
                         warn = Range(2, "timedWarn", "Warn at (seconds left)", 10, 300, 10,

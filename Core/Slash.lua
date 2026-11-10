@@ -1,4 +1,4 @@
--- Circlet: The /sq slash command (also /circlet and /circ).
+-- Circlet: The /circ slash command (also /circlet).
 local ADDON_NAME, ns = ...
 
 local Print = ns.Print
@@ -16,7 +16,7 @@ local function RingNames()
     return table.concat(names, ", ")
 end
 
--- /sq edit [ring] and /sq resetpos [ring]: one ring by any of its names, or all.
+-- /circ edit [ring] and /circ resetpos [ring]: one ring by any of its names, or all.
 local function ForRing(arg, one, all)
     local def = ns.FindRing(arg)
     if def then
@@ -30,15 +30,15 @@ end
 
 local function Help()
     Print("commands:")
-    local lines = { { "/sq", "open the options window" } }
+    local lines = { { "/circ", "open the options window" } }
     for _, def in ipairs(ns.RINGS) do
-        if def.preview and def.slash then table.insert(lines, { "/sq " .. def.slash[1], def.help }) end
+        if def.preview and def.slash then table.insert(lines, { "/circ " .. def.slash[1], def.help }) end
     end
     for _, c in ipairs(ns.COMMANDS) do
-        if c.help then table.insert(lines, { "/sq " .. (c.usage or c.names[1]), c.help }) end
+        if c.help then table.insert(lines, { "/circ " .. (c.usage or c.names[1]), c.help }) end
     end
-    table.insert(lines, { "/sq edit [ring]", "edit mode for one ring or all" })
-    table.insert(lines, { "/sq resetpos [ring]", "move one ring (or all) back to its default spot" })
+    table.insert(lines, { "/circ edit [ring]", "edit mode for one ring or all" })
+    table.insert(lines, { "/circ resetpos [ring]", "move one ring (or all) back to its default spot" })
     for _, l in ipairs(lines) do
         print(string.format("  %-15s - %s", l[1], l[2]))
     end
@@ -67,7 +67,6 @@ local function Run(msg)
     end
 end
 
-SLASH_CIRCLET1 = "/sq" -- short; kept from the addon's working name
+SLASH_CIRCLET1 = "/circ"
 SLASH_CIRCLET2 = "/circlet"
-SLASH_CIRCLET3 = "/circ"
 SlashCmdList.CIRCLET = Run

@@ -140,7 +140,7 @@ ns.RegisterRing({
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(6, "Pet", "Pet Ring",
                 "A donut that fills when your pet gains experience, and celebrates when it levels up.",
-                MergeTop(TopRow("pet", "pet ring", PreviewPetRing, "Show example pet XP: a gain and a level-up. Also /sq pet."), {
+                MergeTop(TopRow("pet", "pet ring", PreviewPetRing, "Show example pet XP: a gain and a level-up. Also /circ pet."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "petEnabled", "Show pet ring", "Pop up and fill when your pet gains experience."),
                         afterCombat = Toggle(2, "petAfterCombat", "Wait until combat ends",

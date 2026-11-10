@@ -307,7 +307,7 @@ ns.RegisterRing({
                 "Pops up and fills when a profession (Mining, Tailoring...) or secondary skill (Cooking, First Aid, "
                 .. "Fishing, Riding) goes up, or you train to a new tier. Weapon skills have their own ring.",
                 MergeTop(TopRow("skill", "profession ring", PreviewSkillRing, "Show example skill-ups: a profession, a "
-                    .. "secondary skill hitting its cap, and a profession trained to a new tier. Also /sq skill."), {
+                    .. "secondary skill hitting its cap, and a profession trained to a new tier. Also /circ skill."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "skillEnabled", "Show profession ring", "Pop up and fill when a profession or secondary skill goes up."),
                         afterCombat = Toggle(2, "skillAfterCombat", "Wait until combat ends",
@@ -327,7 +327,7 @@ ns.RegisterRing({
                             "How strongly a drawn icon shows behind the text. Lower it if the text gets hard to read.",
                             { disabled = function() return db.skillIconStyle ~= "drawn" end }),
                         list = Execute(3, "Show icon list", function() ns.ToggleIconGrid() end,
-                            "Show every game icon the rings use, marked found or missing in this client. Also /sq icons."),
+                            "Show every game icon the rings use, marked found or missing in this client. Also /circ icons."),
                     }),
                     colors = Box(5, "Colors", {
                         profession = Color(2, "skillColors", "profession", "Professions", "Ring and rank color for professions."),
@@ -380,7 +380,7 @@ ns.RegisterRing({
                 "Pops up and fills when a weapon skill (Swords, Bows...) or Defense goes up. They mostly rise in "
                 .. "fights, so by default they wait until combat ends.",
                 MergeTop(TopRow("weapon", "weapon skill ring", ns.PreviewWeaponRing, "Show example skill-ups, including "
-                    .. "Defense reaching its cap for your level. Also /sq weapon."), {
+                    .. "Defense reaching its cap for your level. Also /circ weapon."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "weaponEnabled", "Show weapon skill ring", "Pop up and fill when a weapon skill goes up."),
                         afterCombat = Toggle(2, "weaponAfterCombat", "Wait until combat ends",

@@ -184,7 +184,7 @@ ns.RegisterRing({
                 "When you craft several at once (Create All, or a count), the ring fills through the batch, "
                 .. "including the current cast, and shows how many are done. It ends with Done! (or Stopped).",
                 MergeTop(TopRow("craft", "crafting ring", ns.PreviewCraftRing,
-                    "Show a sample batch of eight. Also /sq craft."), {
+                    "Show a sample batch of eight. Also /circ craft."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "craftEnabled", "Show crafting ring", "Show the ring while crafting a batch."),
                         single = Toggle(2, "craftSingle", "Single crafts too",

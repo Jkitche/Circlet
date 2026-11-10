@@ -286,7 +286,7 @@ ns.RegisterRing({
                 "Counts down to landing while you're on a flight path. The game doesn't give flight times, so the "
                 .. "first trip on each route is timed (the ring circles and counts up); after that it counts down.",
                 MergeTop(TopRow("flight", "flight ring", ns.PreviewFlightRing,
-                    "Show the ring counting down a known route, then timing a new one. Also /sq flight."), {
+                    "Show the ring counting down a known route, then timing a new one. Also /circ flight."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "flightEnabled", "Show flight ring", "Show the ring while you're on a flight path."),
                         notice = Toggle(2, "flightLearnNotice", "Announce new route times",

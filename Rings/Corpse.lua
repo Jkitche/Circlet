@@ -128,7 +128,7 @@ ns.RegisterRing({
                 "While you're a ghost: how far your corpse is (filling as you get closer), an arrow on the ring pointing "
                 .. "toward it (straight up = ahead), and when you can resurrect.",
                 MergeTop(TopRow("corpse", "corpse ring", ns.PreviewCorpseRing,
-                    "Show a sample corpse run. Also /sq corpse."), {
+                    "Show a sample corpse run. Also /circ corpse."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "corpseEnabled", "Show corpse ring", "Show the ring while you're a ghost."),
                     }),

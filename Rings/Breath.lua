@@ -232,7 +232,7 @@ ns.RegisterRing({
                 .. "bubbles rising off it, then fills back up when you surface. Deep-water fatigue and Feign Death "
                 .. "show the same way.",
                 MergeTop(TopRow("breath", "breath ring", ns.PreviewBreathRing,
-                    "Show a sample dive. Also /sq breath."), {
+                    "Show a sample dive. Also /circ breath."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "breathEnabled", "Show breath ring", "Show the ring while a breath, fatigue or Feign Death timer runs."),
                         bubbles = Toggle(2, "breathBubbles", "Bubbles", "Little bubbles rising off the ring while you hold your breath."),

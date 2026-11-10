@@ -1,9 +1,9 @@
--- Circlet: /sq icons: every game icon the rings use, found or missing.
+-- Circlet: /circ icons: every game icon the rings use, found or missing.
 local ADDON_NAME, ns = ...
 
 local FACTION_ICONS, IconPath, SKILL_ICONS = ns.FACTION_ICONS, ns.IconPath, ns.SKILL_ICONS
 
--- /sq icons: every skill icon this addon would use, marked found or missing ------
+-- /circ icons: every skill icon this addon would use, marked found or missing ------
 
 local iconGrid
 local SKILL_ICON_NAMES = {

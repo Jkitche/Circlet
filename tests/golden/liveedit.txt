@@ -169,7 +169,7 @@ xp gain during edit (should keep sample)
   #23 shown=false a=0.00 strata=HIGH mouse=nil | 
 xpX, xpFromTop: 540 310
 after right-click: 0 40
-after /sq edit (all off)
+after /circ edit (all off)
   #1 shown=true a=1.00 strata=HIGH mouse=false | Level 16 / +123 XP / +12.3% / 42.3% / Normal
   #2 shown=true a=0.25 strata=HIGH mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
   #3 shown=true a=0.25 strata=HIGH mouse=false | Cooking / +1 / 75 / 75 / Visit a trainer
