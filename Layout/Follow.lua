@@ -1,5 +1,5 @@
--- Circlet: Keeping a ring on what you're interacting with (a corpse, herb, ore vein,
--- chest...) as the camera moves.
+-- Circlet: Keeping the cast ring on what you're interacting with (a chest, a quest
+-- object...) as the camera moves.
 local ADDON_NAME, ns = ...
 
 local db, SafeCall, Clean = ns.db, ns.SafeCall, ns.Clean
@@ -13,21 +13,23 @@ local db, SafeCall, Clean = ns.db, ns.SafeCall, ns.Clean
 --
 -- What counts as an interaction: a cast whose target (UNIT_SPELLCAST_SENT names it) is
 -- your soft-interact target, or was a moment ago (the game can drop the soft target as
--- the cast begins). So skinning a corpse, mining a vein, opening a chest or clicking a
--- quest object all follow; a Hearthstone or a Fireball at a mob doesn't.
+-- the cast begins). So opening a chest or clicking a quest object follows; a Hearthstone
+-- or a Fireball at a mob doesn't. (Gathers have their own ring, which stays put.)
 --
 -- The target is pinned by GUID: its plate is found through the softinteract token or,
--- once that has moved on, among the visible nameplates. If the plate goes (the corpse is
--- skinned, the node is gone, it's out of view) the ring stays where it last was.
+-- once that has moved on, among the visible nameplates. If the plate goes (the chest is
+-- open, the object is gone, it's out of view) the ring stays where it last was.
 --
--- Needs the game's SoftTargetNameplateInteract setting, which the follow options turn on
--- (and put back as they were when they're all off).
+-- Needs the game's SoftTargetNameplateInteract setting, which the follow option turns on
+-- (and puts back as it was when it's off). The original value is kept in
+-- db.gatherFollowCVar: named for the gathering follow that came first and has since been
+-- removed, and kept so a value saved back then is still put back.
 
 local SOFT = "softinteract"
 local PLATE_CVAR = "SoftTargetNameplateInteract"
 local RECENT = 1.5 -- seconds a soft target that just went away still counts
 
-local function FollowWanted() return db.gatherFollow or db.castFollow end
+local function FollowWanted() return db.castFollow end
 
 -- Diagnostics for /circ follow: the last few things that happened.
 local log = {}
@@ -181,14 +183,14 @@ ns.Listen({ "UNIT_SPELLCAST_SENT:player", "PLAYER_SOFT_INTERACT_CHANGED", "PLAYE
 -- /circ follow: what the follow saw lately, and how things stand now.
 ns.RegisterCommand({ "follow" }, function()
     local P = ns.Print
-    P("follow: gathering " .. (db.gatherFollow and "on" or "off") .. ", interactions " .. (db.castFollow and "on" or "off")
+    P("follow: interactions " .. (db.castFollow and "on" or "off")
         .. "; " .. PLATE_CVAR .. " = " .. tostring(GetCVar and SafeCall(GetCVar, PLATE_CVAR))
         .. ", SoftTargetInteract = " .. tostring(GetCVar and SafeCall(GetCVar, "SoftTargetInteract")))
     local guid, name = SoftNow()
     local plate = guid and FindPlate(guid)
     P("now facing: " .. (guid and (tostring(name) .. " (" .. guid .. "), plate "
         .. (PlateCenter(plate) and "on screen" or (plate and "hidden" or "none"))) or "nothing"))
-    if #log == 0 then P("nothing logged yet: gather or interact with something, then /circ follow again.") end
+    if #log == 0 then P("nothing logged yet: interact with something, then /circ follow again.") end
     for _, line in ipairs(log) do P("  " .. line) end
 end, "what following a corpse / node / object saw lately")
 

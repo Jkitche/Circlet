@@ -70,7 +70,9 @@ local OBSOLETE = { "ringBorder", "ringBorderSize", "cleanupNotice", "enabled", "
     -- ...and the old level-up checkbox, now a style choice.
     "xpLevelFx",
     -- ...and spell schools learned from the combat log, which addons can't use here.
-    "castSchools" }
+    "castSchools",
+    -- ...and the gathering ring following what you gather (the cast ring's follow stays).
+    "gatherFollow" }
 
 -- Saved settings. CircletDB only exists once the addon has loaded, so every file
 -- reads and writes it through this table, which forwards to whatever CircletDB is.

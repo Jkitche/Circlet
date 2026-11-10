@@ -38,6 +38,7 @@ C_NamePlate = {
 }
 ''')
 lua.execute('''
+CircletDB = CircletDB or {}; CircletDB.gatherFollow = true -- saved by an older version
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 local sp = RegionMethods.SetPoint
 RegionMethods.SetPoint = function(s, p, rel, rp, x, y) s._rel, s._anchor = rel, rp; return sp(s, p, rel, rp, x, y) end
@@ -71,28 +72,14 @@ Thing("GameObject-far", "Peacebloom", 100, 100, false)
 P("cvar before: " .. CVARS.SoftTargetNameplateInteract)
 Face("Creature-wolf"); local c = Cast(8613, "Skinning", "Plainstrider", "same"); Advance(0.5); P("option off, skinning: " .. Where("gather")); Done(c, 8613); Advance(5)
 
-CircletDB.gatherFollow = true; Fire("PLAYER_ENTERING_WORLD"); P("cvar with gathering follow on: " .. CVARS.SoftTargetNameplateInteract)
-Face("Creature-wolf"); c = Cast(8613, "Skinning", "Plainstrider", "same"); Advance(0.5); P("skinning: " .. Where("gather"))
-THINGS["Creature-wolf"].x = 620; Advance(0.2); P("camera turned: " .. Where("gather"))
-PLATES["Creature-wolf"]._shown = false; Advance(0.2); P("plate off screen: " .. Where("gather")); PLATES["Creature-wolf"]._shown = true
-Done(c, 8613); PLATES["Creature-wolf"] = nil; Face(nil); Advance(0.5); P("skinned, corpse gone: " .. Where("gather")); Advance(5)
-
--- The game drops the soft target as the cast begins: still follows, by the corpse's own plate.
-Face("Creature-boar"); c = Cast(8613, "Skinning", "Mottled Boar", nil); Advance(0.5); P("soft target dropped at start: " .. Where("gather"))
-THINGS["Creature-boar"].x = 800; Advance(0.2); P("  camera turned: " .. Where("gather")); Stop(c, 8613); Advance(5)
--- ...or just before the cast is sent.
-Face("Creature-boar"); Advance(1); Face(nil); Advance(0.3); c = Cast(8613, "Skinning", "Mottled Boar", nil); Advance(0.5); P("soft target dropped just before: " .. Where("gather")); Stop(c, 8613); Advance(5)
--- ...long before: that's not what you're skinning any more.
-Face("Creature-boar"); Face(nil); Advance(3); c = Cast(8613, "Skinning", "Mottled Boar", nil); Advance(0.5); P("soft target gone for 3s: " .. Where("gather")); Stop(c, 8613); Advance(5)
-
+-- Gathering never follows (the option was removed); an old saved setting is cleared on load.
+P("old gatherFollow cleared: " .. tostring(CircletDB.gatherFollow))
 Face("GameObject-vein"); c = Cast(2575, "Mining", "Copper Vein", "same"); Advance(0.5); P("mining: " .. Where("gather")); Done(c, 2575); Advance(5)
-Face("GameObject-far"); c = Cast(2366, "Herb Gathering", "Peacebloom", "same"); Advance(0.5); P("herb with no plate: " .. Where("gather")); Stop(c, 2366); Advance(5)
-Face("Creature-boar"); c = Cast(8613, "Skinning", "Plainstrider", "same"); Advance(0.5); P("skinning another corpse than the one faced: " .. Where("gather")); Stop(c, 8613); Advance(5)
 Face(nil)
 
 -- Interactions in the cast ring.
 Face("GameObject-chest"); c = Cast(3365, "Opening", "Battered Chest", "same"); Advance(0.5); P("opening a chest, option off: " .. Where("cast")); Stop(c, 3365); Advance(5)
-CircletDB.castFollow = true
+CircletDB.castFollow = true; Fire("PLAYER_ENTERING_WORLD") -- as the option does (ApplyFollowCVar)
 c = Cast(3365, "Opening", "Battered Chest", "same"); Advance(0.5); P("opening a chest: " .. Where("cast")); Done(c, 3365); Advance(5)
 c = Cast(8690, "Hearthstone", "", "same"); Advance(0.5); P("hearthstone by the chest: " .. Where("cast")); Stop(c, 8690); Advance(5)
 c = Cast(133, "Fireball", "Kobold Vermin", "same"); Advance(0.5); P("fireball at a mob by the chest: " .. Where("cast")); Stop(c, 133); Advance(5)
@@ -100,8 +87,8 @@ Face(nil)
 Slash("gather"); Advance(1); P("preview: " .. Where("gather")); Advance(14)
 Slash("follow")
 
-CircletDB.gatherFollow = false; Fire("PLAYER_ENTERING_WORLD"); P("gathering off, interactions on: " .. CVARS.SoftTargetNameplateInteract)
-CircletDB.castFollow = false; IN_COMBAT = true; Fire("PLAYER_ENTERING_WORLD"); P("both off, in combat: " .. CVARS.SoftTargetNameplateInteract)
-IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); P("both off, after combat: " .. CVARS.SoftTargetNameplateInteract .. " saved=" .. tostring(CircletDB.gatherFollowCVar))
+P("interactions on: " .. CVARS.SoftTargetNameplateInteract)
+CircletDB.castFollow = false; IN_COMBAT = true; Fire("PLAYER_ENTERING_WORLD"); P("off, in combat: " .. CVARS.SoftTargetNameplateInteract)
+IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); P("off, after combat: " .. CVARS.SoftTargetNameplateInteract .. " saved=" .. tostring(CircletDB.gatherFollowCVar))
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

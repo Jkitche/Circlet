@@ -48,8 +48,8 @@ then fade away, or stay up as a permanent display.
   shadow, nature, holy) with a strength setting, and a resurrection animation.
 - **Finish burst**: when a gather, craft or interaction finishes, the icon swells and throws
   off sparks.
-- **Follow the target**: the gathering and cast rings can sit on the herb, vein, corpse or chest
-  you're working on and move with the camera.
+- **Follow the target**: the cast ring can sit on the chest or quest object you're opening or
+  using and move with the camera.
 
 ## Look
 

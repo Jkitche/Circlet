@@ -46,10 +46,7 @@ local function GatherKind(name, spellID)
     if type(name) == "string" and not IsSecret(name) then return kindByName[name] end
 end
 
-local g = nil -- the current gather: { kind, name, icon, start, finish, channel, ended, how, lost, loot, follow }
-
--- With gatherFollow on, the ring sits on what you're gathering (the corpse, vein or herb)
--- and moves with it as the camera turns: see Layout/Follow.lua.
+local g = nil -- the current gather: { kind, name, icon, start, finish, channel, ended, how, lost, loot }
 
 local function Progress(now)
     if not (g and g.start and g.finish) then return 0 end
@@ -115,9 +112,6 @@ local gatherRing = CreateLiveRing({
         return State(g.kind, LABELS[g.kind], Progress(now), g.channel, g.endedAt ~= nil, g.how, g.lost, g.endedAt,
             db.gatherLoot and g.loot or nil, waiting, g.loot ~= nil,
             g.finish and math.max(0, g.finish - now) or nil, g.doneAt)
-    end,
-    follow = function(frame)
-        if g and db.gatherFollow then return ns.FollowPoint(g.follow, frame) end -- (x, y: no and/or)
     end,
     sample = function(t)
         local cycle = t % 7
@@ -194,7 +188,7 @@ ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_SUCCEEDED:player", "U
         local name, _, _, startMS, endMS = SafeCall(channel and UnitChannelInfo or UnitCastingInfo, "player")
         local kind = GatherKind(name, spellID)
         if not kind then return end
-        g = { kind = kind, spellID = spellID, channel = channel, follow = db.gatherFollow and ns.InteractTarget(castGUID, spellID) or nil }
+        g = { kind = kind, spellID = spellID, channel = channel }
         if type(startMS) == "number" and type(endMS) == "number" and not IsSecret(startMS) and not IsSecret(endMS) then
             g.start, g.finish = startMS / 1000, endMS / 1000
         end
@@ -234,7 +228,6 @@ ns.RegisterRing({
         gatherEnabled   = true,
         gatherIcon      = true,  -- profession / item icon in the middle
         gatherLoot      = true,  -- show what you gathered when it finishes
-        gatherFollow    = false, -- the ring sits on what you're gathering (Layout/Follow.lua)
         gatherSize      = 110,
         gatherThickness = 11,
         gatherOpacity   = 100,
@@ -264,12 +257,6 @@ ns.RegisterRing({
                             "The profession's icon while gathering, and the item's icon when it's done."),
                         loot = Toggle(3, "gatherLoot", "Show what you got",
                             "When the gather finishes, show the item and how many you got."),
-                        follow = Toggle(4, "gatherFollow", "Follow what you're gathering",
-                            "The ring sits on the corpse, vein or herb you're gathering and moves with it as you turn "
-                            .. "the camera. Turns on the game's nameplate for what you're facing (soft interact must be "
-                            .. "on), which also shows at other times; turning this off sets it back. If it doesn't "
-                            .. "follow, /circ follow shows why.",
-                            function() ns.ApplyFollowCVar() end),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),
