@@ -44,6 +44,7 @@ Rings\Timed.lua
 Rings\Corpse.lua
 Rings\Breath.lua
 Rings\Food.lua
+Rings\Campfire.lua
 Rings\Craft.lua
 Rings\Gather.lua
 Rings\CastSchools.lua

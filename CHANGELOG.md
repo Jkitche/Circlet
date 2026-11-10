@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Campfire ring** (new; on by default). While you rest at a campfire (the Welcoming Campfire
+  buff), the ring fills and counts down until you're Well Rested, then turns "Well Rested!" and
+  bursts. Firelight flickers in the middle with embers rising through it (Campfire > Firelight and
+  embers). Preview with `/circ camp`.
 - **Food & Drink ring** (new; on by default). While you eat or drink, the ring fills as the food
   or drink buff runs, counts down what's left and bursts when it's done. Eating sends steam curling
   up through the ring, and every chomp takes a tooth-marked bite out of the end of the fill with

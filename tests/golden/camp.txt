@@ -1,0 +1,17 @@
+nothing: (hidden)
+sat down: Resting / 59s / By the fire fill=2
+30s: Resting / 30s / By the fire fill=36
+rested: Campfire / Well Rested! fill=72
+after a few seconds: Campfire / Well Rested!
+gone: (hidden)
+stood up early: Resting / 40s / By the fire
+faded: (hidden)
+rested while the timer's still on: Campfire / Well Rested!
+then it ends: (hidden)
+sleeping bag's Well Rested alone: (hidden)
+secret times 1s: Resting / 60s / By the fire
+secret times 30s: Resting / 31s / By the fire fill=36
+ring off: (hidden)
+preview: Resting / 53s / By the fire
+preview 9.5s: Campfire / Well Rested!
+ERRORS: {}

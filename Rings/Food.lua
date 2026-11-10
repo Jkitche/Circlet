@@ -113,7 +113,7 @@ local function State(kinds, frac, left, icon, doneAt)
         st.doneAt = doneAt
     end
     st.value = left >= 60 and string.format("%d:%02d", math.floor(left / 60), math.floor(left % 60))
-        or string.format("%ds", math.ceil(left))
+        or string.format("%ds", math.ceil(left - 0.05))
     return st
 end
 

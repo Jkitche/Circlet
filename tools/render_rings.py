@@ -37,6 +37,7 @@ RINGS = {
     "cast":    ("cast", "MAGE", 1.0, ""),
     "totems":  ("totems", "SHAMAN", 2.0, ""),
     "food":    ("food", "WARRIOR", 9.0, ""),
+    "camp":    ("camp", "WARRIOR", 4.0, ""),
 }
 
 PRELUDE = r'''
