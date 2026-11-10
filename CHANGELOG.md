@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - **Fixed: the pet XP ring never showed.** It listened for pet XP changes on the wrong unit. It also
   catches up after a fight now, when the game hid your pet's XP during it.

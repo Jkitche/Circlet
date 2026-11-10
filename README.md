@@ -140,7 +140,7 @@ output with `tests/golden/` (needs Python 3 and `pip install lupa pillow`). Afte
 Releases go to CurseForge from GitHub: bump the version in `CHANGELOG.md` (newest at the top),
 commit, then tag and push it:
 
-    git tag v1.0.1 && git push origin v1.0.1
+    git tag v1.1.1 && git push origin v1.1.1
 
 `.github/workflows/release.yml` runs the tests and the BigWigs packager, which builds the zip
 (see `.pkgmeta`), puts the changelog on the file and uploads it to CurseForge and as a GitHub
