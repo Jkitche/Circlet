@@ -10,7 +10,9 @@
   or drink buff runs, counts down what's left and bursts when it's done. Eating sends steam curling
   up through the ring, and every chomp takes a tooth-marked bite out of the end of the fill with
   crumbs flying; drinking fills its middle with water that rises as you drink and
-  sloshes with every gulp (Food & Drink > Animations). Preview with `/circ food`.
+  sloshes with every gulp (Food & Drink > Animations). Eating and drinking at once splits the
+  ring: eating fills up the left side and drinking up the right, each with its own buff and its
+  own effects on its half. Preview with `/circ food`.
 - **Removed: follow what you're interacting with.** The cast ring no longer moves onto the
   chest or quest object you're using (it didn't work reliably), and `/circ follow` is gone. Interaction
   casts still get the finish burst.

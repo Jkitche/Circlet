@@ -40,7 +40,19 @@ Buff("Drink", 20); Advance(1); P("drinking 1s: " .. C() .. " water top=" .. Leve
 Advance(9); P("drinking 10s: water top=" .. Level())
 Advance(8); P("drinking 18s: water top=" .. Level())
 Unbuff(); Advance(4)
-Buff("Food", 30); Advance(10); Buff("Drink", 30); Advance(6); P("both (drink started later): " .. C() .. " " .. Fx())
+-- Both at once: the ring splits, eating up the left half and drinking up the right.
+function Halves()
+  local r, left, right = Ring(), 0, 0
+  for _, l in ipairs(ALL_LINES) do
+    if r and l._parent == r and l._layer == "ARTWORK" and l._sub == 0 and l._shown and l._x1 then
+      if (l._x1 + l._x2) / 2 < 0 then left = left + 1 else right = right + 1 end
+    end
+  end
+  return "left=" .. left .. " right=" .. right
+end
+function WaterSide() local r, minx = Ring() for _, l in ipairs(ALL_LINES) do if r and l._parent == r and l._layer == "BORDER" and l._shown and l._x1 then minx = math.min(minx or 999, l._x1) end end return minx and (minx >= -1 and "right half" or "whole middle") or "none" end
+Buff("Food", 30); Advance(10); Buff("Drink", 30); Advance(6); P("both (drink started later): " .. C() .. " " .. Fx() .. " " .. Halves() .. " water=" .. WaterSide())
+Advance(10); P("both, 10s on: " .. Halves())
 CircletDB.foodFx = false; Advance(0.2); P("animations off: " .. Fx())
 CircletDB.foodFx = true; Unbuff(); Advance(4)
 Buff("Mark of the Wild", 1800); Advance(1); P("another buff: " .. C()); Unbuff(); Advance(1)

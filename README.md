@@ -41,7 +41,8 @@ then fade away, or stay up as a permanent display.
 **Food and drink**
 - **Eating and drinking**: the food or drink buff filling the ring and counting down, bursting
   when it's done. While eating, steam rises and each chomp bites the ring,
-  crumbs flying; while drinking, water fills the ring and sloshes with every gulp.
+  crumbs flying; while drinking, water fills the ring and sloshes with every gulp. Doing both
+  splits the ring: eating up the left side, drinking up the right.
 
 **Camping**
 - **Campfire**: resting at a camp (Welcoming Campfire) counting down to Well Rested, with

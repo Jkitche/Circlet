@@ -8,12 +8,13 @@ stood up early: Eating / 15s / Restoring health
 drinking 1s: Drinking / 19s / Restoring mana water top=-42 water=yes
 drinking 10s: water top=-1
 drinking 18s: water top=36
-both (drink started later): Eating & drinking / 24s / Restoring water=yes
+both (drink started later): Eating & drinking / 24s / Restoring water=yes left=39 right=15 water=right half
+both, 10s on: left=63 right=39
 animations off: water=no
 another buff: (hidden)
 ring off: (hidden)
-secret times, eating 1s: Eating / 23s / Restoring health
-secret times, eating 12s: Eating / 12s / Restoring health fill=36
+secret times, eating 1s: Eating / 24s / Restoring health
+secret times, eating 12s: Eating / 13s / Restoring health fill=36
 preview: Eating / 5s / Restoring health water=no
 preview 8s: Drinking / 5s / Restoring mana
 ERRORS: {}

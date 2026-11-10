@@ -10,7 +10,9 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 -- you are, counts down what's left and bursts when it's done. (A full buff restores you over
 -- its length; the client keeps your health and mana themselves secret from addons.) When the
 -- buff's own times are secret too, it's timed from when the buff showed up. Eating and
--- drinking at once fills with whichever is further from full. With foodFx on it plays:
+-- drinking at once splits the ring down the middle: eating fills up the left side, drinking
+-- up the right, each with its own buff's progress, and each side gets its own effects.
+-- With foodFx on it plays:
 --   eating:   steam curls up from a warm glow in the middle, rising past the top of the
 --             ring. Every CHOMP seconds a chomp takes a tooth-marked bite out of the end of
 --             the fill (circles in the track's color, kept inside the band so they never
@@ -101,9 +103,14 @@ local function Progress(kind, aura, now)
 end
 
 -- kinds: "eat", "drink" or "both"; frac: how far through the buff (0..1); left: seconds.
-local function State(kinds, frac, left, icon, doneAt)
+-- eatFrac / drinkFrac (both at once): each buff's own progress, for the split ring.
+local function State(kinds, frac, left, icon, doneAt, eatFrac, drinkFrac)
     local c = db.foodColors
     local st = { kinds = kinds, icon = icon, hold = 1.5, frac = frac }
+    if kinds == "both" and frac < 0.999 then
+        -- Split: no fill of the ring's own; the halves are drawn with the effects (DrawSplit).
+        st.split, st.eatFrac, st.drinkFrac, st.frac = true, eatFrac or frac, drinkFrac or frac, nil
+    end
     local eat, drink = kinds ~= "drink", kinds ~= "eat"
     st.title = (eat and drink) and "Eating & drinking" or (eat and "Eating" or "Drinking")
     st.label = (eat and drink) and "Restoring" or (eat and "Restoring health" or "Restoring mana")
@@ -127,15 +134,16 @@ local foodRing = CreateLiveRing({
         local eat, drink = buffs.eat, buffs.drink
         if not (eat or drink) then fullAt = nil return nil end
         local kinds = (eat and drink) and "both" or (eat and "eat" or "drink")
-        -- How far through the buff: the one with longer to go, when you eat and drink at once.
-        local frac, left = 1, 0
+        -- How far through each buff. The game removes a buff the moment it runs out, so its
+        -- last moments count as done. frac: the one with longer to go (done when both are).
+        local frac, left, each = 1, 0, {}
         for kind, aura in pairs(buffs) do
             local p, l = Progress(kind, aura, now)
+            if p >= 0.97 then p = 1 end
+            each[kind] = p
             frac, left = math.min(frac, p), math.max(left, l)
         end
-        -- The game removes the buff the moment it runs out, so its last moments count as done.
-        if frac >= 0.97 then frac = 1 end
-        local st = State(kinds, frac, left, (eat or drink).icon, nil)
+        local st = State(kinds, frac, left, (eat or drink).icon, nil, each.eat, each.drink)
         if frac >= 0.999 then
             fullAt = fullAt or now
             st.doneAt = fullAt
@@ -151,6 +159,10 @@ local foodRing = CreateLiveRing({
         local frac = math.min(1, 0.1 + (cycle % 7) / 5.5 * 0.9)
         local left = math.max(0, 5.5 - (cycle % 7))
         local start = t - (cycle % 7)
+        if kinds == "both" then -- the drink was started a little after the food
+            local drinkFrac = math.max(0, math.min(1, frac * 1.25 - 0.25))
+            return State(kinds, math.min(frac, drinkFrac), left, SAMPLE_ICONS[kinds], start + 5.5, frac, drinkFrac)
+        end
         return State(kinds, frac, left, SAMPLE_ICONS[kinds], start + 5.5)
     end,
     decorate = function(st, frame, geom) ns.DrawFoodFx(st, frame, geom) end,
@@ -169,6 +181,10 @@ local fx -- textures and lines on the ring's frame, made on first use
 
 local function Build(frame)
     fx = { crumbs = {}, steam = {}, bite = {}, impact = {} }
+    -- The split ring's halves (eating on the left, drinking on the right).
+    fx.eatFill = ns.NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, frame)
+    fx.drinkFill = ns.NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, frame)
+    fx.leftGeom, fx.rightGeom = {}, {}
     fx.glow = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
     if fx.glow:SetTexture(GLOW_TEX) == false then fx.glow:SetTexture(STAR_TEX) end
     fx.glow:SetBlendMode("ADD")
@@ -222,6 +238,8 @@ end
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
+    for _, l in ipairs(fx.eatFill) do l:Hide() end
+    for _, l in ipairs(fx.drinkFill) do l:Hide() end
     for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
     for _, p in ipairs(fx.steam) do p.tex:Hide() end
     for _, t in ipairs(fx.bite) do t:Hide() end
@@ -233,13 +251,14 @@ end
 
 -- Steam: wisps curling up from the bottom of the hollow, past the top of the ring,
 -- swaying more and spreading as they rise.
-local function DrawSteam(frame, now, ri, ro)
+-- cx / width: where the wisps rise and how far apart (the left half on a split ring).
+local function DrawSteam(frame, now, ri, ro, cx, width)
     for _, p in ipairs(fx.steam) do
         local u = (now * 0.32 + p.phase) % 1
-        local ox = (p.wisp - (WISPS + 1) / 2) * ri * 0.42
+        local ox = cx + (p.wisp - (WISPS + 1) / 2) * ri * 0.42 * width
         local x = ox + math.sin(u * 6.5 + now * 1.3 + p.wisp * 1.9) * ri * (0.04 + 0.22 * u)
         local y = -ri * 0.45 + u * (ri * 0.45 + ro * 1.45)
-        local size = ri * (0.45 + 0.85 * u)
+        local size = ri * (0.45 + 0.85 * u) * (0.6 + 0.4 * width)
         p.tex:ClearAllPoints()
         p.tex:SetPoint("CENTER", frame, "CENTER", x, y)
         p.tex:SetSize(size, size)
@@ -342,7 +361,9 @@ end
 -- The water: filling the hollow up to `level` (0..1 of its height, eased toward how far
 -- through the drink you are), its surface rocking, and sloshing harder just after each gulp.
 local shownLevel
-local function DrawWater(frame, now, ri, level, c)
+-- xMin: the water's left edge (the middle, on a split ring, so it only fills the right half).
+local function DrawWater(frame, now, ri, level, c, xMin)
+    xMin = xMin or -ri
     shownLevel = shownLevel and (shownLevel + (level - shownLevel) * 0.08) or level
     local lv = shownLevel
     local since = now % GULP
@@ -359,6 +380,7 @@ local function DrawWater(frame, now, ri, level, c)
     for i, l in ipairs(fx.water) do
         local x = -ri + (i - 0.5) * w
         local outer = math.abs(x) + w / 2 -- the strip's side nearest the edge stays inside the circle
+        if x - w / 2 < xMin - 0.01 then outer = ri + 1 end -- left of the water's edge: nothing
         local edge = math.sqrt(math.max(0, ri * ri - outer * outer))
         local top = math.min(edge, Surface(x))
         local shallow = fx.shallow[i]
@@ -382,10 +404,10 @@ local function DrawWater(frame, now, ri, level, c)
     -- Surface: a light line along the top of the water, inside the circle.
     local sw = 2 * ri / SURFACE
     for i, l in ipairs(fx.surface) do
-        local x1, x2 = -ri + (i - 1) * sw, -ri + i * sw
+        local x1, x2 = math.max(xMin, -ri + (i - 1) * sw), -ri + i * sw
         local y1, y2 = Surface(x1), Surface(x2)
         local e1, e2 = math.sqrt(math.max(0, ri * ri - x1 * x1)), math.sqrt(math.max(0, ri * ri - x2 * x2))
-        if math.abs(y1) < e1 - 1 and math.abs(y2) < e2 - 1 then
+        if x2 > x1 + 0.5 and math.abs(y1) < e1 - 1 and math.abs(y2) < e2 - 1 then
             l:SetThickness(math.max(1.5, ri * 0.045))
             l:SetStartPoint("CENTER", frame, x1, y1)
             l:SetEndPoint("CENTER", frame, x2, y2)
@@ -397,28 +419,67 @@ local function DrawWater(frame, now, ri, level, c)
     end
 end
 
+-- The split ring (eating and drinking at once): eating fills up the left half from the
+-- bottom, drinking up the right half, each in its own color. A half's geometry is the
+-- ring's own, turned to start at the bottom (and going the other way on the right).
+local function HalfGeom(g, geom, right)
+    g.R, g.T, g.step, g.style, g.gapPx = geom.R, geom.T, geom.step, geom.style, geom.gapPx
+    g.notches = 12 -- half the usual 24, for the segmented style
+    if right then g.start, g.sweep, g.reverse = 0, 0.5, true else g.start, g.sweep, g.reverse = 0.5, 0.5, nil end
+    return g
+end
+
+local function DrawSplit(st, frame, geom)
+    if not st.split then
+        for _, l in ipairs(fx.eatFill) do l:Hide() end
+        for _, l in ipairs(fx.drinkFill) do l:Hide() end
+        return
+    end
+    local c = db.foodColors
+    local left, right = HalfGeom(fx.leftGeom, geom, false), HalfGeom(fx.rightGeom, geom, true)
+    for _, l in ipairs(fx.eatFill) do l:SetColorTexture(c.eat.r, c.eat.g, c.eat.b, 1) end
+    for _, l in ipairs(fx.drinkFill) do l:SetColorTexture(c.drink.r, c.drink.g, c.drink.b, 1) end
+    ns.DrawArc(fx.eatFill, 0, st.eatFrac or 0, frame, left, nil, ns.Shade("food", c.eat))
+    ns.DrawArc(fx.drinkFill, 0, st.drinkFrac or 0, frame, right, nil, ns.Shade("food", c.drink))
+end
+
 local function DrawFoodFx(st, frame, geom)
-    if not (st and st.kinds and db.foodFx) or not geom or geom.R <= 0 then return HideAll() end
-    if not fx then Build(frame) end
+    if not geom or geom.R <= 0 then return HideAll() end
+    if st and st.kinds and not fx then Build(frame) end
+    if fx then DrawSplit(st or {}, frame, geom) end -- the halves show even with the animations off
+    if not (st and st.kinds and db.foodFx) then
+        if fx then
+            local split = st and st.split
+            HideAll()
+            if split then DrawSplit(st, frame, geom) end
+        end
+        return
+    end
     local now = GetTime()
     local ri = math.max(4, geom.R - geom.T / 2) -- the hollow
     local ro = geom.R + geom.T / 2              -- the ring's outer edge
     local eat, drink = st.kinds ~= "drink", st.kinds ~= "eat"
     local c = db.foodColors
+    local split = st.kinds == "both" -- each side's effects stay on its own half
 
     -- While eating: a warm glow low in the middle (the steam's source), swelling a little
     -- with each bite, the steam, and the chomp.
     if eat then
         local pulse = 0.7 + 0.3 * math.max(0, 1 - (now % CHOMP) / CHOMP * 3)
-        local size = ri * 1.9 * (0.92 + 0.08 * pulse)
+        local size = ri * (split and 1.2 or 1.9) * (0.92 + 0.08 * pulse)
         fx.glow:ClearAllPoints()
-        fx.glow:SetPoint("CENTER", frame, "CENTER", 0, -ri * 0.3)
+        fx.glow:SetPoint("CENTER", frame, "CENTER", split and -ri * 0.45 or 0, -ri * 0.3)
         fx.glow:SetSize(size, size)
         fx.glow:SetVertexColor(c.eat.r, c.eat.g, c.eat.b)
         fx.glow:SetAlpha(0.4 * pulse)
         fx.glow:Show()
-        DrawSteam(frame, now, ri, ro)
-        DrawChomp(frame, geom, now, ri, ro, st.frac)
+        if split then -- the left half: steam up the left, bites at the end of the left fill
+            DrawSteam(frame, now, ri, ro, -ri * 0.45, 0.45)
+            DrawChomp(frame, HalfGeom(fx.leftGeom, geom, false), now, ri, ro, st.eatFrac or st.frac)
+        else
+            DrawSteam(frame, now, ri, ro, 0, 1)
+            DrawChomp(frame, geom, now, ri, ro, st.frac)
+        end
     else
         fx.glow:Hide()
         for _, p in ipairs(fx.steam) do p.tex:Hide() end
@@ -427,7 +488,11 @@ local function DrawFoodFx(st, frame, geom)
         for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
     end
     if drink then
-        DrawWater(frame, now, ri, st.frac or 0.5, c.drink)
+        if split then
+            DrawWater(frame, now, ri, st.drinkFrac or st.frac or 0, c.drink, 0) -- the right half only
+        else
+            DrawWater(frame, now, ri, st.frac or 0.5, c.drink)
+        end
     else
         shownLevel = nil
         for _, l in ipairs(fx.water) do l:Hide() end
