@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0
 
 - **Fill backwards** (every ring, in its Appearance box): the ring fills counter-clockwise from
   the other end. The gradient and segments follow the fill; "Apply this look to all rings" copies it.
