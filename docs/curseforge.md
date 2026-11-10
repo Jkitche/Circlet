@@ -16,7 +16,7 @@ around the minimap.
   a "Ready to turn in" alert. Pin any quest from the quest log to give it its own ring.
 - **Professions** and **weapon skills**: every skill-up, new training tiers, and "capped".
 - **Reputation**: gains, losses and new standings, with the faction's icon.
-- **Pet XP** (hunters), **ammo and soul shards**, **flight paths** (counts down to landing;
+- **Pet XP** (hunters), **ammo and soul shards** (warnings, or every shot, flashing when low), **flight paths** (counts down to landing;
   route times are learned as you fly), **timed quests**.
 - **Corpse runs**: distance to your body, an arrow pointing to it, and when you can resurrect.
 - **Breath**, fatigue and Feign Death, with bubbles.

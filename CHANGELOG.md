@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **Ammo ring: Always show** (off by default; Ammo > Always show). The ring shows every time you
+  shoot and counts down what's left, instead of only at the warning steps. Nothing shows while the
+  game keeps the count hidden; the next readable count carries on from the last one.
+- **Ammo ring: flash when low** (Ammo > Flash at or below, default 15%). The ring flashes once
+  what's left is at or below that share of a full supply (the most carried since the last restock),
+  with Always show or with the warnings. 0 turns it off.
+- The ammo options now say plainly that, without Always show, the ring shows every quarter of the
+  warning level rather than on every shot.
 - **Fill backwards** (every ring, in its Appearance box): the ring fills counter-clockwise from
   the other end. The gradient and segments follow the fill; "Apply this look to all rings" copies it.
 - **`/sq` is gone**: use `/circ` (or `/circlet`) for the options and every command.

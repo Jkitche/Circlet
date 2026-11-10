@@ -14,6 +14,15 @@ ammo 40 -> Sharp Arrow / -45 / 165 / 600 / Low ammo
 ammo 0 -> Sharp Arrow / -59 / 151 / 600 / Out of ammo!
 restock:
    Sharp Arrow / +963 / 963 / 1,000 / Restocked @x=0
+always 999 -> Sharp Arrow / -1 / 999 / 1,000 / Ammo left
+always 998 -> Sharp Arrow / -2 / 998 / 1,000 / Ammo left
+always 990 -> Sharp Arrow / -8 / 992 / 1,000 / Ammo left
+after the hold: (hidden)
+count hidden: (hidden)
+readable again: Sharp Arrow / -8 / 982 / 1,000 / Ammo left
+at 20% (Sharp Arrow / -780 / 200 / 1,000 / Low ammo): flashing false
+at 14% (Sharp Arrow / -840 / 140 / 1,000 / Low ammo): flashing true
+flash set to 0: flashing false
 pet gain:
    Wolf / +400 / 4,600 / 9,800 / Level 23 @x=0
 pet level:
@@ -34,7 +43,7 @@ edit all:
    Mining / +3 / 115 / 150 / Profession @x=0
    Swords / +2 / 143 / 150 / Weapon skill @x=0
    Stormwind / +250 / 2,400 / 6,000 / Friendly @x=0
-   Sharp Arrow / -50 / 150 / 1,000 / Low ammo @x=0
+   Sharp Arrow / -12 / 628 / 1,000 / Ammo left @x=0
    Wolf / +850 / 5,050 / 9,800 / Level 23 @x=0
    to Ironforge / 1:51 / remaining @x=0
    Protecting the Shipment / 2:16 / remaining @x=0

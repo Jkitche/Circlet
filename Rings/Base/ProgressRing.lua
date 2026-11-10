@@ -26,8 +26,11 @@ local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 -- Entries may set gainText to replace the "+N" line (and hide the delta line).
 -- cfg.onFinish(entry, frame, geom), optional, runs once when an entry's fill lands;
 -- it may return a number of seconds to keep the ring up (for an effect to finish).
--- cfg.style(entry, finished) returns { fill, rank, label, labelColor } every frame,
--- so color changes in the options panel show up live.
+-- cfg.style(entry, finished) returns { fill, rank, label, labelColor, flash } every frame,
+-- so color changes in the options panel show up live. flash: the fill pulses toward white
+-- (FLASH_HZ times a second) to grab attention.
+
+local FLASH_HZ = 1.5
 
 local function CreateProgressRing(cfg)
     local key = cfg.key
@@ -48,6 +51,7 @@ local function CreateProgressRing(cfg)
 
     local queue = {}
     local inCombat = false
+    local flashColor = {}
     local anim = { entry = nil, from = 0, to = 0, shown = 0, t = 1, dur = 0.8, holdUntil = 0, animEndAt = 0 }
 
     -- Edit mode: the ring stays up, cycling through cfg.samples() so every color
@@ -283,10 +287,18 @@ local function CreateProgressRing(cfg)
             if extra then anim.holdUntil = math.max(anim.holdUntil, GetTime() + extra) end
         end
 
-        for _, line in ipairs(frame.fill) do
-            line:SetColorTexture(s.fill.r, s.fill.g, s.fill.b, 1)
+        local fill = s.fill
+        if s.flash then
+            local k = 0.7 * (0.5 - 0.5 * math.cos(GetTime() * 2 * math.pi * FLASH_HZ))
+            flashColor.r = fill.r + (1 - fill.r) * k
+            flashColor.g = fill.g + (1 - fill.g) * k
+            flashColor.b = fill.b + (1 - fill.b) * k
+            fill = flashColor
         end
-        DrawArc(frame.fill, 0, anim.shown, frame, geom, nil, ns.Shade(key, s.fill))
+        for _, line in ipairs(frame.fill) do
+            line:SetColorTexture(fill.r, fill.g, fill.b, 1)
+        end
+        DrawArc(frame.fill, 0, anim.shown, frame, geom, nil, ns.Shade(key, fill))
 
         frame.nameText:SetText(e.name)
         frame.nameText:SetTextColor(0.9, 0.9, 0.9)

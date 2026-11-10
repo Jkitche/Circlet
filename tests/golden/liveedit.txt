@@ -247,7 +247,7 @@ all on again
   #3 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / +2 / 114 / 150 / Profession
   #4 shown=true a=1.00 strata=TOOLTIP mouse=true | Swords / +2 / 143 / 150 / Weapon skill
   #5 shown=true a=1.00 strata=TOOLTIP mouse=true | Stormwind / +194 / 2,344 / 6,000 / Friendly
-  #6 shown=true a=1.00 strata=TOOLTIP mouse=true | Sharp Arrow / -38 / 162 / 1,000 / Low ammo
+  #6 shown=true a=1.00 strata=TOOLTIP mouse=true | Sharp Arrow / -10 / 630 / 1,000 / Ammo left
   #7 shown=true a=1.00 strata=TOOLTIP mouse=true | Wolf / +579 / 4,779 / 9,800 / Level 23
   #8 shown=true a=1.00 strata=TOOLTIP mouse=true | to Ironforge / 1:57 / remaining
   #9 shown=true a=1.00 strata=TOOLTIP mouse=true | Protecting the Shipment / 2:26 / remaining
@@ -271,7 +271,7 @@ after Esc
   #3 shown=true a=0.50 strata=HIGH mouse=false | Mining / +3 / 115 / 150 / Profession
   #4 shown=true a=0.50 strata=HIGH mouse=false | Swords / +2 / 143 / 150 / Weapon skill
   #5 shown=true a=0.50 strata=HIGH mouse=false | Stormwind / +239 / 2,389 / 6,000 / Friendly
-  #6 shown=true a=0.50 strata=HIGH mouse=false | Sharp Arrow / -47 / 153 / 1,000 / Low ammo
+  #6 shown=true a=0.50 strata=HIGH mouse=false | Sharp Arrow / -12 / 628 / 1,000 / Ammo left
   #7 shown=true a=0.50 strata=HIGH mouse=false | Wolf / +761 / 4,961 / 9,800 / Level 23
   #8 shown=true a=0.60 strata=HIGH mouse=false | to Ironforge / 1:57 / remaining
   #9 shown=true a=0.60 strata=HIGH mouse=false | Protecting the Shipment / 2:26 / remaining

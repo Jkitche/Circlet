@@ -52,6 +52,34 @@ Advance(8)
 AMMO = 1000; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(1.5); Dump("restock:")
 Advance(8)
 
+-- ammo, always show: every shot counts down, flashing at or below 15% of a full supply
+function FillColors(f)
+  local t = {} for _, l in ipairs(ALL_LINES) do if l._parent == f and l._layer == "ARTWORK" and l._sub == 0 and l._shown and l._c then
+    table.insert(t, string.format("%.2f,%.2f,%.2f", l._c[1], l._c[2], l._c[3])) end end
+  return t[#t] or "-"
+end
+CircletDB.ammoAlways = true
+for _, n in ipairs({ 999, 998, 990 }) do AMMO = n; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(0.6)
+  local f = RingByText("Sharp Arrow"); P(string.format("always %d -> %s", n, f and f._shown and Texts(f) or "(hidden)")) end
+Advance(8)
+local f = RingByText("Sharp Arrow"); P("after the hold: " .. (f and f._shown and Texts(f) or "(hidden)"))
+SECRET = {}; issecretvalue = function(v) return v == SECRET end
+AMMO = SECRET; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(0.6)
+f = RingByText("Sharp Arrow"); P("count hidden: " .. (f and f._shown and Texts(f) or "(hidden)"))
+AMMO = 980; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(0.6)
+f = RingByText("Sharp Arrow"); P("readable again: " .. (f and f._shown and Texts(f) or "(hidden)"))
+Advance(8)
+AMMO = 200; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(2)
+f = RingByText("Sharp Arrow"); local a = FillColors(f); Advance(0.33); local b = FillColors(f)
+P("at 20% (" .. Texts(f) .. "): flashing " .. tostring(a ~= b))
+AMMO = 140; Fire("UNIT_INVENTORY_CHANGED", "player"); Advance(2)
+a = FillColors(f); Advance(0.33); b = FillColors(f)
+P("at 14% (" .. Texts(f) .. "): flashing " .. tostring(a ~= b))
+CircletDB.ammoFlash = 0; Advance(0.1); a = FillColors(f); Advance(0.33); b = FillColors(f)
+P("flash set to 0: flashing " .. tostring(a ~= b))
+CircletDB.ammoFlash = 15; CircletDB.ammoAlways = false; issecretvalue = nil
+Advance(8)
+
 -- pet
 PET = { cur = 4200, max = 9800, level = 23 }; Fire("UNIT_PET", "player"); Advance(0.5)
 PET.cur = 4600; Fire("UNIT_PET_EXPERIENCE", "player"); Advance(1.5); Dump("pet gain:")
