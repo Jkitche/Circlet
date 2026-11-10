@@ -27,7 +27,7 @@ around the minimap.
 - **Corpse runs**: distance to your body, an arrow pointing to it, and when you can resurrect.
 - **Breath**, fatigue and Feign Death, with bubbles.
 - **Food & drink**: health or mana refilling as you eat or drink, with crumbs flying off every
-  bite and bubbles and ripples with every gulp.
+  bite and water rising in the ring as you drink.
 - **Pet XP** (hunters), **timed quests**, and **totems** (shamans): one small ring per element.
 
 ## Make them yours

@@ -21,10 +21,10 @@ function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g
 function Ring() for _, f in ipairs(allFrames) do if f.editHint and f._shown and T(f):match("ating") or (f.editHint and f._shown and T(f):match("rinking")) then return f end end end
 -- What's animating: crumbs (square textures), bubbles (frames with lines + glint), ripple lines.
 function Fx()
-  local crumbs, bubbles = 0, 0
-  for _, f in ipairs(allFrames) do if f.lines and f.glint and f._shown and f._parent and f._parent.editHint then bubbles = bubbles + 1 end end
+  local water = 0
   local r = Ring()
-  return "bubbles=" .. bubbles
+  for _, l in ipairs(ALL_LINES) do if r and l._parent == r and l._layer == "BORDER" and l._shown then water = water + 1 end end
+  return "water=" .. (water > 0 and "yes" or "no")
 end
 function C() local f = Ring() return f and T(f) or "(hidden)" end
 

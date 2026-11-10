@@ -11,12 +11,13 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 -- drinking at once fills with whichever is further from full. With foodFx on it plays:
 --   eating:   a chomp every CHOMP seconds throws crumbs off the top of the ring, which arc
 --             out, tumble and fall; a warm glow pulses in the middle with each bite.
---   drinking: bubbles rise through the middle like a fizzy drink, and every GULP seconds a
---             gulp sends a ripple rolling out from the centre.
+--   drinking: the middle of the ring fills with water up to your mana, rising as you drink.
+--             Its surface rocks with a gentle wave, and every GULP seconds a gulp sloshes it.
 -- All worked out from the time, so edit mode's sample plays them too.
 
 local CHOMP, GULP = 1.3, 1.6
-local CRUMBS, BUBBLES, BUBBLE_SIDES = 7, 6, 10
+local CRUMBS = 7
+local COLUMNS, SURFACE = 48, 18 -- the water: vertical strips, and segments along its surface
 
 -- The buffs, by name (every rank shares one): the game's own names, read from the spells,
 -- plus the English ones in case a name can't be read yet.
@@ -77,7 +78,7 @@ local fullAt -- when what you're refilling reached full (for the burst); nil whi
 -- kinds: "eat", "drink" or "both"; health / mana: fractions (nil if unknown); left: seconds.
 local function State(kinds, health, mana, left, icon, doneAt)
     local c = db.foodColors
-    local st = { kinds = kinds, icon = icon, hold = 1.5 }
+    local st = { kinds = kinds, icon = icon, hold = 1.5, mana = mana }
     local eat, drink = kinds ~= "drink", kinds ~= "eat"
     st.title = (eat and drink) and "Eating & drinking" or (eat and "Eating" or "Drinking")
     local frac
@@ -155,7 +156,7 @@ local CRUMB_COLORS = { { 0.85, 0.62, 0.30 }, { 0.70, 0.45, 0.20 }, { 0.95, 0.80,
 local fx -- textures and lines on the ring's frame, made on first use
 
 local function Build(frame)
-    fx = { crumbs = {}, bubbles = {} }
+    fx = { crumbs = {} }
     fx.glow = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
     if fx.glow:SetTexture(GLOW_TEX) == false then fx.glow:SetTexture(STAR_TEX) end
     fx.glow:SetBlendMode("ADD")
@@ -170,50 +171,26 @@ local function Build(frame)
         fx.crumbs[i] = { tex = t, c = c, angle = -1.1 + 2.2 * ((i * 0.618) % 1), speed = 0.8 + (i * 0.37) % 0.5,
                          size = 0.7 + (i * 0.53) % 0.6, spin = ((i % 2 == 0) and 1 or -1) * (4 + i % 3 * 2) }
     end
-    for i = 1, BUBBLES do
-        local b = CreateFrame("Frame", nil, frame)
-        b:SetSize(1, 1)
-        b.lines = {}
-        for s = 1, BUBBLE_SIDES do
-            local line = b:CreateLine(nil, "ARTWORK", nil, 3)
-            if line.SetSnapToPixelGrid then line:SetSnapToPixelGrid(false); line:SetTexelSnappingBias(0) end
-            b.lines[s] = line
-        end
-        b.glint = b:CreateTexture(nil, "ARTWORK", nil, 4)
-        b.glint:SetTexture(CIRCLE_TEX)
-        b.speed, b.phase = 1 / (1.8 + (i * 0.41) % 1.0), (i * 0.618) % 1
-        b.x, b.size = ((i * 0.437) % 1) * 2 - 1, 0.7 + (i * 0.53) % 0.6
-        b:Hide()
-        fx.bubbles[i] = b
+    -- The water: strips from the bottom of the hollow up to the surface, and a bright line
+    -- along the surface. Lines, worked out to stay inside the circle, so no mask is needed.
+    local function Line(sub)
+        local l = frame:CreateLine(nil, "BORDER", nil, sub)
+        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        l:Hide()
+        return l
     end
-    fx.ripple = ns.NewRingLayer("ARTWORK", 2, { r = 1, g = 1, b = 1 }, 1, frame)
-    fx.rippleGeom = {}
-    for _, l in ipairs(fx.ripple) do l:Hide() end
+    fx.water, fx.shallow, fx.surface = {}, {}, {}
+    for i = 1, COLUMNS do fx.water[i], fx.shallow[i] = Line(1), Line(2) end
+    for i = 1, SURFACE do fx.surface[i] = Line(3) end
 end
 
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
     for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
-    for _, b in ipairs(fx.bubbles) do b:Hide() end
-    for _, l in ipairs(fx.ripple) do l:Hide() end
-end
-
-local function ShapeBubble(b, r, a)
-    local thick = math.max(1, r * 0.25)
-    for s = 1, BUBBLE_SIDES do
-        local a1, a2 = (s - 1) / BUBBLE_SIDES * TAU, s / BUBBLE_SIDES * TAU
-        local line = b.lines[s]
-        line:SetThickness(thick)
-        line:SetStartPoint("CENTER", b, math.cos(a1) * r, math.sin(a1) * r)
-        line:SetEndPoint("CENTER", b, math.cos(a2) * r, math.sin(a2) * r)
-        line:SetColorTexture(0.80, 0.93, 1.00, 0.85 * a)
-    end
-    local g = math.max(1.5, r * 0.5)
-    b.glint:SetSize(g, g)
-    b.glint:ClearAllPoints()
-    b.glint:SetPoint("CENTER", b, "CENTER", -r * 0.35, r * 0.35)
-    b.glint:SetVertexColor(1, 1, 1, 0.9 * a)
+    for _, l in ipairs(fx.water) do l:Hide() end
+    for _, l in ipairs(fx.shallow) do l:Hide() end
+    for _, l in ipairs(fx.surface) do l:Hide() end
 end
 
 -- Crumbs from the latest chomp: thrown up and out from the ring's top edge, arcing over
@@ -243,34 +220,62 @@ local function DrawCrumbs(frame, now, ri, ro)
     end
 end
 
--- Bubbles rising through the hollow, swaying, popping near the top.
-local function DrawBubbles(frame, now, ri)
-    for _, b in ipairs(fx.bubbles) do
-        local u = (now * b.speed + b.phase) % 1
-        local y = ri * (-0.85 + 1.6 * u)
-        local half = math.sqrt(math.max(0, 1 - (y / ri) ^ 2)) * ri * 0.75 -- keep inside the hollow
-        local x = b.x * half + math.sin(now * 3 + b.phase * TAU) * ri * 0.05
-        local r = math.max(1.5, ri * 0.075 * b.size * (0.8 + 0.4 * u))
-        local a = math.min(1, u * 5) * (u > 0.85 and (1 - u) / 0.15 or 1)
-        ShapeBubble(b, r, a)
-        b:ClearAllPoints()
-        b:SetPoint("CENTER", frame, "CENTER", x, y)
-        b:Show()
+-- The water: filling the hollow up to `level` (0..1 of its height, eased toward the mana
+-- you have), its surface rocking, and sloshing harder just after each gulp.
+local shownLevel
+local function DrawWater(frame, now, ri, level, c)
+    shownLevel = shownLevel and (shownLevel + (level - shownLevel) * 0.08) or level
+    local lv = shownLevel
+    local since = now % GULP
+    local amp = ri * (0.035 + 0.09 * math.exp(-since * 2.8)) -- a gentle rock, a slosh after a gulp
+    local tilt = ri * 0.06 * math.sin(since * 4.5) * math.exp(-since * 1.8) -- the slosh leans side to side
+    local base = -ri + 2 * ri * lv
+    local function Surface(x)
+        local u = x / ri
+        return base + amp * math.sin(u * 2.4 + now * 2.2) + amp * 0.4 * math.sin(u * 5.3 - now * 3.1) + tilt * u
     end
-end
-
--- A gulp: a ripple rolling out from the middle to the ring, fading as it goes.
-local function DrawRipple(frame, geom, now, ri, c)
-    local u = (now % GULP) / (GULP * 0.7)
-    if u >= 1 then
-        for _, l in ipairs(fx.ripple) do l:Hide() end
-        return
+    -- Body: deep and dark, with a lighter band just under the surface.
+    local w = 2 * ri / COLUMNS
+    local band = ri * 0.22
+    for i, l in ipairs(fx.water) do
+        local x = -ri + (i - 0.5) * w
+        local outer = math.abs(x) + w / 2 -- the strip's side nearest the edge stays inside the circle
+        local edge = math.sqrt(math.max(0, ri * ri - outer * outer))
+        local top = math.min(edge, Surface(x))
+        local shallow = fx.shallow[i]
+        if top > -edge + 0.5 then
+            local mid = math.max(-edge, top - band)
+            l:SetThickness(w)
+            l:SetStartPoint("CENTER", frame, x, -edge)
+            l:SetEndPoint("CENTER", frame, x, mid)
+            l:SetColorTexture(c.r * 0.3, c.g * 0.32, c.b * 0.45, 0.7)
+            l:SetShown(mid > -edge + 0.5)
+            shallow:SetThickness(w)
+            shallow:SetStartPoint("CENTER", frame, x, mid)
+            shallow:SetEndPoint("CENTER", frame, x, top)
+            shallow:SetColorTexture(c.r * 0.55, c.g * 0.58, c.b * 0.7, 0.6)
+            shallow:Show()
+        else
+            l:Hide()
+            shallow:Hide()
+        end
     end
-    local g = fx.rippleGeom
-    g.R, g.T, g.step = math.max(2, ri * (0.15 + 0.85 * u)), math.max(1, geom.T * 0.25 * (1 - u * 0.5)), geom.step
-    g.start, g.sweep, g.reverse = 0, 1, nil
-    for _, l in ipairs(fx.ripple) do l:SetColorTexture(c.r, c.g, c.b, 0.7 * (1 - u)) end
-    ns.DrawArc(fx.ripple, 0, 1, frame, g, true)
+    -- Surface: a light line along the top of the water, inside the circle.
+    local sw = 2 * ri / SURFACE
+    for i, l in ipairs(fx.surface) do
+        local x1, x2 = -ri + (i - 1) * sw, -ri + i * sw
+        local y1, y2 = Surface(x1), Surface(x2)
+        local e1, e2 = math.sqrt(math.max(0, ri * ri - x1 * x1)), math.sqrt(math.max(0, ri * ri - x2 * x2))
+        if math.abs(y1) < e1 - 1 and math.abs(y2) < e2 - 1 then
+            l:SetThickness(math.max(1.5, ri * 0.045))
+            l:SetStartPoint("CENTER", frame, x1, y1)
+            l:SetEndPoint("CENTER", frame, x2, y2)
+            l:SetColorTexture(math.min(1, c.r * 0.5 + 0.5), math.min(1, c.g * 0.5 + 0.5), math.min(1, c.b * 0.4 + 0.6), 0.85)
+            l:Show()
+        else
+            l:Hide()
+        end
+    end
 end
 
 local function DrawFoodFx(st, frame, geom)
@@ -282,23 +287,26 @@ local function DrawFoodFx(st, frame, geom)
     local eat, drink = st.kinds ~= "drink", st.kinds ~= "eat"
     local c = db.foodColors
 
-    -- A warm (or cool) glow in the middle: swells with each bite or gulp.
-    local beat = eat and (now % CHOMP) / CHOMP or (now % GULP) / GULP
-    local pulse = 0.55 + 0.45 * math.max(0, 1 - beat * 3)
-    local gc = eat and c.eat or c.drink
-    local size = ri * 2.2 * (0.9 + 0.1 * pulse)
-    fx.glow:SetSize(size, size)
-    fx.glow:SetVertexColor(gc.r, gc.g, gc.b)
-    fx.glow:SetAlpha(0.35 * pulse)
-    fx.glow:Show()
+    -- A warm glow in the middle while eating: swells with each bite.
+    if eat then
+        local pulse = 0.55 + 0.45 * math.max(0, 1 - (now % CHOMP) / CHOMP * 3)
+        local size = ri * 2.2 * (0.9 + 0.1 * pulse)
+        fx.glow:SetSize(size, size)
+        fx.glow:SetVertexColor(c.eat.r, c.eat.g, c.eat.b)
+        fx.glow:SetAlpha(0.35 * pulse)
+        fx.glow:Show()
+    else
+        fx.glow:Hide()
+    end
 
     if eat then DrawCrumbs(frame, now, ri, ro) else for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end end
     if drink then
-        DrawBubbles(frame, now, ri)
-        DrawRipple(frame, geom, now, ri, c.drink)
+        DrawWater(frame, now, ri, st.mana or st.frac or 0.5, c.drink)
     else
-        for _, b in ipairs(fx.bubbles) do b:Hide() end
-        for _, l in ipairs(fx.ripple) do l:Hide() end
+        shownLevel = nil
+        for _, l in ipairs(fx.water) do l:Hide() end
+        for _, l in ipairs(fx.shallow) do l:Hide() end
+        for _, l in ipairs(fx.surface) do l:Hide() end
     end
 end
 ns.DrawFoodFx = DrawFoodFx
@@ -345,20 +353,20 @@ ns.RegisterRing({
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.6, "Food & Drink", "Food & Drink Ring",
                 "While you eat or drink, the ring fills with your health or mana and counts down the buff, then "
-                .. "bursts when you're full. Eating throws crumbs off the ring with every bite; drinking sends "
-                .. "bubbles up through it and a ripple out with every gulp.",
+                .. "bursts when you're full. Eating throws crumbs off the ring with every bite; drinking fills the "
+                .. "middle with water that rises with your mana and sloshes with every gulp.",
                 MergeTop(TopRow("food", "food & drink ring", ns.PreviewFoodRing,
                     "Show a sample meal: eating, drinking, then both. Also /circ food."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "foodEnabled", "Show food & drink ring",
                             "Show the ring while you're eating or drinking."),
                         fx = Toggle(2, "foodFx", "Animations",
-                            "Crumbs flying with each bite while you eat; bubbles and a ripple with each gulp while "
-                            .. "you drink."),
+                            "Crumbs flying with each bite while you eat; water filling the ring and sloshing with "
+                            .. "each gulp while you drink."),
                     }),
                     colors = Box(3, "Colors", {
                         eat = Color(1, "foodColors", "eat", "Eating", "Ring color while you eat (and the glow behind it)."),
-                        drink = Color(2, "foodColors", "drink", "Drinking", "Ring color while you drink, and the ripple."),
+                        drink = Color(2, "foodColors", "drink", "Drinking", "Ring color while you drink, and the water's."),
                         both = Color(3, "foodColors", "both", "Both", "Ring color while you eat and drink at once."),
                         full = Color(4, "foodColors", "full", "Full", "Ring and label color once you're full."),
                     }),

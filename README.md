@@ -40,7 +40,8 @@ then fade away, or stay up as a permanent display.
 
 **Food and drink**
 - **Eating and drinking**: health or mana filling back up and the buff counting down, bursting
-  when you're full. Crumbs fly with every bite; bubbles rise and a ripple rolls out with every gulp.
+  when you're full. Crumbs fly with every bite; while drinking, water fills the
+  ring and sloshes with every gulp.
 
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.

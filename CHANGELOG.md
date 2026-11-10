@@ -4,8 +4,8 @@
 
 - **Food & Drink ring** (new; on by default). While you eat or drink, the ring fills with your
   health or mana (whichever is further from full when you do both), counts down the buff and
-  bursts when you're full. Eating throws crumbs off the ring with every bite; drinking sends
-  bubbles up through it and a ripple out with every gulp (Food & Drink > Animations). Preview
+  bursts when you're full. Eating throws crumbs off the ring with every bite; drinking fills
+  its middle with water that rises with your mana and sloshes with every gulp (Food & Drink > Animations). Preview
   with `/circ food`.
 - **Removed: follow what you're interacting with.** The cast ring no longer moves onto the
   chest or quest object you're using (it didn't work reliably), and `/circ follow` is gone. Interaction
