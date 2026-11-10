@@ -183,9 +183,17 @@ def snapshot(name):
         if ring is not None and tostr(ring) in rings:
             rings[tostr(ring)]["texts"].append((f, a))
     for t in (lua.eval("ALL_TEX") or {}).values():
-        if t._solid is None or t._pt is None:
+        if t._pt is None:
             continue
-        if max(t._solid[1], t._solid[2], t._solid[3]) < 0.1:
+        path = str(t._texpath or "")
+        if t._solid is None:
+            if "TempPortraitAlphaMask" in path and t._mask is None:
+                t._kindr = "circle"   # a plain disc in its vertex color
+            elif "GenericGlow" in path or "star4" in path:
+                t._kindr = "glow"     # a soft light, added on top
+            else:
+                continue
+        elif max(t._solid[1], t._solid[2], t._solid[3]) < 0.1:
             continue  # a badge's dark backing: masked to a circle under the icon in game
         a = visible(t)
         if a <= 0.02:
@@ -231,6 +239,28 @@ def draw_ring(parts):
         im = Image.alpha_composite(im, ov)
 
     for t, a, tx, ty in parts.get("solids", []):
+        if t._kindr == "glow":
+            vc = t._vc
+            col = (vc[1], vc[2], vc[3]) if vc else (1, 1, 1)
+            size = (t._w or 10) * SCALE
+            blob = Image.new("RGBA", (int(size) + 2, int(size) + 2), (0, 0, 0, 0))
+            ImageDraw.Draw(blob).ellipse([size * 0.2, size * 0.2, size * 0.8, size * 0.8],
+                                         fill=(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a)))
+            blob = blob.filter(ImageFilter.GaussianBlur(size * 0.12))
+            px, py = P(tx, ty)
+            ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+            ov.paste(blob, (int(px - size / 2), int(py - size / 2)), blob)
+            im = Image.alpha_composite(im, ov)
+            continue
+        if t._kindr == "circle":
+            vc = t._vc
+            col = (vc[1], vc[2], vc[3]) if vc else (1, 1, 1)
+            half = (t._w or 2) / 2
+            (x0, y0), (x1, y1) = P(tx - half, ty + half), P(tx + half, ty - half)
+            ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+            ImageDraw.Draw(ov).ellipse([x0, y0, x1, y1], fill=(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a)))
+            im = Image.alpha_composite(im, ov)
+            continue
         c = t._solid
         vc = t._vc
         r, g, b = c[1] * (vc[1] if vc else 1), c[2] * (vc[2] if vc else 1), c[3] * (vc[3] if vc else 1)

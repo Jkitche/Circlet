@@ -40,8 +40,8 @@ then fade away, or stay up as a permanent display.
 
 **Food and drink**
 - **Eating and drinking**: the food or drink buff filling the ring and counting down, bursting
-  when it's done. Crumbs fly with every bite; while drinking, water fills the
-  ring and sloshes with every gulp.
+  when it's done. While eating, steam rises and each chomp bites the ring,
+  crumbs flying; while drinking, water fills the ring and sloshes with every gulp.
 
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.

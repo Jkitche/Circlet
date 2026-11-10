@@ -11,14 +11,20 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 -- its length; the client keeps your health and mana themselves secret from addons.) When the
 -- buff's own times are secret too, it's timed from when the buff showed up. Eating and
 -- drinking at once fills with whichever is further from full. With foodFx on it plays:
---   eating:   a chomp every CHOMP seconds throws crumbs off the top of the ring, which arc
---             out, tumble and fall; a warm glow pulses in the middle with each bite.
+--   eating:   steam curls up from a warm glow in the middle, rising past the top of the
+--             ring. Every CHOMP seconds a chomp takes a tooth-marked bite out of the end of
+--             the fill (circles in the track's color, kept inside the band so they never
+--             cover the world behind), with crumbs and impact lines bursting out from it;
+--             the bite closes over again as you chew.
 --   drinking: the middle of the ring fills with water, rising with the buff as you drink.
 --             Its surface rocks with a gentle wave, and every GULP seconds a gulp sloshes it.
 -- All worked out from the time, so edit mode's sample plays them too.
 
 local CHOMP, GULP = 1.3, 1.6
 local CRUMBS = 7
+local WISPS, PUFFS = 3, 8   -- steam: columns, and soft puffs travelling up each one
+local TEETH = 3             -- tooth marks along a bite's edge
+local BITE_HOLD, BITE_FADE = 0.55, 0.35 -- a bite stays this long, then closes over this fast
 local COLUMNS, SURFACE = 48, 18 -- the water: vertical strips, and segments along its surface
 
 -- The buffs, by name (every rank shares one): the game's own names, read from the spells,
@@ -142,7 +148,7 @@ local foodRing = CreateLiveRing({
         -- Eat back to full, then drink, then both at once: 7 seconds each.
         local cycle = t % 21
         local kinds = cycle < 7 and "eat" or (cycle < 14 and "drink" or "both")
-        local frac = math.min(1, (cycle % 7) / 5.5)
+        local frac = math.min(1, 0.1 + (cycle % 7) / 5.5 * 0.9)
         local left = math.max(0, 5.5 - (cycle % 7))
         local start = t - (cycle % 7)
         return State(kinds, frac, left, SAMPLE_ICONS[kinds], start + 5.5)
@@ -162,12 +168,35 @@ local CRUMB_COLORS = { { 0.85, 0.62, 0.30 }, { 0.70, 0.45, 0.20 }, { 0.95, 0.80,
 local fx -- textures and lines on the ring's frame, made on first use
 
 local function Build(frame)
-    fx = { crumbs = {} }
+    fx = { crumbs = {}, steam = {}, bite = {}, impact = {} }
     fx.glow = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
     if fx.glow:SetTexture(GLOW_TEX) == false then fx.glow:SetTexture(STAR_TEX) end
     fx.glow:SetBlendMode("ADD")
     fx.glow:SetPoint("CENTER", frame, "CENTER", 0, 0)
     fx.glow:Hide()
+    -- Steam: soft puffs, a column of them per wisp, each travelling up and fading.
+    for w = 1, WISPS do
+        for j = 1, PUFFS do
+            local t = frame:CreateTexture(nil, "ARTWORK", nil, 6)
+            if t:SetTexture(GLOW_TEX) == false then t:SetTexture(STAR_TEX) end
+            t:SetBlendMode("BLEND") -- plain see-through white: shows on bright ground too, unlike added light
+            t:Hide()
+            table.insert(fx.steam, { tex = t, wisp = w, phase = (j - 1) / PUFFS + w * 0.13 })
+        end
+    end
+    -- The bite: a round chunk and tooth marks along its edge, in the track's color.
+    for i = 1, 1 + TEETH do
+        local t = frame:CreateTexture(nil, "ARTWORK", nil, 5)
+        t:SetTexture(CIRCLE_TEX)
+        t:Hide()
+        fx.bite[i] = t
+    end
+    for i = 1, 3 do
+        local l = frame:CreateLine(nil, "ARTWORK", nil, 4)
+        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        l:Hide()
+        fx.impact[i] = l
+    end
     for i = 1, CRUMBS do
         local t = frame:CreateTexture(nil, "ARTWORK", nil, 3)
         t:SetColorTexture(1, 1, 1, 1)
@@ -194,25 +223,109 @@ local function HideAll()
     if not fx then return end
     fx.glow:Hide()
     for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
+    for _, p in ipairs(fx.steam) do p.tex:Hide() end
+    for _, t in ipairs(fx.bite) do t:Hide() end
+    for _, l in ipairs(fx.impact) do l:Hide() end
     for _, l in ipairs(fx.water) do l:Hide() end
     for _, l in ipairs(fx.shallow) do l:Hide() end
     for _, l in ipairs(fx.surface) do l:Hide() end
 end
 
--- Crumbs from the latest chomp: thrown up and out from the ring's top edge, arcing over
--- its sides and falling away past it.
-local function DrawCrumbs(frame, now, ri, ro)
+-- Steam: wisps curling up from the bottom of the hollow, past the top of the ring,
+-- swaying more and spreading as they rise.
+local function DrawSteam(frame, now, ri, ro)
+    for _, p in ipairs(fx.steam) do
+        local u = (now * 0.32 + p.phase) % 1
+        local ox = (p.wisp - (WISPS + 1) / 2) * ri * 0.42
+        local x = ox + math.sin(u * 6.5 + now * 1.3 + p.wisp * 1.9) * ri * (0.04 + 0.22 * u)
+        local y = -ri * 0.45 + u * (ri * 0.45 + ro * 1.45)
+        local size = ri * (0.45 + 0.85 * u)
+        p.tex:ClearAllPoints()
+        p.tex:SetPoint("CENTER", frame, "CENTER", x, y)
+        p.tex:SetSize(size, size)
+        p.tex:SetVertexColor(0.95, 0.92, 0.88)
+        p.tex:SetAlpha(0.32 * math.sin(math.pi * u))
+        p.tex:Show()
+    end
+end
+
+-- A chomp at the end of the fill: the bite, crumbs bursting out from it and a few impact
+-- lines. frac: how full the ring is (the bite goes at its head).
+local function DrawChomp(frame, geom, now, ri, ro, frac)
     local since = now % CHOMP
-    local life = CHOMP * 0.9
-    local g = ro * 6 -- gravity, in ring sizes per second squared
+    local R, T = geom.R, geom.T
+    if not frac or frac <= 0.02 or frac >= 0.995 then
+        for _, t in ipairs(fx.bite) do t:Hide() end
+        for _, l in ipairs(fx.impact) do l:Hide() end
+        for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
+        return
+    end
+    -- Where the fill ends, which way is out from the ring there, and along it.
+    local hx, hy = ns.RingPoint(geom, frac)
+    local ox, oy = hx / R, hy / R
+    local bx, by = ns.RingPoint(geom, math.max(0, frac - 0.004)) -- a little back: which way the fill runs
+    local tx, ty = hx - bx, hy - by
+    local tl = math.sqrt(tx * tx + ty * ty)
+    if tl < 1e-6 then tx, ty = -oy, ox else tx, ty = tx / tl, ty / tl end
+
+    -- The bite: a chunk over the end of the fill, tooth marks along its edge toward the
+    -- filled side. Track-colored, all inside the band.
+    local a = since < BITE_HOLD and 1 or math.max(0, 1 - (since - BITE_HOLD) / BITE_FADE)
+    local tc = ns.TRACK
+    local chunk = T * 0.5
+    local cx, cy = hx - tx * chunk * 0.35, hy - ty * chunk * 0.35
+    local main = fx.bite[1]
+    main:ClearAllPoints()
+    main:SetPoint("CENTER", frame, "CENTER", cx, cy)
+    main:SetSize(chunk * 2, chunk * 2)
+    main:SetVertexColor(tc.r, tc.g, tc.b)
+    main:SetAlpha(a)
+    main:SetShown(a > 0)
+    for k = 1, TEETH do
+        local across = (k - (TEETH + 1) / 2) * T * 0.27 -- spread across the band
+        local back = chunk * (0.95 - 0.12 * math.abs(k - (TEETH + 1) / 2))
+        local t = fx.bite[1 + k]
+        local r = T * 0.2
+        t:ClearAllPoints()
+        t:SetPoint("CENTER", frame, "CENTER", cx - tx * back + ox * across, cy - ty * back + oy * across)
+        t:SetSize(r * 2, r * 2)
+        t:SetVertexColor(tc.r, tc.g, tc.b)
+        t:SetAlpha(a)
+        t:SetShown(a > 0)
+    end
+
+    -- Impact lines: a quick flash of short strokes out from the bite.
+    local ia = math.max(0, 1 - since / 0.28)
+    for k, l in ipairs(fx.impact) do
+        if ia > 0 then
+            local spread = (k - 2) * 0.45
+            local dx = ox * math.cos(spread) + tx * math.sin(spread)
+            local dy = oy * math.cos(spread) + ty * math.sin(spread)
+            local d0 = T * 0.9 + since * ro * 0.6
+            local len = T * (0.9 + 0.6 * (1 - ia))
+            l:SetThickness(math.max(1.5, T * 0.16))
+            l:SetStartPoint("CENTER", frame, hx + dx * d0, hy + dy * d0)
+            l:SetEndPoint("CENTER", frame, hx + dx * (d0 + len), hy + dy * (d0 + len))
+            l:SetColorTexture(1, 0.9, 0.65, 0.9 * ia)
+            l:Show()
+        else
+            l:Hide()
+        end
+    end
+
+    -- Crumbs: thrown out from the bite (outward from the ring, spread along it), then falling.
+    local life = CHOMP * 0.85
+    local g = ro * 6
     for i, cr in ipairs(fx.crumbs) do
         local t = since - (i % 3) * 0.03 -- a few leave a moment later
         if t > 0 and t < life then
             local u = t / life
-            local v = ro * 2.1 * cr.speed
-            local x = math.sin(cr.angle) * v * t
-            local y = (ri + ro) / 2 + math.cos(cr.angle) * v * t - 0.5 * g * t * t
-            local size = math.max(2, ri * 0.13 * cr.size)
+            local v = ro * 1.6 * cr.speed
+            local dx = ox * math.cos(cr.angle) + tx * math.sin(cr.angle)
+            local dy = oy * math.cos(cr.angle) + ty * math.sin(cr.angle)
+            local x = hx + dx * v * t
+            local y = hy + dy * v * t - 0.5 * g * t * t
+            local size = math.max(2, ri * 0.12 * cr.size)
             cr.tex:ClearAllPoints()
             cr.tex:SetPoint("CENTER", frame, "CENTER", x, y)
             cr.tex:SetSize(size, size)
@@ -293,19 +406,26 @@ local function DrawFoodFx(st, frame, geom)
     local eat, drink = st.kinds ~= "drink", st.kinds ~= "eat"
     local c = db.foodColors
 
-    -- A warm glow in the middle while eating: swells with each bite.
+    -- While eating: a warm glow low in the middle (the steam's source), swelling a little
+    -- with each bite, the steam, and the chomp.
     if eat then
-        local pulse = 0.55 + 0.45 * math.max(0, 1 - (now % CHOMP) / CHOMP * 3)
-        local size = ri * 2.2 * (0.9 + 0.1 * pulse)
+        local pulse = 0.7 + 0.3 * math.max(0, 1 - (now % CHOMP) / CHOMP * 3)
+        local size = ri * 1.9 * (0.92 + 0.08 * pulse)
+        fx.glow:ClearAllPoints()
+        fx.glow:SetPoint("CENTER", frame, "CENTER", 0, -ri * 0.3)
         fx.glow:SetSize(size, size)
         fx.glow:SetVertexColor(c.eat.r, c.eat.g, c.eat.b)
-        fx.glow:SetAlpha(0.35 * pulse)
+        fx.glow:SetAlpha(0.4 * pulse)
         fx.glow:Show()
+        DrawSteam(frame, now, ri, ro)
+        DrawChomp(frame, geom, now, ri, ro, st.frac)
     else
         fx.glow:Hide()
+        for _, p in ipairs(fx.steam) do p.tex:Hide() end
+        for _, t in ipairs(fx.bite) do t:Hide() end
+        for _, l in ipairs(fx.impact) do l:Hide() end
+        for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
     end
-
-    if eat then DrawCrumbs(frame, now, ri, ro) else for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end end
     if drink then
         DrawWater(frame, now, ri, st.frac or 0.5, c.drink)
     else
@@ -359,7 +479,8 @@ ns.RegisterRing({
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.6, "Food & Drink", "Food & Drink Ring",
                 "While you eat or drink, the ring fills as the food or drink buff runs and counts down what's "
-                .. "left, then bursts when it's done. Eating throws crumbs off the ring with every bite; drinking fills the "
+                .. "left, then bursts when it's done. Eating sends up steam and takes a bite out of the ring with every "
+                .. "chomp; drinking fills the "
                 .. "middle with water that rises as you drink and sloshes with every gulp.",
                 MergeTop(TopRow("food", "food & drink ring", ns.PreviewFoodRing,
                     "Show a sample meal: eating, drinking, then both. Also /circ food."), {
@@ -367,7 +488,7 @@ ns.RegisterRing({
                         enabled = Toggle(1, "foodEnabled", "Show food & drink ring",
                             "Show the ring while you're eating or drinking."),
                         fx = Toggle(2, "foodFx", "Animations",
-                            "Crumbs flying with each bite while you eat; water filling the ring and sloshing with "
+                            "Steam and bites (with crumbs flying) while you eat; water filling the ring and sloshing with "
                             .. "each gulp while you drink."),
                     }),
                     colors = Box(3, "Colors", {

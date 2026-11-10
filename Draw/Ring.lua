@@ -214,6 +214,7 @@ ns.RING_STYLE_ORDER = RING_STYLE_ORDER
 ns.RingThickness = RingThickness
 ns.NewRingLayer = NewRingLayer
 ns.DrawArc = DrawArc
+ns.RingPoint = RingPoint
 ns.DrawTrack = DrawTrack
 ns.Shade = Shade
 ns.BorderWidthOf = BorderWidth
