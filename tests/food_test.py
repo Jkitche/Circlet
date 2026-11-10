@@ -41,6 +41,21 @@ CircletDB.foodFx = false; Advance(0.2); P("animations off: " .. Fx())
 CircletDB.foodFx = true; Unbuff(); Advance(4)
 Buff("Mark of the Wild", 1800); Advance(1); P("another buff: " .. C()); Unbuff(); Advance(1)
 CircletDB.foodEnabled = false; Buff("Food", 18); Advance(1); P("ring off: " .. C()); Unbuff(); CircletDB.foodEnabled = true; Advance(4)
+-- The client keeps health and mana secret: the ring goes by how far through the buff you are.
+SECRET = {}; issecretvalue = function(v) return v == SECRET end
+local uh, up = UnitHealth, UnitPower
+UnitHealth = function() return SECRET end; UnitPower = function() return SECRET end
+Buff("Drink", 20); Advance(1); P("secret, drinking 1s: " .. C() .. " " .. Fx())
+Advance(9); P("secret, drinking 10s: " .. C())
+Advance(10.5); P("secret, buff ran out: " .. C())
+Unbuff(); Advance(4)
+-- ...and the buff's times too: timed from when it showed up, over a usual 24 seconds.
+AURAS[1] = { name = "Food", icon = 133945, duration = SECRET, expirationTime = SECRET }; Fire("UNIT_AURA", "player")
+Advance(1); P("secret times, eating 1s: " .. C())
+Advance(11); P("secret times, eating 12s: " .. C())
+Unbuff(); Advance(4)
+UnitHealth, UnitPower, issecretvalue = uh, up, nil
+
 Slash("food"); Advance(1); P("preview: " .. C() .. " " .. Fx()); Advance(7); P("preview 8s: " .. C()); Advance(14)
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

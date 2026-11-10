@@ -9,6 +9,11 @@ both: Eating & drinking / 30s / 50% · 30% water=yes
 animations off: water=no
 another buff: (hidden)
 ring off: (hidden)
+secret, drinking 1s: Drinking / 20s / Restoring mana water=yes
+secret, drinking 10s: Drinking / 11s / Restoring mana
+secret, buff ran out: Drinking / 0s / Full!
+secret times, eating 1s: Eating / 24s / Restoring health
+secret times, eating 12s: Eating / 13s / Restoring health
 preview: Eating / 16s / Health 39% water=no
 preview 8s: Drinking / 17s / Mana 30%
 ERRORS: {}
