@@ -16,20 +16,36 @@ around the minimap.
   a "Ready to turn in" alert. Pin any quest from the quest log to give it its own ring.
 - **Professions** and **weapon skills**: every skill-up, new training tiers, and "capped".
 - **Reputation**: gains, losses and new standings, with the faction's icon.
-- **Pet XP** (hunters), **ammo and soul shards** (warnings, or every shot, flashing when low), **flight paths** (counts down to landing;
-  route times are learned as you fly), **timed quests**.
+- **Ammo and soul shards**: a warning as you run low, or a countdown on every shot. It can stay
+  up for the whole fight and flashes when you're nearly out.
+- **Casts**, timed even in combat, glowing in the spell's school: embers for fire, snowflakes for
+  frost, motes for arcane, wisps for shadow, a swirl for nature, rays for holy. Resurrections
+  rise in holy light and finish with a pillar of light.
+- **Crafting** batches and **gathering** (with what you got). Finishing throws off a burst of
+  sparks.
+- **Flight paths**: counts down to landing; route times are learned as you fly.
 - **Corpse runs**: distance to your body, an arrow pointing to it, and when you can resurrect.
 - **Breath**, fatigue and Feign Death, with bubbles.
-- **Crafting** batches, **gathering** (and what you got), and **casts**, timed even in combat.
-- **Totems** (shamans): one small ring per element.
+- **Pet XP** (hunters), **timed quests**, and **totems** (shamans): one small ring per element.
 
 ## Make them yours
 
-- Style (smooth, segmented, thin), shape (full ring, arc, half arc), rotation, fill direction, solid or gradient
-  fill, black border, opacity, size and colors, per ring; or apply one ring's look to all.
+- Per ring: style (smooth, segmented, thin), shape (full ring, arc, half arc), rotation, fill
+  direction, solid or gradient fill, black border, opacity, size and colors. Or apply one ring's
+  look to all.
+- Show a ring's icon as a badge on its edge or filling its middle.
 - Edit mode shows each ring live while you change it; drag rings into place with a snap grid.
-- Hide any ring in combat, or hide the game's own bar a ring replaces (XP bar, cast bar...).
+  Rings that pop up together slide apart instead of overlapping.
+- Hide any ring in combat, or hide the game's own bar a ring replaces (XP bar, cast bar,
+  breath bar...).
+- The cast ring can sit on the chest or quest object you're using and move with the camera.
 - Profiles per character.
+
+## Extras
+
+- A welcome animation when you log in, and a "Discovered" flourish when you explore a new area.
+- A session summary of everything you gained: XP, levels, quests, skills, reputation, deaths and
+  money.
 
 ## Commands
 
