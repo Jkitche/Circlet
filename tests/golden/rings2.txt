@@ -33,6 +33,9 @@ pet gain:
    Wolf / +400 / 4,600 / 9,800 / Level 23 @x=0
 pet level:
    Wolf / +5,500 / 300 / 10,600 / Now level 24! @x=0
+pet gain, hidden mid-fight:
+fight over:
+   Wolf / +600 / 900 / 10,600 / Level 24 @x=0
 overlap (pet should be pushed):
    Mining / +3 / 115 / 150 / Profession @x=0
    Wolf / +850 / 5,050 / 9,800 / Level 23 @x=113

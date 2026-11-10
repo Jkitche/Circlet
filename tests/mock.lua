@@ -56,7 +56,10 @@ RegionMethods = {
   GetChecked = function(s) return s._checked end,
   SetChecked = function(s, v) s._checked = v end,
   RegisterEvent = function(s, e) s._events = s._events or {}; s._events[e] = true end,
-  RegisterUnitEvent = function(s, e) s._events = s._events or {}; s._events[e] = true end,
+  RegisterUnitEvent = function(s, e, ...)
+    s._events = s._events or {}; s._events[e] = true
+    s._units = s._units or {}; s._units[e] = { ... } -- tests that honor unit filters read these
+  end,
   UnregisterEvent = function(s, e) end,
   SetTextColor = function(s) end,
   StartMoving = function() end, StopMovingOrSizing = function() end,

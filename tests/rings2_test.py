@@ -28,6 +28,18 @@ C_QuestLog.GetQuestObjectives = function(id) return QUEST.objectives end
 chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
 chunk("Circlet", lua.table())
 lua.execute('''
+-- Unit events reach only frames registered for that unit, as in the game.
+local fire = Fire
+function Fire(event, unit, ...)
+  for _, f in ipairs(allFrames) do
+    if f._events and f._events[event] and f._scripts.OnEvent then
+      local units = f._units and f._units[event]
+      local ok = not units or #units == 0
+      if units then for _, u in ipairs(units) do if u == unit then ok = true end end end
+      if ok then local s, err = pcall(f._scripts.OnEvent, f, event, unit, ...); if not s then ERRORS["OnEvent " .. event .. ": " .. tostring(err)] = (ERRORS["OnEvent " .. event .. ": " .. tostring(err)] or 0) + 1 end end
+    end
+  end
+end
 Fire("ADDON_LOADED", "Circlet"); XP = 300; XPMAX = 1000; Fire("PLAYER_ENTERING_WORLD"); Fire("QUEST_LOG_UPDATE"); Advance(1)
 RINGS = {}
 function RingByText(pat)
@@ -96,10 +108,17 @@ CircletDB.ammoCombat = true; CircletDB.ammoCombatShow = false; CircletDB.ammoAft
 
 -- pet
 PET = { cur = 4200, max = 9800, level = 23 }; Fire("UNIT_PET", "player"); Advance(0.5)
-PET.cur = 4600; Fire("UNIT_PET_EXPERIENCE", "player"); Advance(1.5); Dump("pet gain:")
+PET.cur = 4600; Fire("UNIT_PET_EXPERIENCE", "pet"); Advance(1.5); Dump("pet gain:")
 Advance(6)
-PET.cur = 300; PET.max = 10600; PET.level = 24; Fire("UNIT_PET_EXPERIENCE", "player"); Advance(2.5); Dump("pet level:")
+PET.cur = 300; PET.max = 10600; PET.level = 24; Fire("UNIT_PET_EXPERIENCE", "pet"); Advance(2.5); Dump("pet level:")
 Advance(8)
+-- Pet XP hidden mid-fight: the gain shows once the fight ends.
+SECRETPET = {}; issecretvalue = function(v) return v == SECRETPET end
+local gpe = GetPetExperience
+GetPetExperience = function() return SECRETPET, SECRETPET end
+IN_COMBAT = true; Fire("PLAYER_REGEN_DISABLED"); PET.cur = 900; Fire("UNIT_PET_EXPERIENCE", "pet"); Advance(1.5); Dump("pet gain, hidden mid-fight:")
+GetPetExperience = gpe; IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(2); Dump("fight over:")
+issecretvalue = nil; Advance(8)
 
 -- auto-arrange: put pet on top of skill ring; show both
 CircletDB.petX = 180; CircletDB.petFromTop = 50

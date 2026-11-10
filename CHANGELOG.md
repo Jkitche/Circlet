@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Fixed: the pet XP ring never showed.** It listened for pet XP changes on the wrong unit. It also
+  catches up after a fight now, when the game hid your pet's XP during it.
 - **Campfire ring** (new; on by default). While you rest at a campfire (the Welcoming Campfire
   buff), the ring fills and counts down until you're Well Rested, then turns "Well Rested!" and
   bursts. Firelight flickers in the middle with embers rising through it (Campfire > Firelight and

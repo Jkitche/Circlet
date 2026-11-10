@@ -98,8 +98,13 @@ local function PreviewPetRing()
     })
 end
 
--- Pet XP, a new pet, a pet level, and a first read on login.
-ns.Listen({ "UNIT_PET_EXPERIENCE:player", "UNIT_PET:player", "PET_UI_UPDATE", "UNIT_LEVEL:pet", "PLAYER_ENTERING_WORLD" }, function() QueueCheckPet() end)
+-- Pet XP, a new pet, a pet level, and a first read on login. UNIT_PET_EXPERIENCE is listened
+-- to unfiltered (Blizzard's own pet frame does the same): filtered to the player it never
+-- arrives. The client can keep pet XP secret mid-fight, so it's read again when a fight ends
+-- and whenever you gain XP; the last value it could read is kept, so a gain made while it
+-- was hidden shows up once it can be read again.
+ns.Listen({ "UNIT_PET_EXPERIENCE", "UNIT_PET:player", "PET_UI_UPDATE", "UNIT_LEVEL:pet", "PLAYER_ENTERING_WORLD",
+            "PLAYER_REGEN_ENABLED", "PLAYER_XP_UPDATE" }, function() QueueCheckPet() end)
 
 -- Shared with the files loaded after this one.
 ns.PreviewPetRing = PreviewPetRing
