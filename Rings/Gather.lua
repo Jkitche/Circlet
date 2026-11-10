@@ -11,7 +11,7 @@ local SafeCall, SpellName = ns.SafeCall, ns.SpellName
 -- profession's icon. When it finishes it shows what you got ("Copper Ore ×2", with
 -- the item's icon) for a few seconds. Fishing counts down the bobber instead, then
 -- shows your catch. Interrupting a gather flashes the lost progress white, like the
--- crafting ring.
+-- crafting ring. Optionally the ring sits on what you're gathering (below).
 
 -- Spells counted as gathering, by name (so every rank and client version matches):
 -- the names are looked up from known spell IDs at load.
@@ -46,7 +46,10 @@ local function GatherKind(name, spellID)
     if type(name) == "string" and not IsSecret(name) then return kindByName[name] end
 end
 
-local g = nil -- the current gather: { kind, name, icon, start, finish, channel, ended, how, lost, loot }
+local g = nil -- the current gather: { kind, name, icon, start, finish, channel, ended, how, lost, loot, follow }
+
+-- With gatherFollow on, the ring sits on what you're gathering (the corpse, vein or herb)
+-- and moves with it as the camera turns: see Layout/Follow.lua.
 
 local function Progress(now)
     if not (g and g.start and g.finish) then return 0 end
@@ -55,12 +58,14 @@ local function Progress(now)
     return math.max(0, math.min(1, (now - g.start) / span))
 end
 
-local function State(kind, title, frac, channel, ended, how, lost, endedAt, loot, waiting, caught, left)
+-- doneAt: when the result came in (the icon bursts then).
+local function State(kind, title, frac, channel, ended, how, lost, endedAt, loot, waiting, caught, left, doneAt)
     local c = db.gatherColors
     local fill = kind == "fishing" and c.fishing or c.fill
     local st = { title = title, color = fill, icon = db.gatherIcon and GATHER_ICONS[kind] or nil }
     if ended and how == "done" then
         st.frac, st.color, st.labelColor = 1, c.done, c.done
+        st.doneAt = doneAt
         if loot and loot.name then
             st.title = loot.name
             st.value = loot.count > 1 and ("×" .. loot.count) or ""
@@ -109,14 +114,18 @@ local gatherRing = CreateLiveRing({
         local waiting = g.lootUntil and now < g.lootUntil - 0.15
         return State(g.kind, LABELS[g.kind], Progress(now), g.channel, g.endedAt ~= nil, g.how, g.lost, g.endedAt,
             db.gatherLoot and g.loot or nil, waiting, g.loot ~= nil,
-            g.finish and math.max(0, g.finish - now) or nil)
+            g.finish and math.max(0, g.finish - now) or nil, g.doneAt)
+    end,
+    follow = function(frame)
+        if g and db.gatherFollow then return ns.FollowPoint(g.follow, frame) end -- (x, y: no and/or)
     end,
     sample = function(t)
         local cycle = t % 7
         if cycle < 2.5 then return State("mining", "Mining", cycle / 2.5, false) end
         if cycle < 5 then
             return State("mining", "Mining", 1, false, true, "done", nil, nil,
-                { name = "Copper Ore", count = 2, icon = "Interface\\Icons\\INV_Ore_Copper_01" })
+                { name = "Copper Ore", count = 2, icon = "Interface\\Icons\\INV_Ore_Copper_01" },
+                nil, nil, nil, GetTime() - (cycle - 2.5))
         end
         return State("herb", "Herb Gathering", (cycle - 5) / 1.5, false)
     end,
@@ -129,6 +138,8 @@ local function End(how)
     g.how, g.endedAt = how, now
     -- Give the loot message a moment to arrive before the ring settles.
     if how == "done" then g.lootUntil = now + 1.5 end
+    -- The icon bursts when it's done (fishing: once something is caught, see OnLoot).
+    if how == "done" and g.kind ~= "fishing" then g.doneAt = now end
     -- Fishing only counts once a catch comes in (see OnLoot).
     if how == "done" and g.kind ~= "fishing" and ns.SessionAdd then ns.SessionAdd("gathers", nil, 1) end
 end
@@ -157,6 +168,10 @@ local function OnLoot(msg)
     local icon = itemID and C_Item and C_Item.GetItemIconByID and SafeCall(C_Item.GetItemIconByID, itemID)
     -- The first item is the main one (ore, herb, leather, fish); others are bonuses.
     if not g.loot then
+        -- The result is in: burst now, unless the gather's own burst has only just started
+        -- (the item's icon takes over mid-burst instead of bursting twice).
+        local now = GetTime()
+        if not g.doneAt or now - g.doneAt > 0.35 then g.doneAt = now end
         if g.kind == "fishing" and ns.SessionAdd then ns.SessionAdd("gathers", nil, 1) end
         g.loot = { name = name, count = tonumber(count) or 1, icon = (not IsSecret(icon)) and icon or nil }
     elseif g.loot.name == name then
@@ -179,7 +194,7 @@ ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_SUCCEEDED:player", "U
         local name, _, _, startMS, endMS = SafeCall(channel and UnitChannelInfo or UnitCastingInfo, "player")
         local kind = GatherKind(name, spellID)
         if not kind then return end
-        g = { kind = kind, spellID = spellID, channel = channel }
+        g = { kind = kind, spellID = spellID, channel = channel, follow = db.gatherFollow and ns.InteractTarget(castGUID, spellID) or nil }
         if type(startMS) == "number" and type(endMS) == "number" and not IsSecret(startMS) and not IsSecret(endMS) then
             g.start, g.finish = startMS / 1000, endMS / 1000
         end
@@ -202,11 +217,13 @@ ns.gatherRing = gatherRing
 ns.GatherActive = function() return g ~= nil and g.endedAt == nil end
 ns.PreviewGatherRing = function() gatherRing.Preview(14) end
 
+
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "gather", name = "Gathering", order = 13,
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = gatherRing,
     preview = ns.PreviewGatherRing, slash = { "gather", "gathering" }, help = "preview the gathering ring",
     toggle = { "Gathering ring", "Mining, herbalism, skinning and fishing, then what you got." },
@@ -217,6 +234,7 @@ ns.RegisterRing({
         gatherEnabled   = true,
         gatherIcon      = true,  -- profession / item icon in the middle
         gatherLoot      = true,  -- show what you gathered when it finishes
+        gatherFollow    = false, -- the ring sits on what you're gathering (Layout/Follow.lua)
         gatherSize      = 110,
         gatherThickness = 11,
         gatherOpacity   = 100,
@@ -246,6 +264,12 @@ ns.RegisterRing({
                             "The profession's icon while gathering, and the item's icon when it's done."),
                         loot = Toggle(3, "gatherLoot", "Show what you got",
                             "When the gather finishes, show the item and how many you got."),
+                        follow = Toggle(4, "gatherFollow", "Follow what you're gathering",
+                            "The ring sits on the corpse, vein or herb you're gathering and moves with it as you turn "
+                            .. "the camera. Turns on the game's nameplate for what you're facing (soft interact must be "
+                            .. "on), which also shows at other times; turning this off sets it back. If it doesn't "
+                            .. "follow, /sq follow shows why.",
+                            function() ns.ApplyFollowCVar() end),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),

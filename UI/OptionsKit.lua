@@ -207,7 +207,23 @@ local function RingTab(order, name, header, intro, args)
     if key then
         args.size._key = nil
         local box = args.general or args.size
-        local gameBar = (ns.FindRing(key) or {}).gameBar
+        local def = ns.FindRing(key) or {}
+        local gameBar = def.gameBar
+        if def.iconBg then
+            -- def.iconBg: true, or { disabled = fn, note = "..." } when it only applies sometimes.
+            local ib = type(def.iconBg) == "table" and def.iconBg or {}
+            box.args.iconBg = {
+                type = "toggle", order = 45, width = "full", name = "Icon as background",
+                desc = "Show the icon filling the middle of the ring, behind its text, instead of as a badge "
+                    .. "on its top edge." .. (ib.note and (" " .. ib.note) or ""),
+                get = function() return db[key .. "IconBg"] end,
+                set = function(_, v) db[key .. "IconBg"] = v end,
+                disabled = ib.disabled,
+            }
+            box.args.iconBgAlpha = Range(46, key .. "IconBgAlpha", "Background icon opacity", 10, 100, 5,
+                "How strongly the background icon shows. Lower keeps the ring's text easier to read.",
+                { disabled = function() return not db[key .. "IconBg"] or (ib.disabled and ib.disabled()) end })
+        end
         if gameBar then
             box.args.hideDefault = {
                 type = "toggle", order = 49, width = "full", name = "Hide " .. gameBar,

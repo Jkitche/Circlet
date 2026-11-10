@@ -1,0 +1,19 @@
+fireball (built-in list): 22 motes (1.0,0.6,0.2), halo
+  done +0.2s: 22 motes (1.0,0.6,0.2), halo
+  done +0.5s: 0 motes
+frostbolt (built-in list): 22 motes (0.8,0.9,1.0), halo
+  interrupted +0.15s: 22 motes (0.8,0.9,1.0), halo
+  interrupted +0.45s: 0 motes
+glacial spike (icon name): 22 motes (0.8,0.9,1.0), halo
+mystery bolt (nothing known): 0 motes
+smite: 22 motes (1.0,0.9,0.7), halo, rays
+resurrection (its own animation): 12 motes (1.0,0.9,0.8), halo
+fireball, effects off: 0 motes
+sample Fireball: 21 motes (1.0,0.9,0.5), halo
+sample Frostbolt: 21 motes (0.8,0.9,1.0), halo
+sample Arcane Missiles: 22 motes (0.8,0.5,1.0), halo
+sample Shadow Bolt: 22 motes (0.7,0.3,0.9), halo, dark core
+sample Wrath: 22 motes (0.4,1.0,0.4), halo
+sample Smite: 22 motes (1.0,0.9,0.7), halo, rays
+combat log touched: false
+ERRORS: {}

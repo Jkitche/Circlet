@@ -1,0 +1,23 @@
+cvar before: 0
+option off, skinning: home spot
+cvar with gathering follow on: 1
+skinning: on it at 500,400
+camera turned: on it at 620,400
+plate off screen: on it at 620,400
+skinned, corpse gone: on it at 620,400
+soft target dropped at start: on it at 900,500
+  camera turned: on it at 800,500
+soft target dropped just before: on it at 800,500
+soft target gone for 3s: home spot
+mining: on it at 700,300
+herb with no plate: home spot
+skinning another corpse than the one faced: home spot
+opening a chest, option off: home spot
+opening a chest: on it at 650,350
+hearthstone by the chest: home spot
+fireball at a mob by the chest: home spot
+preview: home spot
+gathering off, interactions on: 1
+both off, in combat: 1
+both off, after combat: 0 saved=nil
+ERRORS: {}

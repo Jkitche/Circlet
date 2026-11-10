@@ -14,7 +14,7 @@ then fade away, or stay up as a permanent display.
 - **Pet** (hunters) and **Ammo** (arrows, bullets, thrown, soul shards).
 - **Flight**: time left on a flight path (learned per route). **Timed quest**: quest timers.
 - **Corpse**: distance and direction to your corpse. **Breath**: breath, fatigue and Feign Death.
-- **Crafting** (batches), **Gathering** (with what you got) and **Cast** (timed even in combat).
+- **Crafting** (batches), **Gathering** (with what you got) and **Cast** (timed even in combat, with spell school effects and a resurrection animation).
 - **Totems** (shamans): one small ring per element.
 
 Each ring has its own colors, style (smooth, segmented, thin), shape (ring, arc, half arc),

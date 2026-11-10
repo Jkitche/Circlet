@@ -111,6 +111,7 @@ ns.petRing = petRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "pet", name = "Pet", order = 6,
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = petRing,
     preview = PreviewPetRing, slash = { "pet" }, help = "preview the pet ring",
     toggle = { "Pet ring", "Fills when your pet gains experience." },

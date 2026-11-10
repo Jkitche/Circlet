@@ -173,6 +173,7 @@ ns.ammoRing = ammoRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "ammo", name = "Ammo", order = 7,
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = ammoRing,
     preview = PreviewAmmoRing, slash = { "ammo" }, help = "preview the ammo ring",
     toggle = { "Ammo ring", "Pops up when you're running low on ammo or soul shards." },

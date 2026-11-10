@@ -34,6 +34,11 @@ local function FinalizeDefaults()
         for field, value in pairs(RING_COMMON) do
             if DEFAULTS[def.key .. field] == nil then DEFAULTS[def.key .. field] = value end
         end
+        -- Rings with an icon can show it as the ring's background instead (off by default).
+        if def.iconBg and DEFAULTS[def.key .. "IconBg"] == nil then
+            DEFAULTS[def.key .. "IconBg"] = false
+            DEFAULTS[def.key .. "IconBgAlpha"] = 40
+        end
         -- Rings with a game bar of their own can hide it (Features/DefaultUI.lua); off by default.
         if def.gameBar and DEFAULTS[def.key .. "HideDefault"] == nil then
             DEFAULTS[def.key .. "HideDefault"] = false
@@ -62,7 +67,9 @@ local OBSOLETE = { "ringBorder", "ringBorderSize", "cleanupNotice", "enabled", "
     -- ...and from the floating progress text, replaced by the quest ring.
     "popEnabled", "popSize", "popHeight", "color",
     -- ...and the old level-up checkbox, now a style choice.
-    "xpLevelFx" }
+    "xpLevelFx",
+    -- ...and spell schools learned from the combat log, which addons can't use here.
+    "castSchools" }
 
 -- Saved settings. CircletDB only exists once the addon has loaded, so every file
 -- reads and writes it through this table, which forwards to whatever CircletDB is.

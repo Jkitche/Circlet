@@ -43,6 +43,7 @@ local function CastFraction(now)
     return math.max(0, math.min(1, (now - batch.castStart) / span))
 end
 
+-- lostAt: when it stopped (or, finished, when it finished).
 local function State(name, done, total, castFrac, finished, stopped, icon, lost, lostAt)
     local c = db.craftColors
     local st = { title = name or "Crafting", value = done .. " / " .. total, color = c.fill,
@@ -50,6 +51,7 @@ local function State(name, done, total, castFrac, finished, stopped, icon, lost,
                  notches = total } -- segmented style: one notch per item
     if finished then
         st.frac, st.color = 1, c.done
+        st.doneAt = lostAt -- when the batch finished (the icon bursts)
         st.label, st.labelColor = "Done!", c.done
         st.hold = db.craftHold or 3
     elseif stopped then
@@ -80,18 +82,21 @@ local craftRing = CreateLiveRing({
         return State(b.name, b.done, b.total, CastFraction(now), b.finished, b.stopped, b.icon, b.lost, b.endedAt)
     end,
     sample = function(t)
-        -- Alternates a batch that finishes and one interrupted partway through a cast.
+        -- Alternates a batch that finishes (first, so the preview shows its burst) and one
+        -- interrupted partway through a cast.
         local total, castTime = 8, 1.5
         local cycleLen = total * castTime + 3
         local cycle, tt = math.floor(t / cycleLen), t % cycleLen
         local p = tt / castTime
         local icon = "Interface\\Icons\\INV_Misc_Bandage_18"
         local stopAt = 4.6
-        if cycle % 2 == 0 and p >= stopAt then
+        if cycle % 2 == 1 and p >= stopAt then
             local at = GetTime() - (tt - stopAt * castTime)
             return State("Heavy Linen Bandage", 4, total, 0, false, true, icon, stopAt % 1, at)
         end
-        if p >= total then return State("Heavy Linen Bandage", total, total, 0, true, false, icon) end
+        if p >= total then
+            return State("Heavy Linen Bandage", total, total, 0, true, false, icon, nil, GetTime() - (tt - total * castTime))
+        end
         return State("Heavy Linen Bandage", math.floor(p), total, p % 1, false, false, icon)
     end,
 })
@@ -149,6 +154,7 @@ ns.PreviewCraftRing = PreviewCraftRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "craft", name = "Crafting", order = 12,
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = craftRing,
     preview = PreviewCraftRing, slash = { "craft", "crafting" }, help = "preview the crafting ring",
     toggle = { "Crafting ring", "Progress through a batch of crafts." },

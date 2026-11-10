@@ -1,0 +1,11 @@
+cast, badge: top edge (y=56), 28 wide, over the ring, alpha 1.00
+cast, background: middle, 74 wide, behind the ring, alpha 0.40
+cast, background 70%: middle, 74 wide, behind the ring, alpha 0.70
+cast, back to badge: top edge (y=56), 28 wide, over the ring, alpha 1.00
+gather, background: middle, 82 wide, behind the ring, alpha 0.40
+skill, badge: top edge (y=67), 34 wide, over the ring, alpha 1.00
+skill, background: middle, 90 wide, behind the ring, alpha 0.40
+skill, back to badge: top edge (y=67), 34 wide, over the ring, alpha 1.00
+totem has no option: nil nil
+xp has no option: nil
+ERRORS: {}

@@ -272,6 +272,9 @@ ns.PreviewWeaponRing = PreviewWeaponRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "skill", name = "Profession", order = 4,
+    -- The icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua).
+    iconBg = { disabled = function() return db.skillIconStyle ~= "game" end,
+               note = "With game icons only (drawn icons already sit behind the text)." },
     ring = skillRing,
     preview = PreviewSkillRing, slash = { "skill", "skills", "professions" }, help = "preview the profession ring",
     toggle = { "Profession ring", "Fills when a profession or secondary skill goes up." },
@@ -343,6 +346,9 @@ ns.RegisterRing({
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "weapon", name = "Weapon skill", order = 5,
+    -- The icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua).
+    iconBg = { disabled = function() return db.weaponIconStyle ~= "game" end,
+               note = "With game icons only (drawn icons already sit behind the text)." },
     ring = weaponRing,
     preview = PreviewWeaponRing, slash = { "weapon", "weapons" }, help = "preview the weapon skill ring",
     toggle = { "Weapon skill ring", "Fills when a weapon skill or Defense goes up." },

@@ -1,0 +1,20 @@
+cast, casting:      icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+cast, just done:    icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+cast, +0.17s:       icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+cast, +0.57s:       icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+cast, +0.87s:       icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+cast, interrupted:  icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+bg, casting:        icon Spell133 74 wide, alpha 0.40 | burst: glow no, 0 sparks
+bg, +0.17s:         icon Spell133 74 wide, alpha 1.00 | burst: glow no, 0 sparks
+bg, +0.77s:         icon Spell133 74 wide, alpha 1.00 | burst: glow no, 0 sparks
+bg, interrupted:    icon Spell133 74 wide, alpha 0.40 | burst: glow no, 0 sparks
+opening a chest:    icon Spell3365 34 wide, alpha 1.00 | burst: glow yes, 8 sparks
+fireball by chest:  icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
+mining, loot in:    icon Item2770 38 wide, alpha 1.00 | burst: glow yes, 8 sparks
+mining, +1s:        icon Item2770 31 wide, alpha 1.00 | burst: glow no, 0 sparks
+fishing, reeling:   icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
+fishing, caught:    icon Item6303 36 wide, alpha 1.00 | burst: glow yes, 8 sparks
+fishing, got away:  icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
+craft, batch done:  icon INV_Misc_Bandage_18 96 wide, alpha 0.80 | burst: glow yes, 8 sparks
+craft, +0.7s:       icon INV_Misc_Bandage_18 82 wide, alpha 1.00 | burst: glow no, 0 sparks
+ERRORS: {}

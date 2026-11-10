@@ -21,6 +21,8 @@ local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 -- texture, it shows as a round badge on the ring's top edge (the game's own icon);
 -- otherwise the glyph is drawn in the ring's centre behind the text. Either way it
 -- springs in with a glow once the fill lands when celebrate is true.
+-- <key>IconBg (rings registered with iconBg): a texture icon fills the ring's middle
+-- behind the text, at <key>IconBgAlpha % opacity, instead of the badge on the top edge.
 -- Entries may set gainText to replace the "+N" line (and hide the delta line).
 -- cfg.onFinish(entry, frame, geom), optional, runs once when an entry's fill lands;
 -- it may return a number of seconds to keep the ring up (for an effect to finish).
@@ -113,18 +115,34 @@ local function CreateProgressRing(cfg)
 
     local function DrawBadge(e, icon)
         badge:SetFrameStrata(frame:GetFrameStrata())
-        badge:SetFrameLevel(frame:GetFrameLevel() + 3)
+        local bg = opt("IconBg")
 
-        local base = math.max(20, opt("Size") * 0.28)
-        local scale, rotation, strength, glow = 1, 0, 1, 0
-        if icon.celebrate and e.iconStart then
-            scale, rotation, strength, glow = IconPose(GetTime() - e.iconStart, 1)
+        local base, scale, rotation, strength, glow
+        badge:ClearAllPoints()
+        if bg then
+            -- Background: fills the hollow, one level below the ring so its text draws on
+            -- top, dimmed. A celebration only adds its glow (no pop or wiggle).
+            if frame:GetFrameLevel() < 2 then frame:SetFrameLevel(2) end
+            badge:SetFrameLevel(frame:GetFrameLevel() - 1)
+            base = math.max(8, 2 * geom.R - geom.T - 2 - 2 * ns.BorderWidthOf(key))
+            local resting = (opt("IconBgAlpha") or 40) / 100
+            scale, rotation, strength, glow = 1, 0, resting, 0
+            if icon.celebrate and e.iconStart then
+                local _, _, s, gl = IconPose(GetTime() - e.iconStart, resting)
+                strength, glow = math.max(resting, s), gl
+            end
+            badge:SetPoint("CENTER", frame, "CENTER", 0, 0)
+        else
+            badge:SetFrameLevel(frame:GetFrameLevel() + 3)
+            base = math.max(20, opt("Size") * 0.28)
+            scale, rotation, strength, glow = 1, 0, 1, 0
+            if icon.celebrate and e.iconStart then
+                scale, rotation, strength, glow = IconPose(GetTime() - e.iconStart, 1)
+            end
+            -- Mostly above the ring's outer edge, overlapping it a little.
+            badge:SetPoint("CENTER", frame, "CENTER", 0, geom.R + geom.T / 2 + base * 0.2)
         end
         local size = base * scale
-
-        -- Mostly above the ring's outer edge, overlapping it a little.
-        badge:ClearAllPoints()
-        badge:SetPoint("CENTER", frame, "CENTER", 0, geom.R + geom.T / 2 + base * 0.2)
 
         if icon.portrait and SetPortraitTexture then
             -- A unit's portrait (the pet's, as on its unit frame). Re-rendered when the
@@ -146,7 +164,15 @@ local function CreateProgressRing(cfg)
         if badge.mask then badge.mask:SetSize(size, size) end
 
         local rimT = math.max(2, base * 0.1)
-        if badge.rim then
+        if bg then
+            -- No rim, outline or dark backing: just the icon.
+            if badge.rim then
+                badge.rim:Hide(); badge.outline:Hide(); badge.backing:Hide()
+            else
+                for _, line in ipairs(badge.border) do line:Hide() end
+            end
+        elseif badge.rim then
+            badge.rim:Show(); badge.backing:Show()
             local d = size + 2 * rimT
             badge.rim:SetSize(d, d)
             badge.rimMask:SetSize(d, d)
@@ -165,7 +191,7 @@ local function CreateProgressRing(cfg)
             end
         end
 
-        local glowSize = base * 2.4
+        local glowSize = base * (bg and 1.4 or 2.4)
         badge.glow:SetSize(glowSize, glowSize)
         badge.glow:SetVertexColor(icon.color.r, icon.color.g, icon.color.b)
         badge.glow:SetAlpha(glow * 0.9)

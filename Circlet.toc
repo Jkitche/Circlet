@@ -28,6 +28,7 @@ Draw\Glyphs.lua
 Layout\Holders.lua
 Layout\Arrange.lua
 Layout\Drag.lua
+Layout\Follow.lua
 
 Rings\Base\RingFrame.lua
 Rings\Base\ProgressRing.lua
@@ -44,6 +45,7 @@ Rings\Corpse.lua
 Rings\Breath.lua
 Rings\Craft.lua
 Rings\Gather.lua
+Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\QuestPins.lua
 Rings\Totems.lua

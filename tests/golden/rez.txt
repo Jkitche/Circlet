@@ -1,0 +1,23 @@
+133 casting: [Fireball / 1.0 / Casting] motes=0 glows=0 pillar=no ringfx=no
+133 done +0.3s: [Fireball / Cast] motes=0 glows=0 pillar=no ringfx=no
+133 done +1.3s: [Fireball / Cast] motes=0 glows=0 pillar=no ringfx=no
+133 later: (hidden)
+2006 casting: [Resurrection / 4.0 / Resurrecting] motes=12 glows=1 pillar=no ringfx=no
+2006 done +0.3s: [Resurrection / Cast] motes=12 glows=3 pillar=yes ringfx=yes
+2006 done +1.3s: [Resurrection / Cast] motes=0 glows=1 pillar=no ringfx=no
+2006 later: (hidden)
+99999 casting: [Resurrection / 4.0 / Resurrecting] motes=12 glows=1 pillar=no ringfx=no
+99999 done +0.3s: [Resurrection / Cast] motes=12 glows=3 pillar=yes ringfx=yes
+99999 done +1.3s: [Resurrection / Cast] motes=0 glows=1 pillar=no ringfx=no
+99999 later: (hidden)
+7328 casting: [Redemption / 4.0 / Resurrecting] motes=12 glows=1 pillar=no ringfx=no
+7328 interrupted +0.3s: [Redemption / Interrupted] motes=12 glows=1 pillar=no ringfx=no
+7328 interrupted +1.3s: [Redemption / Interrupted] motes=0 glows=0 pillar=no ringfx=no
+7328 later: (hidden)
+2006 casting: [Resurrection / 4.0 / Casting] motes=0 glows=0 pillar=no ringfx=no
+2006 done +0.3s: [Resurrection / Cast] motes=0 glows=0 pillar=no ringfx=no
+2006 done +1.3s: [Resurrection / Cast] motes=0 glows=0 pillar=no ringfx=no
+2006 later: (hidden)
+preview rez: [Resurrection / 1.5 / Resurrecting] motes=12 glows=1 pillar=no ringfx=no
+preview rez done: [Resurrection / Cast] motes=12 glows=3 pillar=yes ringfx=yes
+ERRORS: {}

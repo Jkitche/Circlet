@@ -8,6 +8,12 @@ local EDIT_STRATA = ns.EDIT_STRATA
 -- Lost-progress flash: blinks between the track and white FLASH_BLINKS times over
 -- FLASH_TIME seconds, each blink fainter than the last.
 local FLASH_TIME, FLASH_BLINKS = 1.4, 3
+-- Finish burst: the icon swells and settles (POP_TIME), a glow flashes behind it and
+-- BURST_SPARKS sparks fly out from its edge, all gone by BURST_TIME. Each burst is turned
+-- to a random angle, and each spark strays a little in direction, reach and size, so no
+-- two look quite the same.
+local POP_TIME, BURST_TIME, BURST_SPARKS = 0.35, 0.7, 8
+local OPAQUE_TIME = 0.15 -- a dimmed background icon reaches full opacity this fast
 local MAX_NOTCHES = 60  -- a state's notches beyond this fall back to the usual 24
 local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch past 36)
 
@@ -19,11 +25,21 @@ local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch 
 --   edge (bordered in iconColor, or the ring color).
 --   notches: with the segmented style, split the ring into this many notches (one per
 --   item being crafted, say) instead of the usual 24.
+--   doneAt: GetTime() when the thing finished (a craft, gather, cast): from then on the
+--   icon is fully opaque (even as a dimmed background), and it pops with a burst of glow
+--   and sparks (unless noBurst: the cast ring's spells, which only turn opaque).
 --   flashFrom / flashTo / flashAt: a stretch of the ring (fractions) that flashes white
 --   and fades out, starting at GetTime() == flashAt: progress that was just lost.
 -- cfg.sample(t): the same for edit mode / previews (t = seconds since it started).
 -- cfg.watchEvery: seconds between checks while hidden (default 0.25).
+-- cfg.decorate(st, frame, geom): optional, called every frame once the ring is laid out (st is nil when there's
+-- nothing to draw) so a ring can add effects of its own (the cast ring's resurrection).
+-- cfg.follow(frame): optional; returns where the ring's center should be (x, y from the
+-- bottom-left of the screen, in the ring frame's units) to stick it to something in the
+-- world, or nil for its usual spot. Not used in edit mode or previews.
 -- cfg.centerIcon: draw the state's icon filling the middle of the ring (small rings).
+-- <key>IconBg (rings registered with iconBg): the icon fills the ring's middle behind its
+-- text, at <key>IconBgAlpha % opacity, instead of sitting on the top edge.
 -- cfg.valueScale: size of the middle text relative to the ring's inside (default 0.25).
 -- cfg.onRightClick(frame): if set, right-clicking the ring (outside edit mode) calls it;
 -- left clicks still pass through to the game world. cfg.menuEnabled(): optional, turns
@@ -119,16 +135,93 @@ local function CreateLiveRing(cfg)
         badge.outline:AddMaskTexture(badge.outlineMask)
     end
 
+    -- Finish burst: a glow behind the icon and sparks around it (made on first use).
+    local function BurstParts()
+        if badge.burstGlow then return end
+        badge.burstGlow = badge:CreateTexture(nil, "BACKGROUND", nil, -8)
+        if badge.burstGlow:SetTexture("Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64") == false then
+            badge.burstGlow:SetTexture("Interface\\Cooldown\\star4")
+        end
+        badge.burstGlow:SetBlendMode("ADD")
+        badge.burstGlow:SetPoint("CENTER")
+        badge.sparks = {}
+        for i = 1, BURST_SPARKS do
+            local t = badge:CreateTexture(nil, "OVERLAY", nil, 7)
+            t:SetTexture("Interface\\Cooldown\\star4")
+            t:SetBlendMode("ADD")
+            t:Hide()
+            badge.sparks[i] = t
+        end
+    end
+
+    local function HideBurst()
+        if not badge.burstGlow then return end
+        badge.burstGlow:Hide()
+        for _, t in ipairs(badge.sparks) do t:Hide() end
+    end
+
+    -- A new burst's random turn and per-spark variation, picked once (stable while it plays).
+    local function RollBurst(at)
+        if badge.burstFor == at then return end
+        badge.burstFor = at
+        local spread = 2 * math.pi / BURST_SPARKS
+        badge.burstTurn = math.random() * spread -- the whole ring of sparks
+        badge.burstVary = badge.burstVary or {}
+        for i = 1, BURST_SPARKS do
+            badge.burstVary[i] = {
+                angle = (math.random() - 0.5) * spread * 0.5, -- up to a quarter of the gap either way
+                reach = 0.75 + math.random() * 0.5,
+                size  = 0.8 + math.random() * 0.4,
+            }
+        end
+    end
+
+    -- The burst at `age` seconds after finishing, round an icon `size` across, in color c.
+    local function DrawBurst(age, size, c, at)
+        BurstParts()
+        RollBurst(at)
+        local t = age / BURST_TIME
+        local gs = size * (1.3 + 0.9 * (1 - (1 - math.min(1, t * 2)) ^ 2))
+        badge.burstGlow:SetSize(gs, gs)
+        badge.burstGlow:SetVertexColor(c.r, c.g, c.b)
+        badge.burstGlow:SetAlpha(0.9 * (1 - t))
+        badge.burstGlow:Show()
+        local r, g, b = c.r + (1 - c.r) * 0.5, c.g + (1 - c.g) * 0.5, c.b + (1 - c.b) * 0.5
+        for i, s in ipairs(badge.sparks) do
+            local v = badge.burstVary[i]
+            local a = (i / BURST_SPARKS) * 2 * math.pi + badge.burstTurn + v.angle
+            local d = size / 2 + size * 0.65 * v.reach * (1 - (1 - t) ^ 2)
+            local ss = size * 0.32 * v.size * (1 - 0.6 * t)
+            s:ClearAllPoints()
+            s:SetPoint("CENTER", badge, "CENTER", math.sin(a) * d, math.cos(a) * d)
+            s:SetSize(ss, ss)
+            s:SetVertexColor(r, g, b)
+            s:SetAlpha(1 - t)
+            s:Show()
+        end
+    end
+
     local function DrawBadge(st)
         if not st.icon then
             badge:Hide()
             return
         end
+        -- Finished: how long ago (nil while it's still going).
+        local doneAge = st.doneAt and GetTime() - st.doneAt
+        if doneAge and doneAge < 0 then doneAge = nil end
         badge:SetFrameLevel(frame:GetFrameLevel() + 3)
         local size = math.max(20, opt("Size") * 0.28)
         local rimT = math.max(2, size * 0.1)
         badge:ClearAllPoints()
-        if cfg.centerIcon then
+        local bg = not cfg.centerIcon and opt("IconBg")
+        if bg then
+            -- Background: fills the hollow, one level below the ring so its text draws on top.
+            size = math.max(8, (geom.R - geom.T / 2) * 2 - 2 - 2 * ns.BorderWidthOf(key))
+            rimT = 0
+            if frame:GetFrameLevel() < 2 then frame:SetFrameLevel(2) end
+            badge:SetFrameLevel(frame:GetFrameLevel() - 1)
+            badge:SetPoint("CENTER", frame, "CENTER", 0, 0)
+        elseif cfg.centerIcon then
             -- Small rings: the icon fills the middle instead of sitting on the edge.
             size = math.max(8, (geom.R - geom.T / 2) * 2 - 2 - 2 * ns.BorderWidthOf(key))
             rimT = 0
@@ -136,6 +229,10 @@ local function CreateLiveRing(cfg)
             badge:SetPoint("CENTER", frame, "CENTER", 0, 0)
         else
             badge:SetPoint("CENTER", frame, "CENTER", 0, geom.R + geom.T / 2 + size * 0.2)
+        end
+        local iconSize = size
+        if doneAge and doneAge < POP_TIME and not st.noBurst then
+            size = size * (1 + 0.22 * math.sin(math.pi * doneAge / POP_TIME)) -- swell and settle
         end
         badge.tex:SetTexture(st.icon)
         badge.tex:SetSize(size, size)
@@ -150,9 +247,20 @@ local function CreateLiveRing(cfg)
             local od = d + 2 * b
             badge.outline:SetSize(od, od)
             badge.outlineMask:SetSize(od, od)
-            badge.outline:SetShown(b > 0)
+            badge.outline:SetShown(b > 0 and not bg)
         end
-        badge.tex:SetAlpha(st.iconAlpha or 1)
+        local alpha = st.iconAlpha or 1
+        if bg then
+            local dim = (opt("IconBgAlpha") or 40) / 100
+            local lit = doneAge and math.min(1, doneAge / OPAQUE_TIME) or 0 -- finished: fully opaque
+            alpha = alpha * (dim + (1 - dim) * lit)
+        end
+        badge.tex:SetAlpha(alpha)
+        if doneAge and doneAge < BURST_TIME and not st.noBurst then
+            DrawBurst(doneAge, iconSize, st.iconColor or st.color, st.doneAt)
+        else
+            HideBurst()
+        end
         badge:Show()
     end
 
@@ -164,6 +272,13 @@ local function CreateLiveRing(cfg)
         if notches and (notches < 1 or notches > MAX_NOTCHES) then notches = nil end
         local size = opt("Size")
         ns.PlaceRing(frame, key, size)
+        if cfg.follow and not editing and not frame.dragging and GetTime() >= previewUntil then
+            local x, y = cfg.follow(frame)
+            if x then
+                frame:ClearAllPoints()
+                frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
+            end
+        end
         if notches ~= geom.notches then frame.layoutKey = nil end -- the track's notches change too
         geom.notches = notches
         local inner = ns.UpdateGeometry(frame, key, size, notches)
@@ -188,6 +303,7 @@ local function CreateLiveRing(cfg)
 
     local function Draw(st)
         Layout(st)
+        if cfg.decorate then cfg.decorate(st, frame, geom) end
         if not st then return end
         local c = st.color
         for _, l in ipairs(frame.fill) do l:SetColorTexture(c.r, c.g, c.b, 1) end
