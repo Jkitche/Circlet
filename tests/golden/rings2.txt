@@ -60,6 +60,7 @@ edit all:
    Breath / 53s / Underwater @x=0
    Eating / 5s / Restoring health @x=0
    Resting / 53s / By the fire @x=0
+   Friday / 6:50 / PM · Nov 13 @x=0
    Heavy Linen Bandage / 0 / 8 / 8 to go @x=0
    Mining / 40% / Mining @x=0
    Fireball / 1.5 / Casting @x=0

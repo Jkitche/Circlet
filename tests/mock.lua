@@ -301,3 +301,8 @@ function UnitIsGhost() return false end
 function IsResting() return false end
 function GetMoney() return 0 end
 function GetRealmName() return "Realm" end
+
+-- The clock: a fixed moment (Friday 13 November 2026, 18:29:40) moving with NOW, so tests repeat.
+CLOCK_EPOCH = os.time({ year = 2026, month = 11, day = 13, hour = 18, min = 29, sec = 40 })
+date = function(f, t) return os.date(f, t or (CLOCK_EPOCH + math.floor(NOW or 0))) end
+GetGameTime = function() local t = os.date("*t", CLOCK_EPOCH + math.floor(NOW or 0)); return t.hour, t.min end

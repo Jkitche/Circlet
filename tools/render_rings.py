@@ -38,6 +38,11 @@ RINGS = {
     "totems":  ("totems", "SHAMAN", 2.0, ""),
     "food":    ("food", "WARRIOR", 9.0, ""),
     "camp":    ("camp", "WARRIOR", 4.0, ""),
+    "clock":   ("clock", "WARRIOR", 1.0, '''
+EPOCH = os.time({ year = 2026, month = 11, day = 13, hour = 18, min = 29, sec = 40 })
+date = function(f, t) return os.date(f, t or EPOCH) end
+GetGameTime = function() return 21, 29 end
+'''),
 }
 
 PRELUDE = r'''

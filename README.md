@@ -48,6 +48,10 @@ then fade away, or stay up as a permanent display.
 - **Campfire**: resting at a camp (Welcoming Campfire) counting down to Well Rested, with
   firelight and embers rising through the ring.
 
+**Clock**
+- **Clock** (off until you turn it on): a ring that fills through the hour with a dot at the
+  hour and ticks around it, showing the time, day and date. Local or realm time, 12 or 24 hours.
+
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.
 - **Breath, fatigue and Feign Death**, with rising bubbles while you hold your breath.
@@ -104,7 +108,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 
 - `/circ edit [ring]`: see a ring live and drag it into place.
 - Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
-  `timed`, `corpse`, `breath`, `food`, `camp`, `craft`, `gather`, `cast`, `totems`.
+  `timed`, `corpse`, `breath`, `food`, `camp`, `clock`, `craft`, `gather`, `cast`, `totems`.
 - Effect previews: `/circ levelup`, `rested`, `complete`, `hello`, `discover`.
 - `/circ summary`: this session's summary.
 - `/circ profile [name]`: list or switch profiles.

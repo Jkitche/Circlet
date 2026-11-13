@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Clock ring** (new; off until you turn it on: Clock > Show clock ring). A clock that stays on
+  screen: the ring fills as the hour goes by, a dot rides it at the hour, ticks mark the hours,
+  and the middle shows the time with the day and date. Your computer's time or the realm's, 12 or
+  24 hours. Preview with `/circ clock`.
 - **Fixed: totem rings could get stuck after combat** as a bare ring with no icon or timer. A slot
   the game reports as empty now clears even while it hides the totem's times, and the game's own
   countdown (used for totems not yet learned) gives up once even your longest totem would be over.
