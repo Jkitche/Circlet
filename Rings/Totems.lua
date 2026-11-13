@@ -24,6 +24,10 @@ local SafeCall = ns.SafeCall
 -- duration is known from earlier (learned per spell whenever times are readable,
 -- kept in db.totemSpells). Only a totem never seen out of combat falls back to the
 -- game's display.
+--
+-- That fallback draws only the ring's track (the icon and countdown are the game's), so it
+-- must not outlive the totem: a slot the game says is empty clears even when its times are
+-- hidden, and the fallback gives up once even the longest totem you've used would be over.
 
 local ELEMENTS = {
     -- display order: GetTotemInfo slot, element
@@ -67,7 +71,17 @@ local CIRCLE = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 
 -- Secret-mode widgets for ring i: an icon and a cooldown sweep in the middle.
 local secret = {}
-local maybeActive = {} -- slot -> a totem changed there while times were hidden
+local maybeActive = {} -- slot -> GetTime() a totem changed there while times were hidden
+local FALLBACK_MAX = 300 -- seconds the game's display is kept without our own countdown, until a longer totem is learned
+
+-- The longest totem you've used (from what's been learned), or FALLBACK_MAX.
+local function LongestTotem()
+    local longest = 0
+    for _, t in pairs(db.totemSpells or {}) do
+        if type(t.duration) == "number" and t.duration > longest then longest = t.duration end
+    end
+    return longest > 0 and longest or FALLBACK_MAX
+end
 local known = {}       -- slot -> { start, duration, icon }: our own countdown for it
 
 -- Remembers a totem spell's slot, duration and icon (whenever times are readable).
@@ -116,6 +130,12 @@ for i, e in ipairs(ELEMENTS) do
         read = function()
             if not HasTotems() then HideSecret(i) return nil end
             local have, name, start, duration, icon, _, spellID = SafeCall(GetTotemInfo, e.slot)
+            -- The game can say the slot is empty while still hiding its times: it's empty.
+            if not IsSecret(have) and not have then
+                HideSecret(i)
+                maybeActive[e.slot], known[e.slot] = nil, nil
+                return nil
+            end
             if IsSecret(have) or IsSecret(start) or IsSecret(duration) then
                 -- Times hidden: keep our own countdown if we know this totem...
                 local k = known[e.slot]
@@ -129,7 +149,11 @@ for i, e in ipairs(ELEMENTS) do
                     maybeActive[e.slot] = nil
                 end
                 -- ...otherwise the game's own countdown, for a slot that may have one.
-                if not maybeActive[e.slot] then HideSecret(i) return nil end
+                if not maybeActive[e.slot] or GetTime() - maybeActive[e.slot] > LongestTotem() + 5 then
+                    maybeActive[e.slot] = nil -- nothing there, or it's surely over by now
+                    HideSecret(i)
+                    return nil
+                end
                 local ring = totemRings[i]
                 local w = SecretWidgets(i, ring.frame)
                 local inner = math.max(8, db.totemSize - 2 * db.totemThickness - 2)
@@ -162,7 +186,7 @@ for i, e in ipairs(ELEMENTS) do
                 return nil
             end
             if IsSecret(icon) then icon = nil end
-            maybeActive[e.slot] = true
+            maybeActive[e.slot] = start
             known[e.slot] = { start = start, duration = duration, icon = icon }
             Learn(spellID, e.slot, duration, icon)
             return State(e.element, left, duration, icon, name)
@@ -194,7 +218,7 @@ ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function
         local icon = t.icon or ns.SpellIcon(spellID)
         if IsSecret(icon) then icon = nil end
         known[t.slot] = { start = now, duration = t.duration, icon = icon }
-        maybeActive[t.slot] = true
+        maybeActive[t.slot] = now
         lastPlaced[t.slot] = now
         return
     end
@@ -204,12 +228,12 @@ ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function
             if e.slot == slot and secret[i] then secret[i].stale = true end
         end
         if now - (lastPlaced[slot] or -10) <= 0.5 then
-            maybeActive[slot] = true -- the learned totem we just cast
+            maybeActive[slot] = now -- the learned totem we just cast
         elseif now - lastCast <= 0.5 then
             -- You just cast something we haven't learned: probably a new totem here.
             -- Stop our countdown; if times are hidden, the game's display takes over.
             known[slot] = nil
-            maybeActive[slot] = true
+            maybeActive[slot] = now
         else
             -- No cast: the totem there was killed or recalled (or expired).
             known[slot] = nil

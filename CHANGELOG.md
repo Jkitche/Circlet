@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Fixed: totem rings could get stuck after combat** as a bare ring with no icon or timer. A slot
+  the game reports as empty now clears even while it hides the totem's times, and the game's own
+  countdown (used for totems not yet learned) gives up once even your longest totem would be over.
+
 ## 1.1.0
 
 - **Fixed: the pet XP ring never showed.** It listened for pet XP changes on the wrong unit. It also

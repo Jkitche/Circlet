@@ -12,4 +12,17 @@ preview:
    totem2 x=-32 [7] fill=26
    totem3 x=32 [39] fill=47
    totem4 x=96 [1:49] fill=66
+unlearned totem mid-fight (game's display):
+   totem2 x=-32 [] fill=0
+destroyed mid-fight:
+expired as you cast (looks new):
+   totem2 x=-32 [] fill=0
+after the fight, slot empty, times still hidden:
+hidden, looks new:
+   totem2 x=-32 [] fill=0
+130s later (nothing learned: kept up to 5 min):
+   totem2 x=-32 [] fill=0
+5 min later:
+learned totem mid-fight (own countdown):
+   totem1 x=-96 [1:55] fill=69
 ERRORS: {}
