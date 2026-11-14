@@ -1,11 +1,14 @@
 off by default: (hidden)
-on: Friday / 6:29 / PM · Nov 13 | fill=36 ticks=20 hour dot at 6.5 o'clock
-half a minute on: Friday / 6:30 / PM · Nov 13 | fill=37 ticks=20 hour dot at 6.5 o'clock
-24-hour: Friday / 18:30 / Nov 13 | fill=37 ticks=20 hour dot at 6.5 o'clock
-realm time (+3h): Friday / 21:30 / Nov 13 · Realm | fill=37 ticks=12 hour dot at 9.7 o'clock
-ticks off: Friday / 6:30 / PM · Nov 13 | fill=37 ticks=8 hour dot at 6.5 o'clock
-six hours later: Saturday / 12:00 / AM · Nov 14 | fill=1 ticks=12 hour dot at 0.2 o'clock
+on: Friday / 6:29 / PM · Nov 13 | fill=36 ticks=12 sun at 6.5 o'clock
+half a minute on: Friday / 6:30 / PM · Nov 13 | fill=37 ticks=12 sun at 6.5 o'clock
+24-hour: Friday / 18:30 / Nov 13 | fill=37 ticks=12 sun at 6.5 o'clock
+realm time (+3h): Friday / 21:30 / Nov 13 · Realm | fill=37 ticks=12 moon at 9.7 o'clock
+ticks off: Friday / 6:30 / PM · Nov 13 | fill=37 ticks=0 sun at 6.5 o'clock
+six hours later: Saturday / 12:00 / AM · Nov 14 | fill=1 ticks=12 moon at 0.2 o'clock
+7:20 the next morning: Saturday / 7:20 / AM · Nov 14 | fill=25 ticks=12 sun at 7.3 o'clock
+12:20 PM: Saturday / 12:20 / PM · Nov 14 | fill=25 ticks=12 dot at 0.3 o'clock
+10:20 PM, sun and moon off: Saturday / 10:20 / PM · Nov 14 | fill=25 ticks=12 dot at 10.3 o'clock
 turned off: (hidden)
-preview while off: Saturday / 12:00 / AM · Nov 14 | fill=1 ticks=12 hour dot at 0.2 o'clock
+preview while off: Saturday / 10:20 / PM · Nov 14 | fill=25 ticks=12 moon at 10.6 o'clock
 preview over: (hidden)
 ERRORS: {}

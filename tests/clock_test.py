@@ -26,13 +26,17 @@ function Face()
   local f = Ring(); if not f then return "(hidden)" end
   local fill, ticks = 0, 0
   for _, l in ipairs(f.fill) do if l._shown ~= false and l._x1 then fill = fill + 1 end end
-  for _, l in ipairs(ALL_LINES) do if l._parent == f and l._layer == "OVERLAY" and l._shown then ticks = ticks + 1 end end
+  for _, l in ipairs(ALL_LINES) do if l._parent == f and l._layer == "OVERLAY" and l._sub == 1 and l._shown then ticks = ticks + 1 end end
+  -- Which marker: the sun (a half disc, cropped), the moon (its shadow is masked) or the dot.
+  local kind = "dot"
+  for _, t in ipairs(ALL_TEX) do if t._parent == f and t._shown then
+    if t._tc4 then kind = "sun" elseif t._mask then kind = "moon" end end end
   local dot = "-"
   for _, t in ipairs(ALL_TEX) do if t._parent == f and t._shown and t._pt and t._pt.x then -- the dot (and its rim and glow)
     -- which way the dot is from the centre, as a clock position
     local a = math.atan(t._pt.x, t._pt.y); if a < 0 then a = a + 2 * math.pi end
     dot = string.format("%.1f o'clock", a / (2 * math.pi) * 12) end end
-  return T(f) .. " | fill=" .. fill .. " ticks=" .. ticks .. " hour dot at " .. dot
+  return T(f) .. " | fill=" .. fill .. " ticks=" .. ticks .. " " .. kind .. " at " .. dot
 end
 P("off by default: " .. Face())
 CircletDB.clockEnabled = true; Advance(1.5); P("on: " .. Face())
@@ -43,6 +47,9 @@ CircletDB.clock24, CircletDB.clockRealm = false, false
 CircletDB.clockTicks = false; Advance(0.5); P("ticks off: " .. Face())
 CircletDB.clockTicks = true
 NOW = NOW + 3600 * 6 - 1800; Advance(0.5); P("six hours later: " .. Face())
+NOW = NOW + 3600 * 7 + 1200; Advance(0.5); P("7:20 the next morning: " .. Face())
+NOW = NOW + 3600 * 5; Advance(0.5); P("12:20 PM: " .. Face())
+CircletDB.clockSunMoon = false; NOW = NOW + 3600 * 10; Advance(0.5); P("10:20 PM, sun and moon off: " .. Face()); CircletDB.clockSunMoon = true
 CircletDB.clockEnabled = false; Advance(2); P("turned off: " .. Face())
 Slash("clock"); Advance(1); P("preview while off: " .. Face()); Advance(9); P("preview over: " .. Face())
 ''')
