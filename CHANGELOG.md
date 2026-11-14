@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Mana regen ring** (new; on by default). The five-second rule: each time you cast a spell that
+  costs mana, the ring fills over the five seconds your mana regen is stopped, counting down to
+  when it starts again, then lights up and fades. It goes by the spell's cost (your mana itself is
+  hidden from addons), remembering which spells cost mana for when the cost is hidden mid-fight.
+  Preview with `/circ regen`.
+
 ## 1.2.0
 
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session

@@ -21,6 +21,7 @@ around the minimap.
 - **Casts**, timed even in combat, glowing in the spell's school: embers for fire, snowflakes for
   frost, motes for arcane, wisps for shadow, a swirl for nature, rays for holy. Resurrections
   rise in holy light and finish with a pillar of light.
+- **Mana regen**: the five-second rule, counting down to when your mana regen starts again.
 - **Crafting** batches and **gathering** (with what you got). Finishing throws off a burst of
   sparks.
 - **Flight paths**: counts down to landing; route times are learned as you fly.

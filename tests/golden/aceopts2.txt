@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=60 execute=123 range=218 select=73 toggle=169
+counts: color=62 execute=128 range=228 select=76 toggle=174
 general (General)
 progress (Progress rings)
   xp (XP)
@@ -19,6 +19,7 @@ status (Travel & status)
   clock (Clock)
   loot (Loot rolls)
   ready (Ready checks)
+  regen (Mana regen)
   ammo (Ammo)
 professions (Professions & casting)
   craft (Crafting)

@@ -1,0 +1,17 @@
+nothing cast: (hidden)
+Flash Heal, 1s: Mana regen / 4.0s / No regen fill=15
+3.5s: Mana regen / 1.5s / No regen fill=51
+cast again, 0.5s: Mana regen / 4.5s / No regen fill=8
+5.1s after: Mana regen / Regenerating fill=72
+then: Mana regen / Regenerating fill=72
+Shoot (free): (hidden)
+Heroic Strike (rage): (hidden)
+a percentage mana cost: Mana regen / 4.0s / No regen fill=15
+Mind Flay channel, 1s: Mana regen / 4.0s / No regen fill=15
+cost hidden, Flash Heal (learned): Mana regen / 4.0s / No regen fill=15
+cost hidden, a spell never seen: (hidden)
+ring off: (hidden)
+learned: Flash Heal=true Shoot=false Heroic Strike=false
+preview: Mana regen / 3.0s / No regen fill=29
+preview 6s: Mana regen / Regenerating fill=72
+ERRORS: {}
