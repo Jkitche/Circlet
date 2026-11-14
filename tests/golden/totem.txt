@@ -1,28 +1,33 @@
 none down:
 fire + earth:
-   totem1 x=-96 [1:59] fill=72
-   totem2 x=-32 [30] fill=70
+   totem1 x=-96 [1:59] fill=72 track=72
+   totem2 x=-32 [30] fill=70 track=72
 fire at ~7s (pulsing):
-   totem1 x=-96 [1:37] fill=59
-   totem2 x=-32 [8] fill=17
+   totem1 x=-96 [1:37] fill=59 track=72
+   totem2 x=-32 [8] fill=17 track=72
 fire expired:
-   totem1 x=-96 [1:29] fill=54
+   totem1 x=-96 [1:29] fill=54 track=72
 preview:
-   totem1 x=-96 [1:34] fill=57
-   totem2 x=-32 [7] fill=26
-   totem3 x=32 [39] fill=47
-   totem4 x=96 [1:49] fill=66
+   totem1 x=-96 [1:34] fill=57 track=72
+   totem2 x=-32 [7] fill=26 track=72
+   totem3 x=32 [39] fill=47 track=72
+   totem4 x=96 [1:49] fill=66 track=72
 unlearned totem mid-fight (game's display):
-   totem2 x=-32 [] fill=0
+   totem2 x=-32 [] fill=0 track=0
 destroyed mid-fight:
 expired as you cast (looks new):
-   totem2 x=-32 [] fill=0
+   totem2 x=-32 [] fill=0 track=0
 after the fight, slot empty, times still hidden:
 hidden, looks new:
-   totem2 x=-32 [] fill=0
+   totem2 x=-32 [] fill=0 track=0
 130s later (nothing learned: kept up to 5 min):
-   totem2 x=-32 [] fill=0
+   totem2 x=-32 [] fill=0 track=0
 5 min later:
 learned totem mid-fight (own countdown):
-   totem1 x=-96 [1:55] fill=69
+   totem1 x=-96 [1:55] fill=69 track=72
+learned totem killed, slot hidden:
+   totem1 x=-96 [] fill=0 track=0
+expired as you cast, in combat:
+   totem1 x=-96 [] fill=0 track=0
+   totem2 x=-32 [] fill=0 track=0
 ERRORS: {}

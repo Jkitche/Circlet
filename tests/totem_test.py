@@ -18,7 +18,9 @@ Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Adv
 function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and not tostring(g._text):match("Drag") then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
 function Totems() local t = {} for _, f in ipairs(allFrames) do if f.sqKey and f.sqKey:match("^totem") and f._shown then
   local n = 0 for _, l in ipairs(f.fill) do if l._shown ~= false and l._x1 then n = n + 1 end end
-  table.insert(t, string.format("%s x=%s [%s] fill=%d", f.sqKey, tostring(f._pt and math.floor(f._pt.x) or "?"), T(f), n)) end end table.sort(t) return t end
+  -- track: the ring's own track segments on screen (0 = only the game's display, if any)
+  local tr = 0 for _, l in ipairs(f.bg) do if l._shown ~= false and l._x1 then tr = tr + 1 end end
+  table.insert(t, string.format("%s x=%s [%s] fill=%d track=%d", f.sqKey, tostring(f._pt and math.floor(f._pt.x) or "?"), T(f), n, tr)) end end table.sort(t) return t end
 function D(l) P(l) for _, x in ipairs(Totems()) do P("   " .. x) end end
 D("none down:")
 TOTEMS[1] = { name = "Searing Totem", start = NOW, dur = 30, icon = 135825 }
@@ -67,6 +69,12 @@ HIDE = nil; IN_COMBAT = false; TOTEMS[2] = { name = "Stoneskin Totem", start = N
 TOTEMS[2] = nil; Fire("PLAYER_TOTEM_UPDATE", 2); Advance(1)
 HIDE = "all"; IN_COMBAT = true; Cast(8071); TOTEMS[2] = { name = "Stoneskin Totem", start = NOW, dur = 120, icon = 136098 }; Fire("PLAYER_TOTEM_UPDATE", 2)
 Advance(5); D("learned totem mid-fight (own countdown):")
+-- 5. That totem is killed, and the game hides which slot changed: our countdown stops and
+-- only the game's display is left (no track of our own), which shows nothing for an empty slot.
+TOTEMS[2] = nil; Fire("PLAYER_TOTEM_UPDATE", SECRET); Advance(1); D("learned totem killed, slot hidden:")
+-- 6. A spell cast just as a totem expires looked like a new totem: still no ring of our own.
+Cast(8190); TOTEMS[1] = { name = "Magma Totem", start = NOW, dur = 20, icon = 135826 }; Fire("PLAYER_TOTEM_UPDATE", 1)
+Advance(19.8); Cast(403); TOTEMS[1] = nil; Fire("PLAYER_TOTEM_UPDATE", 1); Advance(1); D("expired as you cast, in combat:")
 IN_COMBAT = false; HIDE = nil; issecretvalue = nil
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

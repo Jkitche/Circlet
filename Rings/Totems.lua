@@ -25,9 +25,16 @@ local SafeCall = ns.SafeCall
 -- kept in db.totemSpells). Only a totem never seen out of combat falls back to the
 -- game's display.
 --
--- That fallback draws only the ring's track (the icon and countdown are the game's), so it
--- must not outlive the totem: a slot the game says is empty clears even when its times are
--- hidden, and the fallback gives up once even the longest totem you've used would be over.
+-- That fallback draws none of the ring itself, only the game's icon and sweep, which show
+-- just while a totem is really there: whenever Circlet can't be sure (a totem it hasn't
+-- learned, or one that may have died), an empty slot shows nothing rather than a bare
+-- ring. It also clears as soon as the game says a slot is empty (even with its times
+-- hidden), and gives up once even the longest totem you've used would be over.
+--
+-- A totem dying mid-fight is seen through PLAYER_TOTEM_UPDATE. When the game hides which
+-- slot changed, and you didn't just drop a learned totem, any slot might have lost its
+-- totem: our own countdowns stop and every slot that had one switches to the game's
+-- display, which shows only the totems still standing.
 
 local ELEMENTS = {
     -- display order: GetTotemInfo slot, element
@@ -168,11 +175,13 @@ for i, e in ipairs(ELEMENTS) do
                     w.stale = false
                     local dur = GetTotemDuration and SafeCall(GetTotemDuration, e.slot)
                     if dur and w.cd.SetCooldownFromDurationObject then
-                        w.cd:SetCooldownFromDurationObject(dur)
+                        w.cd:SetCooldownFromDurationObject(dur, true) -- true: clears when there's no time left
                     end
                 end
                 w:Show()
-                return { value = "", frac = 0, color = c }
+                -- Only the game's icon and sweep, none of our ring: they show just while a
+                -- totem is really there, so an empty slot shows nothing.
+                return { value = "", frac = 0, color = c, noTrack = true }
             end
             HideSecret(i)
             if not have then
@@ -239,7 +248,21 @@ ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function
             known[slot] = nil
             maybeActive[slot] = nil
         end
+        return
     end
+    -- The game hides which slot changed. A learned totem we just dropped explains it;
+    -- otherwise any totem may have died, so stop trusting our own countdowns: every slot
+    -- that had one switches to the game's display, which shows only what's still there.
+    for _, at in pairs(lastPlaced) do
+        if now - at <= 0.5 then return end
+    end
+    for s = 1, 4 do
+        if known[s] or maybeActive[s] then
+            known[s] = nil
+            maybeActive[s] = now
+        end
+    end
+    for _, w in pairs(secret) do w.stale = true end
 end)
 
 -- /circ totemdebug: which totem values the client is hiding right now.

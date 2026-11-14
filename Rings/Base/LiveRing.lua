@@ -30,6 +30,8 @@ local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch 
 --   and sparks (unless noBurst: the cast ring's spells, which only turn opaque).
 --   flashFrom / flashTo / flashAt: a stretch of the ring (fractions) that flashes white
 --   and fades out, starting at GetTime() == flashAt: progress that was just lost.
+--   noTrack: draw none of the ring itself (track, border, fill): for a ring whose content
+--   is drawn by the game (the totem rings' fallback), so nothing of it shows on its own.
 -- cfg.sample(t): the same for edit mode / previews (t = seconds since it started).
 -- cfg.watchEvery: seconds between checks while hidden (default 0.25).
 -- cfg.decorate(st, frame, geom): optional, called every frame once the ring is laid out (st is nil when there's
@@ -295,6 +297,15 @@ local function CreateLiveRing(cfg)
         Layout(st)
         if cfg.decorate then cfg.decorate(st, frame, geom) end
         if not st then return end
+        -- No track: hide it and the border; when it comes back, the next layout redraws them.
+        if st.noTrack then
+            for _, l in ipairs(frame.bg) do l:Hide() end
+            for _, l in ipairs(frame.sqBorder or {}) do l:Hide() end
+            frame.trackHidden = true
+        elseif frame.trackHidden then
+            frame.trackHidden = nil
+            frame.layoutKey = nil
+        end
         local c = st.color
         for _, l in ipairs(frame.fill) do l:SetColorTexture(c.r, c.g, c.b, 1) end
         DrawArc(frame.fill, 0, st.frac or 0, frame, geom, nil, ns.Shade(key, c))

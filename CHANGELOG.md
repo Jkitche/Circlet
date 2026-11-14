@@ -10,6 +10,11 @@
 - **Fixed: totem rings could get stuck after combat** as a bare ring with no icon or timer. A slot
   the game reports as empty now clears even while it hides the totem's times, and the game's own
   countdown (used for totems not yet learned) gives up once even your longest totem would be over.
+- **Fixed: totem rings showing in combat with no totem down, or staying after a totem died.** When
+  the game hides totem times and Circlet can't be sure a totem is there (one it hasn't learned, a
+  spell cast just as a totem expired, or a totem killed while the game hides which slot changed),
+  the ring now shows only the game's own icon and timer, with no ring of its own, so an empty slot
+  shows nothing. A totem killed mid-fight no longer leaves its countdown running.
 
 - **Flight ring: times from the game's data.** Every route counts down from the first flight: the
   time comes from the game's own flight paths (each hop's length, mined from the WoW Forever client's
