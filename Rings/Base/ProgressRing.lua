@@ -459,7 +459,7 @@ local function CreateProgressRing(cfg)
         frame.isEditing = editing
         frame:EnableMouse(editing)
         frame.editHint:SetShown(editing)
-        frame:SetFrameStrata(editing and EDIT_STRATA or "HIGH")
+        frame:SetFrameStrata(editing and EDIT_STRATA or ns.RING_STRATA)
         if editing then
             Layout()
             sampleIndex = 1

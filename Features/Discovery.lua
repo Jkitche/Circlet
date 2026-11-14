@@ -20,7 +20,7 @@ local TIMES = { sweep = 0.7, nameIn = 0.35, nameDur = 0.5, hold = 3.0, out = 1.0
 local TOTAL = TIMES.hold + TIMES.out
 
 local fx = CreateFrame("Frame", nil, UIParent)
-fx:SetFrameStrata("HIGH")
+fx:SetFrameStrata(ns.RING_STRATA) -- under the game's windows (an open map, say)
 fx:SetSize(SIZE, SIZE)
 fx:SetPoint("CENTER", UIParent, "CENTER", 0, 140)
 fx:Hide()

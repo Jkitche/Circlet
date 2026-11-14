@@ -265,7 +265,7 @@ local function SetFlightEditing(on)
     flight.isEditing = editing
     flight:EnableMouse(editing)
     flight.editHint:SetShown(editing)
-    flight:SetFrameStrata(editing and EDIT_STRATA or "HIGH")
+    flight:SetFrameStrata(editing and EDIT_STRATA or ns.RING_STRATA)
     flight.layoutKey = nil
     if editing then
         sampleT = 0

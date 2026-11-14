@@ -87,20 +87,24 @@ local xpEditing = false
 -- its border and buttons draw over the ring rather than under it.
 local STRATA_BELOW = { LOW = "BACKGROUND", MEDIUM = "LOW", HIGH = "MEDIUM", DIALOG = "HIGH",
                        FULLSCREEN = "DIALOG", FULLSCREEN_DIALOG = "FULLSCREEN", TOOLTIP = "FULLSCREEN_DIALOG" }
+-- Over it (the default), the ring sits one strata above the map, but never above MEDIUM,
+-- where the game's windows are; anywhere else it's at the rings' usual strata, under them.
+local STRATA_ORDER = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4, DIALOG = 5 }
+local STRATA_ABOVE = { BACKGROUND = "LOW", LOW = "MEDIUM" }
 local function RingStrata(mm)
     if xpEditing then return EDIT_STRATA end
-    if mm and db.xpMinimapBehind then
-        local own = mm:GetFrameStrata()
-        local cluster = _G.MinimapCluster
-        if cluster and cluster.GetFrameStrata then
-            -- The lower of the map and its cluster (the border and buttons live there).
-            local order = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4, DIALOG = 5 }
-            local c = cluster:GetFrameStrata()
-            if (order[c] or 9) < (order[own] or 9) then own = c end
-        end
+    if not mm then return ns.RING_STRATA end
+    local own = mm:GetFrameStrata()
+    local cluster = _G.MinimapCluster
+    local c = cluster and cluster.GetFrameStrata and cluster:GetFrameStrata()
+    if db.xpMinimapBehind then
+        -- The lower of the map and its cluster (the border and buttons live there).
+        if c and (STRATA_ORDER[c] or 9) < (STRATA_ORDER[own] or 9) then own = c end
         return STRATA_BELOW[own] or "BACKGROUND"
     end
-    return "HIGH"
+    -- The higher of the two, so the ring draws over both.
+    if c and (STRATA_ORDER[c] or 0) > (STRATA_ORDER[own] or 0) then own = c end
+    return STRATA_ABOVE[own] or "MEDIUM"
 end
 
 local function LayoutXPRing()
@@ -210,7 +214,7 @@ local function HueColor(h)
 end
 
 local fx = CreateFrame("Frame", nil, RingHolder("xp"))
-fx:SetFrameStrata("HIGH")
+fx:SetFrameStrata(ns.RING_STRATA) -- under the game's windows
 fx:SetSize(1, 1)
 fx:SetPoint("CENTER", xpRing, "CENTER")
 fx:Hide()

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Rings stay under the game's windows.** The rings and their effects (the discovery flourish,
+  the welcome, level-up and quest-complete animations) now sit below the game's own windows (bags,
+  character sheet, map, spellbook...) instead of on top of them. Around the minimap the XP ring still
+  draws over the map (or under it, with its Behind the minimap option). In edit mode rings still come
+  to the front, so you can drag them over the options window.
 - **Ready check ring** (new; on by default). While a ready check runs, the ring drains over the
   time left to answer, with who started it, the seconds left and how many are ready ("3/5 ready"),
   and the game's ready check icon as a badge (or filling the ring's middle: Ready checks > Icon as

@@ -15,7 +15,7 @@ local ArrangeX, RingThickness, NewRingLayer, TRACK, XP_SEGMENTS = ns.ArrangeX, n
 -- A new, hidden ring frame for settings key `key`, with its track layer.
 local function NewRingFrame(key, trackLines)
     local frame = CreateFrame("Frame", nil, RingHolder(key))
-    frame:SetFrameStrata("HIGH")
+    frame:SetFrameStrata(ns.RING_STRATA) -- under the game's windows
     frame:SetSize(1, 1)
     frame:SetAlpha(0)
     frame:Hide()

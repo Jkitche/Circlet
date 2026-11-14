@@ -79,6 +79,9 @@ local function MakeRingDraggable(frame, key)
 end
 
 local EDIT_STRATA = "TOOLTIP" -- above the options window (and its color picker) while editing
+-- Everything else of Circlet's on screen (the rings and their effects) sits below the
+-- game's own windows: bags, character sheet, map, spellbook... are MEDIUM and up.
+local RING_STRATA = "LOW"
 
 -- A drag still going when edit mode ends (Esc, Done, leaving the options page) stops
 -- where it is and saves that spot, so the ring isn't left following the cursor.
@@ -93,3 +96,4 @@ end)
 -- Shared with the files loaded after this one.
 ns.MakeRingDraggable = MakeRingDraggable
 ns.EDIT_STRATA = EDIT_STRATA
+ns.RING_STRATA = RING_STRATA

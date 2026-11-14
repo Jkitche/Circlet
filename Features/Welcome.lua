@@ -25,7 +25,7 @@ local T = { ringsIn = 1.0, nameStart = 0.45, perLetter = 0.06, subStart = 1.5, h
 local TOTAL = T.hold + T.out
 
 local fx = CreateFrame("Frame", nil, UIParent)
-fx:SetFrameStrata("HIGH")
+fx:SetFrameStrata(ns.RING_STRATA) -- under the game's windows
 fx:SetSize(SIZE, SIZE)
 fx:SetPoint("CENTER", UIParent, "CENTER", 0, 120)
 fx:Hide()

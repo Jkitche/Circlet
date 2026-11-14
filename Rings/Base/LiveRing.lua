@@ -408,7 +408,7 @@ local function CreateLiveRing(cfg)
                 or "Drag to move  ·  Shift: no snap  ·  Right-click to reset")
         end
         frame.editHint:SetShown(editing)
-        frame:SetFrameStrata(editing and EDIT_STRATA or "HIGH")
+        frame:SetFrameStrata(editing and EDIT_STRATA or ns.RING_STRATA)
         frame.layoutKey = nil
         if editing then
             sampleT = 0

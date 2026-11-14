@@ -19,7 +19,7 @@ local CreateProgressRing, IsSecret, RingHolder, db = ns.CreateProgressRing, ns.I
 local EXCLAIM_LENGTH = 2.2
 
 local exclaim = CreateFrame("Frame", nil, RingHolder("quest"))
-exclaim:SetFrameStrata("HIGH")
+exclaim:SetFrameStrata(ns.RING_STRATA) -- (then follows the quest ring's)
 exclaim:SetSize(1, 1)
 exclaim:Hide()
 
