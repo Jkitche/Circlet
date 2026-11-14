@@ -6,7 +6,9 @@
   costs mana, the ring fills over the five seconds your mana regen is stopped, counting down to
   when it starts again, then lights up and fades. It goes by the spell's cost (your mana itself is
   hidden from addons), remembering which spells cost mana for when the cost is hidden mid-fight.
-  Preview with `/circ regen`.
+  Casts made free by Clearcasting (mage, druid, shaman), Inner Focus or Spirit of Redemption don't
+  start it, since they don't stop regen; during Innervate it says "Innervated". Preview with
+  `/circ regen`.
 
 ## 1.2.0
 

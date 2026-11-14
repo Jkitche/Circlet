@@ -16,8 +16,18 @@ local db, IsSecret, CreateLiveRing, SafeCall, Clean = ns.db, ns.IsSecret, ns.Cre
 -- costs, from the game's spell data. Whether a spell costs mana is remembered
 -- (db.manaSpells), so if the cost is hidden mid-fight a spell you've cast before still
 -- counts. Free spells (a wand's Shoot, Auto Shot) and rage or energy abilities don't start it.
+--
+-- Some buffs make your next spell free, and a free cast doesn't stop regen: Clearcasting (the
+-- mage's Arcane Concentration, the druid's Omen of Clarity, the shaman's Elemental Focus),
+-- Inner Focus, and anything cast in Spirit of Redemption. The cast itself uses the buff up, so
+-- the game may take it away just before or just after telling us about the cast. A cast counts
+-- as free when one of these was on you and is gone within FREE_WINDOW of it; if it's still
+-- there after (Omen of Clarity doesn't cover a buff like Mark of the Wild), the cast paid mana
+-- and the countdown runs from the cast. Spirit of Redemption isn't used up, so it always counts.
+-- During Innervate you regenerate even while casting: the countdown still shows, but says so.
 
 local RULE = 5          -- seconds without regen after spending mana
+local FREE_WINDOW = 0.5 -- a free-cast buff gone this soon before or after a cast was used on it
 local REGEN_SHOW = 1.2  -- seconds the "Regenerating" ring stays before fading
 
 local function Learned()
@@ -47,23 +57,84 @@ local function CostsMana(spellID)
     return Learned()[spellID] -- the cost can't be read right now: what we learned before
 end
 
+-- Buffs that make the next spell free (by spell ID; the shaman's Clearcasting is free in
+-- Classic, unlike later versions' 40%), and ones that keep regen going while casting.
+local FREE_CAST = {
+    [12536] = "used",  -- Clearcasting: mage, Arcane Concentration
+    [16870] = "used",  -- Clearcasting: druid, Omen of Clarity
+    [16246] = "used",  -- Clearcasting: shaman, Elemental Focus
+    [14751] = "used",  -- Inner Focus: priest
+    [27827] = "always", -- Spirit of Redemption: priest, every spell free while it lasts
+}
+local REGEN_GOES_ON = { [29166] = true } -- Innervate
+
+local freeUp, freeAlways, innervated = false, false, false
+local freeGoneAt -- GetTime() a free-cast buff last went away
+
+-- What's on you now, read whenever your buffs change (so we know when one goes away).
+local function ScanBuffs()
+    local used, always, innerv = false, false, false
+    for i = 1, 40 do
+        local id
+        if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
+            local a = SafeCall(C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
+            if not a then break end
+            id = a.spellId
+        elseif UnitBuff then
+            local name, _, _, _, _, _, _, _, _, sid = SafeCall(UnitBuff, "player", i)
+            if not name then break end
+            id = sid
+        else
+            break
+        end
+        id = Clean(id)
+        if type(id) == "number" then
+            if FREE_CAST[id] == "used" then used = true
+            elseif FREE_CAST[id] == "always" then always = true end
+            if REGEN_GOES_ON[id] then innerv = true end
+        end
+    end
+    if freeUp and not used then freeGoneAt = GetTime() end
+    freeUp, freeAlways, innervated = used, always, innerv
+end
+
 local spent   -- { at = GetTime(), spellID, icon }: the last time you spent mana
 local lastGUID
+
+local function Start(at, spellID)
+    spent = { at = at, spellID = spellID, icon = ns.SpellIcon(spellID) }
+end
 
 local function Spend(spellID, castGUID)
     castGUID = Clean(castGUID)
     if castGUID and castGUID == lastGUID then return end -- a channel's start and its success
     if not CostsMana(spellID) then return end
     lastGUID = castGUID
-    spent = { at = GetTime(), spellID = Clean(spellID), icon = ns.SpellIcon(Clean(spellID)) }
+    spellID = Clean(spellID)
+    local now = GetTime()
+    if freeAlways then return end -- Spirit of Redemption: everything's free
+    if freeGoneAt and now - freeGoneAt <= FREE_WINDOW then
+        freeGoneAt = nil -- just used up on this cast: free
+        return
+    end
+    if freeUp then
+        -- It may be used up a moment from now (free), or still be there (this cast paid).
+        C_Timer.After(FREE_WINDOW, function()
+            if freeGoneAt and freeGoneAt >= now - 0.05 then freeGoneAt = nil return end
+            Start(now, spellID)
+        end)
+        return
+    end
+    Start(now, spellID)
 end
 
-local function State(elapsed, icon)
+local function State(elapsed, icon, innerv)
     local c = db.regenColors
     if elapsed < RULE then
         local left = RULE - elapsed
         return { frac = elapsed / RULE, value = string.format("%.1fs", left), title = "Mana regen",
-                 label = "No regen", color = c.waiting, icon = icon, hold = 0.6 }
+                 label = innerv and "Innervated" or "No regen", labelColor = innerv and c.regen or nil,
+                 color = innerv and c.regen or c.waiting, icon = icon, hold = 0.6 }
     end
     return { frac = 1, value = "", title = "Mana regen", label = "Regenerating", labelColor = c.regen,
              color = c.regen, icon = icon, hold = 0.6 }
@@ -77,13 +148,15 @@ local regenRing = CreateLiveRing({
         if not spent then return nil end
         local elapsed = now - spent.at
         if elapsed >= RULE + REGEN_SHOW then spent = nil return nil end
-        return State(elapsed, spent.icon)
+        return State(elapsed, spent.icon, innervated)
     end,
     sample = function(t)
         local cycle = t % (RULE + REGEN_SHOW + 0.8)
         return State(math.min(cycle, RULE + REGEN_SHOW), SAMPLE_ICON)
     end,
 })
+
+ns.Listen({ "UNIT_AURA:player", "PLAYER_ENTERING_WORLD" }, function() ScanBuffs() end)
 
 -- Your own spells: a success (instant or cast), or a channel starting.
 ns.Listen({ "UNIT_SPELLCAST_SUCCEEDED:player", "UNIT_SPELLCAST_CHANNEL_START:player" }, function(event, _, castGUID, spellID)
