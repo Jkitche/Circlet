@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
 
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session
   summary now have a deep gradient background with a soft shadow, a thin gold border, a header band
