@@ -17,3 +17,4 @@ ignore:
   - localDeploy.ps1
   - localDeploy.cmd
   - localDeploy.sh
+  - runTests.cmd
