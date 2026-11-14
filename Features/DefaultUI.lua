@@ -12,6 +12,7 @@ local db = ns.db
 --   craft   the cast bar while crafting  gather the cast bar while gathering
 --   breath  the breath / fatigue bars  timed  the quest timer
 --   totem   the totem timers under your portrait
+--   targetCast  the cast bar under the target frame
 -- They're faded out (alpha 0, mouse off) rather than hidden, so the game's own layout and
 -- show/hide logic carry on untouched; turning the option off brings them straight back.
 -- Frame names cover both the modern and the classic interface; whichever exist are used.
@@ -99,6 +100,7 @@ local function UpdateOthers()
     for i = 1, 3 do Suppress(G("MirrorTimer" .. i), breath) end
     Suppress(G("QuestTimerFrame"), db.timedHideDefault and true or false)
     Suppress(G("TotemFrame"), db.totemHideDefault and true or false)
+    Suppress(G("TargetFrameSpellBar"), db.targetCastHideDefault and true or false)
 end
 
 local ticker = CreateFrame("Frame")

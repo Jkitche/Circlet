@@ -1,7 +1,7 @@
 -- Circlet: Flight ring: a countdown to landing while you're on a flight path.
 local ADDON_NAME, ns = ...
 
-local db, Print, IsSecret = ns.db, ns.Print, ns.IsSecret
+local db, IsSecret = ns.db, ns.IsSecret
 local NewRingLayer, DrawArc = ns.NewRingLayer, ns.DrawArc
 local EDIT_STRATA = ns.EDIT_STRATA
 local FormatTime = ns.FormatTime
@@ -9,15 +9,84 @@ local FormatTime = ns.FormatTime
 ---------------------------------------------------------------------------
 -- Flight ring
 ---------------------------------------------------------------------------
--- The game doesn't say how long a flight takes, so the ring learns: the first time
--- you fly a route it counts up and times the trip ("Timing route"); after that it
--- counts down and fills toward landing. Times are kept per route (from -> to) in
--- db.flightTimes, shared by all your characters.
+-- Flight times come only from the game's own data: Data/FlightPaths.lua holds the
+-- length of every direct flight path, mined from the client's TaxiNodes, TaxiPath and
+-- TaxiPathNode tables by tools/flight-data. A trip's time is the length of every hop the
+-- game will fly, added up, at the taxi's flying speed, plus any stops on the way.
+-- Nothing is learned or estimated from your flights. A route the data doesn't cover
+-- (a new flight master after a patch, say, until the data is regenerated) just counts
+-- up the time in the air.
 --
--- The route comes from hooking TakeTaxiNode (what the flight map calls when you
--- pick a destination); the flight itself is seen by polling UnitOnTaxi.
+-- The route comes from hooking TakeTaxiNode (what the flight map calls when you pick a
+-- destination), while the map's hops can still be read; the flight itself is seen by
+-- polling UnitOnTaxi.
 
-local MIN_FLIGHT = 5 -- shorter trips (cancelled right away) aren't saved as a route time
+-- Taxi flying speed in yards per second, taking off and landing included. The game
+-- files have path lengths but not the speed, so this was measured once in this client:
+-- Orgrimmar -> Crossroads -> Sun Rock Retreat, 4252 + 4495 yards, took 260 seconds.
+local SPEED = 33.6
+
+---------------------------------------------------------------- times from the game's flight paths
+-- Node IDs by English name: the backup for when the flight map can't say a node's ID.
+local nodeByName
+local function NodeIDByName(name)
+    if not name then return nil end
+    if not nodeByName then
+        nodeByName = {}
+        for id, n in pairs(ns.FLIGHT_NODES or {}) do nodeByName[n] = id end
+    end
+    return nodeByName[name]
+end
+
+-- The node ID of flight map slot `slot` (what TakeTaxiNode and TaxiNodeName take).
+local function NodeIDForSlot(slot)
+    if not slot or IsSecret(slot) then return nil end
+    if C_TaxiMap and C_TaxiMap.GetAllTaxiNodes and GetTaxiMapID then
+        local nodes = ns.SafeCall(C_TaxiMap.GetAllTaxiNodes, GetTaxiMapID())
+        if type(nodes) == "table" then
+            for _, n in ipairs(nodes) do
+                if n.slotIndex == slot and type(n.nodeID) == "number" and not IsSecret(n.nodeID) then return n.nodeID end
+            end
+        end
+    end
+    local name = TaxiNodeName and TaxiNodeName(slot)
+    if IsSecret(name) then return nil end
+    return NodeIDByName(name)
+end
+
+-- Seconds for one hop from node to node (with its stops), or nil if the data lacks it.
+local function HopSeconds(from, to)
+    local p = from and to and ns.FLIGHT_PATHS and ns.FLIGHT_PATHS[from] and ns.FLIGHT_PATHS[from][to]
+    if not p then return nil end
+    if type(p) == "table" then return p[1] / SPEED + (p[2] or 0) end
+    return p / SPEED
+end
+
+-- The current node's flight map slot.
+local function CurrentSlot()
+    if not (NumTaxiNodes and TaxiNodeGetType) then return nil end
+    for i = 1, NumTaxiNodes() do
+        if TaxiNodeGetType(i) == "CURRENT" then return i end
+    end
+end
+
+-- Seconds for flying to map slot `dest`: every hop the game will fly, added up. nil if
+-- the data doesn't have every hop.
+local function TripSeconds(dest)
+    local total
+    local hops = GetNumRoutes and ns.SafeCall(GetNumRoutes, dest)
+    if type(hops) == "number" and not IsSecret(hops) and hops >= 1 and TaxiGetNodeSlot then
+        total = 0
+        for hop = 1, hops do
+            local s = HopSeconds(NodeIDForSlot(TaxiGetNodeSlot(dest, hop, true)),
+                                 NodeIDForSlot(TaxiGetNodeSlot(dest, hop, false)))
+            if not s then total = nil break end
+            total = total + s
+        end
+    end
+    total = total or HopSeconds(NodeIDForSlot(CurrentSlot()), NodeIDForSlot(dest)) -- a direct flight
+    return total and total > 0 and math.floor(total + 0.5) or nil
+end
 
 local flight = ns.NewRingFrame("flight")
 local geom = flight.geom
@@ -26,34 +95,27 @@ flight.fill2 = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, flight) --
 
 flight.dest = ns.RingText(flight)  -- destination, small, above the time
 flight.time = ns.RingText(flight)  -- 1:23, big
-flight.label = ns.RingText(flight) -- "remaining" / "Timing route" / "Arrived"
+flight.label = ns.RingText(flight) -- "remaining" / "No route data" / "Arrived"
 
 -- What's being shown. Real flights fill `trip`; edit mode and previews use samples.
-local trip = nil      -- { origin, dest, key, start, total (nil = unknown), landed }
-local pendingRoute = nil -- { origin, dest } picked on the flight map, waiting for takeoff
+local trip = nil      -- { dest, start, total (nil = not in the data), landed }
+local pendingRoute = nil -- { dest, total, at } picked on the flight map, waiting for takeoff
 local editing, previewUntil, sampleT = false, 0, 0
 local holdUntil = 0
-
-local function RouteKey(origin, dest)
-    if not origin or not dest then return nil end
-    return origin .. " -> " .. dest
-end
 
 -- Short place name: "Ironforge, Dun Morogh" -> "Ironforge".
 local function ShortName(name)
     return name and (name:match("^([^,]+)") or name) or nil
 end
 
--- Picking a destination on the flight map: remember the route until takeoff.
+-- Picking a destination on the flight map: work out the trip now, while the map (and
+-- its hops) can still be read, and keep it until takeoff.
 local function OnTakeTaxiNode(index)
-    if not (NumTaxiNodes and TaxiNodeName and TaxiNodeGetType) then return end
-    local origin
-    for i = 1, NumTaxiNodes() do
-        if TaxiNodeGetType(i) == "CURRENT" then origin = TaxiNodeName(i) break end
-    end
+    if not TaxiNodeName then return end
     local dest = TaxiNodeName(index)
-    if IsSecret(origin) or IsSecret(dest) then return end
-    pendingRoute = { origin = origin, dest = dest, at = GetTime() }
+    if IsSecret(dest) then dest = nil end
+    local ok, total = pcall(TripSeconds, index)
+    pendingRoute = { dest = dest, total = ok and total or nil, at = GetTime() }
 end
 if hooksecurefunc and TakeTaxiNode then
     hooksecurefunc("TakeTaxiNode", OnTakeTaxiNode)
@@ -78,10 +140,10 @@ local function Layout()
     flight.label:SetPoint("TOP", flight.time, "BOTTOM", 0, -2)
 end
 
--- What to draw right now: dest, elapsed, total (nil = still learning), landed.
+-- What to draw right now: dest, elapsed, total (nil = not in the data), landed.
 local function Current(now)
     if editing or now < previewUntil then
-        -- Alternate a known route counting down and a new one being timed.
+        -- A route in the data counting down, then one that isn't counting up.
         local cycle = sampleT % 16
         if cycle < 10 then
             return "Ironforge", 30 + cycle * 9, 150, false
@@ -117,7 +179,7 @@ local function Draw(now)
         flight.label:SetText(left > 0 and "remaining" or "landing")
         flight.label:SetTextColor(0.8, 0.8, 0.8)
     else
-        -- Route not timed yet: a quarter arc circling, and the time so far.
+        -- Route not in the data: a quarter arc circling, and the time in the air.
         local spin = (elapsed * 0.35) % 1
         for _, l in ipairs(flight.fill) do l:SetColorTexture(c.learning.r, c.learning.g, c.learning.b, 1) end
         DrawArc(flight.fill, spin, math.min(1, spin + 0.25), flight, geom)
@@ -128,7 +190,7 @@ local function Draw(now)
         end
         flight.time:SetText(FormatTime(elapsed))
         flight.time:SetTextColor(1, 1, 1)
-        flight.label:SetText("Timing route")
+        flight.label:SetText("No route data")
         flight.label:SetTextColor(c.learning.r, c.learning.g, c.learning.b)
     end
     flight.dest:SetText(dest and ("to " .. dest) or "Flying")
@@ -141,33 +203,16 @@ local function StartFlight(now)
     pendingRoute = nil
     -- Only trust a route picked in the last minute (the map click that started this).
     if route and now - route.at > 60 then route = nil end
-    local key = route and RouteKey(route.origin, route.dest)
-    trip = {
-        origin = route and route.origin,
-        dest = route and route.dest,
-        key = key,
-        start = now,
-        total = key and db.flightTimes[key] or nil,
-    }
+    trip = { dest = route and route.dest, start = now, total = route and route.total }
 end
 
 local function EndFlight(now)
     if not trip or trip.landed then return end
     trip.landed = now
     local duration = now - trip.start
-    if ns.SessionAdd and duration >= MIN_FLIGHT then
+    if ns.SessionAdd and duration >= 5 then -- shorter: cancelled right away
         ns.SessionAdd("flights", nil, 1)
         ns.SessionAdd("flightTime", nil, duration)
-    end
-    if trip.key and duration >= MIN_FLIGHT then
-        local known = db.flightTimes[trip.key]
-        -- Keep the newest time, nudged by the old one so one odd trip doesn't throw it off.
-        db.flightTimes[trip.key] = known and math.floor((known + duration * 3) / 4 + 0.5)
-            or math.floor(duration + 0.5)
-        if not known and db.flightLearnNotice then
-            Print(string.format("Timed %s: %s. Next time the flight ring counts down.",
-                trip.key, FormatTime(duration)))
-        end
     end
     holdUntil = now + (db.flightHold or 3)
 end
@@ -234,24 +279,10 @@ local function PreviewFlightRing()
     flight:Show()
 end
 
--- How many routes have been timed (for the options page).
-local function KnownRouteCount()
-    local n = 0
-    for _ in pairs(db.flightTimes) do n = n + 1 end
-    return n
-end
-
-local function ForgetFlightTimes()
-    wipe(db.flightTimes)
-    Print("Forgot all flight times; each route is timed again the next time you fly it.")
-end
-
 -- Shared with the files loaded after this one.
 ns.SetFlightEditing = SetFlightEditing
 ns.IsFlightEditing = function() return editing end
 ns.PreviewFlightRing = PreviewFlightRing
-ns.KnownRouteCount = KnownRouteCount
-ns.ForgetFlightTimes = ForgetFlightTimes
 
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
@@ -264,7 +295,6 @@ ns.RegisterRing({
     defaults = {
         -- Flight ring: a countdown to landing on flight paths.
         flightEnabled     = true,
-        flightLearnNotice = true, -- chat line when a new route has been timed
         flightSize        = 120,
         flightThickness   = 12,
         flightOpacity     = 100,
@@ -275,40 +305,25 @@ ns.RegisterRing({
         flightBorder      = 2, -- black border width (0 = none)
         flightColors = {
             fill     = { r = 0.45, g = 0.75, b = 1.00 },
-            learning = { r = 0.75, g = 0.75, b = 0.80 },
+            learning = { r = 0.75, g = 0.75, b = 0.80 }, -- a route not in the data
         },
-        flightTimes = {},
     },
     page = { folder = "status", order = 1, build = function(O)
-            local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
+            local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(8, "Flight", "Flight Ring",
-                "Counts down to landing while you're on a flight path. The game doesn't give flight times, so the "
-                .. "first trip on each route is timed (the ring circles and counts up); after that it counts down.",
+                "Counts down to landing while you're on a flight path. Flight times come from the game's own "
+                .. "flight path data (the length of every hop of the trip, at flying speed). A route that isn't in "
+                .. "the data counts up the time in the air instead.",
                 MergeTop(TopRow("flight", "flight ring", ns.PreviewFlightRing,
-                    "Show the ring counting down a known route, then timing a new one. Also /circ flight."), {
+                    "Show the ring counting down a route, then one that isn't in the data. Also /circ flight."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "flightEnabled", "Show flight ring", "Show the ring while you're on a flight path."),
-                        notice = Toggle(2, "flightLearnNotice", "Announce new route times",
-                            "Print a chat line when a route has been timed for the first time."),
-                        routes = {
-                            type = "description", order = 3, fontSize = "medium", width = "full",
-                            name = function()
-                                local n = ns.KnownRouteCount()
-                                return n == 1 and "1 route timed so far." or (n .. " routes timed so far.")
-                            end,
-                        },
-                        forget = {
-                            type = "execute", order = 4, width = 1.1, name = "Forget flight times",
-                            desc = "Clear every learned route time, so each is timed again the next time you fly it.",
-                            confirm = true, confirmText = "Forget all learned flight times?",
-                            func = function() ns.ForgetFlightTimes() ns.RefreshOptions() end,
-                        },
                     }),
                     colors = Box(3, "Colors", {
-                        fill = Color(1, "flightColors", "fill", "Countdown", "Ring color on a route with a known time."),
-                        learning = Color(2, "flightColors", "learning", "Timing a route",
-                            "Color of the circling arc while a new route is being timed."),
+                        fill = Color(1, "flightColors", "fill", "Countdown", "Ring color while counting down to landing."),
+                        learning = Color(2, "flightColors", "learning", "No route data",
+                            "Color of the circling arc on a route that isn't in the flight data."),
                     }),
                     size = SizeBox(4, "flight", "flight ring", "Offset from the center of the screen."),
                 }))

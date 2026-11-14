@@ -15,7 +15,7 @@ local DEFAULTS, Print = ns.DEFAULTS, ns.Print
 -- Saved data the addon learns as you play, not settings: not part of profiles, and
 -- resets leave it alone.
 local LEARNED = { repKnown = true, flightTimes = true, sessions = true, restBase = true, pinned = true,
-                  lastSeen = true, totemSpells = true, castTimes = true }
+                  lastSeen = true, totemSpells = true, castTimes = true, targetCastTimes = true }
 
 local current -- this character's profile name
 

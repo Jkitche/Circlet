@@ -45,7 +45,10 @@ local function MakeRingDraggable(frame, key)
     -- Dragged by hand rather than with StartMoving, so the ring can snap to the grid as
     -- it moves. Grab offset: where on the ring you picked it up.
     -- frame.isLocked (optional function): when it returns true the ring can't be moved.
+    -- Only ever in edit mode (frame.isEditing): a ring that takes the mouse for other
+    -- reasons (a right-click menu, say) still can't be dragged or reset outside it.
     frame:SetScript("OnDragStart", function(self)
+        if not self.isEditing then return end
         if self.isLocked and self.isLocked() then return end
         local x, y = CursorPosition()
         local cx, cy = self:GetCenter()
@@ -65,6 +68,7 @@ local function MakeRingDraggable(frame, key)
         ns.SetPosition(key, cx - UIParent:GetWidth() / 2, UIParent:GetHeight() - cy - db[key .. "Size"] / 2)
     end)
     frame:SetScript("OnMouseUp", function(self, button)
+        if not self.isEditing then return end
         if self.isLocked and self.isLocked() then return end
         if button == "RightButton" then ns.ResetPosition(key) end -- both set in EditMode.lua
     end)
@@ -75,6 +79,16 @@ local function MakeRingDraggable(frame, key)
 end
 
 local EDIT_STRATA = "TOOLTIP" -- above the options window (and its color picker) while editing
+
+-- A drag still going when edit mode ends (Esc, Done, leaving the options page) stops
+-- where it is and saves that spot, so the ring isn't left following the cursor.
+dragDriver:HookScript("OnUpdate", function()
+    if dragging and not dragging.isEditing then
+        local f = dragging
+        f:GetScript("OnDragStop")(f)
+        f.layoutKey = nil
+    end
+end)
 
 -- Shared with the files loaded after this one.
 ns.MakeRingDraggable = MakeRingDraggable

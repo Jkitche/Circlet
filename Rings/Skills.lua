@@ -90,6 +90,26 @@ local function ReadSkills()
             end
         end
     end
+    -- The same skill can turn up twice: under the ID the list gives it (Forever may use
+    -- its own) and under the classic ID looked up above. That would pop two rings for one
+    -- skill-up, the first with the generic icon. Keep one per name, preferring a classic
+    -- ID (it has the skill's own icon), else the lower ID so the choice never flips.
+    local byName = {}
+    for id, s in pairs(out) do
+        if s.name and s.name ~= "?" then
+            local other = byName[s.name]
+            if not other then
+                byName[s.name] = id
+            else
+                local keep
+                if KNOWN_SKILLS[id] and not KNOWN_SKILLS[other] then keep = id
+                elseif KNOWN_SKILLS[other] and not KNOWN_SKILLS[id] then keep = other
+                else keep = math.min(id, other) end
+                out[keep == id and other or id] = nil
+                byName[s.name] = keep
+            end
+        end
+    end
     return out
 end
 

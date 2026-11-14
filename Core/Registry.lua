@@ -28,6 +28,8 @@ local DEFAULTS = ns.DEFAULTS
 --             (O is the option builders, UI/OptionsKit.lua)
 --   class     { HUNTER = true, ... }: only these classes see its page and toggle
 --   gameBar   "the game's XP bar": it can hide that (Features/DefaultUI.lua)
+--   alwaysInCombat  true: the ring is never faded out in combat, and its page has no
+--             "Show in combat" option (rings that are mostly for combat, like target casts)
 --   onLoaded  function run once the saved settings are loaded
 
 local RINGS, BY_KEY = {}, {}
