@@ -35,7 +35,8 @@ then fade away, or stay up as a permanent display.
   learned, so they keep counting in combat.
 
 **Travel and timers**
-- **Flight paths**: a countdown to landing. Route times are learned the first time you fly them.
+- **Flight paths**: a countdown to landing, timed from the game's own flight path data (mined
+  from the WoW Forever client), so every route counts down from the first flight.
 - **Timed quests**: escort and other quest timers, changing color near the end.
 
 **Food and drink**
@@ -49,7 +50,8 @@ then fade away, or stay up as a permanent display.
   firelight and embers rising through the ring.
 
 **Death and breath**
-- **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.
+- **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect,
+  with a revive animation when you're back in your body.
 - **Breath, fatigue and Feign Death**, with rising bubbles while you hold your breath.
 
 **Crafting, gathering and casting**
@@ -57,6 +59,8 @@ then fade away, or stay up as a permanent display.
 - **Gathering**: mining, herbalism, skinning and fishing, then what you got.
 - **Casts**: casts and channels, timed even in combat. Spell school effects (fire, frost, arcane,
   shadow, nature, holy) with a strength setting, and a resurrection animation.
+- **Target casts**: what your target is casting or channeling, who's casting it, and whether
+  you can interrupt it; red with the lost part flashing when it's interrupted.
 - **Finish burst**: when a gather, craft or interaction finishes, the icon swells and throws
   off sparks.
 

@@ -19,13 +19,15 @@ end
 
 -- Each ring's holder fades to its opacity setting, or out entirely while you're in
 -- combat if the ring's "Show in combat" is off (it's hidden once faded, so it can't be
--- clicked, and comes back when combat ends).
+-- clicked, and comes back when combat ends). Rings registered with alwaysInCombat
+-- ignore that setting, even one saved earlier or in a profile.
 local inCombat = false
 local holderFader = CreateFrame("Frame")
 holderFader:Hide()
 
 local function TargetAlpha(key)
-    if inCombat and db[key .. "Combat"] == false then return 0 end
+    local def = ns.FindRing and ns.FindRing(key)
+    if inCombat and db[key .. "Combat"] == false and not (def and def.alwaysInCombat) then return 0 end
     return math.max(0, math.min(100, db[key .. "Opacity"] or 100)) / 100
 end
 

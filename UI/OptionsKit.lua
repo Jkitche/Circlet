@@ -201,7 +201,7 @@ end
 -- A ring's options page. args: its boxes (general, colors, size = SizeBox(...), ...).
 -- Adds the header, intro, the Position box (from SizeBox), and to the General box (or
 -- Appearance, if it has none) "Hide the game's ..." when the ring has a game bar, and
--- "Show in combat".
+-- "Show in combat" (unless the ring is registered with alwaysInCombat).
 local function RingTab(order, name, header, intro, args)
     args.header = { type = "header", order = 0, name = header }
     args.intro = Intro(0.5, intro)
@@ -239,13 +239,15 @@ local function RingTab(order, name, header, intro, args)
                 set = function(_, v) db[key .. "HideDefault"] = v end,
             }
         end
-        box.args.combat = {
-            type = "toggle", order = 50, width = "full", name = "Show in combat",
-            desc = "Keep this ring on screen while you're in combat. Off: it fades out when combat starts "
-                .. "and comes back when it ends.",
-            get = function() return db[key .. "Combat"] ~= false end,
-            set = function(_, v) db[key .. "Combat"] = v; ns.ApplyAllOpacity() end,
-        }
+        if not def.alwaysInCombat then
+            box.args.combat = {
+                type = "toggle", order = 50, width = "full", name = "Show in combat",
+                desc = "Keep this ring on screen while you're in combat. Off: it fades out when combat starts "
+                    .. "and comes back when it ends.",
+                get = function() return db[key .. "Combat"] ~= false end,
+                set = function(_, v) db[key .. "Combat"] = v; ns.ApplyAllOpacity() end,
+            }
+        end
     end
     return { type = "group", order = order, name = name, args = args }
 end

@@ -8,9 +8,11 @@ local db, IsSecret, NewRingLayer, DrawArc, XP_SEGMENTS = ns.db, ns.IsSecret, ns.
 ---------------------------------------------------------------------------
 -- When you discover a new area the game says so in chat ("Discovered Thelsamar: 120
 -- experience gained", or "Discovered: Thelsamar"). This plays a compass-ring flourish
--- under the zone text: a gold ring sweeps closed with compass ticks and a burst of
--- sparks, the area name scales in, a glint runs round the ring, then it all widens
--- and fades. Turned on and off on the General tab (db.discoverFx).
+-- under the zone text: a gold ring sweeps closed down both sides at once, from 12 o'clock
+-- to 6, with compass ticks and a ring of sparks bursting as the two halves meet; the area
+-- name scales in, a pair of glints bounces up and down both sides of the ring, then it all widens
+-- and fades. Everything mirrors left to right. Turned on and off on the General tab
+-- (db.discoverFx).
 
 local SIZE = 200
 local GOLD = { r = 1.0, g = 0.82, b = 0.25 }
@@ -26,8 +28,11 @@ fx:Hide()
 local geom = { R = SIZE / 2 - 6, T = 5, step = 2 * math.pi / XP_SEGMENTS }
 local glintGeom = { R = geom.R, T = 9, step = geom.step }
 fx.track = NewRingLayer("BACKGROUND", 0, { r = 0, g = 0, b = 0 }, 0.45, fx)
+-- Each mirrored part has a right-hand layer and a left-hand one.
 fx.ring = NewRingLayer("ARTWORK", 0, GOLD, 1, fx)
+fx.ring2 = NewRingLayer("ARTWORK", 0, GOLD, 1, fx)
 fx.glint = NewRingLayer("ARTWORK", 1, { r = 1, g = 1, b = 0.9 }, 1, fx)
+fx.glint2 = NewRingLayer("ARTWORK", 1, { r = 1, g = 1, b = 0.9 }, 1, fx)
 
 -- Compass ticks at north / east / south / west, just outside the ring.
 fx.ticks = {}
@@ -58,7 +63,7 @@ local function Text(size, r, g, b)
     return fs
 end
 fx.label = Text(13, GOLD.r, GOLD.g, GOLD.b)
-fx.label:SetPoint("BOTTOM", fx, "CENTER", 0, 20)
+fx.label:SetPoint("BOTTOM", fx, "CENTER", 0, 22) -- the same gap as the XP line below
 fx.label:SetText("DISCOVERED")
 fx.name = Text(24, 1, 1, 1)
 fx.name:SetPoint("CENTER", fx, "CENTER", 0, 0)
@@ -76,7 +81,8 @@ local function SetRingColor(layer, c, a)
 end
 
 local function DrawFrame(t)
-    -- Sweep: the ring closes clockwise from 12 o'clock.
+    -- Sweep: the ring closes down both sides at once, from 12 o'clock to 6. `sweep` is
+    -- how much of the ring is drawn (each side gets half).
     local sweep = Ease(t / TIMES.sweep)
     -- Out: everything widens and fades.
     local out = t > TIMES.hold and Ease((t - TIMES.hold) / TIMES.out) or 0
@@ -88,22 +94,37 @@ local function DrawFrame(t)
     SetRingColor(fx.track, { r = 0, g = 0, b = 0 }, 0.45 * alpha)
     DrawArc(fx.track, 0, 1, fx, geom, true)
     SetRingColor(fx.ring, GOLD, alpha)
-    DrawArc(fx.ring, 0, sweep, fx, geom)
+    SetRingColor(fx.ring2, GOLD, alpha)
+    local half = sweep / 2
+    DrawArc(fx.ring, 0, half, fx, geom)       -- right side, top down
+    DrawArc(fx.ring2, 1 - half, 1, fx, geom)  -- left side, top down
 
-    -- Glint: a bright arc lapping the ring once it's closed.
+    -- Glints: a pair of bright arcs bouncing up and down both sides of the ring together
+    -- once it's closed: down to the bottom, where they meet, back up to the top, where they
+    -- meet again, easing to a stop at each end before turning.
     if t > TIMES.sweep and alpha > 0 then
-        local p = ((t - TIMES.sweep) / 1.6) % 1
+        local BOUNCE = 2.4 -- seconds for one trip down and back up
+        local u = (t - TIMES.sweep) / BOUNCE
+        local p = 0.25 * (1 - math.cos(2 * math.pi * u)) -- the glint's middle: 0 (top) .. 0.5 (bottom) .. 0
+        local len = 0.06
         local a = alpha * (0.5 + 0.5 * math.sin(math.min(1, (t - TIMES.sweep) / 0.4) * math.pi / 2))
-        SetRingColor(fx.glint, { r = 1, g = 1, b = 0.9 }, a)
-        DrawArc(fx.glint, p, math.min(1, p + 0.08), fx, glintGeom, true)
+        local glintColor = { r = 1, g = 1, b = 0.9 }
+        SetRingColor(fx.glint, glintColor, a)
+        SetRingColor(fx.glint2, glintColor, a)
+        -- Each stays on its own side: at the top and bottom the two halves join into one.
+        DrawArc(fx.glint, math.max(0, p - len / 2), math.min(0.5, p + len / 2), fx, glintGeom, true)
+        DrawArc(fx.glint2, math.max(0.5, 1 - p - len / 2), math.min(1, 1 - p + len / 2), fx, glintGeom, true)
     else
         for _, l in ipairs(fx.glint) do l:Hide() end
+        for _, l in ipairs(fx.glint2) do l:Hide() end
     end
 
-    -- Ticks grow out as the sweep passes them.
+    -- Ticks grow out as the sweep passes them: north first, east and west together,
+    -- south last as the two halves meet.
     for i, line in ipairs(fx.ticks) do
         local at = (i - 1) / 4
-        local grow = Ease((sweep - at) / 0.15) * alpha
+        local reach = math.min(at, 1 - at) * 2 -- how much of the sweep reaches this tick
+        local grow = Ease((sweep - reach * 0.85) / 0.15) * alpha -- (0.85: south still grows in full)
         local ang = at * 2 * math.pi
         local r1, r2 = geom.R + 6, geom.R + 6 + 12 * grow
         local sx, sy = math.sin(ang), math.cos(ang)
@@ -112,11 +133,12 @@ local function DrawFrame(t)
         line:SetAlpha(grow > 0.01 and alpha or 0)
     end
 
-    -- Sparks: burst outward from the ring just as it closes.
+    -- Sparks: burst outward all round the ring just as it closes, evenly spaced with one
+    -- straight up and one straight down, so the burst mirrors left to right.
     local sp = (t - TIMES.sweep * 0.8) / 0.9
     for i, s in ipairs(fx.sparks) do
         if sp > 0 and sp < 1 then
-            local ang = (i / SPARKS) * 2 * math.pi + 0.3
+            local ang = ((i - 1) / SPARKS) * 2 * math.pi
             local dist = geom.R + 8 + 60 * Ease(sp)
             s:ClearAllPoints()
             s:SetPoint("CENTER", fx, "CENTER", math.sin(ang) * dist, math.cos(ang) * dist)

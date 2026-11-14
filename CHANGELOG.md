@@ -2,6 +2,29 @@
 
 ## 1.1.0
 
+- **Flight ring: times from the game's data.** Every route counts down from the first flight: the
+  time comes from the game's own flight paths (each hop's length, mined from the WoW Forever client's
+  taxi tables, at flying speed, plus any stops), added up over every hop of the trip. The ring no
+  longer learns route times from your flights, so "Timing route", "Announce new route times" and
+  "Forget flight times" are gone. A route that isn't in the data counts up ("No route data").
+- **Target cast ring** (new; on by default). While your target casts, the ring fills (it drains
+  for a channel) with the spell's icon, the time left and the caster's name. A cast you can't
+  interrupt turns the ring gray and says "Can't interrupt". It turns green when the cast goes off,
+  or red when it's interrupted, flashing the part that was lost. Switching targets follows the new
+  target's cast. When combat hides the target's cast times, the ring times it from how long that
+  spell took before (learned whenever it can see) or its listed cast time; failing both, the
+  game's own timer fills the ring (with the game's countdown in the middle). Three-quarter and
+  half arcs get a sweeping disc in the middle instead. `/circ targetdebug` shows what's hidden.
+  Targeting yourself shows your own casts too (Target casting > Include yourself, on by default).
+  Options: Enemies only, Show caster's name, its own colors, and Hide the game's
+  target cast bar. Preview with `/circ target`.
+- **Corpse ring: revive animation** (on by default; Corpse > Revive animation). When you come
+  back to life in your own body (resurrecting at your corpse, or accepting a resurrect as a
+  ghost), your soul, a pale flickering orb with a smoky tail, drifts down into the ring while
+  wisps of ghost light rise from around it and stream in. The ring draws in as the soul sinks into
+  its middle, warms from the ghost color to the "in range" color, and a heartbeat thumps out, each
+  beat flashing the ring and rolling a wave outward. Then the last of the ghost rises away as mist.
+  Not played at a spirit healer. Shown in the corpse ring's preview.
 - **Fixed: the pet XP ring never showed.** It listened for pet XP changes on the wrong unit. It also
   catches up after a fight now, when the game hid your pet's XP during it.
 - **Campfire ring** (new; on by default). While you rest at a campfire (the Welcoming Campfire

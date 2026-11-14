@@ -39,6 +39,7 @@ Rings\Skills.lua
 Rings\Reputation.lua
 Rings\Ammo.lua
 Rings\Pet.lua
+Data\FlightPaths.lua
 Rings\Flight.lua
 Rings\Timed.lua
 Rings\Corpse.lua
@@ -49,6 +50,7 @@ Rings\Craft.lua
 Rings\Gather.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
+Rings\TargetCast.lua
 Rings\QuestPins.lua
 Rings\Totems.lua
 
