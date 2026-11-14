@@ -178,7 +178,7 @@ ns.PreviewReadyRing = PreviewReadyRing
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "ready", name = "Ready check", order = 14.8,
+    key = "ready", name = "Ready check", order = 14.8, since = "1.2.0",
     iconBg = true, -- "Icon as background": the ready check icon fills the ring's middle (Core/Settings.lua, UI/OptionsKit.lua)
     ring = readyRing,
     preview = PreviewReadyRing, slash = { "ready", "readycheck" }, help = "preview the ready check ring",

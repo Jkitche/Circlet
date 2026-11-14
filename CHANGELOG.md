@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Setup wizard** (new). The first time Circlet runs, a short wizard opens a few seconds after the
+  welcome animation: pick your rings by group (each with a Show button that puts it on screen with
+  sample content), hide the game bars they replace, choose one style and size for every ring (or keep
+  each ring's own), and keep, reset or arrange the layout. Skip it any time. `/circ setup` or
+  General > Setup wizard brings it back.
+- **"New in" page** (new). After an update, players who had Circlet before see what's been added
+  since, just once: each new ring or feature with an on/off box and Show. This release lists the
+  target cast, loot roll, ready check and clock rings and the corpse revive animation. `/circ new` or
+  General > What's new shows it again.
 - **Rings stay under the game's windows.** The rings and their effects (the discovery flourish,
   the welcome, level-up and quest-complete animations) now sit below the game's own windows (bags,
   character sheet, map, spellbook...) instead of on top of them. Around the minimap the XP ring still

@@ -476,7 +476,7 @@ ns.PreviewTargetCastRing = function() targetCastRing.Preview(10) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "targetCast", name = "Target Cast", order = 14.5,
+    key = "targetCast", name = "Target Cast", order = 14.5, since = "1.2.0",
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
     ring = targetCastRing,
     preview = ns.PreviewTargetCastRing, slash = { "target", "targetcast" }, help = "preview the target cast ring",

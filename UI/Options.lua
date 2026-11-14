@@ -53,6 +53,19 @@ local function GeneralPage()
                 .. "the ring is in |cffffd100edit mode|r: it's on screen showing your changes, and you can drag it "
                 .. "into place."),
             spacer = Spacer(1),
+            setup = Box(1.5, "Setup", {
+                wizard = {
+                    type = "execute", order = 1, width = 1.1, name = "Setup wizard",
+                    desc = "Pick your rings, hide the game bars they replace, and set their look and layout, in "
+                        .. "four short steps. Also /circ setup.",
+                    func = function() ns.OpenSetup() end,
+                },
+                whatsNew = {
+                    type = "execute", order = 2, width = 1.1, name = "What's new",
+                    desc = "The rings and features added in the latest version, to try them out. Also /circ new.",
+                    func = function() ns.OpenWhatsNew() end,
+                },
+            }),
             rings = Box(2, "Rings", rings),
             layout = Box(3, "Layout", {
                 editAll = {

@@ -14,6 +14,8 @@ ns.Listen({ "ADDON_LOADED" }, function(_, name)
     if name ~= ADDON_NAME or ns.loaded then return end
     ns.loaded = true
     ns.FinalizeDefaults()   -- every ring has registered by now
+    -- Nothing saved at all: Circlet's first run on this account (the setup wizard opens).
+    ns.firstRun = CircletDB == nil and CircletProfiles == nil
     CircletDB = CircletDB or {}
     ns.LoadProfile()        -- this character's profile into CircletDB
     ns.RunMigrations()

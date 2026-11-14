@@ -270,7 +270,7 @@ ns.PreviewClockRing = function() clockRing.Preview(8) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "clock", name = "Clock", order = 11.7,
+    key = "clock", name = "Clock", order = 11.7, since = "1.2.0",
     ring = clockRing,
     preview = ns.PreviewClockRing, slash = { "clock" }, help = "preview the clock ring",
     toggle = { "Clock ring", "A clock, always on screen: the time, the day and the date." },

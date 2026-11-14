@@ -98,6 +98,10 @@ Per ring:
 
 ## Extras
 
+- **Setup wizard** the first time Circlet runs: pick your rings (each with a Show button to see it),
+  hide the game bars they replace, choose one look for every ring, and set the layout. After an
+  update, players who had Circlet before get a **"New in" page** with just what's new, each with
+  an on/off box and Show. `/circ setup` and `/circ new` bring them back.
 - **Welcome animation** on login: rings spin open, your name types out in your class color,
   then your level, zone, how rested you are and when you last played.
 - **"Discovered" animation** when you explore a new area.
@@ -117,6 +121,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 
 `/circ` (or `/circlet`) opens the options. `/circ help` lists everything.
 
+- `/circ setup`: the setup wizard. `/circ new`: what's new in this version.
 - `/circ edit [ring]`: see a ring live and drag it into place.
 - Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
   `timed`, `corpse`, `breath`, `food`, `camp`, `clock`, `craft`, `gather`, `cast`, `totems`.
@@ -158,7 +163,10 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
 - `Rings/Base/`: what every ring frame shares (`RingFrame.lua`) and the two ring builders:
   `ProgressRing.lua` (pops up when something changes) and `LiveRing.lua` (shows a live state).
 - `Rings/`: one file per ring. Each ends with `ns.RegisterRing{...}`: its defaults, edit mode
-  hooks, preview and slash names, options page, class filter and the game bar it can hide.
+  hooks, preview and slash names, options page, class filter and the game bar it can hide. A new
+  ring gets `since = "x.y.z"` (its release) so players updating see it on the "New in" page;
+  `Features/Setup.lua` also lists its group in the setup wizard (`GROUPS`) and new features that
+  aren't rings (`NEW_FEATURES`).
   Edit mode, `/circ` and its help, the options window and the defaults are built from these, so
   a new ring is one new file (plus its line in the TOC).
 - `Features/`: edit mode, profiles, one-time settings migrations, hiding the game's bars, the

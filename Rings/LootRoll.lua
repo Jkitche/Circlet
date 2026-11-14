@@ -165,7 +165,7 @@ ns.LootDiceTexture = DiceTexture
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "loot", name = "Loot roll", order = 14.7,
+    key = "loot", name = "Loot roll", order = 14.7, since = "1.2.0",
     alwaysInCombat = true, -- rolls are short and come up in fights: never faded out
     iconBg = true, -- "Icon as background": the dice fills the ring's middle (Core/Settings.lua, UI/OptionsKit.lua)
     ring = lootRing,

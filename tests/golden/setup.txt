@@ -1,0 +1,189 @@
+######## first run
+2s after login, open: false
+8s after login, open: true
+--- step 1
+  Welcome to Circlet
+  Step 1 of 4: Pick your rings
+  (Tick the rings you want. Show puts one on screen with sample content (you can drag it into place). Hover a name for what it does.)
+  == Progress
+  [x] XP ring  <Show>
+  [x] Quest ring  <Show>
+  [x] Quest rings  <Show>
+  [x] Reputation ring  <Show>
+  [x] Profession ring  <Show>
+  [x] Weapon skill ring  <Show>
+  [x] Pet ring  <Show>
+  == Combat
+  [x] Cast ring  <Show>
+  [x] Target cast ring  <Show>
+  [x] Ammo ring  <Show>
+  == Group
+  [x] Loot roll ring  <Show>
+  [x] Ready check ring  <Show>
+        | == Travel and survival
+        | [x] Flight ring  <Show>
+        | [x] Timed quest ring  <Show>
+        | [x] Corpse ring  <Show>
+        | [x] Breath ring  <Show>
+        | == Professions
+        | [x] Crafting ring  <Show>
+        | [x] Gathering ring  <Show>
+        | == Comfort
+        | [x] Food & Drink ring  <Show>
+        | [x] Campfire ring  <Show>
+        | [ ] Clock ring  <Show>
+  footer: [Skip setup] {Back} [Next]
+clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
+--- step 1 after clicks
+  Welcome to Circlet
+  Step 1 of 4: Pick your rings
+  (Tick the rings you want. Show puts one on screen with sample content (you can drag it into place). Hover a name for what it does.)
+  == Progress
+  [x] XP ring  <Show>
+  [x] Quest ring  <Show>
+  [x] Quest rings  <Show>
+  [x] Reputation ring  <Show>
+  [x] Profession ring  <Show>
+  [x] Weapon skill ring  <Show>
+  [ ] Pet ring  <Show>
+  == Combat
+  [x] Cast ring  <Show>
+  [x] Target cast ring  <Show>
+  [x] Ammo ring  <Show>
+  == Group
+  [x] Loot roll ring  <Hide>
+  [x] Ready check ring  <Show>
+        | == Travel and survival
+        | [x] Flight ring  <Show>
+        | [x] Timed quest ring  <Show>
+        | [x] Corpse ring  <Show>
+        | [x] Breath ring  <Show>
+        | == Professions
+        | [x] Crafting ring  <Show>
+        | [x] Gathering ring  <Show>
+        | == Comfort
+        | [x] Food & Drink ring  <Show>
+        | [x] Campfire ring  <Show>
+        | [x] Clock ring  <Show>
+  footer: [Skip setup] {Back} [Next]
+next -> editing: ''
+--- step 2
+  Welcome to Circlet
+  Step 2 of 4: Hide the game's bars
+  (Some rings show the same thing as a bar of the game's own. Tick one to hide that bar (untick it, here or on the ring's page, to bring it back).)
+  [ ] Hide the game's reputation bar
+  [ ] Hide the game's XP bar
+  [ ] Hide the game's quest timer
+  [ ] Hide the game's breath bar
+  [ ] Hide the game's cast bar while crafting
+  [ ] Hide the game's cast bar while gathering
+  [ ] Hide the game's cast bar
+  [ ] Hide the game's target cast bar
+  footer: [Skip setup] [Back] [Next]
+hide XP bar: true
+--- step 3
+  Welcome to Circlet
+  Step 3 of 4: Look
+  (One look for every ring. Each ring's page can still change its own afterwards. Show all puts your rings on screen to see it.)
+  == Style
+  (*) Keep each ring's own
+  ( ) Smooth
+  ( ) Segmented
+  ( ) Thin
+        | == Size
+        | (*) Keep each ring's own
+        | ( ) Smaller
+        | ( ) Default
+        | ( ) Larger
+        | ( ) Show all
+  footer: [Skip setup] [Back] [Next]
+segmented + larger: xp segmented 168, cast segmented 120, pin segmented
+back to keep: xp smooth 140, cast smooth 100, pin segmented
+show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,clock,craft,gather,cast,targetCast,loot,ready,pin
+back -> step 2, editing: ''
+--- step 4
+  Welcome to Circlet
+  Step 4 of 4: Placement
+  (Where the rings go. The default layout keeps them in a row across the top of the screen; rings that pop up together slide apart.)
+  (*) Keep where they are
+  ( ) Reset to the default layout
+  ( ) Arrange them myself after Finish
+  (You can come back any time: /circ setup, or Setup on the options window's General tab. Each ring's own page has many more options.)
+  footer: [Skip setup] [Back] [Finish]
+finished: open=false setupDone=true seen loot=true
+arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,clock,craft,gather,cast,targetCast,loot,ready,pin
+after /circ edit: editing ''
+after a reload, open: false
+/circ setup, open: true
+--- /circ new (all seen: the newest release anyway)
+  New in Circlet 1.2.0
+  5 new things
+  (Added since you last played. Tick what you want; Show puts it on screen.)
+  [x] Clock ring  <Show>
+  [x] Corpse ring: revive animation  <Show>
+  [x] Loot roll ring  <Show>
+  [x] Ready check ring  <Show>
+  [x] Target cast ring  <Show>
+  footer: [Full setup] [Done]
+done, open: false
+ERRORS: {}
+######## update
+existing player, 3s after login: open=true setupDone=true
+--- new in
+  New in Circlet 1.2.0
+  5 new things
+  (Added since you last played. Tick what you want; Show puts it on screen.)
+  [ ] Clock ring  <Show>
+  [x] Corpse ring: revive animation  <Show>
+  [x] Loot roll ring  <Show>
+  [x] Ready check ring  <Show>
+  [x] Target cast ring  <Show>
+  footer: [Full setup] [Done]
+loot off, show ready -> loot=false editing: ready
+done: open=false editing: '' seen ready=true
+next login, open: false
+--- a later release
+  New in Circlet 1.3.0
+  1 new thing
+  (Added since you last played. Tick what you want; Show puts it on screen.)
+  [ ] Fake ring  <Show>
+  footer: [Full setup] [Done]
+--- full setup from the New in page
+  Welcome to Circlet
+  Step 1 of 4: Pick your rings
+  (Tick the rings you want. Show puts one on screen with sample content (you can drag it into place). Hover a name for what it does.)
+  == Progress
+  [x] XP ring  <Show>
+  [x] Quest ring  <Show>
+  [x] Quest rings  <Show>
+  [x] Reputation ring  <Show>
+  [x] Profession ring  <Show>
+  [x] Weapon skill ring  <Show>
+  [x] Pet ring  <Show>
+  == Combat
+  [x] Cast ring  <Show>
+  [x] Target cast ring  <Show>
+  [x] Ammo ring  <Show>
+  == Group
+  [ ] Loot roll ring  <Show>
+  [x] Ready check ring  <Show>
+        | == Travel and survival
+        | [x] Flight ring  <Show>
+        | [x] Timed quest ring  <Show>
+        | [x] Corpse ring  <Show>
+        | [x] Breath ring  <Show>
+        | == Professions
+        | [x] Crafting ring  <Show>
+        | [x] Gathering ring  <Show>
+        | == Comfort
+        | [x] Food & Drink ring  <Show>
+        | [x] Campfire ring  <Show>
+        | [ ] Clock ring  <Show>
+        | == Other
+        | [ ] Fake ring  <Show>
+  footer: [Skip setup] {Back} [Next]
+ERRORS: {}
+######## combat
+in combat, 8s after login, open: false
+combat over, open: true
+ERRORS: {}
