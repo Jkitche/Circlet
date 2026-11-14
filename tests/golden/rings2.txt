@@ -65,6 +65,7 @@ edit all:
    Mining / 40% / Mining @x=0
    Fireball / 1.5 / Casting @x=0
    Fireball / 1.5 / Defias Conjurer @x=0
+   |cffa336edIronfoe|r / 56 / Need or Greed?  +1 @x=0
    The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12 @x=0
    Feathers for Grek / 1 / 1 / Ready to turn in @x=0
    1:34 @x=0

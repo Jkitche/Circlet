@@ -1,0 +1,18 @@
+idle                         shown=false fill= 0 |  | dice: -
+rare up, 1s                  shown=true fill=71 | |cff0070deCape of the Black Baron|r / 60 / Need or Greed? | dice: Interface\Icons\INV_Misc_Dice_02
+halfway                      shown=true fill=36 | |cff0070deCape of the Black Baron|r / 31 / Need or Greed? | dice: Interface\Icons\INV_Misc_Dice_02
+second roll comes up         shown=true fill=35 | |cff0070deCape of the Black Baron|r / 30 / Need or Greed?  +1 | dice: Interface\Icons\INV_Misc_Dice_02
+rolled Need on the cape      shown=true fill=71 | |cffffffffLinen Cloth x4|r / 59 / Need or Greed?  +1 | dice: Interface\Icons\INV_Misc_Dice_02
+passed on the cloth          shown=true fill=34 | |cff0070deCape of the Black Baron|r / 29 / Rolled Need | dice: Interface\Icons\INV_Misc_Dice_02
+cape, 8s left (warning)      shown=true fill=10 | |cff0070deCape of the Black Baron|r / 9 / Rolled Need | dice: Interface\Icons\INV_Misc_Dice_02
+rolls over (faded)           shown=false fill=10 | |cff0070deCape of the Black Baron|r / 9 / Rolled Need | dice: -
+epic, 2s left                shown=true fill=29 | |cffa336edIronfoe|r / 3 / Need or Greed? | dice: Interface\Icons\INV_Misc_Dice_02
+time up, not cancelled yet   shown=true fill= 0 | |cffa336edIronfoe|r / 0 / Need or Greed? | dice: Interface\Icons\INV_Misc_Dice_02
+never cancelled: gone        shown=false fill= 0 | |cffa336edIronfoe|r / 0 / Need or Greed? | dice: -
+two up                       shown=true fill=71 | |cff1fff00Black Lotus|r / 60 / Need or Greed?  +1 | dice: Interface\Icons\INV_Misc_Dice_02
+all cancelled (faded)        shown=false fill=71 | |cff1fff00Black Lotus|r / 60 / Need or Greed?  +1 | dice: -
+quality colors off, in combat shown=true fill=71 | Ironfoe / 60 / Need or Greed? | dice: Interface\Icons\INV_Misc_Dice_02
+ring off                     shown=false fill=71 | Ironfoe / 60 / Need or Greed? | dice: -
+preview                      shown=true fill=67 | Ironfoe / 56 / Need or Greed?  +1 | dice: Interface\Icons\INV_Misc_Dice_02
+preview, rolled              shown=true fill=23 | Ironfoe / 19 / Rolled Need | dice: Interface\Icons\INV_Misc_Dice_02
+ERRORS: {}

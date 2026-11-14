@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Loot roll ring** (new; on by default). While an item is being rolled for, the ring drains over
+  the time left to roll, with a dice badge, the item's name in its quality color and the seconds
+  left, turning red in the last 10 seconds (Loot rolls > Warn at). Once you roll it shows your pick
+  ("Rolled Need"); pass and that roll drops off. With several rolls at once, the ones you still have
+  to answer come first. Stays up in combat. Preview with `/circ loot`.
 - **Clock ring** (new; off until you turn it on: Clock > Show clock ring). A clock that stays on
   screen: the ring fills as the hour goes by, a dot rides it at the hour, ticks mark the hours,
   and the middle shows the time with the day and date. Your computer's time or the realm's, 12 or

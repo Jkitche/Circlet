@@ -52,6 +52,7 @@ Rings\Gather.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\TargetCast.lua
+Rings\LootRoll.lua
 Rings\QuestPins.lua
 Rings\Totems.lua
 

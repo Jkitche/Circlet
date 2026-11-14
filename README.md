@@ -54,6 +54,10 @@ then fade away, or stay up as a permanent display.
   hour and ticks around it, showing the time, day and date. Local or realm time, 12 or 24 hours.
   The dot becomes a rising sun in the morning, a setting sun in the evening and a moon at night.
 
+**Groups**
+- **Loot rolls**: the time left to roll Need or Greed, with a dice badge and the item's name in
+  its quality color; shows your pick once you've rolled, and warns in the last few seconds.
+
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect,
   with a revive animation when you're back in your body.

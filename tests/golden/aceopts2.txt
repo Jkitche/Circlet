@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=54 execute=111 range=197 select=67 toggle=159
+counts: color=57 execute=116 range=207 select=70 toggle=163
 general (General)
 progress (Progress rings)
   xp (XP)
@@ -17,6 +17,7 @@ status (Travel & status)
   food (Food & Drink)
   camp (Campfire)
   clock (Clock)
+  loot (Loot rolls)
   ammo (Ammo)
 professions (Professions & casting)
   craft (Crafting)
