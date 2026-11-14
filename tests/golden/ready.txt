@@ -1,0 +1,22 @@
+idle                           shown=false fill= 0 |  | icon: -
+started by Thrall              shown=true fill=70 | Ready check: Thrall / 34 / Are you ready? | icon: Waiting
+you're ready                   shown=true fill=68 | Ready check: Thrall / 33 / 2/5 ready | icon: Waiting
+Rexxar ready                   shown=true fill=66 | Ready check: Thrall / 32 / 3/5 ready | icon: Waiting
+Jaina not ready                shown=true fill=64 | Ready check: Thrall / 31 / 3/5 ready | icon: NotReady
+finished: one not ready        shown=true fill=72 | Ready check / 4/5 / 1 not ready | icon: NotReady
+result gone                    shown=false fill=72 | Ready check / 4/5 / 1 not ready | icon: -
+all ready (ended before it showed) shown=true fill=72 | Ready check / 5/5 / All ready! | icon: Ready
+Rexxar AFK, 4s left            shown=true fill=36 | Ready check: Jaina / 5 / 4/5 ready | icon: Waiting
+finished: one AFK              shown=true fill=72 | Ready check / 4/5 / 1 AFK | icon: NotReady
+5s check, 1s left              shown=true fill=15 | Ready check: Jaina / 1 / Are you ready? | icon: Waiting
+never finished: result         shown=true fill=72 | Ready check / 1/5 / 4 AFK | icon: NotReady
+then gone                      shown=false fill=72 | Ready check / 1/5 / 4 AFK | icon: -
+raid, you started it           shown=true fill=70 | Ready check: Kaladin / 34 / 1/3 ready | icon: Waiting
+raid all ready                 shown=true fill=72 | Ready check / 3/3 / All ready! | icon: Ready
+icon as background             shown=true fill=70 | Ready check: Thrall / 34 / Are you ready? | icon: Waiting
+  icon alpha 0.40 (setting 40%)
+ring off                       shown=false fill=72 | Ready check / 1/5 / 4 AFK | icon: -
+preview                        shown=true fill=67 | Ready check: Thrall / 33 / Are you ready? | icon: Waiting
+preview, one not ready         shown=true fill=21 | Ready check: Thrall / 11 / 4/5 ready | icon: NotReady
+preview result                 shown=true fill=72 | Ready check / 4/5 / 1 not ready | icon: NotReady
+ERRORS: {}

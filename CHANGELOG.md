@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Ready check ring** (new; on by default). While a ready check runs, the ring drains over the
+  time left to answer, with who started it, the seconds left and how many are ready ("3/5 ready"),
+  and the game's ready check icon as a badge (or filling the ring's middle: Ready checks > Icon as
+  background). It asks "Are you ready?" until you answer and turns red as soon as anyone isn't
+  ready. When the check ends it shows the result for a moment: "All ready!", or how many weren't
+  ready and how many never answered. Preview with `/circ ready`.
 - **Loot roll ring** (new; on by default). While an item is being rolled for, the ring drains over
   the time left to roll, with the Need roll's dice as a badge (or filling the ring's middle: Loot
   rolls > Icon as background), the item's name in its quality color and the seconds

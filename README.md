@@ -57,6 +57,8 @@ then fade away, or stay up as a permanent display.
 **Groups**
 - **Loot rolls**: the time left to roll Need or Greed, with a dice badge and the item's name in
   its quality color; shows your pick once you've rolled, and warns in the last few seconds.
+- **Ready checks**: the time left to answer, who started it and how many are ready, with the
+  game's ready check icon; red as soon as anyone isn't ready, then the result ("All ready!").
 
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect,
