@@ -11,8 +11,6 @@
   the game reports as empty now clears even while it hides the totem's times, and the game's own
   countdown (used for totems not yet learned) gives up once even your longest totem would be over.
 
-## 1.1.0
-
 - **Flight ring: times from the game's data.** Every route counts down from the first flight: the
   time comes from the game's own flight paths (each hop's length, mined from the WoW Forever client's
   taxi tables, at flying speed, plus any stops), added up over every hop of the trip. The ring no
@@ -36,6 +34,16 @@
   its middle, warms from the ghost color to the "in range" color, and a heartbeat thumps out, each
   beat flashing the ring and rolling a wave outward. Then the last of the ghost rises away as mist.
   Not played at a spirit healer. Shown in the corpse ring's preview.
+- **Discovery animation: symmetrical.** The ring closes down both sides at once, from the top to the
+  bottom, with the compass ticks and sparks mirrored left to right, and a pair of glints bounces up
+  and down both sides of the ring.
+- **Fixed: a profession skill-up could pop two rings,** the first with the generic anvil icon, when
+  the game listed the same skill under two IDs. One ring now, with the profession's own icon.
+- **Fixed: rings could be moved outside edit mode.** Dragging and right-click reset now only work in
+  edit mode.
+
+## 1.1.0
+
 - **Fixed: the pet XP ring never showed.** It listened for pet XP changes on the wrong unit. It also
   catches up after a fight now, when the game hid your pet's XP during it.
 - **Campfire ring** (new; on by default). While you rest at a campfire (the Welcoming Campfire
