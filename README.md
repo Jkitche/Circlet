@@ -51,6 +51,7 @@ then fade away, or stay up as a permanent display.
 **Clock**
 - **Clock** (off until you turn it on): a ring that fills through the hour with a dot at the
   hour and ticks around it, showing the time, day and date. Local or realm time, 12 or 24 hours.
+  The dot becomes a rising sun in the morning, a setting sun in the evening and a moon at night.
 
 **Death and breath**
 - **Corpse run**: distance to your body, an arrow pointing to it, and when you can resurrect.

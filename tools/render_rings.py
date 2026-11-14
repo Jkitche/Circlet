@@ -59,6 +59,8 @@ RegionMethods.SetPoint = function(s, p, rel, rp, x, y)
   s._anchor = { p = p, rel = rel, rp = rp or p, x = x or 0, y = y or 0 }
 end
 RegionMethods.SetColorTexture = function(s, r, g, b, a) s._solid = { r, g, b, a or 1 } end
+RegionMethods.SetTexCoord = function(s, l, r, t, b) s._crop = { l, r, t, b } end
+RegionMethods.AddMaskTexture = function(s, m) s._mask = m end
 RegionMethods.SetVertexColor = function(s, r, g, b, a) s._vc = { r, g, b, a } end
 local cfx = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = cfx(self, ...); t._parent = self; ALL_TEX = ALL_TEX or {}; table.insert(ALL_TEX, t); return t end
@@ -142,6 +144,12 @@ class Layout:
         return c
 
 
+def Layout_center_of(r):
+    """A region anchored straight to the ring frame: its offset from the centre."""
+    a = r._anchor
+    return ((a.x or 0), (a.y or 0)) if a is not None else (0, 0)
+
+
 def clean(text):
     import re
     text = text.replace("|n", "\n")
@@ -193,7 +201,7 @@ def snapshot(name):
             continue
         path = str(t._texpath or "")
         if t._solid is None:
-            if "TempPortraitAlphaMask" in path and t._mask is None:
+            if "TempPortraitAlphaMask" in path:
                 t._kindr = "circle"   # a plain disc in its vertex color
             elif "GenericGlow" in path or "star4" in path:
                 t._kindr = "glow"     # a soft light, added on top
@@ -261,10 +269,26 @@ def draw_ring(parts):
         if t._kindr == "circle":
             vc = t._vc
             col = (vc[1], vc[2], vc[3]) if vc else (1, 1, 1)
-            half = (t._w or 2) / 2
-            (x0, y0), (x1, y1) = P(tx - half, ty + half), P(tx + half, ty - half)
+            hw, hh = (t._w or 2) / 2, (t._h or t._w or 2) / 2
+            fill = (int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a))
             ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
-            ImageDraw.Draw(ov).ellipse([x0, y0, x1, y1], fill=(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a)))
+            crop = t._crop
+            if crop is not None and crop[4] <= 0.5 and crop[3] == 0:
+                # the top half of the disc, stretched over the texture's box
+                (x0, y0), (x1, y1) = P(tx - hw, ty + hh), P(tx + hw, ty - hh * 3)
+                ImageDraw.Draw(ov).pieslice([x0, y0, x1, y1], 180, 360, fill=fill)
+            else:
+                (x0, y0), (x1, y1) = P(tx - hw, ty + hh), P(tx + hw, ty - hh)
+                ImageDraw.Draw(ov).ellipse([x0, y0, x1, y1], fill=fill)
+            m = t._mask
+            if m is not None and m._pt is not None and m._w:
+                # clipped to its mask (a disc at the mask's own spot)
+                mx, my = Layout_center_of(m)
+                mh = m._w / 2
+                clip = Image.new("L", im.size, 0)
+                (a0, b0), (a1, b1) = P(mx - mh, my + mh), P(mx + mh, my - mh)
+                ImageDraw.Draw(clip).ellipse([a0, b0, a1, b1], fill=255)
+                ov.putalpha(Image.composite(ov.split()[3], Image.new("L", im.size, 0), clip))
             im = Image.alpha_composite(im, ov)
             continue
         c = t._solid
