@@ -115,6 +115,27 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 - `/circ ring <quest>` / `/circ ring clear`: pin or clear quest rings.
 - `/circ icons`: list the game icons the rings use.
 
+## Local development
+
+Clone the repo into the game's `Interface` folder, next to `AddOns` (not inside it):
+
+```
+cd "D:\World of Warcraft\_forever_\Interface"
+git clone https://github.com/Jkitche/Circlet.git
+```
+
+After each change, copy the addon into `AddOns\Circlet`:
+
+```
+localDeploy.cmd           (or .\localDeploy.ps1, or ./localDeploy.sh in Git Bash)
+```
+
+Then `/reload` in game, or restart the game if a file was added or removed. The script
+copies only what a release would contain (everything except what `.pkgmeta` ignores) and
+mirrors the folder, so files deleted from the repo are removed from `AddOns\Circlet` too.
+`-WhatIf` (PowerShell) or `DRY_RUN=1` (bash) shows what it would do without changing
+anything.
+
 ## Code layout
 
 Files load in `Circlet.toc` order and share everything through the addon's `ns` table.

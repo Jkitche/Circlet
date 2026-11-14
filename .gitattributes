@@ -1,0 +1,5 @@
+# Keep line endings fixed whatever core.autocrlf says: the shell script needs LF to run,
+# the Windows scripts CRLF.
+*.sh  text eol=lf
+*.ps1 text eol=crlf
+*.cmd text eol=crlf

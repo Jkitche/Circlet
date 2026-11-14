@@ -13,3 +13,7 @@ ignore:
   - .github
   - .gitignore
   - .pkgmeta
+  - .gitattributes
+  - localDeploy.ps1
+  - localDeploy.cmd
+  - localDeploy.sh
