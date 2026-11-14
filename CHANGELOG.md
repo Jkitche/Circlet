@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session
+  summary now have a deep gradient background with a soft shadow, a thin gold border, a header band
+  with a turning Circlet logo and a gold accent line, and open with a quick fade. In the wizard a
+  step ring fills one notch per step, sections have gold underlines, rows light up under the
+  mouse, the Look choices are picture cards showing mini rings in each style and size, and each
+  new thing on the New in page sits on its own panel with a NEW tag.
 - **Setup wizard** (new). The first time Circlet runs, a short wizard opens a few seconds after the
   welcome animation: pick your rings by group (each with a Show button that puts it on screen with
   sample content), hide the game bars they replace, choose one style and size for every ring (or keep

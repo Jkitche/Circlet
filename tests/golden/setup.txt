@@ -95,7 +95,7 @@ hide XP bar: true
         | ( ) Smaller
         | ( ) Default
         | ( ) Larger
-        | ( ) Show all
+        | [Show all]
   footer: [Skip setup] [Back] [Next]
 segmented + larger: xp segmented 168, cast segmented 120, pin segmented
 back to keep: xp smooth 140, cast smooth 100, pin segmented

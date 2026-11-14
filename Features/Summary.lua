@@ -67,24 +67,15 @@ panel:SetScript("OnDragStart", panel.StartMoving)
 panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
 panel:SetClampedToScreen(true)
 panel:Hide()
-if panel.SetBackdrop then
-    panel:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
-    })
-    panel:SetBackdropColor(0.04, 0.04, 0.06, 0.94)
-    panel:SetBackdropBorderColor(0.6, 0.6, 0.65, 1)
-else
-    local bg = panel:CreateTexture(nil, "BACKGROUND")
-    bg:SetAllPoints()
-    bg:SetColorTexture(0.04, 0.04, 0.06, 0.94)
-end
+-- Circlet's window look (Features/PanelSkin.lua): header band with the turning logo,
+-- gold border and accent line, a rule over the footer.
+ns.SkinPanel(panel, { header = 52, footer = 38 })
 table.insert(UISpecialFrames, "CircletSummaryFrame") -- Esc closes it
 
-panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-panel.title:SetPoint("TOP", panel, "TOP", 0, -14)
+panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+panel.title:SetPoint("TOP", panel, "TOP", 0, -10)
+panel.title:SetTextColor(1, 0.86, 0.45)
+panel.title:SetShadowOffset(1, -1)
 panel.subtitle = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 panel.subtitle:SetPoint("TOP", panel.title, "BOTTOM", 0, -4)
 panel.close = CreateFrame("Button", nil, panel, "UIPanelCloseButton")
