@@ -188,12 +188,16 @@ local function Progress(now)
     return math.max(0, math.min(1, (now - cast.start) / span)), math.max(0, cast.finish - now)
 end
 
+-- Unit checks that never throw (false when the client lacks the call or hides the answer).
+local function Yes(fn, ...) return Clean(SafeCall(fn, ...)) and true or false end
+local function TargetIsYou() return Yes(UnitIsUnit, UNIT, "player") end
+
 -- Should the ring follow this target at all?
 local function Watching()
     if not db.targetCastEnabled then return false end
-    if not UnitExists(UNIT) then return false end
-    if UnitIsUnit(UNIT, "player") and not db.targetCastSelf then return false end
-    if db.targetCastHostileOnly and not UnitCanAttack("player", UNIT) then return false end
+    if not Yes(UnitExists, UNIT) then return false end
+    if TargetIsYou() and not db.targetCastSelf then return false end
+    if db.targetCastHostileOnly and not Yes(UnitCanAttack, "player", UNIT) then return false end
     return true
 end
 
@@ -384,7 +388,7 @@ local SPELLCAST_EVENTS = { "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_
 local function OnEvent(event, unit, castID, spellID)
     if not CircletDB then return end
     -- Your own cast events count only while you're targeting yourself.
-    if unit == "player" and not UnitIsUnit(UNIT, "player") then return end
+    if unit == "player" and not TargetIsYou() then return end
     if event == "PLAYER_TARGET_CHANGED" then
         Retarget()
     elseif event == "UNIT_SPELLCAST_START" then
@@ -441,7 +445,7 @@ end
 
 local function TargetCastDebug()
     ns.Print("Target cast debug" .. (InCombatLockdown() and " (in combat)" or " (out of combat)")
-        .. ": target " .. (UnitExists(UNIT) and Show(SafeCall(UnitName, UNIT)) or "none"))
+        .. ": target " .. (Yes(UnitExists, UNIT) and Show(SafeCall(UnitName, UNIT)) or "none"))
     for _, which in ipairs({ { "Casting", UnitCastingInfo, { 1, 4, 5, 8, 9 } }, { "Channel", UnitChannelInfo, { 1, 4, 5, 7, 8 } } }) do
         local r = { SafeCall(which[2], UNIT) }
         local labels = { "name", "start", "end", "notInterruptible", "spellID" }

@@ -12,8 +12,8 @@ ns.NewProfile("  Hunter  "); P("new: " .. ns.CurrentProfile() .. " xpSize=" .. C
 CircletDB.xpSize = 150; CircletDB.repColors.custom = { r = 0, g = 0, b = 1 }
 ns.SwitchProfile("Default"); P("back to Default: xpSize=" .. CircletDB.xpSize .. " exalted.b=" .. CircletDB.repColors.custom.b)
 ns.SwitchProfile("Hunter"); P("Hunter again: xpSize=" .. CircletDB.xpSize .. " exalted.b=" .. CircletDB.repColors.custom.b)
-CircletDB.flightTimes = { a = 1 }
-ns.CopyProfile("Default"); P("copied Default into Hunter: xpSize=" .. CircletDB.xpSize .. " flightTimes kept=" .. tostring(CircletDB.flightTimes.a))
+CircletDB.castTimes = { a = 1 } -- learned data (the cast ring's spell times): not part of a profile
+ns.CopyProfile("Default"); P("copied Default into Hunter: xpSize=" .. CircletDB.xpSize .. " castTimes kept=" .. tostring(CircletDB.castTimes.a))
 CircletDB.xpSize = 175; ns.RenameProfile("Alt"); P("renamed: " .. ns.CurrentProfile() .. " chars=" .. CircletProfiles.chars["Hero - Forever"] .. " hunter gone=" .. tostring(CircletProfiles.profiles.Hunter == nil) .. " saved=" .. CircletProfiles.profiles.Alt.xpSize)
 Fire("PLAYER_LOGOUT")
 -- second character logs in (simulate reload with the saved tables)

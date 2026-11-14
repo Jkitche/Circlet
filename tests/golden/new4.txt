@@ -10,8 +10,10 @@ ghost walking:
 ghost near:
     Your corpse / 1 yd / In range: resurrect!
 alive:
+    Your corpse / Alive again!
 resting at inn:
     Level 16 / Resting / Fully rested / 30.0% / Rested 150%
+    Your corpse / Alive again!
 left inn:
 session: xp=400 quests=1 deaths=1 levels=0
 summary shown=true title=This session / 0m played

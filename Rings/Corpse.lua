@@ -374,7 +374,7 @@ local corpseRing = CreateLiveRing({
         if not UnitIsGhost("player") then
             -- Just came back to life from a corpse run: in your own body (not at a
             -- spirit healer) if you asked to, or were standing by your corpse.
-            if wasGhost and not revivedAt and db.corpseReviveFx and not UnitIsDead("player")
+            if wasGhost and not revivedAt and db.corpseReviveFx and not (UnitIsDead and UnitIsDead("player"))
                 and ((reviveAsked and now - reviveAsked < 10) or wasInRange) then
                 revivedAt = now
             end

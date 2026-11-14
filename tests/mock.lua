@@ -125,6 +125,9 @@ MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 UNITS = {}
 function UnitExists(u) return UNITS[u] ~= nil or u == "player" end
 function UnitIsPlayer(u) return u == "player" end
+function UnitIsDead(u) return DEAD == true end
+function UnitIsUnit(a, b) return a == b or (UNITS[a] ~= nil and UNITS[a] == UNITS[b]) end
+function UnitCanAttack(a, b) return UNITS[b] ~= nil and UNITS[b].hostile == true end
 function UnitName(u) return u == "player" and "Kaladin" or (UNITS[u] and UNITS[u].name) end
 function UnitGUID(u) return UNITS[u] and UNITS[u].guid end
 function UnitLevel(u) return PLAYER_LEVEL end

@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=49 execute=107 range=187 select=64 toggle=150
+counts: color=54 execute=111 range=197 select=67 toggle=159
 general (General)
 progress (Progress rings)
   xp (XP)
@@ -22,6 +22,7 @@ professions (Professions & casting)
   craft (Crafting)
   gather (Gathering)
   cast (Casting)
+  targetCast (Target casting)
 pin (Quest rings)
 totem (Totems) [hidden]
 profiles (Profiles)

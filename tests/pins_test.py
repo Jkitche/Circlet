@@ -47,7 +47,11 @@ Slash("edit pin"); Advance(1); D("editing (samples):"); Slash("edit pin"); Advan
 Slash("ring feath"); Advance(1)
 local f2; for _, f in ipairs(allFrames) do if f.sqKey == "pin2" then f2 = f end end
 UIParent.GetEffectiveScale = function() return 1 end
-f2._cx, f2._cy = 600, 500; CURSOR_X, CURSOR_Y = 600, 500; f2._scripts.OnDragStart(f2); CURSOR_X, CURSOR_Y = 700, 700; f2._scripts.OnDragStop(f2)
+-- Outside edit mode a ring can't be dragged...
+local function Drag() f2._cx, f2._cy = 600, 500; CURSOR_X, CURSOR_Y = 600, 500; f2._scripts.OnDragStart(f2); CURSOR_X, CURSOR_Y = 700, 700; f2._scripts.OnDragStop(f2) end
+Drag(); P("drag outside edit mode -> pinX=" .. CircletDB.pinX .. " pinFromTop=" .. CircletDB.pinFromTop .. " (unchanged)")
+-- ...in edit mode it can.
+Slash("edit pin"); Advance(0.1); Drag(); Slash("edit pin"); Advance(0.1)
 P("dragged pin2 centre to y=700 -> pinX=" .. CircletDB.pinX .. " pinFromTop=" .. CircletDB.pinFromTop .. " (ring 2 top = " .. (CircletDB.pinFromTop + 112) .. ", expect " .. (1080 - 700 - 50) .. ")")
 Slash("resetpos pin"); P("after reset: pinX=" .. CircletDB.pinX .. " pinFromTop=" .. CircletDB.pinFromTop)
 Slash("ring feathers"); Advance(1); D("after /circ ring feathers (unpin):")
