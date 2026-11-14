@@ -51,6 +51,11 @@ End(6); Fire("PLAYER_REGEN_ENABLED"); IN_COMBAT = false; Advance(1)
 -- Turned off: nothing.
 CircletDB.lootEnabled = false; Start(7, "Ironfoe", 4, 60); Advance(1); S("ring off")
 End(7); CircletDB.lootEnabled = true
+-- Icon as background: the dice fills the ring's middle, dimmed, behind the text.
+CircletDB.lootIconBg = true; Start(8, "Ironfoe", 4, 60); Advance(1); S("icon as background")
+local tex; for _, t in ipairs(TEXS) do if t._texpath and tostring(t._texpath):match("Dice") then tex = t end end
+P(string.format("  dice alpha %.2f (setting %d%%)", tex._alpha or 1, CircletDB.lootIconBgAlpha))
+End(8); CircletDB.lootIconBg = false; Advance(2)
 Slash("loot"); Advance(1); S("preview")
 Advance(8); S("preview, rolled")
 ''')

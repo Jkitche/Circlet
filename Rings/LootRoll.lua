@@ -8,7 +8,8 @@ local SafeCall, Clean = ns.SafeCall, ns.Clean
 -- Loot roll ring
 ---------------------------------------------------------------------------
 -- Up while an item is being rolled for in your group: the ring drains over the roll's time
--- limit, with a dice badge on its top edge, the item's name in its quality color and the
+-- limit, with the Need roll's dice as a badge on its top edge (or, with Icon as background,
+-- filling the ring's middle behind the text), the item's name in its quality color and the
 -- seconds left. In the last few seconds (lootWarn) it turns the warning color. Once you
 -- roll it says what you picked ("Rolled Need"); pass and that roll drops off. With several
 -- rolls at once it shows the most urgent, the ones you still have to answer first, with
@@ -20,11 +21,11 @@ local SafeCall, Clean = ns.SafeCall, ns.Clean
 
 local ROLL_NAMES = { [0] = "Pass", [1] = "Need", [2] = "Greed", [3] = "Disenchant", [4] = "Transmog" }
 
--- The dice: the game's dice icon (round badge friendly), else the group loot window's own.
+-- The dice: the Need button's icon from the game's group loot window, else a dice item icon.
 local DICE_CANDIDATES = {
+    "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
     "Interface\\Icons\\INV_Misc_Dice_02",
     "Interface\\Icons\\INV_Misc_Dice_01",
-    "Interface\\Buttons\\UI-GroupLoot-Dice-Up",
 }
 local dice
 local function DiceTexture()
@@ -166,6 +167,7 @@ ns.LootDiceTexture = DiceTexture
 ns.RegisterRing({
     key = "loot", name = "Loot roll", order = 14.7,
     alwaysInCombat = true, -- rolls are short and come up in fights: never faded out
+    iconBg = true, -- "Icon as background": the dice fills the ring's middle (Core/Settings.lua, UI/OptionsKit.lua)
     ring = lootRing,
     preview = PreviewLootRing, slash = { "loot", "roll" }, help = "preview the loot roll ring",
     toggle = { "Loot roll ring", "Counts down the time left to roll Need or Greed on an item." },
@@ -192,8 +194,8 @@ ns.RegisterRing({
             local Toggle, Range, Color, Box = O.Toggle, O.Range, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.9, "Loot rolls", "Loot Roll Ring",
-                "Up while an item is being rolled for: the ring drains over the time left to roll, with a dice "
-                .. "badge, the item's name and the seconds left, turning the warning color near the end. Once you roll "
+                "Up while an item is being rolled for: the ring drains over the time left to roll, with the Need "
+                .. "roll's dice (as a badge, or behind the text with Icon as background), the item's name and the seconds left, turning the warning color near the end. Once you roll "
                 .. "it shows your pick; pass and that roll drops off. With several rolls, the ones you still have to "
                 .. "answer come first.",
                 MergeTop(TopRow("loot", "loot roll ring", ns.PreviewLootRing,

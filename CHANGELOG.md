@@ -3,7 +3,8 @@
 ## Unreleased
 
 - **Loot roll ring** (new; on by default). While an item is being rolled for, the ring drains over
-  the time left to roll, with a dice badge, the item's name in its quality color and the seconds
+  the time left to roll, with the Need roll's dice as a badge (or filling the ring's middle: Loot
+  rolls > Icon as background), the item's name in its quality color and the seconds
   left, turning red in the last 10 seconds (Loot rolls > Warn at). Once you roll it shows your pick
   ("Rolled Need"); pass and that roll drops off. With several rolls at once, the ones you still have
   to answer come first. Stays up in combat. Preview with `/circ loot`.
