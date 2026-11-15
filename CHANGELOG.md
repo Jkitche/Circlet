@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Timer ring** (new). A countdown you start yourself: `/circ timer 5m Tea` (also `1:30`, `90`,
+  `1h20m`, `10 min Pull`...), or the 1, 5 and 10 minute buttons on its options page. The ring drains
+  with the label and the time left and a pocket watch icon, pulses in the last 10 seconds, and when
+  time's up it bursts, plays a sound and shows the label in big text on screen (each optional).
+  `/circ timer +2m` adds time, `/circ timer stop` stops it, `/circ timer` says what's left. A running
+  timer carries on through a reload or a relog. Stays up in combat; Icon as background works too.
+- `/circ timer` now starts a timer; the timed quest ring's preview is `/circ timed`.
+- Target cast ring: the ring textures for the game's timer are stored in the standard TGA layout,
+  and `/circ targetdebug` reports how the timer is drawn and whether its texture loads.
+
 ## 1.2.0
 
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session

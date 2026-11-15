@@ -99,7 +99,7 @@ ns.PreviewTimedRing = PreviewTimedRing
 ns.RegisterRing({
     key = "timed", name = "Timed quest", order = 9,
     ring = timedRing,
-    preview = PreviewTimedRing, slash = { "timed", "timer" }, help = "preview the timed quest ring",
+    preview = PreviewTimedRing, slash = { "timed" }, help = "preview the timed quest ring",
     toggle = { "Timed quest ring", "Counts down escort and other timed quests." },
     gameBar = "the game's quest timer",
     defaults = {

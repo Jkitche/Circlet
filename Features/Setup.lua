@@ -29,7 +29,7 @@ local GROUPS = {
     { name = "Group", keys = { "loot", "ready" } },
     { name = "Travel and survival", keys = { "flight", "timed", "corpse", "breath" } },
     { name = "Professions", keys = { "craft", "gather" } },
-    { name = "Comfort", keys = { "food", "camp", "clock" } },
+    { name = "Comfort", keys = { "food", "camp", "clock", "timer" } },
 }
 
 -- New features that aren't rings of their own: an on/off setting and a ring to show it on.

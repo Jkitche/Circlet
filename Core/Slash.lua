@@ -44,8 +44,10 @@ local function Help()
     end
 end
 
+-- Commands get the rest of the line lower-cased, and as typed (for labels and names).
 local function Run(msg)
     local cmd, arg = strtrim(msg or ""):lower():match("^(%S*)%s*(.-)$")
+    local _, rawArg = strtrim(msg or ""):match("^(%S*)%s*(.-)$")
     if cmd == "" or cmd == "config" or cmd == "options" then
         ns.OpenOptions()
     elseif cmd == "edit" or cmd == "move" or cmd == "unlock" or cmd == "lock" then
@@ -60,7 +62,7 @@ local function Run(msg)
         end
         for _, c in ipairs(ns.COMMANDS) do
             for _, name in ipairs(c.names) do
-                if name == cmd then return c.fn(arg) end
+                if name == cmd then return c.fn(arg, rawArg) end
             end
         end
         Help()

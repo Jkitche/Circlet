@@ -16,7 +16,7 @@ local DEFAULTS, Print = ns.DEFAULTS, ns.Print
 -- resets leave it alone.
 local LEARNED = { repKnown = true, flightTimes = true, sessions = true, restBase = true, pinned = true,
                   lastSeen = true, totemSpells = true, castTimes = true, targetCastTimes = true,
-                  setupDone = true, seenNew = true } -- the setup wizard and New in page (Features/Setup.lua)
+                  setupDone = true, seenNew = true, timerRun = true } -- the setup wizard and New in page (Features/Setup.lua)
 
 local current -- this character's profile name
 

@@ -49,10 +49,13 @@ then fade away, or stay up as a permanent display.
 - **Campfire**: resting at a camp (Welcoming Campfire) counting down to Well Rested, with
   firelight and embers rising through the ring.
 
-**Clock**
+**Clock and timer**
 - **Clock** (off until you turn it on): a ring that fills through the hour with a dot at the
   hour and ticks around it, showing the time, day and date. Local or realm time, 12 or 24 hours.
   The dot becomes a rising sun in the morning, a setting sun in the evening and a moon at night.
+- **Timer**: a countdown you start yourself with `/circ timer 5m Tea` (or `1:30`, `90`, `1h20m`,
+  `10 min Pull`; `+2m` adds time, `stop` stops it). It drains with a pocket watch icon, pulses near
+  the end, then bursts with a sound and the label on screen. It keeps going through a reload.
 
 **Groups**
 - **Loot rolls**: the time left to roll Need or Greed, with a dice badge and the item's name in
@@ -122,6 +125,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 `/circ` (or `/circlet`) opens the options. `/circ help` lists everything.
 
 - `/circ setup`: the setup wizard. `/circ new`: what's new in this version.
+- `/circ timer <time> [label]`: start a countdown ring (`/circ timer +2m` adds time, `stop` ends it).
 - `/circ edit [ring]`: see a ring live and drag it into place.
 - Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
   `timed`, `corpse`, `breath`, `food`, `camp`, `clock`, `craft`, `gather`, `cast`, `totems`.

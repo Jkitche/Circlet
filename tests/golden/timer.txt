@@ -1,0 +1,107 @@
+######## parsing
+90                   -> 90 
+90s                  -> 90 
+5m Tea               -> 300 [Tea]
+5M                   -> 300 
+1h                   -> 3600 
+1h30m                -> 5400 
+2m30s                -> 150 
+1:30                 -> 90 
+1:02:03 Long raid    -> 3723 [Long raid]
+10 min Pull          -> 600 [Pull]
+2 hours              -> 7200 
+2.5m                 -> 150.0 
+soon                 -> nil 
+5x                   -> nil 
+1:2:3:4              -> nil 
+0                    -> 0 
+ERRORS: {}
+######## running
+idle                               shown=false fill= 0 | 
+chat: |cffffd100Circlet|r: Timer started: 5:00 (Tea).
+5m Tea, 1s in                      shown=true fill=72 | Tea / 4:59 / remaining
+halfway                            shown=true fill=36 | Tea / 2:29 / remaining
+9s left (pulsing)                  shown=true fill= 3 | Tea / 10 / almost done
+chat: |cffffd100Circlet|r: Timer: 0:09 left (Tea).
+sound: 8959 Master
+on screen: Tea: time's up!
+chat: |cffffd100Circlet|r: Time's up: Tea.
+time's up                          shown=true fill=72 | Tea / 0:00 / Time's up!
+saved after time's up: nil
+after the hold                     shown=false fill=72 | Tea / 0:00 / Time's up!
+chat: |cffffd100Circlet|r: Timer now 2:00.
++2m (started)                      shown=true fill=72 | Timer / 1:59 / remaining
+chat: |cffffd100Circlet|r: Timer now 2:59 (Stew).
++1m Stew (added, relabelled)       shown=true fill=72 | Stew / 2:58 / remaining
+chat: |cffffd100Circlet|r: Timer stopped.
+stopped                            shown=false fill=72 | Stew / 2:58 / remaining
+chat: |cffffd100Circlet|r: No timer running.
+chat: |cffffd100Circlet|r: /circ timer <time> [label], e.g. 5m Tea, 1:30, 90, 1h20m, 10 min Pull; +2m adds time; stop.
+chat: |cffffd100Circlet|r: Couldn't read that time. /circ timer <time> [label], e.g. 5m Tea, 1:30, 90, 1h20m, 10 min Pull; +2m adds time; stop.
+chat: |cffffd100Circlet|r: That's more than a day; the timer goes up to 24 hours.
+chat: |cffffd100Circlet|r: Couldn't read that time. /circ timer <time> [label], e.g. 5m Tea, 1:30, 90, 1h20m, 10 min Pull; +2m adds time; stop.
+chat: |cffffd100Circlet|r: Timer started: 1:30 (Pull).
+countdown 1:30 Pull                shown=true fill=72 | Pull / 1:29 / remaining
+chat: |cffffd100Circlet|r: Timer stopped.
+chat: |cffffd100Circlet|r: Timer started: 0:03.
+chat: |cffffd100Circlet|r: Time's up: Timer.
+3s, sound and text off             shown=true fill=72 | Timer / 0:00 / Time's up!
+chat: |cffffd100Circlet|r: Timer started: 1:00.
+chat: |cffffd100Circlet|r: The timer ring is turned off: turn it on in the options (Timer > Show timer ring).
+ring off                           shown=false fill=72 | Timer / 0:00 / Time's up!
+chat: |cffffd100Circlet|r: Timer stopped.
+chat: |cffffd100Circlet|r: /circ timer <time> [label], e.g. 5m Tea, 1:30, 90, 1h20m, 10 min Pull; +2m adds time; stop.
+chat: |cffffd100Circlet|r: commands:
+chat:   /circ rep       - preview the reputation ring
+chat:   /circ quest     - preview the quest ring
+chat:   /circ xp        - preview the XP ring
+chat:   /circ skill     - preview the profession ring
+chat:   /circ weapon    - preview the weapon skill ring
+chat:   /circ pet       - preview the pet ring
+chat:   /circ ammo      - preview the ammo ring
+chat:   /circ flight    - preview the flight ring
+chat:   /circ timed     - preview the timed quest ring
+chat:   /circ corpse    - preview the corpse ring
+chat:   /circ breath    - preview the breath ring
+chat:   /circ food      - preview the food & drink ring
+chat:   /circ camp      - preview the campfire ring
+chat:   /circ clock     - preview the clock ring
+chat:   /circ craft     - preview the crafting ring
+chat:   /circ gather    - preview the gathering ring
+chat:   /circ cast      - preview the cast ring
+chat:   /circ target    - preview the target cast ring
+chat:   /circ loot      - preview the loot roll ring
+chat:   /circ ready     - preview the ready check ring
+chat:   /circ pins      - preview the quest rings
+chat:   /circ totems    - preview the totem rings
+chat:   /circ levelup   - preview the level-up effect
+chat:   /circ rested    - preview the rested XP gained ring
+chat:   /circ complete  - preview the objective-complete animation
+chat:   /circ timer <time> [label] - start a countdown ring: 5m, 1:30, 90, 1h20m, with a label after; +2m adds time; stop
+chat:   /circ ring <name> - pin a quest to its own ring (or right-click it in the quest log); /circ ring clear
+chat:   /circ discover  - preview the discovered area animation
+chat:   /circ hello     - preview the welcome animation
+chat:   /circ summary   - this session's summary
+chat:   /circ profile [name] - show or switch profiles
+chat:   /circ setup     - the setup wizard: pick your rings, their look and layout
+chat:   /circ new       - what's new in this version
+chat:   /circ icons     - list the game icons the rings use (found / missing)
+chat:   /circ edit [ring] - edit mode for one ring or all
+chat:   /circ resetpos [ring] - move one ring (or all) back to its default spot
+ERRORS: {}
+######## reload
+after a reload, 2 min of 5 left    shown=true fill=29 | Raid / 1:59 / remaining
+2s before the end                  shown=true fill= 1 | Raid / 1 / almost done
+sound: 8959 Master
+on screen: Raid: time's up!
+chat: |cffffd100Circlet|r: Time's up: Raid.
+time's up                          shown=true fill=72 | Raid / 0:00 / Time's up!
+ERRORS: {}
+######## away
+chat: |cffffd100Circlet|r: Your timer (Mailbox) ran out while you were away.
+logged back in                     shown=false fill= 0 | 
+saved: nil
+chat: |cffffd100Circlet|r: /circ timer <time> [label], e.g. 5m Tea, 1:30, 90, 1h20m, 10 min Pull; +2m adds time; stop.
+edit mode sample                   shown=true fill=66 | Tea / 4:33 / remaining
+chat: |cffffd100Circlet|r: Timer ring position saved.
+ERRORS: {}
