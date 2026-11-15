@@ -106,6 +106,8 @@ local function PlaceTimer(w, frame, geom, channel)
     w.layout = layout
     local cd = w.cd
     local outer = geom.R + geom.T / 2
+    w.mode = arc and "arc (disc in the middle)" or "ring band"
+    w.texPath = arc and CIRCLE or RingTexture((geom.R - geom.T / 2) / outer)
     if arc then
         local d = math.max(8, (geom.R - geom.T / 2) * 2 * 0.8)
         w:SetSize(d, d)
@@ -114,7 +116,7 @@ local function PlaceTimer(w, frame, geom, channel)
         if cd.SetTexCoordRange then pcall(cd.SetTexCoordRange, cd, { x = 0, y = 0 }, { x = 1, y = 1 }) end
     else
         w:SetSize(outer * 2, outer * 2)
-        if cd.SetSwipeTexture then cd:SetSwipeTexture(RingTexture((geom.R - geom.T / 2) / outer)) end
+        if cd.SetSwipeTexture then cd:SetSwipeTexture(w.texPath) end
         -- The sweep starts at the top and runs clockwise; the ring starts at geom.start
         -- (a fraction of a turn clockwise from the top) and may run counter-clockwise.
         if cd.SetTexCoordRange then
@@ -443,6 +445,8 @@ local function Show(v)
     return tostring(v)
 end
 
+local probeTexture -- for checking the ring texture loads (made on first use)
+
 local function TargetCastDebug()
     ns.Print("Target cast debug" .. (InCombatLockdown() and " (in combat)" or " (out of combat)")
         .. ": target " .. (Yes(UnitExists, UNIT) and Show(SafeCall(UnitName, UNIT)) or "none"))
@@ -455,6 +459,21 @@ local function TargetCastDebug()
     end
     ns.Print("UnitCastingDuration " .. (_G.UnitCastingDuration and "available" or "missing")
         .. ", UnitChannelDuration " .. (_G.UnitChannelDuration and "available" or "missing"))
+    -- The game's timer, used when the times are hidden: how it's drawn, and whether the game
+    -- can load the ring texture it sweeps with (if not, it falls back to a plain pie).
+    local probe = RingTexture(0.8)
+    probeTexture = probeTexture or UIParent:CreateTexture()
+    local test = probeTexture
+    local loaded = test:SetTexture(probe)
+    local fileID = test.GetTextureFileID and test:GetTextureFileID()
+    test:SetTexture(nil)
+    local cdProbe = timer and timer.cd
+    ns.Print("Timer: " .. (timer and ((timer:IsShown() and "showing" or "hidden") .. ", " .. tostring(timer.mode)
+            .. ", texture " .. tostring(timer.texPath)) or "not made yet (no hidden-time cast seen)")
+        .. "  |  Ring80 loads: " .. tostring(loaded) .. " (file ID " .. tostring(fileID) .. ")"
+        .. "  |  SetSwipeTexture " .. ((cdProbe and cdProbe.SetSwipeTexture) and "yes" or (cdProbe and "no" or "?"))
+        .. ", SetCooldownFromDurationObject " .. ((cdProbe and cdProbe.SetCooldownFromDurationObject) and "yes"
+            or (cdProbe and "no" or "?")))
     local c = cast
     if not c then
         ns.Print("Ring: no cast followed" .. (Watching() and "" or " (not watching this target)"))
