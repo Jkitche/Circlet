@@ -65,28 +65,42 @@ end
 -- The ring is drawn from numbers, which a hidden duration can't give. So the game's
 -- cooldown sweep draws the fill instead: its swipe texture is a ring (Textures/RingNN.tga,
 -- NN = the hollow's radius as % of the outer edge, the closest to this ring's band), laid
--- exactly over the ring's band and turned to start where the ring does. It fills in the
--- ring's color as the cast goes (unwinds for a channel), with the game's countdown in the
--- middle. Arcs (three-quarter, half) can't be swept this way: they get a disc in the
--- middle instead.
+-- exactly over the ring's band and turned to start where the ring (or arc) does. It fills
+-- in the ring's color as the cast goes (unwinds for a channel).
+--
+-- A sweep always goes all the way round in the cooldown's time, but an arc is only part of
+-- a circle (half: 180 degrees, three quarters: 270). So for an arc the sweep runs slowed
+-- down to the arc's share of a turn: it reaches the arc's end just as the cast does, and
+-- never gets to the part of the circle outside the arc. That's done by giving the
+-- cooldown a slower rate: through a copy of the cast's duration with a slower rate
+-- (C_DurationUtil), or else SetCooldown with a rate. A slowed sweep's countdown would run
+-- slow too, so the game's countdown numbers then come from a second, sweepless cooldown
+-- fed the real duration. If neither way works in this client, the arc gets a disc in its
+-- middle instead. What happened is kept in db.targetCastDiag (and /circ targetdebug).
 local CIRCLE   = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local RING_TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\Ring%d"
 local timer -- made on first use
 
--- A plain Cooldown, not CooldownFrameTemplate: the template's scripts can put the default
--- (round) swipe back when a cooldown starts, which turned the ring into a disc.
+local function PlainCooldown(parent, swipe)
+    local cd = CreateFrame("Cooldown", nil, parent)
+    cd:SetAllPoints()
+    if cd.SetDrawSwipe then cd:SetDrawSwipe(swipe) end
+    if cd.SetDrawEdge then cd:SetDrawEdge(false) end
+    if cd.SetDrawBling then cd:SetDrawBling(false) end
+    if cd.SetHideCountdownNumbers then cd:SetHideCountdownNumbers(false) end
+    return cd
+end
+
+-- Plain Cooldowns, not CooldownFrameTemplate: the template's scripts can put the default
+-- (round) swipe back when a cooldown starts. cd sweeps; numbers only counts down (for a
+-- slowed sweep, whose own numbers would be wrong).
 local function Timer(frame)
     if timer then return timer end
     timer = CreateFrame("Frame", nil, frame)
     timer:SetPoint("CENTER")
-    timer.cd = CreateFrame("Cooldown", nil, timer)
-    timer.cd:SetAllPoints()
-    local cd = timer.cd
-    if cd.SetDrawSwipe then cd:SetDrawSwipe(true) end
-    if cd.SetDrawEdge then cd:SetDrawEdge(false) end
-    if cd.SetDrawBling then cd:SetDrawBling(false) end
-    if cd.SetHideCountdownNumbers then cd:SetHideCountdownNumbers(false) end
-    if cd.SetCountdownFont then pcall(cd.SetCountdownFont, cd, "GameFontHighlightHugeOutline") end
+    timer.cd = PlainCooldown(timer, true)
+    timer.numbers = PlainCooldown(timer, false)
+    timer.numbers:Hide()
     timer:Hide()
     return timer
 end
@@ -126,39 +140,102 @@ local function RingTexture(innerFrac)
     return RING_TEX:format(math.max(40, math.min(96, pct)))
 end
 
--- Lays the timer over the ring's band (or, for an arc, as a disc in its middle). Only
--- redone when the ring's geometry or the cast changes.
-local function PlaceTimer(w, frame, geom, channel)
-    local arc = (geom.sweep or 1) < 1
-    local layout = table.concat({ geom.R, geom.T, tostring(geom.start), tostring(geom.reverse), tostring(arc),
-                                  tostring(channel) }, ":")
-    if w.layout == layout then return end
-    w.layout = layout
-    local cd = w.cd
-    local outer = geom.R + geom.T / 2
-    w.mode = arc and "arc (disc in the middle)" or "ring band"
-    w.texPath = arc and CIRCLE or RingTexture((geom.R - geom.T / 2) / outer)
-    local look = { tex = w.texPath, color = w.look and w.look.color, alpha = arc and 0.55 or 1 }
-    if arc then
-        local d = math.max(8, (geom.R - geom.T / 2) * 2 * 0.8)
-        w:SetSize(d, d)
-        look.turn, look.mirror = 0, false
-    else
-        w:SetSize(outer * 2, outer * 2)
-        -- The sweep starts at the top and runs clockwise; the ring starts at geom.start
-        -- (a fraction of a turn clockwise from the top) and may run counter-clockwise.
-        local turn = -2 * math.pi * (geom.start or 0) -- negative: clockwise
-        if geom.reverse then turn = -turn end
-        look.turn, look.mirror = turn, geom.reverse and true or false
-    end
-    w.look = look
-    ApplyLook(w)
-    -- The game's countdown, sized like the ring's own time text.
+local function SizeNumbers(cd, geom)
     local fs = cd.GetCountdownFontString and cd:GetCountdownFontString()
     if fs and fs.SetFont then
         local inner = math.max(8, (geom.R - geom.T / 2) * 2)
         fs:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * 0.25)), "OUTLINE")
     end
+end
+
+-- Lays the timer over the ring's band (or, for an arc this client can't slow the sweep
+-- for, as a disc in its middle). Only redone when the ring's geometry or the cast changes.
+local function PlaceTimer(w, frame, geom, channel)
+    local sweep = geom.sweep or 1
+    local disc = sweep < 1 and w.cantSlow
+    local layout = table.concat({ geom.R, geom.T, tostring(geom.start), tostring(geom.reverse), sweep,
+                                  tostring(disc), tostring(channel) }, ":")
+    if w.layout == layout then return end
+    w.layout = layout
+    local outer = geom.R + geom.T / 2
+    w.rate = disc and 1 or sweep
+    w.mode = disc and "arc (disc in the middle: couldn't slow the sweep)"
+        or (sweep < 1 and ("arc band, sweep slowed to " .. sweep) or "ring band")
+    w.texPath = disc and CIRCLE or RingTexture((geom.R - geom.T / 2) / outer)
+    local look = { tex = w.texPath, color = w.look and w.look.color, alpha = disc and 0.55 or 1 }
+    if disc then
+        local d = math.max(8, (geom.R - geom.T / 2) * 2 * 0.8)
+        w:SetSize(d, d)
+        look.turn, look.mirror = 0, false
+    else
+        w:SetSize(outer * 2, outer * 2)
+        -- The sweep starts at the top and runs clockwise; the ring starts at geom.start (a
+        -- fraction of a turn clockwise from the top), or for reverse at the arc's other end
+        -- running counter-clockwise.
+        local from = (geom.start or 0) + (geom.reverse and sweep or 0)
+        local turn = -2 * math.pi * from -- negative: clockwise
+        if geom.reverse then turn = -turn end
+        look.turn, look.mirror = turn, geom.reverse and true or false
+    end
+    w.look = look
+    ApplyLook(w)
+    SizeNumbers(w.cd, geom)
+    SizeNumbers(w.numbers, geom)
+end
+
+-- A method call that may refuse (secret values, a missing method): ok, then its results.
+local function Try(obj, method, ...)
+    local fn = obj and obj[method]
+    if type(fn) ~= "function" then return false end
+    return pcall(fn, obj, ...)
+end
+
+-- Starts the sweep for cast c, slowed to w.rate for an arc. Returns how ("direct",
+-- "slowed duration", "slowed cooldown"), or nil if it couldn't be slowed.
+local function Feed(w, c)
+    local cd, dur = w.cd, c.durObj
+    if cd.SetReverse then cd:SetReverse(not c.channel) end -- a cast fills, a channel unwinds
+    if (w.rate or 1) >= 1 then
+        cd:SetCooldownFromDurationObject(dur)
+        return "direct"
+    end
+    -- The cast's start and length, as the game gives them (possibly hidden: truthy either way).
+    local okS, start = Try(dur, "GetStartTime")
+    local okT, total = Try(dur, "GetTotalDuration")
+    if not (okS and okT and start and total) then return nil end
+    -- A copy of the duration that runs at the arc's rate...
+    local util = C_DurationUtil
+    if util and util.CreateDuration then
+        local okC, copy = Try(util, "CreateDuration")
+        if okC and copy and Try(copy, "SetTimeFromStart", start, total, w.rate)
+            and pcall(cd.SetCooldownFromDurationObject, cd, copy) then
+            return "slowed duration"
+        end
+    end
+    -- ...or the cooldown's own rate.
+    if cd.SetCooldown and pcall(cd.SetCooldown, cd, start, total, w.rate) then
+        return "slowed cooldown"
+    end
+    return nil
+end
+
+-- What happened, for /circ targetdebug and db.targetCastDiag (read back from the saved
+-- variables when something doesn't look right).
+local diagProbe -- a hidden texture, to check the swipe texture loads
+local function Diagnose(w, how)
+    diagProbe = diagProbe or (UIParent and UIParent.CreateTexture and UIParent:CreateTexture())
+    local probe = diagProbe
+    local loads = probe and probe:SetTexture(w.texPath)
+    if probe then probe:SetTexture(nil); probe:Hide() end
+    db.targetCastDiag = {
+        at = date and date("%Y-%m-%d %H:%M:%S") or "?", mode = w.mode, fed = how or "failed",
+        texture = w.texPath, textureLoads = tostring(loads), rate = w.rate,
+        C_DurationUtil = (C_DurationUtil and C_DurationUtil.CreateDuration) and "yes" or "no",
+        SetCooldown = w.cd.SetCooldown and "yes" or "no",
+        SetSwipeTexture = w.cd.SetSwipeTexture and "yes" or "no",
+        SetRotation = w.cd.SetRotation and "yes" or "no",
+    }
+    w.diag = db.targetCastDiag
 end
 
 -- Shows the game's timer for cast c on the ring's frame; false if there's nothing to show.
@@ -182,9 +259,24 @@ local function ShowTimer(c, frame, geom, color)
     -- then put the ring look back on, in case starting it reset the swipe.
     if w.fedWith ~= c or c.durStale then
         w.fedWith, c.durStale = c, false
-        if w.cd.SetReverse then w.cd:SetReverse(not c.channel) end -- a cast fills, a channel unwinds
-        w.cd:SetCooldownFromDurationObject(c.durObj)
+        local how = Feed(w, c)
+        if not how then
+            -- Can't slow it here: the arc gets a disc in its middle from now on.
+            w.cantSlow = true
+            PlaceTimer(w, frame, geom, c.channel)
+            how = Feed(w, c)
+        end
+        local slowed = how and how:find("slowed") ~= nil
+        -- A slowed sweep's own countdown would run slow: the real one comes from `numbers`.
+        if w.cd.SetHideCountdownNumbers then w.cd:SetHideCountdownNumbers(slowed) end
+        if slowed then
+            pcall(w.numbers.SetCooldownFromDurationObject, w.numbers, c.durObj)
+            w.numbers:Show()
+        else
+            w.numbers:Hide()
+        end
         ApplyLook(w)
+        Diagnose(w, how)
     end
     w:Show()
     return true
@@ -502,6 +594,12 @@ local function TargetCastDebug()
         .. "  |  SetSwipeTexture " .. ((cdProbe and cdProbe.SetSwipeTexture) and "yes" or (cdProbe and "no" or "?"))
         .. ", SetCooldownFromDurationObject " .. ((cdProbe and cdProbe.SetCooldownFromDurationObject) and "yes"
             or (cdProbe and "no" or "?")))
+    local d = db.targetCastDiag
+    if d then
+        ns.Print("Last timer (" .. tostring(d.at) .. "): " .. tostring(d.mode) .. ", started: " .. tostring(d.fed)
+            .. ", texture loads: " .. tostring(d.textureLoads) .. ", C_DurationUtil " .. tostring(d.C_DurationUtil)
+            .. ", SetCooldown " .. tostring(d.SetCooldown) .. ", SetRotation " .. tostring(d.SetRotation))
+    end
     local c = cast
     if not c then
         ns.Print("Ring: no cast followed" .. (Watching() and "" or " (not watching this target)"))
