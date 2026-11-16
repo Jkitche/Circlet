@@ -22,6 +22,9 @@
   with the game's countdown in the middle (a full ring sweeps its band as before). Should this
   client not allow slowing it, arcs keep the circle. The timer is also a plain cooldown now, its
   textures use the standard TGA layout, and `/circ targetdebug` says how the last timer was drawn.
+
+## 1.2.0
+
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session
   summary now have a deep gradient background with a soft shadow, a thin gold border, a header band
   with a turning Circlet logo and a gold accent line, and open with a quick fade. In the wizard a
