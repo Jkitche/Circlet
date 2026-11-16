@@ -12,6 +12,9 @@ opening a chest:    icon Spell3365 34 wide, alpha 1.00 | burst: glow yes, 8 spar
 fireball by chest:  icon Spell133 28 wide, alpha 1.00 | burst: glow no, 0 sparks
 mining, loot in:    icon Item2770 38 wide, alpha 1.00 | burst: glow yes, 8 sparks
 mining, +1s:        icon Item2770 31 wide, alpha 1.00 | burst: glow no, 0 sparks
+fish ring, reeling:   icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
+fish ring, caught:    icon Item6303 36 wide, alpha 1.00 | burst: glow yes, 8 sparks
+fish ring, got away:  icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
 fishing, reeling:   icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
 fishing, caught:    icon Item6303 36 wide, alpha 1.00 | burst: glow yes, 8 sparks
 fishing, got away:  icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks

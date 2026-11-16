@@ -70,7 +70,9 @@ then fade away, or stay up as a permanent display.
 
 **Crafting, gathering and casting**
 - **Crafting**: progress through a batch (single crafts optional), with the item's icon.
-- **Gathering**: mining, herbalism, skinning and fishing, then what you got.
+- **Gathering**: mining, herbalism and skinning, then what you got.
+- **Fishing**: counts down the cast while the ring bobs, flashes in the usual bite windows, then shows
+  the catch. Optionally, right-click anywhere to reel in (out of combat only).
 - **Casts**: casts and channels, timed even in combat. Spell school effects (fire, frost, arcane,
   shadow, nature, holy) with a strength setting, and a resurrection animation.
 - **Mana regen**: the five-second rule after you spend mana, counting down to when your mana
@@ -130,7 +132,7 @@ Install from CurseForge, or copy the `Circlet` folder from a release zip to
 - `/circ timer <time> [label]`: start a countdown ring (`/circ timer +2m` adds time, `stop` ends it).
 - `/circ edit [ring]`: see a ring live and drag it into place.
 - Ring previews: `/circ xp`, `quest`, `pins`, `skill`, `weapon`, `rep`, `pet`, `ammo`, `flight`,
-  `timed`, `corpse`, `breath`, `food`, `camp`, `clock`, `craft`, `gather`, `cast`, `regen`, `totems`.
+  `timed`, `corpse`, `breath`, `food`, `camp`, `clock`, `craft`, `gather`, `fish`, `cast`, `regen`, `totems`.
 - Effect previews: `/circ levelup`, `rested`, `complete`, `hello`, `discover`.
 - `/circ summary`: this session's summary.
 - `/circ profile [name]`: list or switch profiles.

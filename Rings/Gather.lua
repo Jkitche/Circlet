@@ -188,6 +188,8 @@ ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_SUCCEEDED:player", "U
         local name, _, _, startMS, endMS = SafeCall(channel and UnitChannelInfo or UnitCastingInfo, "player")
         local kind = GatherKind(name, spellID)
         if not kind then return end
+        -- The fishing ring (Rings/Fishing.lua) handles fishing while it's on.
+        if kind == "fishing" and ns.FishingRingOn and ns.FishingRingOn() then return end
         g = { kind = kind, spellID = spellID, channel = channel }
         if type(startMS) == "number" and type(endMS) == "number" and not IsSecret(startMS) and not IsSecret(endMS) then
             g.start, g.finish = startMS / 1000, endMS / 1000

@@ -332,7 +332,7 @@ local castRing = CreateLiveRing({
         local c = cast
         if not c then return nil end
         -- A craft or gather that started with this cast belongs to its own ring.
-        if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) then
+        if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) or (ns.FishingActive and ns.FishingActive()) then
             cast = nil
             return nil
         end
@@ -386,7 +386,7 @@ local castRing = CreateLiveRing({
 local function Begin(spellID, guid, channel)
     if not db.castEnabled then return end
     -- Crafts and gathers have their own rings.
-    if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) then return end
+    if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) or (ns.FishingActive and ns.FishingActive()) then return end
     spellID = Clean(spellID)
     local name = spellID and ns.SpellName(spellID)
     local icon = spellID and ns.SpellIcon(spellID)

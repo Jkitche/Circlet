@@ -1,4 +1,4 @@
-rings found: 31
+rings found: 32
 quest editing t=0.5
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -22,15 +22,16 @@ quest editing t=0.5
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 quest editing t=4
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves
@@ -54,15 +55,16 @@ quest editing t=4
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 quest t=8
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -86,15 +88,16 @@ quest t=8
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 quest+skill
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -118,15 +121,16 @@ quest+skill
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 skill cycled
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves
@@ -150,15 +154,16 @@ skill cycled
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 all four
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,237 XP / +22.0% / 62.0% / Rested 25%
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Complete!
@@ -182,15 +187,16 @@ all four
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 xp gain during edit (should keep sample)
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,240 XP / +22.0% / 62.0% / Normal
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -214,15 +220,16 @@ xp gain during edit (should keep sample)
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 xpX, xpFromTop: 540 310
 after right-click: 0 40
 after /circ edit (all off)
@@ -248,15 +255,16 @@ after /circ edit (all off)
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 t+4 after edit off (xp queued gain should play)
   #1 shown=true a=0.67 strata=LOW mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
   #2 shown=false a=0.00 strata=LOW mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -280,15 +288,16 @@ t+4 after edit off (xp queued gain should play)
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 settled
   #1 shown=false a=0.00 strata=LOW mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
   #2 shown=false a=0.00 strata=LOW mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -312,15 +321,16 @@ settled
   #20 shown=false a=0.00 strata=LOW mouse=nil | 
   #21 shown=false a=0.00 strata=LOW mouse=nil | 
   #22 shown=false a=0.00 strata=LOW mouse=nil | 
-  #23 shown=false a=0.00 strata=LOW mouse=true | 
+  #23 shown=false a=0.00 strata=LOW mouse=nil | 
   #24 shown=false a=0.00 strata=LOW mouse=true | 
   #25 shown=false a=0.00 strata=LOW mouse=true | 
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=false a=0.00 strata=LOW mouse=nil | 
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
   #29 shown=false a=0.00 strata=LOW mouse=nil | 
   #30 shown=false a=0.00 strata=LOW mouse=nil | 
   #31 shown=false a=0.00 strata=LOW mouse=nil | 
+  #32 shown=false a=0.00 strata=LOW mouse=nil | 
 all on again
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +739 XP / +13.1% / 53.1% / Rested 25%
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -340,19 +350,20 @@ all on again
   #16 shown=true a=1.00 strata=TOOLTIP mouse=true | Mana regen / 4.7s / No regen
   #17 shown=true a=1.00 strata=TOOLTIP mouse=true | Heavy Linen Bandage / 0 / 8 / 8 to go
   #18 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / 12% / Mining
-  #19 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Casting
-  #20 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Defias Conjurer
-  #21 shown=true a=1.00 strata=TOOLTIP mouse=true | |cffa336edIronfoe|r / 59 / Need or Greed?  +1
-  #22 shown=true a=1.00 strata=TOOLTIP mouse=true | Ready check: Thrall / 35 / Are you ready?
-  #23 shown=true a=1.00 strata=TOOLTIP mouse=true | The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
-  #24 shown=true a=1.00 strata=TOOLTIP mouse=true | Feathers for Grek / 1 / 1 / Ready to turn in
-  #25 shown=false a=0.00 strata=TOOLTIP mouse=true | 
+  #19 shown=true a=1.00 strata=TOOLTIP mouse=true | Fishing / 20 / Waiting for a bite
+  #20 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Casting
+  #21 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Defias Conjurer
+  #22 shown=true a=1.00 strata=TOOLTIP mouse=true | |cffa336edIronfoe|r / 59 / Need or Greed?  +1
+  #23 shown=true a=1.00 strata=TOOLTIP mouse=true | Ready check: Thrall / 35 / Are you ready?
+  #24 shown=true a=1.00 strata=TOOLTIP mouse=true | The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
+  #25 shown=true a=1.00 strata=TOOLTIP mouse=true | Feathers for Grek / 1 / 1 / Ready to turn in
   #26 shown=false a=0.00 strata=TOOLTIP mouse=true | 
   #27 shown=false a=0.00 strata=TOOLTIP mouse=true | 
-  #28 shown=true a=1.00 strata=TOOLTIP mouse=true | 1:35
-  #29 shown=true a=1.00 strata=TOOLTIP mouse=true | 8
-  #30 shown=true a=1.00 strata=TOOLTIP mouse=true | 40
-  #31 shown=true a=1.00 strata=TOOLTIP mouse=true | 1:50
+  #28 shown=false a=0.00 strata=TOOLTIP mouse=true | 
+  #29 shown=true a=1.00 strata=TOOLTIP mouse=true | 1:35
+  #30 shown=true a=1.00 strata=TOOLTIP mouse=true | 8
+  #31 shown=true a=1.00 strata=TOOLTIP mouse=true | 40
+  #32 shown=true a=1.00 strata=TOOLTIP mouse=true | 1:50
 after Esc
   #1 shown=true a=0.67 strata=LOW mouse=false | Level 16 / 58.0% / Normal
   #2 shown=true a=0.50 strata=LOW mouse=false | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -372,18 +383,19 @@ after Esc
   #16 shown=true a=1.00 strata=LOW mouse=false | Mana regen / 4.7s / No regen
   #17 shown=true a=0.60 strata=LOW mouse=false | Heavy Linen Bandage / 0 / 8 / 8 to go
   #18 shown=true a=0.60 strata=LOW mouse=false | Mining / 12% / Mining
-  #19 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Casting
-  #20 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Defias Conjurer
-  #21 shown=true a=1.00 strata=LOW mouse=false | |cffa336edIronfoe|r / 59 / Need or Greed?  +1
-  #22 shown=true a=1.00 strata=LOW mouse=false | Ready check: Thrall / 35 / Are you ready?
-  #23 shown=true a=0.60 strata=LOW mouse=true | The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
-  #24 shown=true a=0.60 strata=LOW mouse=true | Feathers for Grek / 1 / 1 / Ready to turn in
-  #25 shown=false a=0.00 strata=LOW mouse=true | 
+  #19 shown=true a=0.60 strata=LOW mouse=false | Fishing / 20 / Waiting for a bite
+  #20 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Casting
+  #21 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Defias Conjurer
+  #22 shown=true a=1.00 strata=LOW mouse=false | |cffa336edIronfoe|r / 59 / Need or Greed?  +1
+  #23 shown=true a=1.00 strata=LOW mouse=false | Ready check: Thrall / 35 / Are you ready?
+  #24 shown=true a=0.60 strata=LOW mouse=true | The Defias Brotherhood / 1 / 3 / Defias Thug slain 9/12
+  #25 shown=true a=0.60 strata=LOW mouse=true | Feathers for Grek / 1 / 1 / Ready to turn in
   #26 shown=false a=0.00 strata=LOW mouse=true | 
   #27 shown=false a=0.00 strata=LOW mouse=true | 
-  #28 shown=true a=0.60 strata=LOW mouse=false | 1:35
-  #29 shown=true a=0.60 strata=LOW mouse=false | 8
-  #30 shown=true a=0.60 strata=LOW mouse=false | 40
-  #31 shown=true a=0.60 strata=LOW mouse=false | 1:50
+  #28 shown=false a=0.00 strata=LOW mouse=true | 
+  #29 shown=true a=0.60 strata=LOW mouse=false | 1:35
+  #30 shown=true a=0.60 strata=LOW mouse=false | 8
+  #31 shown=true a=0.60 strata=LOW mouse=false | 40
+  #32 shown=true a=0.60 strata=LOW mouse=false | 1:50
 ERRORS: {}
 UNDEF: ['ALL_FS', 'ALL_LINES', 'AcceptResurrect', 'BackdropTemplateMixin', 'C_UnitAuras', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'CreateColor', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetInventoryItemID', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestTimers', 'GetText', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'ITEM_QUALITY_COLORS', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'RetrieveCorpse', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TargetFrameSpellBar', 'TotemFrame', 'UnitBuff', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']

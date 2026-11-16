@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Fishing ring** (new; on by default). While your line is out the ring counts down the cast and
+  bobs gently, with a tug now and then. The game doesn't tell addons when a fish bites, so the ring
+  flashes "Watch the bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds
+  left; turn that off under Fishing > Flash in bite windows). Then it shows what you caught, or
+  "Got away". The gathering ring leaves fishing to it (and takes it back if you turn it off).
+  **Right-click to reel in** (off until you turn it on): while the line is out and you're out of
+  combat, a right-click anywhere on the screen clicks the bobber, using the game's soft-target
+  interact. Your right-click and interact settings go back to normal as soon as the line comes in or
+  a fight starts. Preview with `/circ fish`.
+
 - **Mana regen ring** (new; on by default). The five-second rule: each time you cast a spell that
   costs mana, the ring fills over the five seconds your mana regen is stopped, counting down to
   when it starts again, then lights up and fades. It goes by the spell's cost (your mana itself is

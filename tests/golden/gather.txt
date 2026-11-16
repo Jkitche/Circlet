@@ -3,10 +3,10 @@ mined: Copper Ore / ×2 / Gathered
 later: (hidden)
 herb interrupted: Herb Gathering / Interrupted
 smelting (should be hidden): Smelting / 1.0 / Casting
-fishing: Fishing / 16s / Bobber
+fishing: Fishing / 16 / Waiting for a bite
 reeling: Fishing / Reeling in
 caught: Raw Brilliant Smallfish / Caught!
-no catch: Fishing / Got away
+no catch: Fishing / Nothing caught
 session gathers: 2
 preview: Mining / 40% / Mining
 preview2: Copper Ore / ×2 / Gathered

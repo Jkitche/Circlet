@@ -79,12 +79,21 @@ Done("c" .. n, 133); Advance(0.17); P("fireball by chest:  " .. Icon("cast")); S
 c = Go(2575, "Mining", 2); Advance(1.95); Done(c, 2575); Advance(0.1)
 Fire("CHAT_MSG_LOOT", "You receive loot: |cffffffff|Hitem:2770::::::::|h[Copper Ore]|h|rx2."); Advance(0.07); P("mining, loot in:    " .. Icon("gather"))
 Advance(0.8); P("mining, +1s:        " .. Icon("gather")); Advance(5)
--- Fishing: bursts on a catch, not when it gets away.
+-- Fishing: bursts on a catch, not when it gets away (the fishing ring, then the gathering ring with it off).
+CHAN = { name = "Fishing", s = NOW, e = NOW + 20 }; Fire("UNIT_SPELLCAST_CHANNEL_START", "player", "f3", 7620); Advance(3)
+CHAN = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "f3", 7620); Advance(0.3); P("fish ring, reeling:   " .. Icon("fish"))
+Fire("CHAT_MSG_LOOT", "You receive loot: |cffffffff|Hitem:6303::::::::|h[Raw Slitherskin Mackerel]|h|r."); Advance(0.1); P("fish ring, caught:    " .. Icon("fish")); Advance(5)
+CHAN = { name = "Fishing", s = NOW, e = NOW + 20 }; Fire("UNIT_SPELLCAST_CHANNEL_START", "player", "f4", 7620); Advance(3)
+CHAN = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "f4", 7620); Advance(2); P("fish ring, got away:  " .. Icon("fish")); Advance(5)
+
+CircletDB.fishEnabled = false
 CHAN = { name = "Fishing", s = NOW, e = NOW + 20 }; Fire("UNIT_SPELLCAST_CHANNEL_START", "player", "f1", 7620); Advance(3)
 CHAN = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "f1", 7620); Advance(0.3); P("fishing, reeling:   " .. Icon("gather"))
 Fire("CHAT_MSG_LOOT", "You receive loot: |cffffffff|Hitem:6303::::::::|h[Raw Slitherskin Mackerel]|h|r."); Advance(0.1); P("fishing, caught:    " .. Icon("gather")); Advance(5)
 CHAN = { name = "Fishing", s = NOW, e = NOW + 20 }; Fire("UNIT_SPELLCAST_CHANNEL_START", "player", "f2", 7620); Advance(3)
 CHAN = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "f2", 7620); Advance(2); P("fishing, got away:  " .. Icon("gather")); Advance(5)
+
+CircletDB.fishEnabled = true
 
 -- Crafting previews: the batch that finishes bursts.
 CircletDB.craftIconBg = true; Slash("craft"); Advance(12.1); P("craft, batch done:  " .. Icon("craft")); Advance(0.6); P("craft, +0.7s:       " .. Icon("craft")); Advance(20)

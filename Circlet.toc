@@ -51,6 +51,7 @@ Rings\Timer.lua
 Rings\ManaRegen.lua
 Rings\Craft.lua
 Rings\Gather.lua
+Rings\Fishing.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\TargetCast.lua
