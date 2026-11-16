@@ -47,6 +47,13 @@ function S(l)
   P(string.format("%-30s shown=%s fill=%2d flash=%s y=%6.1f | %s | gather shown=%s", l, tostring(F._shown), n,
     fl > 0 and "yes" or "no", y, T(F), tostring(G and G._shown)))
 end
+-- The fill's end against the plain countdown, while the line is out.
+function Edge(l)
+  local left = FISHING and (FISHING + 30 - NOW) or 0
+  local n = 0
+  for _, x in ipairs(F.fill) do if x._shown ~= false and x._x1 then n = n + 1 end end
+  P(string.format("%-30s countdown=%.3f fill segments=%d y=%6.1f", l, left / 30, n, F._pt and F._pt.y or 0))
+end
 ''')
     return lua
 
@@ -60,9 +67,8 @@ lua = boot()
 lua.execute('''
 S("idle")
 CastLine(); Advance(1); S("line out, 29s left")
-Advance(0.3); S("a moment later (bobbing)")
-Advance(0.4); S("and again")
-Advance(11.5); S("17s left: watch!")
+for i = 1, 8 do Advance(0.25); Edge("bobbing " .. i) end
+Advance(10.2); S("17s left: watch!")
 Advance(1.8); S("15s left")
 Advance(2.2); S("13s left: watch!")
 Advance(1); LineIn(); Advance(0.3); S("reeled in, loot coming")

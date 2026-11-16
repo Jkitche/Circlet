@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-- **Fishing ring** (new; on by default). While your line is out the ring counts down the cast and
-  bobs gently, with a tug now and then. The game doesn't tell addons when a fish bites, so the ring
-  flashes "Watch the bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds
+- **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,
+  its fill bobbing around the countdown like a float, with a tug now and then (the ring itself
+  stays put). The game doesn't tell addons when a fish bites, so the ring flashes "Watch the bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds
   left; turn that off under Fishing > Flash in bite windows). Then it shows what you caught, or
   "Got away". The gathering ring leaves fishing to it (and takes it back if you turn it off).
   **Right-click to reel in** (off until you turn it on): while the line is out and you're out of

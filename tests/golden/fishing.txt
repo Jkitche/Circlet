@@ -1,18 +1,24 @@
 ######## a catch
 idle                           shown=false fill= 0 flash=no y=   0.0 |  | gather shown=false
-line out, 29s left             shown=true fill=70 flash=no y=-316.7 | Fishing / 30 / Waiting for a bite | gather shown=false
-a moment later (bobbing)       shown=true fill=69 flash=no y=-316.2 | Fishing / 29 / Waiting for a bite | gather shown=false
-and again                      shown=true fill=68 flash=no y=-314.3 | Fishing / 29 / Waiting for a bite | gather shown=false
-17s left: watch!               shown=true fill=41 flash=yes y=-315.3 | Fishing / 17 / Watch the bobber! | gather shown=false
-15s left                       shown=true fill=36 flash=no y=-314.4 | Fishing / 16 / Waiting for a bite | gather shown=false
-13s left: watch!               shown=true fill=31 flash=yes y=-316.5 | Fishing / 13 / Watch the bobber! | gather shown=false
+line out, 29s left             shown=true fill=69 flash=no y=-315.0 | Fishing / 30 / Waiting for a bite | gather shown=false
+bobbing 1                      countdown=0.959 fill segments=68 y=-315.0
+bobbing 2                      countdown=0.951 fill segments=69 y=-315.0
+bobbing 3                      countdown=0.943 fill segments=69 y=-315.0
+bobbing 4                      countdown=0.936 fill segments=69 y=-315.0
+bobbing 5                      countdown=0.928 fill segments=66 y=-315.0
+bobbing 6                      countdown=0.920 fill segments=70 y=-315.0
+bobbing 7                      countdown=0.912 fill segments=69 y=-315.0
+bobbing 8                      countdown=0.904 fill segments=67 y=-315.0
+17s left: watch!               shown=true fill=39 flash=yes y=-315.0 | Fishing / 17 / Watch the bobber! | gather shown=false
+15s left                       shown=true fill=37 flash=no y=-315.0 | Fishing / 16 / Waiting for a bite | gather shown=false
+13s left: watch!               shown=true fill=33 flash=yes y=-315.0 | Fishing / 13 / Watch the bobber! | gather shown=false
 reeled in, loot coming         shown=true fill=72 flash=no y=-315.0 | Fishing / Reeling in | gather shown=false
 caught                         shown=true fill=72 flash=no y=-315.0 | Raw Brilliant Smallfish / Caught! | gather shown=false
 after the hold                 shown=false fill=72 flash=no y=-315.0 | Raw Brilliant Smallfish / Caught! | gather shown=false
 ERRORS: {}
 ######## misses
 ran out: got away              shown=true fill= 0 flash=no y=-315.0 | Fishing / Got away | gather shown=false
-17s left, windows off          shown=true fill=41 flash=no y=-314.4 | Fishing / 18 / Waiting for a bite | gather shown=false
+17s left, windows off          shown=true fill=42 flash=no y=-315.0 | Fishing / 18 / Waiting for a bite | gather shown=false
 reeled in, nothing             shown=true fill= 0 flash=no y=-315.0 | Fishing / Nothing caught | gather shown=false
 fishing ring off               shown=false fill= 0 flash=no y=-315.0 | Fishing / Nothing caught | gather shown=true
 ERRORS: {}
@@ -20,7 +26,7 @@ ERRORS: {}
 before: right-click=nil interact=1/0/10
 reel off, line out: right-click=nil interact=1/0/10
 reel on, line out: right-click=INTERACTTARGET interact=3/2/60
-label                          shown=true fill=70 flash=no y=-316.7 | Fishing / 30 / Right-click to reel in | gather shown=false
+label                          shown=true fill=69 flash=no y=-315.0 | Fishing / 30 / Right-click to reel in | gather shown=false
 line in, loot window: right-click=INTERACTTARGET interact=3/2/60
 a second later: right-click=nil interact=1/0/10
 fight (the event comes just before the lockdown): right-click=nil interact=1/0/10
@@ -31,7 +37,7 @@ ERRORS: {}
 after login: right-click=nil interact=1/0/10 saved=nil
 ERRORS: {}
 ######## preview
-preview                        shown=true fill=46 flash=no y=-314.4 | Fishing / 19 / Waiting for a bite | gather shown=false
-preview, 17s left: watch!      shown=true fill=41 flash=yes y=-315.2 | Fishing / 17 / Watch the bobber! | gather shown=false
+preview                        shown=true fill=46 flash=no y=-315.0 | Fishing / 19 / Waiting for a bite | gather shown=false
+preview, 17s left: watch!      shown=true fill=39 flash=yes y=-315.0 | Fishing / 17 / Watch the bobber! | gather shown=false
 preview, the catch             shown=true fill=72 flash=no y=-315.0 | Raw Brilliant Smallfish / Caught! | gather shown=false
 ERRORS: {}

@@ -104,6 +104,15 @@ end
 
 local sampleSeed, sampleTugs = 1.3, NewTugs(1.3, 40)
 
+-- The fill's edge bobs about the countdown, like a float on the water (the ring stays put).
+local BOB_SCALE = 0.012 -- of a turn per unit of Bob: about ±4% swells, 6% tugs
+local function Bobbed(st, t, seed, tugs)
+    if st and st.bob then
+        st.frac = math.max(0, math.min(1, st.frac + BOB_SCALE * Bob(t, seed, tugs, st.watch)))
+    end
+    return st
+end
+
 local fishRing = CreateLiveRing({
     key = "fish",
     read = function(now)
@@ -118,27 +127,17 @@ local fishRing = CreateLiveRing({
             return State(0, 0, db.fishLoot ~= false and f.loot or nil, f.how, f.doneAt, waiting)
         end
         local total = (f.finish - f.start)
-        return State(math.max(0, f.finish - now), total, nil, nil, nil, nil, f.finish)
+        return Bobbed(State(math.max(0, f.finish - now), total, nil, nil, nil, nil, f.finish), now - f.start, f.seed, f.tugs)
     end,
     sample = function(t)
         -- 20 seconds of waiting (a bite window at 17, then 13), then a catch.
         local cycle = t % 16
         if cycle < 11 then
             local left = 20 - cycle
-            return State(left, 30, nil, nil, nil, nil, GetTime() + left)
+            return Bobbed(State(left, 30, nil, nil, nil, nil, GetTime() + left), t, sampleSeed, sampleTugs)
         end
         return State(0, 0, { name = "Raw Brilliant Smallfish", count = 1, icon = "Interface\\Icons\\INV_Misc_Fish_02" },
             "done", GetTime() - (cycle - 11))
-    end,
-    decorate = function(st, frame, geom)
-        -- Bob the whole ring (not while it's being dragged).
-        if not (st and st.bob) or frame.dragging then return end
-        local point, rel, relPoint, x, y = frame:GetPoint(1)
-        if not point or type(x) ~= "number" or type(y) ~= "number" then return end
-        local now = GetTime()
-        local seed, tugs = sampleSeed, sampleTugs
-        if f and not f.endedAt then seed, tugs, now = f.seed, f.tugs, now - f.start end
-        frame:SetPoint(point, rel, relPoint, x, y + Bob(now, seed, tugs, st.watch))
     end,
 })
 
