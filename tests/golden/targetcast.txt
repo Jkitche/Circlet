@@ -5,18 +5,18 @@ ERRORS: {}
 ######## hidden ring
 hidden, ring                       fill= 0 | Casting / Venomweb Spider | timer 100x100, swipe Ring80, fed the cast's duration at rate 1, numbers from the sweep
 after the cast                     fill=72 | Casting / Cast | no timer
-diag: [('C_DurationUtil', 'yes'), ('SetCooldown', 'yes'), ('SetRotation', 'yes'), ('SetSwipeTexture', 'yes'), ('fed', 'direct'), ('mode', 'ring band'), ('rate', 1), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
+diag: [('attempts', '(none: not slowed)'), ('cooldownMethods', '(none found)'), ('durationMethods', 'GetStartTime,GetTotalDuration'), ('durationUtil', 'CreateDuration'), ('fed', 'direct'), ('mode', 'ring band'), ('rate', 1), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
 ERRORS: {}
 ######## hidden arcs
 hidden, half arc                   fill= 0 | Casting / Venomweb Spider | timer 100x100, swipe Ring80, fed a slowed copy at rate 0.5, numbers from the second cooldown
 hidden, three-quarter arc          fill= 0 | Casting / Venomweb Spider | timer 100x100, swipe Ring80, fed a slowed copy at rate 0.75, numbers from the second cooldown
-diag: [('C_DurationUtil', 'yes'), ('SetCooldown', 'yes'), ('SetRotation', 'yes'), ('SetSwipeTexture', 'yes'), ('fed', 'slowed duration'), ('mode', 'arc band, sweep slowed to 0.75'), ('rate', 0.75), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
+diag: [('attempts', 'GetStartTime: ok | GetTotalDuration: ok | copy:SetTimeFromStart(start, total, rate): ok | SetCooldownFromDurationObject(copy): ok'), ('cooldownMethods', '(none found)'), ('durationMethods', 'GetStartTime,GetTotalDuration'), ('durationUtil', 'CreateDuration'), ('fed', 'slowed copy of the duration'), ('mode', 'arc band, sweep slowed to 0.75'), ('rate', 0.75), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
 ERRORS: {}
 ######## no duration util
 half arc, SetCooldown rate         fill= 0 | Casting / Venomweb Spider | timer 100x100, swipe Ring80, fed SetCooldown at rate 0.5, numbers from the second cooldown
-diag: [('C_DurationUtil', 'no'), ('SetCooldown', 'yes'), ('SetRotation', 'yes'), ('SetSwipeTexture', 'yes'), ('fed', 'slowed cooldown'), ('mode', 'arc band, sweep slowed to 0.5'), ('rate', 0.5), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
+diag: [('attempts', 'GetStartTime: ok | GetTotalDuration: ok | SetCooldown(start, total, rate): ok'), ('cooldownMethods', '(none found)'), ('durationMethods', 'GetStartTime,GetTotalDuration'), ('durationUtil', '(no C_DurationUtil)'), ('fed', 'SetCooldown with a rate'), ('mode', 'arc band, sweep slowed to 0.5'), ('rate', 0.5), ('texture', 'Interface\\AddOns\\Circlet\\Textures\\Ring80'), ('textureLoads', 'nil')]
 ERRORS: {}
 ######## disc fallback
 half arc, can't slow it            fill= 0 | Casting / Venomweb Spider | timer 64x64, swipe TempPortraitAlphaMask, fed the cast's duration at rate 1, numbers from the sweep
-diag: [('C_DurationUtil', 'no'), ('SetCooldown', 'yes'), ('SetRotation', 'yes'), ('SetSwipeTexture', 'yes'), ('fed', 'direct'), ('mode', "arc (disc in the middle: couldn't slow the sweep)"), ('rate', 1), ('texture', 'Interface\\CharacterFrame\\TempPortraitAlphaMask'), ('textureLoads', 'nil')]
+diag: [('attempts', 'GetStartTime: ok | GetTotalDuration: ok | SetCooldown(start, total, rate): no | SetCooldownDuration(total, rate): refused | SetCooldownFromDurationObject(cast): ok | SetCooldownModRate(rate): refused | SetCooldownFromDurationObject(cast): ok | SetModRate(rate): refused'), ('cooldownMethods', '(none found)'), ('durationMethods', 'GetStartTime,GetTotalDuration'), ('durationUtil', '(no C_DurationUtil)'), ('fed', 'disc (direct)'), ('mode', "arc (disc in the middle: couldn't slow the sweep)"), ('rate', 1), ('texture', 'Interface\\CharacterFrame\\TempPortraitAlphaMask'), ('textureLoads', 'nil')]
 ERRORS: {}

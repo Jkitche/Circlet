@@ -15,6 +15,10 @@ print = function() end
 RegionMethods.SetSwipeTexture = function(s, t) s._swipe = t end
 RegionMethods.SetCooldownFromDurationObject = function(s, d) s._fed = d.kind; s._rate = d.rate or 1 end
 RegionMethods.SetCooldown = function(s, start, total, rate) if NO_SETCOOLDOWN then error("no") end s._fed = "SetCooldown"; s._rate = rate or 1 end
+-- With NO_SETCOOLDOWN, every other way of setting a rate refuses too (as secret values might).
+for _, m in ipairs({ "SetCooldownDuration", "SetCooldownModRate", "SetModRate" }) do
+  RegionMethods[m] = function(s, a, b) if NO_SETCOOLDOWN then error("refused") end s._fed = m; s._rate = b or a end
+end
 RegionMethods.SetHideCountdownNumbers = function(s, v) s._hideNumbers = v end
 RegionMethods.SetRotation = function(s, r) s._rot = r end
 RegionMethods.SetSize = function(s, w, h) s._w, s._h = w, h end

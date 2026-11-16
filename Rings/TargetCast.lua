@@ -190,39 +190,92 @@ local function Try(obj, method, ...)
     return pcall(fn, obj, ...)
 end
 
--- Starts the sweep for cast c, slowed to w.rate for an arc. Returns how ("direct",
--- "slowed duration", "slowed cooldown"), or nil if it couldn't be slowed.
+-- An error message, short and without the file and line.
+local function Err(e)
+    return (tostring(e or "?"):gsub("^.-:%d+: ", "")):sub(1, 120)
+end
+
+-- Calls fn, noting in w.attempts how it went (for the diagnostics). true if it worked.
+local function Attempt(w, label, fn, ...)
+    local ok, err = pcall(fn, ...)
+    table.insert(w.attempts, label .. (ok and ": ok" or (": " .. Err(err))))
+    return ok
+end
+
+-- Starts the sweep for cast c, slowed to w.rate for an arc. Returns how it was started, or
+-- nil if this client wouldn't slow it. Every way tried is noted in w.attempts.
 local function Feed(w, c)
-    local cd, dur = w.cd, c.durObj
+    local cd, dur, rate = w.cd, c.durObj, w.rate or 1
     if cd.SetReverse then cd:SetReverse(not c.channel) end -- a cast fills, a channel unwinds
-    if (w.rate or 1) >= 1 then
+    if rate >= 1 then
         cd:SetCooldownFromDurationObject(dur)
         return "direct"
     end
-    -- The cast's start and length, as the game gives them (possibly hidden: truthy either way).
-    local okS, start = Try(dur, "GetStartTime")
-    local okT, total = Try(dur, "GetTotalDuration")
-    if not (okS and okT and start and total) then return nil end
-    -- A copy of the duration that runs at the arc's rate...
+    w.attempts = {}
+    -- The cast's start, end and length, as the game gives them (possibly hidden).
+    local function Get(m)
+        local fn = dur[m]
+        if type(fn) ~= "function" then table.insert(w.attempts, m .. ": missing") return nil end
+        local ok, v = pcall(fn, dur)
+        table.insert(w.attempts, m .. (ok and (type(v) == "nil" and ": nil" or ": ok") or (": " .. Err(v))))
+        if ok then return v end
+    end
+    local start, total = Get("GetStartTime"), Get("GetTotalDuration")
+    -- 1. A copy of the duration that runs at the arc's rate.
     local util = C_DurationUtil
-    if util and util.CreateDuration then
-        local okC, copy = Try(util, "CreateDuration")
-        if okC and copy and Try(copy, "SetTimeFromStart", start, total, w.rate)
-            and pcall(cd.SetCooldownFromDurationObject, cd, copy) then
-            return "slowed duration"
+    if util and type(util.CreateDuration) == "function" and start and total then
+        local okC, copy = pcall(util.CreateDuration)
+        if not (okC and copy) then
+            table.insert(w.attempts, "CreateDuration: " .. Err(copy))
+        elseif type(copy.SetTimeFromStart) ~= "function" then
+            table.insert(w.attempts, "copy:SetTimeFromStart: missing")
+        elseif Attempt(w, "copy:SetTimeFromStart(start, total, rate)", copy.SetTimeFromStart, copy, start, total, rate)
+            and Attempt(w, "SetCooldownFromDurationObject(copy)", cd.SetCooldownFromDurationObject, cd, copy) then
+            return "slowed copy of the duration"
         end
     end
-    -- ...or the cooldown's own rate.
-    if cd.SetCooldown and pcall(cd.SetCooldown, cd, start, total, w.rate) then
-        return "slowed cooldown"
+    -- 2. The cooldown's own rate, from the cast's start.
+    if type(cd.SetCooldown) == "function" and start and total
+        and Attempt(w, "SetCooldown(start, total, rate)", cd.SetCooldown, cd, start, total, rate) then
+        return "SetCooldown with a rate"
+    end
+    -- 3. From now (the cast has only just started), for its length, at the rate.
+    if type(cd.SetCooldownDuration) == "function" and total
+        and Attempt(w, "SetCooldownDuration(total, rate)", cd.SetCooldownDuration, cd, total, rate) then
+        return "SetCooldownDuration with a rate"
+    end
+    -- 4. Started as it is, then slowed, if the cooldown can change its rate.
+    for _, m in ipairs({ "SetCooldownModRate", "SetModRate" }) do
+        if type(cd[m]) == "function" then
+            if Attempt(w, "SetCooldownFromDurationObject(cast)", cd.SetCooldownFromDurationObject, cd, dur)
+                and Attempt(w, m .. "(rate)", cd[m], cd, rate) then
+                return m
+            end
+        end
     end
     return nil
+end
+
+-- The names of an object's methods (from its metatable, or its own functions), or of a
+-- table's functions; only those matching `filter` if given.
+local function Methods(obj, filter)
+    local names = {}
+    local ok, mt = pcall(getmetatable, obj)
+    local idx = ok and type(mt) == "table" and mt.__index or nil
+    local src = type(idx) == "table" and idx or (type(obj) == "table" and obj) or nil
+    if src then
+        for k, v in pairs(src) do
+            if type(v) == "function" and (not filter or tostring(k):find(filter)) then table.insert(names, tostring(k)) end
+        end
+    end
+    table.sort(names)
+    return #names > 0 and table.concat(names, ",") or "(none found)"
 end
 
 -- What happened, for /circ targetdebug and db.targetCastDiag (read back from the saved
 -- variables when something doesn't look right).
 local diagProbe -- a hidden texture, to check the swipe texture loads
-local function Diagnose(w, how)
+local function Diagnose(w, how, c)
     diagProbe = diagProbe or (UIParent and UIParent.CreateTexture and UIParent:CreateTexture())
     local probe = diagProbe
     local loads = probe and probe:SetTexture(w.texPath)
@@ -230,10 +283,10 @@ local function Diagnose(w, how)
     db.targetCastDiag = {
         at = date and date("%Y-%m-%d %H:%M:%S") or "?", mode = w.mode, fed = how or "failed",
         texture = w.texPath, textureLoads = tostring(loads), rate = w.rate,
-        C_DurationUtil = (C_DurationUtil and C_DurationUtil.CreateDuration) and "yes" or "no",
-        SetCooldown = w.cd.SetCooldown and "yes" or "no",
-        SetSwipeTexture = w.cd.SetSwipeTexture and "yes" or "no",
-        SetRotation = w.cd.SetRotation and "yes" or "no",
+        attempts = w.attempts and table.concat(w.attempts, " | ") or "(none: not slowed)",
+        durationMethods = c and c.durObj and Methods(c.durObj) or "?",
+        durationUtil = C_DurationUtil and Methods(C_DurationUtil) or "(no C_DurationUtil)",
+        cooldownMethods = Methods(w.cd, "[CR][oa][ot]"), -- the Cooldown... and Rate ones
     }
     w.diag = db.targetCastDiag
 end
@@ -262,11 +315,14 @@ local function ShowTimer(c, frame, geom, color)
         local how = Feed(w, c)
         if not how then
             -- Can't slow it here: the arc gets a disc in its middle from now on.
+            local tried = w.attempts
             w.cantSlow = true
             PlaceTimer(w, frame, geom, c.channel)
             how = Feed(w, c)
+            w.attempts = tried
+            how = "disc (" .. how .. ")"
         end
-        local slowed = how and how:find("slowed") ~= nil
+        local slowed = how ~= nil and how ~= "direct" and how:sub(1, 4) ~= "disc"
         -- A slowed sweep's own countdown would run slow: the real one comes from `numbers`.
         if w.cd.SetHideCountdownNumbers then w.cd:SetHideCountdownNumbers(slowed) end
         if slowed then
@@ -276,7 +332,7 @@ local function ShowTimer(c, frame, geom, color)
             w.numbers:Hide()
         end
         ApplyLook(w)
-        Diagnose(w, how)
+        Diagnose(w, how, c)
     end
     w:Show()
     return true
@@ -597,8 +653,10 @@ local function TargetCastDebug()
     local d = db.targetCastDiag
     if d then
         ns.Print("Last timer (" .. tostring(d.at) .. "): " .. tostring(d.mode) .. ", started: " .. tostring(d.fed)
-            .. ", texture loads: " .. tostring(d.textureLoads) .. ", C_DurationUtil " .. tostring(d.C_DurationUtil)
-            .. ", SetCooldown " .. tostring(d.SetCooldown) .. ", SetRotation " .. tostring(d.SetRotation))
+            .. ", texture loads: " .. tostring(d.textureLoads))
+        ns.Print("  tried: " .. tostring(d.attempts))
+        ns.Print("  duration: " .. tostring(d.durationMethods))
+        ns.Print("  C_DurationUtil: " .. tostring(d.durationUtil) .. "  |  cooldown: " .. tostring(d.cooldownMethods))
     end
     local c = cast
     if not c then
