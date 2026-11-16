@@ -105,10 +105,12 @@ end
 local sampleSeed, sampleTugs = 1.3, NewTugs(1.3, 40)
 
 -- The fill's edge bobs about the countdown, like a float on the water (the ring stays put).
-local BOB_SCALE = 0.012 -- of a turn per unit of Bob: about ±4% swells, 6% tugs
+local BOB_SCALE = 0.005 -- of a turn per unit of Bob: about ±2% swells, 2.5% tugs
+local BOB_MAX = 0.05    -- never more than 5% of the ring either way
 local function Bobbed(st, t, seed, tugs)
     if st and st.bob then
-        st.frac = math.max(0, math.min(1, st.frac + BOB_SCALE * Bob(t, seed, tugs, st.watch)))
+        local d = math.max(-BOB_MAX, math.min(BOB_MAX, BOB_SCALE * Bob(t, seed, tugs, st.watch)))
+        st.frac = math.max(0, math.min(1, st.frac + d))
     end
     return st
 end
