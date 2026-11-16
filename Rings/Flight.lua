@@ -58,8 +58,8 @@ end
 local function HopSeconds(from, to)
     local p = from and to and ns.FLIGHT_PATHS and ns.FLIGHT_PATHS[from] and ns.FLIGHT_PATHS[from][to]
     if not p then return nil end
-    if type(p) == "table" then return p[1] / SPEED + (p[2] or 0) end
-    return p / SPEED
+    local yards, delay = type(p) == "table" and p[1] or p, type(p) == "table" and (p[2] or 0) or 0
+    return yards / SPEED + delay, yards, delay
 end
 
 -- The current node's flight map slot.
@@ -74,18 +74,29 @@ end
 -- the data doesn't have every hop.
 local function TripSeconds(dest)
     local total
+    -- What the trip was made of, for the flight log: node IDs, yards, stop seconds.
+    local info = { nodes = {}, yards = 0, delay = 0 }
     local hops = GetNumRoutes and ns.SafeCall(GetNumRoutes, dest)
     if type(hops) == "number" and not IsSecret(hops) and hops >= 1 and TaxiGetNodeSlot then
         total = 0
         for hop = 1, hops do
-            local s = HopSeconds(NodeIDForSlot(TaxiGetNodeSlot(dest, hop, true)),
-                                 NodeIDForSlot(TaxiGetNodeSlot(dest, hop, false)))
+            local a = NodeIDForSlot(TaxiGetNodeSlot(dest, hop, true))
+            local b = NodeIDForSlot(TaxiGetNodeSlot(dest, hop, false))
+            local s, yards, delay = HopSeconds(a, b)
+            if hop == 1 then info.nodes[1] = a or "?" end
+            info.nodes[hop + 1] = b or "?"
             if not s then total = nil break end
-            total = total + s
+            total, info.yards, info.delay = total + s, info.yards + yards, info.delay + delay
         end
     end
-    total = total or HopSeconds(NodeIDForSlot(CurrentSlot()), NodeIDForSlot(dest)) -- a direct flight
-    return total and total > 0 and math.floor(total + 0.5) or nil
+    if not total then -- a direct flight
+        local a, b = NodeIDForSlot(CurrentSlot()), NodeIDForSlot(dest)
+        local s, yards, delay = HopSeconds(a, b)
+        info = { nodes = { a or "?", b or "?" }, yards = yards or 0, delay = delay or 0, direct = true }
+        total = s
+    end
+    info.hops = #info.nodes - 1
+    return total and total > 0 and math.floor(total + 0.5) or nil, info
 end
 
 local flight = ns.NewRingFrame("flight")
@@ -110,12 +121,16 @@ end
 
 -- Picking a destination on the flight map: work out the trip now, while the map (and
 -- its hops) can still be read, and keep it until takeoff.
+local LogFlight -- (below)
 local function OnTakeTaxiNode(index)
     if not TaxiNodeName then return end
     local dest = TaxiNodeName(index)
     if IsSecret(dest) then dest = nil end
-    local ok, total = pcall(TripSeconds, index)
-    pendingRoute = { dest = dest, total = ok and total or nil, at = GetTime() }
+    local ok, total, info = pcall(TripSeconds, index)
+    local here = CurrentSlot()
+    local from = here and TaxiNodeName(here)
+    if IsSecret(from) then from = nil end
+    pendingRoute = { dest = dest, from = from, total = ok and total or nil, info = ok and info or nil, at = GetTime() }
 end
 if hooksecurefunc and TakeTaxiNode then
     hooksecurefunc("TakeTaxiNode", OnTakeTaxiNode)
@@ -198,12 +213,29 @@ local function Draw(now)
 end
 
 ---------------------------------------------------------------- flights
+-- The flight log (db.flightLog, the last LOG_SIZE flights): each flight's route, the mined
+-- yards and stop seconds it was timed from, and how long it really took. It's only a record
+-- for checking SPEED against real flights (/circ flightlog); the ring's times never use it.
+local LOG_SIZE = 40
+LogFlight = function(t, duration)
+    if duration < 5 or not t.info then return end
+    db.flightLog = db.flightLog or {}
+    local i = t.info
+    table.insert(db.flightLog, {
+        when = date and date("%Y-%m-%d %H:%M") or "?", from = t.from, to = t.dest,
+        nodes = table.concat(i.nodes, ">"), hops = i.hops, yards = i.yards, stops = i.delay,
+        predicted = t.total, actual = math.floor(duration * 10 + 0.5) / 10, speed = SPEED,
+    })
+    while #db.flightLog > LOG_SIZE do table.remove(db.flightLog, 1) end
+end
+
 local function StartFlight(now)
     local route = pendingRoute
     pendingRoute = nil
     -- Only trust a route picked in the last minute (the map click that started this).
     if route and now - route.at > 60 then route = nil end
-    trip = { dest = route and route.dest, start = now, total = route and route.total }
+    trip = { dest = route and route.dest, from = route and route.from, start = now, total = route and route.total,
+             info = route and route.info }
 end
 
 local function EndFlight(now)
@@ -214,6 +246,7 @@ local function EndFlight(now)
         ns.SessionAdd("flights", nil, 1)
         ns.SessionAdd("flightTime", nil, duration)
     end
+    LogFlight(trip, duration)
     holdUntil = now + (db.flightHold or 3)
 end
 
@@ -278,6 +311,28 @@ local function PreviewFlightRing()
     sampleT = 0
     flight:Show()
 end
+
+-- /circ flightlog: the last flights, predicted against real, with the speed each implies.
+local function ShowFlightLog()
+    local log = db.flightLog or {}
+    if #log == 0 then ns.Print("No flights logged yet: fly somewhere and check again.") return end
+    ns.Print(string.format("Last %d flights (timed at %.1f yards/second):", math.min(10, #log), SPEED))
+    local yards, secs = 0, 0
+    for i = math.max(1, #log - 9), #log do
+        local f = log[i]
+        local flying = f.actual - (f.stops or 0)
+        print(string.format("  %s > %s: %d hop%s, %d yd%s  predicted %s, took %.1fs (%+.1fs)  = %.1f yd/s",
+            ShortName(f.from) or "?", ShortName(f.to) or "?", f.hops or 0, (f.hops or 0) == 1 and "" or "s",
+            f.yards or 0, (f.stops or 0) > 0 and (" + " .. f.stops .. "s stops") or "",
+            f.predicted and (f.predicted .. "s") or "?", f.actual, f.actual - (f.predicted or f.actual),
+            flying > 0 and (f.yards or 0) / flying or 0))
+    end
+    for _, f in ipairs(log) do
+        if (f.yards or 0) > 0 then yards, secs = yards + f.yards, secs + f.actual - (f.stops or 0) end
+    end
+    if secs > 0 then ns.Print(string.format("All %d logged flights together: %.1f yards/second.", #log, yards / secs)) end
+end
+ns.RegisterCommand({ "flightlog" }, ShowFlightLog) -- the flight log (for checking the speed)
 
 -- Shared with the files loaded after this one.
 ns.SetFlightEditing = SetFlightEditing

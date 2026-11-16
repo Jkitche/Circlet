@@ -50,6 +50,12 @@ TakeTaxiNode(5); Advance(0.3); ON_TAXI = true; Advance(4); S("no route data")
 ON_TAXI = false; Advance(6)
 ON_TAXI = true; Advance(3); S("flight w/o map click")
 ON_TAXI = false; Advance(6)
+-- The flight log: real time against the prediction, for checking the speed (never used for times).
+for _, f in ipairs(CircletDB.flightLog or {}) do
+  P(string.format("log: %s > %s nodes %s hops %d yards %d stops %d predicted %s actual %.1f", tostring(f.from), tostring(f.to),
+    f.nodes, f.hops, f.yards, f.stops, tostring(f.predicted), f.actual))
+end
+Slash("flightlog")
 Slash("flight"); Advance(2); S("preview")
 Advance(10); S("preview no-data part")
 Advance(10); Slash("edit flight"); Advance(1); S("editing"); Slash("edit flight"); Advance(3); S("edit off")
