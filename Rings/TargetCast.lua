@@ -73,17 +73,47 @@ local CIRCLE   = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local RING_TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\Ring%d"
 local timer -- made on first use
 
+-- A plain Cooldown, not CooldownFrameTemplate: the template's scripts can put the default
+-- (round) swipe back when a cooldown starts, which turned the ring into a disc.
 local function Timer(frame)
     if timer then return timer end
     timer = CreateFrame("Frame", nil, frame)
     timer:SetPoint("CENTER")
-    timer.cd = CreateFrame("Cooldown", nil, timer, "CooldownFrameTemplate")
+    timer.cd = CreateFrame("Cooldown", nil, timer)
     timer.cd:SetAllPoints()
-    if timer.cd.SetDrawEdge then timer.cd:SetDrawEdge(false) end
-    if timer.cd.SetDrawBling then timer.cd:SetDrawBling(false) end
-    if timer.cd.SetHideCountdownNumbers then timer.cd:SetHideCountdownNumbers(false) end
+    local cd = timer.cd
+    if cd.SetDrawSwipe then cd:SetDrawSwipe(true) end
+    if cd.SetDrawEdge then cd:SetDrawEdge(false) end
+    if cd.SetDrawBling then cd:SetDrawBling(false) end
+    if cd.SetHideCountdownNumbers then cd:SetHideCountdownNumbers(false) end
+    if cd.SetCountdownFont then pcall(cd.SetCountdownFont, cd, "GameFontHighlightHugeOutline") end
     timer:Hide()
     return timer
+end
+
+-- A texture-coordinate corner for SetTexCoordRange (a Vector2D where the client has them).
+local function Corner(x, y)
+    if CreateVector2D then return CreateVector2D(x, y) end
+    return { x = x, y = y }
+end
+
+-- How the sweep looks: its texture, color, turn and direction (from PlaceTimer). Applied when
+-- placed and again after every start, in case starting the cooldown reset any of it.
+local function ApplyLook(w)
+    local cd, look = w.cd, w.look
+    if not look then return end
+    if cd.SetSwipeTexture then pcall(cd.SetSwipeTexture, cd, look.tex) end
+    if look.color and cd.SetSwipeColor then
+        local c = look.color
+        cd:SetSwipeColor(c.r, c.g, c.b, look.alpha or 1)
+    end
+    if cd.SetRotation then pcall(cd.SetRotation, cd, look.turn or 0) end
+    if look.mirror and cd.SetTexCoordRange then
+        pcall(cd.SetTexCoordRange, cd, Corner(1, 0), Corner(0, 1)) -- mirrored: counter-clockwise
+    elseif w.mirrored and cd.SetTexCoordRange then
+        pcall(cd.SetTexCoordRange, cd, Corner(0, 0), Corner(1, 1))
+    end
+    w.mirrored = look.mirror
 end
 
 local function HideTimer()
@@ -108,28 +138,21 @@ local function PlaceTimer(w, frame, geom, channel)
     local outer = geom.R + geom.T / 2
     w.mode = arc and "arc (disc in the middle)" or "ring band"
     w.texPath = arc and CIRCLE or RingTexture((geom.R - geom.T / 2) / outer)
+    local look = { tex = w.texPath, color = w.look and w.look.color, alpha = arc and 0.55 or 1 }
     if arc then
         local d = math.max(8, (geom.R - geom.T / 2) * 2 * 0.8)
         w:SetSize(d, d)
-        if cd.SetSwipeTexture then cd:SetSwipeTexture(CIRCLE) end
-        if cd.SetRotation then pcall(cd.SetRotation, cd, 0) end
-        if cd.SetTexCoordRange then pcall(cd.SetTexCoordRange, cd, { x = 0, y = 0 }, { x = 1, y = 1 }) end
+        look.turn, look.mirror = 0, false
     else
         w:SetSize(outer * 2, outer * 2)
-        if cd.SetSwipeTexture then cd:SetSwipeTexture(w.texPath) end
         -- The sweep starts at the top and runs clockwise; the ring starts at geom.start
         -- (a fraction of a turn clockwise from the top) and may run counter-clockwise.
-        if cd.SetTexCoordRange then
-            if geom.reverse then
-                pcall(cd.SetTexCoordRange, cd, { x = 1, y = 0 }, { x = 0, y = 1 }) -- mirrored: counter-clockwise
-            else
-                pcall(cd.SetTexCoordRange, cd, { x = 0, y = 0 }, { x = 1, y = 1 })
-            end
-        end
         local turn = -2 * math.pi * (geom.start or 0) -- negative: clockwise
         if geom.reverse then turn = -turn end
-        if cd.SetRotation then pcall(cd.SetRotation, cd, turn) end
+        look.turn, look.mirror = turn, geom.reverse and true or false
     end
+    w.look = look
+    ApplyLook(w)
     -- The game's countdown, sized like the ring's own time text.
     local fs = cd.GetCountdownFontString and cd:GetCountdownFontString()
     if fs and fs.SetFont then
@@ -149,14 +172,19 @@ local function ShowTimer(c, frame, geom, color)
     if not (w.cd.SetCooldownFromDurationObject) then return false end
     PlaceTimer(w, frame, geom, c.channel)
     w:SetFrameLevel(frame:GetFrameLevel() + 2)
-    if w.cd.SetSwipeColor then
-        w.cd:SetSwipeColor(color.r, color.g, color.b, (geom.sweep or 1) < 1 and 0.55 or 1)
+    -- The ring's color, kept in the look (it changes: casting, channel, can't interrupt).
+    local lc = w.look.color
+    if not lc or lc.r ~= color.r or lc.g ~= color.g or lc.b ~= color.b then
+        w.look.color = { r = color.r, g = color.g, b = color.b }
+        if w.cd.SetSwipeColor then w.cd:SetSwipeColor(color.r, color.g, color.b, w.look.alpha or 1) end
     end
-    -- Feed it once per cast (and after a delay), not every frame, which would restart it.
+    -- Feed it once per cast (and after a delay), not every frame, which would restart it;
+    -- then put the ring look back on, in case starting it reset the swipe.
     if w.fedWith ~= c or c.durStale then
         w.fedWith, c.durStale = c, false
         if w.cd.SetReverse then w.cd:SetReverse(not c.channel) end -- a cast fills, a channel unwinds
         w.cd:SetCooldownFromDurationObject(c.durObj)
+        ApplyLook(w)
     end
     w:Show()
     return true

@@ -16,8 +16,11 @@
   `/circ timer +2m` adds time, `/circ timer stop` stops it, `/circ timer` says what's left. A running
   timer carries on through a reload or a relog. Stays up in combat; Icon as background works too.
 - `/circ timer` now starts a timer; the timed quest ring's preview is `/circ timed`.
-- Target cast ring: the ring textures for the game's timer are stored in the standard TGA layout,
-  and `/circ targetdebug` reports how the timer is drawn and whether its texture loads.
+- **Fixed: the target cast ring's timer drew a filled circle** instead of filling the ring when combat
+  hides the target's cast times. Its ring textures are stored in the standard TGA layout, the timer
+  is a plain cooldown (the game's cooldown template could put its round swipe back), and the ring
+  look is reapplied each time it starts. `/circ targetdebug` reports how the timer is drawn and
+  whether its texture loads.
 
 ## 1.2.0
 
