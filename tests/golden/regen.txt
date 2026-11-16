@@ -1,0 +1,27 @@
+nothing cast: (hidden)
+Flash Heal, 1s: Mana regen / 4.0s / No regen fill=15
+3.5s: Mana regen / 1.5s / No regen fill=51
+cast again, 0.5s: Mana regen / 4.5s / No regen fill=8
+5.1s after: Mana regen / Regenerating fill=72
+then: Mana regen / Regenerating fill=72
+Shoot (free): (hidden)
+Heroic Strike (rage): (hidden)
+a percentage mana cost: Mana regen / 4.0s / No regen fill=15
+Mind Flay channel, 1s: Mana regen / 4.0s / No regen fill=15
+cost hidden, Flash Heal (learned): Mana regen / 4.0s / No regen fill=15
+cost hidden, a spell never seen: (hidden)
+ring off: (hidden)
+learned: Flash Heal=true Shoot=false Heroic Strike=false
+Clearcasting used up just before the cast is reported: (hidden)
+Clearcasting used up just after: (hidden)
+Clearcasting still up after the cast (it paid): Mana regen / 4.0s / No regen fill=15
+2s after: Mana regen / 3.0s / No regen fill=29
+Inner Focus: (hidden)
+shaman Clearcasting: (hidden)
+Spirit of Redemption: (hidden)
+Innervate: Mana regen / 4.0s / Innervated fill=15
+Innervate ends: Mana regen / 3.5s / No regen fill=22
+free cast, then a paid one right after: Mana regen / 3.7s / No regen fill=19
+preview: Mana regen / 3.0s / No regen fill=29
+preview 6s: Mana regen / Regenerating fill=72
+ERRORS: {}

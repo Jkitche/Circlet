@@ -72,6 +72,7 @@ chat:   /circ cast      - preview the cast ring
 chat:   /circ target    - preview the target cast ring
 chat:   /circ loot      - preview the loot roll ring
 chat:   /circ ready     - preview the ready check ring
+chat:   /circ regen     - preview the mana regen ring
 chat:   /circ pins      - preview the quest rings
 chat:   /circ totems    - preview the totem rings
 chat:   /circ levelup   - preview the level-up effect

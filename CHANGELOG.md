@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Mana regen ring** (new; on by default). The five-second rule: each time you cast a spell that
+  costs mana, the ring fills over the five seconds your mana regen is stopped, counting down to
+  when it starts again, then lights up and fades. It goes by the spell's cost (your mana itself is
+  hidden from addons), remembering which spells cost mana for when the cost is hidden mid-fight.
+  Casts made free by Clearcasting (mage, druid, shaman), Inner Focus or Spirit of Redemption don't
+  start it, since they don't stop regen; during Innervate it says "Innervated". Preview with
+  `/circ regen`.
 - **Timer ring** (new). A countdown you start yourself: `/circ timer 5m Tea` (also `1:30`, `90`,
   `1h20m`, `10 min Pull`...), or the 1, 5 and 10 minute buttons on its options page. The ring drains
   with the label and the time left and a pocket watch icon, pulses in the last 10 seconds, and when
