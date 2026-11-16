@@ -16,13 +16,12 @@
   `/circ timer +2m` adds time, `/circ timer stop` stops it, `/circ timer` says what's left. A running
   timer carries on through a reload or a relog. Stays up in combat; Icon as background works too.
 - `/circ timer` now starts a timer; the timed quest ring's preview is `/circ timed`.
-- **Target cast ring: the timer fills the arc.** When combat hides the target's cast times, a
-  three-quarter or half arc used to get a filled circle in its middle; now the game's timer sweeps
-  along the arc's band, slowed to the arc's share of a turn so it reaches the end with the cast,
-  with the game's countdown in the middle (a full ring sweeps its band as before). Should this
-  client not allow slowing it, arcs keep the circle. The timer is also a plain cooldown now, its
-  textures use the standard TGA layout, and `/circ targetdebug` says how the last timer was drawn.
-
+- **Target cast ring: progress fills the ring even when combat hides the cast times.** The ring's
+  own segments now light up as the cast goes, read from the game's hidden cast duration through
+  curves, so every shape (ring, three-quarter, half arc), style and direction fills as usual, with
+  the game's countdown in the middle; a channel drains. This replaces the filled circle that arcs
+  used to get. Where the game doesn't allow that, it falls back to the game's own sweep.
+  `/circ targetdebug` says which way the last cast was shown.
 ## 1.2.0
 
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session

@@ -30,6 +30,9 @@ local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch 
 --   and sparks (unless noBurst: the cast ring's spells, which only turn opaque).
 --   flashFrom / flashTo / flashAt: a stretch of the ring (fractions) that flashes white
 --   and fades out, starting at GetTime() == flashAt: progress that was just lost.
+--   fillGate: function(pos) returning each fill segment's alpha (0..1, or a secret) from
+--   where it sits along the ring (0..1); with frac = 1, the ring's progress can come from
+--   values the game hides.
 --   noTrack: draw none of the ring itself (track, border, fill): for a ring whose content
 --   is drawn by the game (the totem rings' fallback), so nothing of it shows on its own.
 -- cfg.sample(t): the same for edit mode / previews (t = seconds since it started).
@@ -309,6 +312,18 @@ local function CreateLiveRing(cfg)
         local c = st.color
         for _, l in ipairs(frame.fill) do l:SetColorTexture(c.r, c.g, c.b, 1) end
         DrawArc(frame.fill, 0, st.frac or 0, frame, geom, nil, ns.Shade(key, c))
+        -- fillGate(pos): each drawn segment's alpha from where it sits along the arc (0..1).
+        -- The value may be a secret: SetAlpha takes those from addon code, so a ring can show
+        -- progress the game hides (the target cast ring's hidden cast times).
+        if st.fillGate then
+            for _, l in ipairs(frame.fill) do
+                if l.arcMid and l:IsShown() then pcall(l.SetAlpha, l, st.fillGate(l.arcMid)) end
+            end
+            frame.fillGated = true
+        elseif frame.fillGated then
+            for _, l in ipairs(frame.fill) do l:SetAlpha(1) end
+            frame.fillGated = nil
+        end
 
         -- Lost progress: blinks white a few times, fading out.
         local flashAlpha = 0

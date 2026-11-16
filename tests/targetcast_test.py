@@ -52,12 +52,14 @@ function Timer()
   local w; for _, f in ipairs(allFrames) do if f._parent == F and f._kind2 == "Frame" and f.cd then w = f end end
   if not (w and w._shown) then return "no timer" end
   local cd = w.cd
+  if cd._shown == false then return string.format("countdown only (%dx%d), no sweep", w._w or 0, w._h or 0) end
   return string.format("timer %dx%d, swipe %s, fed %s at rate %s, numbers from %s",
     w._w or 0, w._h or 0, tostring(cd._swipe):gsub(".*\\\\", ""), tostring(cd._fed), tostring(cd._rate),
     cd._hideNumbers and "the second cooldown" or "the sweep")
 end
-function S(l) local n = 0 for _, x in ipairs(F.fill) do if x._shown ~= false and x._x1 then n = n + 1 end end
-  P(string.format("%-34s fill=%2d | %s | %s", l, n, T(F), Timer())) end
+function S(l) local n, lit = 0, 0 for _, x in ipairs(F.fill) do if x._shown ~= false and x._x1 then n = n + 1
+    if (x._alpha or 1) > 0 then lit = lit + 1 end end end
+  P(string.format("%-34s fill=%2d lit=%2d | %s | %s", l, n, lit, T(F), Timer())) end
 function Cast() CASTING = { start = NOW }; Fire("UNIT_SPELLCAST_START", "target", "Cast-1", HIDE and SECRET or 24011) end
 function StopCast() CASTING = nil; Fire("UNIT_SPELLCAST_STOP", "target", "Cast-1", HIDE and SECRET or 24011); Advance(3) end
 ''')
@@ -95,3 +97,58 @@ report(lua, "no duration util")
 lua = boot('C_DurationUtil = nil; NO_SETCOOLDOWN = true')
 lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("half arc, can\'t slow it"); StopCast()')
 report(lua, "disc fallback")
+
+# 6. The game has curves: the ring's own segments fill, gated by the cast's progress through
+# step curves (shown here as plain 0/1; in game they're hidden values SetAlpha accepts).
+CURVES = r"""
+PSCALE = PSCALE or 1
+Enum = Enum or {}; Enum.LuaCurveType = { Linear = 0, Step = 1 }
+C_CurveUtil = { CreateCurve = function()
+  local cv = { points = {} }
+  function cv:SetType(t) self.type = t end
+  function cv:AddPoint(x, y) table.insert(self.points, { x, y }) end
+  function cv:Evaluate(x) local y = 0 for _, pt in ipairs(self.points) do if x >= pt[1] then y = pt[2] end end return y end
+  return cv end }
+C_DurationUtil = { CreateDuration = function() local d = {}
+  function d:SetTimeFromStart(start, total) self.start, self.total = start, total end
+  function d:GetElapsedPercent() return (NOW - self.start) / self.total * PSCALE end
+  return d end }
+function MakeDur(channel)
+  local start = NOW
+  local d = { kind = "the cast's duration", GetStartTime = function() return SECRET end, GetTotalDuration = function() return SECRET end }
+  local function frac() return math.min(1, (NOW - start) / 4) end
+  function d:GetElapsedPercent() if READABLE then return frac() * PSCALE end return SECRET end
+  function d:GetRemainingPercent() if READABLE then return (1 - frac()) * PSCALE end return SECRET end
+  function d:GetRemainingDuration() if READABLE then return 4 * (1 - frac()) end return SECRET end
+  function d:EvaluateElapsedPercent(cv) return cv:Evaluate(frac() * PSCALE) end
+  function d:EvaluateRemainingPercent(cv) return cv:Evaluate((1 - frac()) * PSCALE) end
+  return d
+end
+CAST_DUR = nil
+function UnitCastingDuration() if CASTING and not CHANNELING then CAST_DUR = CAST_DUR or MakeDur() return CAST_DUR end end
+function UnitChannelDuration() if CHANNELING then CAST_DUR = CAST_DUR or MakeDur(true) return CAST_DUR end end
+local uci = UnitChannelInfo
+function UnitChannelInfo(u) if u == "target" and CHANNELING then return SECRET, nil, SECRET, SECRET, SECRET, nil, SECRET, SECRET end return uci(u) end
+"""
+lua = boot(CURVES)
+lua.execute('''
+HIDE = true; CircletDB.targetCastShape = "half"
+Cast(); Advance(1); S("curves, half arc, 1s of 4"); Advance(2); S("curves, half arc, 3s of 4")
+CAST_DUR = nil; StopCast()
+CircletDB.targetCastShape = "ring"; Cast(); Advance(2); S("curves, ring, 2s of 4"); CAST_DUR = nil; StopCast()
+-- A channel drains: what's left shows.
+CHANNELING = true; CASTING = { start = NOW }; Fire("UNIT_SPELLCAST_CHANNEL_START", "target", "Chan-1", SECRET)
+Advance(1); S("curves, channel, 1s of 4"); Advance(2); S("curves, channel, 3s of 4")
+CHANNELING = nil; CASTING = nil; CAST_DUR = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "target", "Chan-1", SECRET); Advance(3)
+''')
+report(lua, "curves")
+
+# 7. The duration's progress turns out readable: used as is.
+lua = boot(CURVES + 'READABLE = true')
+lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("readable percent, 1s of 4"); StopCast()')
+report(lua, "readable percent")
+
+# 8. Percentages from 0 to 100 (found from a duration of Circlet's own): same result.
+lua = boot(CURVES + 'PSCALE = 100')
+lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("0-100 percent, half arc, 1s of 4"); StopCast()')
+report(lua, "percent 0-100")

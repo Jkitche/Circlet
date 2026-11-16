@@ -105,6 +105,7 @@ local function DrawArc(lines, from, to, frame, geom, noOverlap, shade)
             line:SetStartPoint("CENTER", frame, x1, y1)
             line:SetEndPoint("CENTER", frame, x2, y2)
             line:SetThickness(geom.T)
+            line.arcMid = (s + e) / 2 -- where along the arc (0..1) this segment sits
             if shade then
                 local f = 1 - shade.amt * (1 - (s + e) / 2)
                 line:SetColorTexture(shade.r * f, shade.g * f, shade.b * f, 1)

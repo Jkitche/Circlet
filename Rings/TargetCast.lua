@@ -2,7 +2,7 @@
 local ADDON_NAME, ns = ...
 
 local db, CreateLiveRing = ns.db, ns.CreateLiveRing
-local SafeCall, Clean = ns.SafeCall, ns.Clean
+local SafeCall, Clean, IsSecret = ns.SafeCall, ns.Clean, ns.IsSecret
 
 ---------------------------------------------------------------------------
 -- Target cast ring
@@ -57,6 +57,83 @@ end
 local function DurationObject(channel)
     local fn = channel and _G.UnitChannelDuration or _G.UnitCastingDuration
     return fn and SafeCall(fn, UNIT) or nil
+end
+
+---------------------------------------------------------------------------
+-- Progress from a hidden duration, segment by segment
+---------------------------------------------------------------------------
+-- With the times hidden, the cast's duration object can still say how far along it is,
+-- through a curve: EvaluateElapsedPercent(curve) runs the (hidden) progress through a curve
+-- of our own and hands back a (hidden) result, and a line's SetAlpha accepts hidden values
+-- from addon code. So each segment of the ring gets a step curve that's 0 before its place
+-- along the ring and 1 from there on: the segments the cast has reached show, the rest
+-- don't. That's the ring's own drawing, so every shape (ring, three-quarter, half),
+-- style and direction fills as usual. (A channel uses the remaining time, so it drains.)
+-- If the progress turns out to be a plain number after all, it's used as is.
+
+local percentScale -- 1 if a duration's percentages run 0..1, 100 if 0..100
+local function PercentScale()
+    if percentScale then return percentScale end
+    percentScale = 1
+    -- Found from a duration of our own, halfway through (nothing hidden in it).
+    local util = C_DurationUtil
+    if util and type(util.CreateDuration) == "function" then
+        local ok, d = pcall(util.CreateDuration)
+        if ok and d and pcall(d.SetTimeFromStart, d, GetTime() - 5, 10) then
+            local okP, p = pcall(d.GetElapsedPercent, d)
+            if okP and type(p) == "number" and not IsSecret(p) and p > 2 then percentScale = 100 end
+        end
+    end
+    return percentScale
+end
+
+-- How far along cast c is (0..1, a channel by what's left), if the game lets that be read.
+local function ReadablePercent(c)
+    local dur = c.durObj
+    local method = c.channel and "GetRemainingPercent" or "GetElapsedPercent"
+    local fn = dur and dur[method]
+    if type(fn) ~= "function" then return nil end
+    local ok, p = pcall(fn, dur)
+    if ok and type(p) == "number" and not IsSecret(p) then return math.max(0, math.min(1, p / PercentScale())) end
+end
+
+local stepCurves = {} -- by threshold: curves that are 0 below it and 1 from it on
+local function StepCurve(t)
+    local key = math.max(1, math.floor(t * 400 + 0.5)) -- in 1/400ths of the ring
+    local cv = stepCurves[key]
+    if cv then return cv end
+    cv = C_CurveUtil.CreateCurve()
+    if Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then pcall(cv.SetType, cv, Enum.LuaCurveType.Step) end
+    cv:AddPoint(0, 0)
+    cv:AddPoint(key / 400 * PercentScale(), 1)
+    stepCurves[key] = cv
+    return cv
+end
+
+-- The fill gate for cast c (each segment's alpha from where it sits), or nil plus why not.
+local function Gate(c)
+    local dur = c.durObj
+    if not (C_CurveUtil and type(C_CurveUtil.CreateCurve) == "function") then return nil, "no C_CurveUtil" end
+    local method = c.channel and "EvaluateRemainingPercent" or "EvaluateElapsedPercent"
+    local fn = dur and dur[method]
+    if type(fn) ~= "function" then return nil, method .. " missing" end
+    local okC, cv = pcall(StepCurve, 0.5)
+    if not okC then return nil, "curve: " .. tostring(cv) end
+    local ok, err = pcall(fn, dur, cv)
+    if not ok then return nil, method .. ": " .. tostring(err) end
+    return function(pos)
+        local okE, v = pcall(fn, dur, StepCurve(pos))
+        if okE then return v end
+        return 0
+    end
+end
+
+-- Notes which way the ring shows a hidden cast's progress, once per cast.
+local function NoteMode(c, mode, extra)
+    if c.noted == mode then return end
+    c.noted = mode
+    db.targetCastDiag = { at = date and date("%Y-%m-%d %H:%M:%S") or "?", mode = mode, detail = extra,
+                          percentScale = percentScale }
 end
 
 ---------------------------------------------------------------------------
@@ -300,6 +377,8 @@ local function ShowTimer(c, frame, geom, color)
     if not c.durObj then return false end
     local w = Timer(frame)
     if not (w.cd.SetCooldownFromDurationObject) then return false end
+    w.cd:Show()
+    if w.numbersOnly then w.numbersOnly, w.fedWith, w.layout = nil, nil, nil end
     PlaceTimer(w, frame, geom, c.channel)
     w:SetFrameLevel(frame:GetFrameLevel() + 2)
     -- The ring's color, kept in the look (it changes: casting, channel, can't interrupt).
@@ -334,6 +413,26 @@ local function ShowTimer(c, frame, geom, color)
         ApplyLook(w)
         Diagnose(w, how, c)
     end
+    w:Show()
+    return true
+end
+
+-- Just the game's countdown in the ring's middle, for when the ring's own segments show
+-- the progress (fillGate): no sweep.
+local function ShowNumbers(c, frame, geom)
+    local w = Timer(frame)
+    if not (w.numbers and w.numbers.SetCooldownFromDurationObject) then return false end
+    if not w.numbersOnly then w.numbersOnly, w.fedWith, w.layout = true, nil, nil end
+    w.cd:Hide()
+    local inner = math.max(8, (geom.R - geom.T / 2) * 2)
+    w:SetSize(inner, inner)
+    w:SetFrameLevel(frame:GetFrameLevel() + 2)
+    SizeNumbers(w.numbers, geom)
+    if w.fedWith ~= c or c.durStale then
+        w.fedWith, c.durStale = c, false
+        pcall(w.numbers.SetCooldownFromDurationObject, w.numbers, c.durObj)
+    end
+    w.numbers:Show()
     w:Show()
     return true
 end
@@ -511,12 +610,36 @@ local targetCastRing = CreateLiveRing({
         local st = State({ name = c.name, icon = c.icon, channel = c.channel, shielded = c.shielded, caster = c.caster,
                            frac = frac, left = left or 0, guessed = frac and not c.real })
         if not frac then
-            -- No timing we can read: the game's own timer in the middle (decorate shows it).
+            -- No timing we can read: the cast's duration object, in order of preference:
+            -- its progress as a plain number; the ring's segments gated by curves (decorate
+            -- adds the game's countdown in the middle); the game's own sweep.
             if not (c.durObj or c.durTried) then
                 c.durTried = true
                 c.durObj = DurationObject(c.channel)
             end
-            if c.durObj then st.timerCast, st.frac = c, 0 end
+            if c.durObj then
+                local pct = ReadablePercent(c)
+                if pct then
+                    st.frac = pct -- (a channel's is already what's left)
+                    local okR, left = pcall(c.durObj.GetRemainingDuration, c.durObj)
+                    if okR and type(left) == "number" and not IsSecret(left) then
+                        st.value = string.format(left >= 10 and "%.0f" or "%.1f", left)
+                    end
+                    NoteMode(c, "readable percent")
+                else
+                    if c.gate == nil then
+                        local gate, why = Gate(c)
+                        c.gate, c.gateWhy = gate or false, why
+                    end
+                    if c.gate then
+                        st.frac, st.fillGate, st.timerNumbers = 1, c.gate, c
+                        NoteMode(c, "segments gated by curve")
+                    else
+                        st.timerCast, st.frac = c, 0
+                        NoteMode(c, "game's sweep", c.gateWhy)
+                    end
+                end
+            end
         end
         return st
     end,
@@ -546,6 +669,7 @@ local targetCastRing = CreateLiveRing({
                        endedAt = GetTime() - (cycle - 9.4) })
     end,
     decorate = function(st, frame, geom)
+        if st and st.timerNumbers and geom.R > 0 and ShowNumbers(st.timerNumbers, frame, geom) then return end
         if st and st.timerCast and geom.R > 0 and ShowTimer(st.timerCast, frame, geom, st.color) then return end
         HideTimer()
     end,
