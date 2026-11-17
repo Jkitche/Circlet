@@ -166,7 +166,9 @@ local function Tool(frame, which, size, turn, at, x, y, a)
     fx.tool:ClearAllPoints()
     fx.tool:SetPoint("CENTER", frame, "CENTER", x - px, y - py)
     fx.tool:SetSize(size, size)
-    fx.tool:SetRotation(turn)
+    -- The picture is shown turned half round about its own middle: same place and motion,
+    -- the tool upside down.
+    fx.tool:SetRotation(turn + math.pi)
     fx.tool:SetAlpha(a)
     fx.tool:Show()
     used.tool = true
