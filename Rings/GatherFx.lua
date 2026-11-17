@@ -153,25 +153,47 @@ local function Glint(frame, geom, f, size, a, rot, r, g, b)
     used.glint = true
 end
 
+-- A point of a tool's image, mirrored left to right if `mirror`.
+local function ToolPoint(which, at, mirror)
+    local pt = TOOLS[which][at]
+    if mirror then return { 1 - pt[1], pt[2] } end
+    return pt
+end
+
 -- Draws a tool `size` across, turned by `turn` (radians, counterclockwise from how the image
--- stands) with its point `at` (its grip or tip) at (x, y).
-local function Tool(frame, which, size, turn, at, x, y, a)
+-- stands, after mirroring) with its point `at` (its grip or tip) at (x, y).
+local function Tool(frame, which, size, turn, at, x, y, a, mirror)
     local t = TOOLS[which]
     if fx.toolIs ~= which then
         if fx.tool:SetTexture(t.tex) == false then fx.tool:SetTexture(t.fallback) end
         fx.toolIs = which
     end
-    local mx, my = FromMiddle(t[at], size)
+    local mx, my = FromMiddle(ToolPoint(which, at, mirror), size)
     local px, py = Turn(mx, my, turn)
     fx.tool:ClearAllPoints()
     fx.tool:SetPoint("CENTER", frame, "CENTER", x - px, y - py)
     fx.tool:SetSize(size, size)
-    -- The picture is shown turned half round about its own middle: same place and motion,
-    -- the tool upside down.
-    fx.tool:SetRotation(turn + math.pi)
+    if mirror then fx.tool:SetTexCoord(1, 0, 0, 1) else fx.tool:SetTexCoord(0, 1, 0, 1) end
+    fx.tool:SetRotation(turn)
     fx.tool:SetAlpha(a)
     fx.tool:Show()
     used.tool = true
+end
+
+-- Which way from the spot the tools are held: on along the ring (clockwise, so down and to
+-- the right at the top right) and a little out from it, so the handles hang down and away
+-- outside the ring and the working end reaches in to it.
+local function HoldWay(ox, oy, tx, ty)
+    local hx, hy = tx + ox * 0.25, ty + oy * 0.25
+    local l = math.sqrt(hx * hx + hy * hy)
+    return hx / l, hy / l
+end
+
+-- The turn that points a tool's image from its grip toward its tip along (dx, dy).
+local function PointAlong(which, dx, dy, mirror)
+    local gx, gy = FromMiddle(ToolPoint(which, "grip", mirror), 1)
+    local kx, ky = FromMiddle(ToolPoint(which, "tip", mirror), 1)
+    return Angle(dx, dy) - Angle(kx - gx, ky - gy)
 end
 
 -- How the tool fades once the gather ends: gone `fade` seconds after `from`.
@@ -229,26 +251,22 @@ local function Knife(st, frame, geom, now, s, start, stopAt)
         local t = math.min(now, stopAt)
         local i = math.floor((t - start) / STROKE)
         local p = (t - (start + i * STROKE)) / STROKE
-        local e = SPOT
         if p < 0.45 then
-            f, lift = e - REACH * (1 - p / 0.45) ^ 2, 0
+            f, lift = SPOT - REACH * (1 - p / 0.45) ^ 2, 0
         else
             local q = Smooth((p - 0.45) / 0.55)
-            f, lift = e - REACH * q, math.sin(math.pi * q)
+            f, lift = SPOT - REACH * q, math.sin(math.pi * q)
         end
         a = ToolAlpha(now, st.fxEndAt, 0.25)
     end
     if a <= 0 then return end
     local x, y, ox, oy, tx, ty = Frame3(geom, math.max(0, f))
-    -- Slicing, the blade lies nearly along the ring with its tip in; lifted, it tilts up and away.
-    local along, inward = 0.75 - 0.3 * lift, 0.65 - 0.5 * lift
-    local dx, dy = tx * along - ox * inward, ty * along - oy * inward
+    -- Held from below and to the right, the blade reaches up into the band, its tip drawn
+    -- along it toward the hand (the slice); lifted, it tips back out of the ring.
+    local hx, hy = HoldWay(ox, oy, tx, ty)
+    local dx, dy = -hx + ox * 0.7 * lift, -hy + oy * 0.7 * lift
     local h = lift * geom.T * 2.2
-    local t = TOOLS.knife
-    local gx, gy = FromMiddle(t.grip, 1)
-    local kx, ky = FromMiddle(t.tip, 1)
-    local turn = Angle(dx, dy) - Angle(kx - gx, ky - gy)
-    Tool(frame, "knife", 34 * s, turn, "tip", x + ox * h, y + oy * h, a)
+    Tool(frame, "knife", 34 * s, PointAlong("knife", dx, dy), "tip", x + ox * h, y + oy * h, a)
 end
 
 local function Skinning(st, frame, geom, now, s)
@@ -364,26 +382,28 @@ local function Pickaxe(st, frame, geom, now, s, start, stopAt)
     end
     if a <= 0 then return end
     local size = 40 * s
-    local tool = TOOLS.pick
-    local gx, gy = FromMiddle(tool.grip, size)
-    local kx, ky = FromMiddle(tool.tip, size)
-    local vx, vy = kx - gx, ky - gy -- grip to point
-    local len = math.sqrt(vx * vx + vy * vy)
     local x, y, ox, oy, tx, ty = Frame3(geom, f)
-    -- Hold it outside the ring, to one side, so the point lands on the edge. Raising turns it
-    -- counterclockwise (the image's point leads when it turns clockwise); take the side where
-    -- raising lifts the point away from the ring rather than through it.
-    local best, bestTurn, bestGx, bestGy
-    for side = -1, 1, 2 do
-        local hx, hy = ox * 0.6 + tx * 0.8 * side, oy * 0.6 + ty * 0.8 * side
-        local hl = math.sqrt(hx * hx + hy * hy)
-        local Gx, Gy = x + hx / hl * len, y + hy / hl * len
-        local hit = Angle(x - Gx, y - Gy) - Angle(vx, vy)
-        local rx, ry = Turn(vx, vy, hit + PICK_RAISE)
-        local away = (Gx + rx) ^ 2 + (Gy + ry) ^ 2 -- the raised point's distance from the middle
-        if not best or away > best then best, bestTurn, bestGx, bestGy = away, hit, Gx, Gy end
+    -- Held by the end of its handle, below and to the right of the spot: it turns about that
+    -- hand, and its point lands on the spot as the strike lands. The image's point leads when
+    -- it turns clockwise; mirrored, counterclockwise. Take whichever way raising it lifts the
+    -- point away from the ring rather than through it.
+    local hx, hy = HoldWay(ox, oy, tx, ty)
+    local best, bestTurn, bestMirror, Gx, Gy
+    for _, mirror in ipairs({ false, true }) do
+        local gx, gy = FromMiddle(ToolPoint("pick", "grip", mirror), size)
+        local kx, ky = FromMiddle(ToolPoint("pick", "tip", mirror), size)
+        local vx, vy = kx - gx, ky - gy -- hand to point
+        local len = math.sqrt(vx * vx + vy * vy)
+        local hgx, hgy = x + hx * len, y + hy * len
+        local hit = Angle(x - hgx, y - hgy) - Angle(vx, vy)
+        local up = mirror and -1 or 1 -- which way raising turns it
+        local rx, ry = Turn(vx, vy, hit + up * PICK_RAISE)
+        local away = (hgx + rx) ^ 2 + (hgy + ry) ^ 2 -- the raised point's distance from the middle
+        if not best or away > best then
+            best, bestTurn, bestMirror, Gx, Gy = away, hit + up * raise, mirror, hgx, hgy
+        end
     end
-    Tool(frame, "pick", size, bestTurn + raise, "grip", bestGx, bestGy, a)
+    Tool(frame, "pick", size, bestTurn, "grip", Gx, Gy, a, bestMirror)
 end
 
 local function Mining(st, frame, geom, now, s)
@@ -497,14 +517,13 @@ local function Shears(st, frame, geom, now, s, start, stopAt)
     end
     if a <= 0 then return end
     local x, y, ox, oy, tx, ty = Frame3(geom, f)
-    -- The jaws point into the ring, a little forward; a snip squeezes and twists them.
-    local dx, dy = -ox * 0.85 + tx * 0.5, -oy * 0.85 + ty * 0.5
-    local tool = TOOLS.shears
-    local gx, gy = FromMiddle(tool.grip, 1)
-    local kx, ky = FromMiddle(tool.tip, 1)
-    local turn = Angle(dx, dy) - Angle(kx - gx, ky - gy) + 0.18 * squeeze
+    -- Held from below and to the right, the jaws reach in to the spot; they pull back along
+    -- the same way between snips, and a snip squeezes and twists them.
+    local hx, hy = HoldWay(ox, oy, tx, ty)
+    local turn = PointAlong("shears", -hx, -hy) + 0.18 * squeeze
     local h = geom.T * (0.5 + SHEARS_GAP * gap) -- the jaws close just over the band's outside
-    Tool(frame, "shears", 34 * s * (1 - 0.1 * squeeze), turn, "tip", x + ox * h, y + oy * h, a)
+    Tool(frame, "shears", 34 * s * (1 - 0.1 * squeeze), turn, "tip", x + (ox * 0.5 + hx * 0.5) * h,
+        y + (oy * 0.5 + hy * 0.5) * h, a)
 end
 
 local function Herbalism(st, frame, geom, now, s)

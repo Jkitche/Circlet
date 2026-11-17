@@ -21,6 +21,7 @@ lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
 RegionMethods.SetPoint = function(s, p, rel, rp, x, y) s._pt = { x = x, y = y } end
+RegionMethods.SetTexCoord = function(s, l, r, t, b) s._mirror = (l or 0) > (r or 1) end
 ''')
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
@@ -50,11 +51,19 @@ function FX(label)
         -- Where the working end (knife tip / pick point / shears' jaws) is: from the image's middle, turned.
         local which = path:match("Attack") and "knife" or path == "4675625" and "shears" or "pick"
         local tip = ({ knife = { 0.03, 0.03 }, pick = { 0.92, 0.06 }, shears = { 0.19, 0.19 } })[which]
-        local vx, vy = (tip[1] - 0.5) * t._w, (0.5 - tip[2]) * t._w
+        local grip = ({ knife = { 0.78, 0.78 }, pick = { 0.77, 0.875 }, shears = { 0.75, 0.75 } })[which]
+        local tx = t._mirror and 1 - tip[1] or tip[1]
+        local gx = t._mirror and 1 - grip[1] or grip[1]
+        local vx, vy = (tx - 0.5) * t._w, (0.5 - tip[2]) * t._w
+        local wx, wy = (gx - 0.5) * t._w, (0.5 - grip[2]) * t._w
         local r = t._rot or 0
         local x = t._pt.x + vx * math.cos(r) - vy * math.sin(r)
         local y = t._pt.y + vx * math.sin(r) + vy * math.cos(r)
-        tool = string.format("%s %2.0fpx, end %3.0f from middle%s", which, t._w, math.sqrt(x * x + y * y),
+        local hx = t._pt.x + wx * math.cos(r) - wy * math.sin(r)
+        local hy = t._pt.y + wx * math.sin(r) + wy * math.cos(r)
+        -- The working end and the hand: how far each is from the ring's middle.
+        tool = string.format("%s%s end %3.0f hand %3.0f%s", which, t._mirror and "(m)" or "", math.sqrt(x * x + y * y),
+          math.sqrt(hx * hx + hy * hy),
           (t._alpha or 1) < 0.99 and string.format(" a=%.2f", t._alpha) or "")
       end
     end
@@ -134,14 +143,15 @@ if out:
         tool = lua.eval('''(function()
           for _, t in ipairs(ALL_TEX) do
             if t._parent == RING and t._shown and (tostring(t._texpath):match("Cursor") or tostring(t._texpath) == "4675625") and t._pt then
-              return { tostring(t._texpath), t._pt.x, t._pt.y, t._w, t._rot or 0, t._alpha or 1 }
+              return { tostring(t._texpath), t._pt.x, t._pt.y, t._w, t._rot or 0, t._alpha or 1, t._mirror or false }
             end
           end end)()''')
         if tool:
             import math
-            path, cx, cy, size, rot, alpha = [tool[i] for i in range(1, 7)]
+            path, cx, cy, size, rot, alpha, mirror = [tool[i] for i in range(1, 8)]
             name = 'ch_Attack' if 'Attack' in path else 'shears' if path == '4675625' else 'ch_Mine'
             spr = Image.open(os.path.join(os.environ.get('SPRITES', out), name + '_raw.png')).convert('RGBA')
+            if mirror: spr = spr.transpose(Image.FLIP_LEFT_RIGHT)
             spr = spr.resize((int(size), int(size)), Image.LANCZOS).rotate(math.degrees(rot), expand=True, resample=Image.BICUBIC)
             if alpha < 1: spr.putalpha(spr.getchannel('A').point(lambda v: int(v * alpha)))
             img = img.convert('RGBA'); img.alpha_composite(spr, (int(160 + cx - spr.size[0] / 2), int(160 - cy - spr.size[1] / 2)))
