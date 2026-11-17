@@ -6,7 +6,10 @@
   profession is getting an animation of its own on the gathering ring, starting with **skinning**:
   a knife works along the ring's edge in quick strokes, flicking off tufts of fur that tumble away,
   and when the skin comes off one last cut runs round the ring and fur sprays off all of it.
-  The gathering preview (`/circ gather`) now starts with a skinning.
+  **Mining**: a pick swings at the ring's edge, winding up and striking with a flash and a crack
+  of light that throws sparks and chips of rock; when the vein breaks the whole ring flashes and
+  rock and sparks burst off all round. The gathering preview (`/circ gather`) now starts with a
+  skinning, then a mining.
 
 - **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,
   its fill bobbing around the countdown like a float, with a tug now and then (the ring itself

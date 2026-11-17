@@ -135,11 +135,14 @@ local gatherRing = CreateLiveRing({
                 nil, nil, nil, now - (cycle - 3))
             return WithFx(st, "skinning", now - cycle, 3, now - (cycle - 3), true)
         end
-        if cycle < 8 then return State("mining", "Mining", (cycle - 5.5) / 2.5, false) end
+        if cycle < 8 then
+            return WithFx(State("mining", "Mining", (cycle - 5.5) / 2.5, false), "mining", now - (cycle - 5.5), 2.5)
+        end
         if cycle < 10.5 then
-            return State("mining", "Mining", 1, false, true, "done", nil, nil,
+            local st = State("mining", "Mining", 1, false, true, "done", nil, nil,
                 { name = "Copper Ore", count = 2, icon = "Interface\\Icons\\INV_Ore_Copper_01" },
                 nil, nil, nil, now - (cycle - 8))
+            return WithFx(st, "mining", now - (cycle - 5.5), 2.5, now - (cycle - 8), true)
         end
         return State("herb", "Herb Gathering", (cycle - 10.5) / 1.5, false)
     end,
@@ -283,7 +286,9 @@ ns.RegisterRing({
                             "When the gather finishes, show the item and how many you got."),
                         fx = Toggle(4, "gatherFx", "Profession animations",
                             "An animation for each profession while you gather. Skinning: a knife works along "
-                            .. "the ring, flicking off tufts of fur, and a last cut sprays fur off all round when it's done."),
+                            .. "the ring, flicking off tufts of fur, and a last cut sprays fur off all round when it's done. "
+                            .. "Mining: a pick strikes the ring's edge, throwing sparks and chips of rock, and the ring "
+                            .. "flashes as the vein breaks."),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),
