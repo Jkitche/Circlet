@@ -26,6 +26,7 @@ lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Cir
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 RING = nil
+RING_R = nil
 for _, f in ipairs(allFrames) do if f.sqKey == "gather" and f.fill then RING = f end end
 function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and not tostring(g._text):match("Drag") then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
 -- What the effect shows: solid bits (fur strands, rock chips), sparks, how far out the furthest is, the cut, the glint.
@@ -40,10 +41,26 @@ function FX(label)
       elseif l._sub == 2 then cut = cut + 1 end
     end
   end
-  local glint = false
-  for _, t in ipairs(ALL_TEX) do if t._parent == RING and t._shown and tostring(t._texpath):match("star4") and (t._alpha or 0) > 0.01 then glint = true end end
-  P(string.format("%-28s bits=%2d sparks=%2d furthest=%3.0f lowest=%4.0f cut=%2d glint=%-5s | %s", label, bits, sparks,
-    far, low, cut, tostring(glint), T(RING)))
+  local glint, tool = false, "-"
+  for _, t in ipairs(ALL_TEX) do
+    if t._parent == RING and t._shown and (t._alpha or 0) > 0.01 then
+      local path = tostring(t._texpath)
+      if path:match("star4") then glint = true
+      elseif path:match("Cursor") then
+        -- Where the working end (knife tip / pick point) is: from the image's middle, turned.
+        local which = path:match("Attack") and "knife" or "pick"
+        local tip = which == "knife" and { 0.03, 0.03 } or { 0.92, 0.06 }
+        local vx, vy = (tip[1] - 0.5) * t._w, (0.5 - tip[2]) * t._w
+        local r = t._rot or 0
+        local x = t._pt.x + vx * math.cos(r) - vy * math.sin(r)
+        local y = t._pt.y + vx * math.sin(r) + vy * math.cos(r)
+        tool = string.format("%s %2.0fpx, end %3.0f from middle%s", which, t._w, math.sqrt(x * x + y * y),
+          (t._alpha or 1) < 0.99 and string.format(" a=%.2f", t._alpha) or "")
+      end
+    end
+  end
+  P(string.format("%-28s bits=%2d sparks=%2d far=%3.0f low=%4.0f cut=%2d glint=%-5s %-34s | %s", label, bits, sparks,
+    far, low, cut, tostring(glint), tool, T(RING)))
 end
 function Cast(name, id, len) CAST = { name = name, s = NOW, e = NOW + len, id = id }; Fire("UNIT_SPELLCAST_START", "player", "g", id) end
 function Done(id) CAST = nil; Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", id) end
@@ -107,4 +124,19 @@ if out:
             elif layer == 'ARTWORK': col = tuple(int(255 * v * a + 44 * (1 - a)) for v in (r, g, b))
             else: continue
             d.line([(160 + x1, 160 - y1), (160 + x2, 160 - y2)], fill=col, width=max(1, int(round(w))))
+        tool = lua.eval('''(function()
+          for _, t in ipairs(ALL_TEX) do
+            if t._parent == RING and t._shown and tostring(t._texpath):match("Cursor") and t._pt then
+              return { tostring(t._texpath), t._pt.x, t._pt.y, t._w, t._rot or 0, t._alpha or 1 }
+            end
+          end end)()''')
+        if tool:
+            import math
+            path, cx, cy, size, rot, alpha = [tool[i] for i in range(1, 7)]
+            name = 'ch_Attack' if 'Attack' in path else 'ch_Mine'
+            spr = Image.open(os.path.join(os.environ.get('SPRITES', out), name + '_raw.png')).convert('RGBA')
+            spr = spr.resize((int(size), int(size)), Image.LANCZOS).rotate(math.degrees(rot), expand=True, resample=Image.BICUBIC)
+            if alpha < 1: spr.putalpha(spr.getchannel('A').point(lambda v: int(v * alpha)))
+            img = img.convert('RGBA'); img.alpha_composite(spr, (int(160 + cx - spr.size[0] / 2), int(160 - cy - spr.size[1] / 2)))
+            img = img.convert('RGB')
         img.save(os.path.join(out, '%s%d.png' % (kind, n)))

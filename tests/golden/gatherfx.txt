@@ -1,40 +1,40 @@
-skinning 0.25s               bits= 2 sparks= 0 furthest= 50 lowest= -46 cut= 0 glint=false | Skinning / 8% / Skinning
-skinning 0.50s               bits= 6 sparks= 0 furthest= 57 lowest= -52 cut= 6 glint=true  | Skinning / 16% / Skinning
-skinning 0.75s               bits=12 sparks= 0 furthest= 69 lowest= -64 cut= 0 glint=false | Skinning / 23% / Skinning
-skinning 1.00s               bits=12 sparks= 0 furthest= 87 lowest= -82 cut= 5 glint=true  | Skinning / 31% / Skinning
-skinning 1.25s               bits=14 sparks= 0 furthest= 95 lowest= -81 cut= 0 glint=false | Skinning / 39% / Skinning
-skinning 1.50s               bits=12 sparks= 0 furthest= 76 lowest= -40 cut= 6 glint=true  | Skinning / 47% / Skinning
-skinning 1.75s               bits=16 sparks= 0 furthest= 91 lowest= -60 cut= 0 glint=false | Skinning / 54% / Skinning
-skinning 2.00s               bits=10 sparks= 0 furthest= 63 lowest=   0 cut= 5 glint=true  | Skinning / 62% / Skinning
-skinning 2.25s               bits=12 sparks= 0 furthest= 64 lowest=   0 cut= 0 glint=false | Skinning / 70% / Skinning
-skinning 2.50s               bits=12 sparks= 0 furthest= 61 lowest=  -4 cut= 0 glint=false | Skinning / 78% / Skinning
-done +0.05s                  bits=18 sparks= 0 furthest= 71 lowest= -49 cut= 7 glint=true  | Skinning / Gathered
-done +0.2s (cut going round) bits=30 sparks= 0 furthest= 79 lowest= -55 cut=19 glint=true  | Light Leather / Gathered
-done +0.5s (spray)           bits=36 sparks= 0 furthest= 88 lowest= -74 cut= 0 glint=false | Light Leather / Gathered
-done +1s                     bits=30 sparks= 0 furthest=135 lowest=-129 cut= 0 glint=false | Light Leather / Gathered
-done +2.5s (fur gone)        bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Light Leather / Gathered
-interrupted +0.1s            bits=16 sparks= 0 furthest= 89 lowest= -56 cut= 0 glint=false | Skinning / Interrupted
-interrupted +2.1s            bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Skinning / Interrupted
-mining 0.125s                bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Skinning / Interrupted
-mining 0.250s                bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=true  | Mining / 10% / Mining
-mining 0.375s                bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=true  | Mining / 15% / Mining
-mining 0.500s                bits= 3 sparks= 5 furthest= 57 lowest= -29 cut= 4 glint=true  | Mining / 20% / Mining
-mining 0.625s                bits= 3 sparks= 5 furthest= 68 lowest= -36 cut= 0 glint=false | Mining / 25% / Mining
-mining 0.750s                bits= 3 sparks= 5 furthest= 81 lowest= -46 cut= 0 glint=false | Mining / 30% / Mining
-mining 0.875s                bits= 3 sparks= 2 furthest= 93 lowest= -51 cut= 0 glint=true  | Mining / 35% / Mining
-mining 1.000s                bits= 3 sparks= 0 furthest= 68 lowest= -43 cut= 0 glint=true  | Mining / 40% / Mining
-mining 1.125s                bits= 3 sparks= 5 furthest= 76 lowest= -53 cut= 4 glint=true  | Mining / 45% / Mining
-mining 1.250s                bits= 4 sparks= 5 furthest= 87 lowest= -63 cut= 4 glint=true  | Mining / 50% / Mining
-mining 1.375s                bits= 3 sparks= 5 furthest= 76 lowest=   0 cut= 0 glint=false | Mining / 55% / Mining
-mining 1.500s                bits= 3 sparks= 5 furthest= 85 lowest=   0 cut= 0 glint=true  | Mining / 60% / Mining
-mined +0.05s (heavy strike)  bits=13 sparks=16 furthest= 80 lowest= -53 cut=72 glint=true  | Mining / Gathered
-mined +0.3s (burst)          bits=15 sparks=24 furthest= 87 lowest= -87 cut=72 glint=true  | Copper Ore / ×2 / Gathered
-mined +0.7s                  bits=10 sparks= 3 furthest=134 lowest= -88 cut= 0 glint=false | Copper Ore / ×2 / Gathered
-mined +1.7s (all landed)     bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Copper Ore / ×2 / Gathered
-herb                         bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Herb Gathering / 50% / Herb Gathering
-skinning, animations off     bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Skinning / 33% / Skinning
-preview, skinning            bits=12 sparks= 0 furthest= 82 lowest= -47 cut= 0 glint=false | Skinning / 50% / Skinning
-preview, skinned             bits=32 sparks= 0 furthest= 89 lowest= -82 cut= 0 glint=false | Light Leather / Gathered
-preview, mining              bits= 6 sparks= 5 furthest= 62 lowest=   0 cut= 4 glint=true  | Mining / 60% / Mining
-preview, mined               bits= 0 sparks= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Copper Ore / ×2 / Gathered
+skinning 0.25s               bits= 2 sparks= 0 far= 50 low= -46 cut= 0 glint=false knife 34px, end  57 from middle    | Skinning / 8% / Skinning
+skinning 0.50s               bits= 6 sparks= 0 far= 57 low= -52 cut= 6 glint=false knife 34px, end  50 from middle    | Skinning / 16% / Skinning
+skinning 0.75s               bits=12 sparks= 0 far= 69 low= -64 cut= 0 glint=false knife 34px, end  71 from middle    | Skinning / 23% / Skinning
+skinning 1.00s               bits=12 sparks= 0 far= 87 low= -82 cut= 5 glint=false knife 34px, end  49 from middle    | Skinning / 31% / Skinning
+skinning 1.25s               bits=14 sparks= 0 far= 95 low= -81 cut= 0 glint=false knife 34px, end  71 from middle    | Skinning / 39% / Skinning
+skinning 1.50s               bits=12 sparks= 0 far= 76 low= -40 cut= 6 glint=false knife 34px, end  50 from middle    | Skinning / 47% / Skinning
+skinning 1.75s               bits=16 sparks= 0 far= 91 low= -60 cut= 0 glint=false knife 34px, end  57 from middle    | Skinning / 54% / Skinning
+skinning 2.00s               bits=10 sparks= 0 far= 63 low=   0 cut= 5 glint=false knife 34px, end  50 from middle    | Skinning / 62% / Skinning
+skinning 2.25s               bits=12 sparks= 0 far= 64 low=   0 cut= 0 glint=false knife 34px, end  50 from middle    | Skinning / 70% / Skinning
+skinning 2.50s               bits=12 sparks= 0 far= 61 low=  -4 cut= 0 glint=false knife 34px, end  57 from middle    | Skinning / 78% / Skinning
+done +0.05s                  bits=18 sparks= 0 far= 71 low= -49 cut= 7 glint=false knife 34px, end  50 from middle    | Skinning / Gathered
+done +0.2s (cut going round) bits=30 sparks= 0 far= 79 low= -55 cut=19 glint=false knife 34px, end  50 from middle    | Light Leather / Gathered
+done +0.5s (spray)           bits=36 sparks= 0 far= 88 low= -74 cut= 0 glint=false knife 34px, end  50 from middle a=0.53 | Light Leather / Gathered
+done +1s                     bits=30 sparks= 0 far=135 low=-129 cut= 0 glint=false -                                  | Light Leather / Gathered
+done +2.5s (fur gone)        bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Light Leather / Gathered
+interrupted +0.1s            bits=16 sparks= 0 far= 89 low= -56 cut= 0 glint=false knife 34px, end  59 from middle a=0.60 | Skinning / Interrupted
+interrupted +2.1s            bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Skinning / Interrupted
+mining 0.125s                bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Skinning / Interrupted
+mining 0.250s                bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false pick 40px, end  83 from middle     | Mining / 10% / Mining
+mining 0.375s                bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false pick 40px, end  70 from middle     | Mining / 15% / Mining
+mining 0.500s                bits= 3 sparks= 5 far= 57 low= -29 cut= 4 glint=true  pick 40px, end  52 from middle     | Mining / 20% / Mining
+mining 0.625s                bits= 3 sparks= 5 far= 68 low= -36 cut= 0 glint=false pick 40px, end  56 from middle     | Mining / 25% / Mining
+mining 0.750s                bits= 3 sparks= 5 far= 81 low= -46 cut= 0 glint=false pick 40px, end  68 from middle     | Mining / 30% / Mining
+mining 0.875s                bits= 3 sparks= 2 far= 93 low= -51 cut= 0 glint=false pick 40px, end  80 from middle     | Mining / 35% / Mining
+mining 1.000s                bits= 3 sparks= 0 far= 68 low= -43 cut= 0 glint=false pick 40px, end  84 from middle     | Mining / 40% / Mining
+mining 1.125s                bits= 3 sparks= 5 far= 76 low= -53 cut= 4 glint=true  pick 40px, end  53 from middle     | Mining / 45% / Mining
+mining 1.250s                bits= 4 sparks= 5 far= 87 low= -63 cut= 4 glint=true  pick 40px, end  51 from middle     | Mining / 50% / Mining
+mining 1.375s                bits= 3 sparks= 5 far= 76 low=   0 cut= 0 glint=false pick 40px, end  59 from middle     | Mining / 55% / Mining
+mining 1.500s                bits= 3 sparks= 5 far= 85 low=   0 cut= 0 glint=false pick 40px, end  75 from middle     | Mining / 60% / Mining
+mined +0.05s (heavy strike)  bits=13 sparks=16 far= 80 low= -53 cut=72 glint=true  pick 40px, end  52 from middle     | Mining / Gathered
+mined +0.3s (burst)          bits=15 sparks=24 far= 87 low= -87 cut=72 glint=true  pick 40px, end  52 from middle     | Copper Ore / ×2 / Gathered
+mined +0.7s                  bits=10 sparks= 3 far=134 low= -88 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
+mined +1.7s (all landed)     bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
+herb                         bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Herb Gathering / 50% / Herb Gathering
+skinning, animations off     bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Skinning / 33% / Skinning
+preview, skinning            bits=12 sparks= 0 far= 82 low= -47 cut= 0 glint=false knife 34px, end  59 from middle    | Skinning / 50% / Skinning
+preview, skinned             bits=32 sparks= 0 far= 89 low= -82 cut= 0 glint=false knife 34px, end  50 from middle a=0.40 | Light Leather / Gathered
+preview, mining              bits= 6 sparks= 5 far= 62 low=   0 cut= 4 glint=true  pick 40px, end  52 from middle     | Mining / 60% / Mining
+preview, mined               bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
 ERRORS: {}

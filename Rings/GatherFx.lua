@@ -12,16 +12,32 @@ local ADDON_NAME, ns = ...
 --     edge is at any moment); st.fxEndAt: when it ended, if it has; st.fxDone: it finished
 --     (rather than being interrupted), which plays the closing flourish.
 --
---   skinning: a knife works along the fill's edge in quick strokes, each flicking off a few
+--   skinning: a knife slashes along the fill's edge in quick strokes, each flicking off a few
 --             tufts of fur that tumble down and fade. When it's done one last cut runs round
 --             the whole ring and fur sprays off all of it.
---   mining:   a pick swings at the fill's edge: it winds up, strikes with a flash and a crack
+--   mining:   a pickaxe swings at the fill's edge: it winds up, strikes with a flash and a crack
 --             of light, and throws sparks and chips of rock that fall away. When the vein
 --             breaks a last heavy strike flashes the whole ring and rock and sparks burst off
 --             all round.
+-- The knife and the pickaxe are the game's own cursor art (the crosshair cursors, which have
+-- no pointer arrow painted on), turned about where they're held.
 
 local TAU = 2 * math.pi
 local STAR_TEX = "Interface\\Cooldown\\star4"
+
+-- The tools: the game's cursor art (32x32). Points are fractions of the image, measured from
+-- its top left: where it's held and the end that does the work.
+local TOOLS = {
+    knife = { tex = "Interface\\Cursor\\Crosshair\\Attack", fallback = "Interface\\Cursor\\Attack",
+              grip = { 0.78, 0.78 }, tip = { 0.03, 0.03 } },
+    pick  = { tex = "Interface\\Cursor\\Crosshair\\Mine", fallback = "Interface\\Cursor\\Mine",
+              grip = { 0.77, 0.875 }, tip = { 0.92, 0.06 } },
+}
+
+-- A point of the image, from its middle, in screen units (y up) for an image `size` across.
+local function FromMiddle(pt, size) return (pt[1] - 0.5) * size, (0.5 - pt[2]) * size end
+local function Turn(x, y, a) local c, s = math.cos(a), math.sin(a) return x * c - y * s, x * s + y * c end
+local function Angle(x, y) return math.atan2 and math.atan2(y, x) or math.atan(y, x) end
 
 -- A repeatable "random" number in [0, 1) for n: the same n always gives the same number.
 local function Hash(n)
@@ -43,7 +59,10 @@ local function Build(frame)
         if l.SetBlendMode then l:SetBlendMode("ADD") end
         l:Hide()
     end
-    fx.glint = frame:CreateTexture(nil, "ARTWORK", nil, 4) -- a blade's edge, a pick's strike
+    -- The tool (knife or pickaxe), over the fur and rock (3), under the sparks (5).
+    fx.tool = frame:CreateTexture(nil, "ARTWORK", nil, 4)
+    fx.tool:Hide()
+    fx.glint = frame:CreateTexture(nil, "ARTWORK", nil, 6) -- a pick's strike
     fx.glint:SetTexture(STAR_TEX)
     fx.glint:SetBlendMode("ADD")
     fx.glint:Hide()
@@ -64,6 +83,7 @@ local function HideAll()
     if not fx then return end
     for _, l in ipairs(fx.cut) do l:Hide() end
     fx.glint:Hide()
+    fx.tool:Hide()
     for _, l in ipairs(fx.bits) do l:Hide() end
     for _, l in ipairs(fx.sparks) do l:Hide() end
 end
@@ -132,6 +152,33 @@ local function Glint(frame, geom, f, size, a, rot, r, g, b)
     used.glint = true
 end
 
+-- Draws a tool `size` across, turned by `turn` (radians, counterclockwise from how the image
+-- stands) with its point `at` (its grip or tip) at (x, y).
+local function Tool(frame, which, size, turn, at, x, y, a)
+    local t = TOOLS[which]
+    if fx.toolIs ~= which then
+        if fx.tool:SetTexture(t.tex) == false then fx.tool:SetTexture(t.fallback) end
+        fx.toolIs = which
+    end
+    local mx, my = FromMiddle(t[at], size)
+    local px, py = Turn(mx, my, turn)
+    fx.tool:ClearAllPoints()
+    fx.tool:SetPoint("CENTER", frame, "CENTER", x - px, y - py)
+    fx.tool:SetSize(size, size)
+    fx.tool:SetRotation(turn)
+    fx.tool:SetAlpha(a)
+    fx.tool:Show()
+    used.tool = true
+end
+
+-- How the tool fades once the gather ends: gone `fade` seconds after `from`.
+local function ToolAlpha(now, from, fade)
+    if not from or now <= from then return 1 end
+    return math.max(0, 1 - (now - from) / fade)
+end
+
+local function Smooth(x) x = math.max(0, math.min(1, x)) return x * x * (3 - 2 * x) end
+
 ---------------------------------------------------------------- skinning
 local STROKE = 0.42      -- seconds per knife stroke
 local REACH = 0.10       -- how far back along the ring a stroke starts
@@ -167,6 +214,40 @@ local function Tuft(frame, geom, s, now, born, f, seed, burst)
     end
 end
 
+-- The knife: its tip slices along the band up to the fill's edge, then it lifts out and back
+-- for the next stroke. When it's done it runs right round the ring, then goes.
+local KNIFE_RUN = 0.35
+local function Knife(st, frame, geom, now, s, start, stopAt)
+    local f, lift, a
+    if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
+        f, lift = math.min(1, (now - st.fxEndAt) / KNIFE_RUN), 0
+        a = ToolAlpha(now, st.fxEndAt + KNIFE_RUN, 0.25)
+    else
+        local t = math.min(now, stopAt)
+        local i = math.floor((t - start) / STROKE)
+        local p = (t - (start + i * STROKE)) / STROKE
+        local e = Edge(st, t)
+        if p < 0.45 then
+            f, lift = e - REACH * (1 - p / 0.45) ^ 2, 0
+        else
+            local q = Smooth((p - 0.45) / 0.55)
+            f, lift = e - REACH * q, math.sin(math.pi * q)
+        end
+        a = ToolAlpha(now, st.fxEndAt, 0.25)
+    end
+    if a <= 0 then return end
+    local x, y, ox, oy, tx, ty = Frame3(geom, math.max(0, f))
+    -- Slicing, the blade lies nearly along the ring with its tip in; lifted, it tilts up and away.
+    local along, inward = 0.75 - 0.3 * lift, 0.65 - 0.5 * lift
+    local dx, dy = tx * along - ox * inward, ty * along - oy * inward
+    local h = lift * geom.T * 2.2
+    local t = TOOLS.knife
+    local gx, gy = FromMiddle(t.grip, 1)
+    local kx, ky = FromMiddle(t.tip, 1)
+    local turn = Angle(dx, dy) - Angle(kx - gx, ky - gy)
+    Tool(frame, "knife", 34 * s, turn, "tip", x + ox * h, y + oy * h, a)
+end
+
 local function Skinning(st, frame, geom, now, s)
     local start = st.fxStart or now
     local stopAt = st.fxEndAt or math.huge
@@ -183,18 +264,17 @@ local function Skinning(st, frame, geom, now, s)
             end
         end
         if i == k and now < stopAt then
-            -- The knife: slides up to the edge, then lifts away.
+            -- The knife slices along the band up to the edge, leaving a bright cut behind it.
             local p = (now - ks) / STROKE
             if p < 0.55 then
                 local e = Edge(st, now)
                 local ease = 1 - (1 - math.min(1, p / 0.45)) ^ 2
                 local head = e - REACH * (1 - ease)
-                local a = math.sin(math.pi * p / 0.55)
-                Cut(frame, geom, head - 0.06, head, 0.85 * a)
-                Glint(frame, geom, math.max(0, head), geom.T * 2.2, a, now * 4)
+                Cut(frame, geom, head - 0.06, head, 0.85 * math.sin(math.pi * p / 0.55))
             end
         end
     end
+    Knife(st, frame, geom, now, s, start, stopAt)
 
     -- Done: one last cut round the whole ring, spraying fur as it passes.
     if st.fxDone and st.fxEndAt then
@@ -204,7 +284,6 @@ local function Skinning(st, frame, geom, now, s)
             local head = d / RUN
             local a = d < RUN and 1 or (1 - (d - RUN) / 0.15)
             Cut(frame, geom, head - 0.25, head, 0.9 * a)
-            if d < RUN then Glint(frame, geom, head, geom.T * 2.8, a, now * 4) end
         end
         local N = 14
         for j = 1, N do
@@ -257,6 +336,53 @@ local function Chip(frame, geom, s, now, born, f, seed, burst)
     Put(fx.bits, "bits", frame, px - hx, py - hy, px + hx, py + hy, math.max(1.5, size * 0.8), c[1], c[2], c[3], a)
 end
 
+-- The pickaxe: held outside the ring, it raises, swings down so its point lands on the fill's
+-- edge as the strike lands, bounces back a little, and settles ready for the next. When the
+-- vein breaks it lands one last time on the ring's end, then goes.
+local PICK_RAISE = 1.1 -- radians it's raised at the top of the swing
+local function PickAngle(p)
+    if p < 0.45 then return PICK_RAISE * (0.3 + 0.7 * (1 - (1 - p / 0.45) ^ 2)) end -- raising
+    if p < WIND then return PICK_RAISE * (1 - ((p - 0.45) / (WIND - 0.45)) ^ 2) end -- the swing
+    if p < 0.75 then return PICK_RAISE * 0.15 * math.sin(math.pi * (p - WIND) / (0.75 - WIND)) end -- the bounce
+    return PICK_RAISE * 0.3 * Smooth((p - 0.75) / 0.25) -- getting ready again
+end
+
+local function Pickaxe(st, frame, geom, now, s, start, stopAt)
+    local f, raise, a
+    if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
+        local d = now - st.fxEndAt
+        f, raise = 1, PICK_RAISE * 0.25 * math.sin(math.pi * math.min(1, d / 0.3))
+        a = ToolAlpha(now, st.fxEndAt + 0.3, 0.3)
+    else
+        local t = math.min(now, stopAt)
+        local i = math.floor((t - start) / SWING)
+        f, raise = Edge(st, t), PickAngle((t - (start + i * SWING)) / SWING)
+        a = ToolAlpha(now, st.fxEndAt, 0.25)
+    end
+    if a <= 0 then return end
+    local size = 40 * s
+    local tool = TOOLS.pick
+    local gx, gy = FromMiddle(tool.grip, size)
+    local kx, ky = FromMiddle(tool.tip, size)
+    local vx, vy = kx - gx, ky - gy -- grip to point
+    local len = math.sqrt(vx * vx + vy * vy)
+    local x, y, ox, oy, tx, ty = Frame3(geom, f)
+    -- Hold it outside the ring, to one side, so the point lands on the edge. Raising turns it
+    -- counterclockwise (the image's point leads when it turns clockwise); take the side where
+    -- raising lifts the point away from the ring rather than through it.
+    local best, bestTurn, bestGx, bestGy
+    for side = -1, 1, 2 do
+        local hx, hy = ox * 0.6 + tx * 0.8 * side, oy * 0.6 + ty * 0.8 * side
+        local hl = math.sqrt(hx * hx + hy * hy)
+        local Gx, Gy = x + hx / hl * len, y + hy / hl * len
+        local hit = Angle(x - Gx, y - Gy) - Angle(vx, vy)
+        local rx, ry = Turn(vx, vy, hit + PICK_RAISE)
+        local away = (Gx + rx) ^ 2 + (Gy + ry) ^ 2 -- the raised point's distance from the middle
+        if not best or away > best then best, bestTurn, bestGx, bestGy = away, hit, Gx, Gy end
+    end
+    Tool(frame, "pick", size, bestTurn + raise, "grip", bestGx, bestGy, a)
+end
+
 local function Mining(st, frame, geom, now, s)
     local start = st.fxStart or now
     local stopAt = st.fxEndAt or math.huge
@@ -273,11 +399,7 @@ local function Mining(st, frame, geom, now, s)
         if i == k and now < stopAt then
             local e = Edge(st, now)
             local p = (now - ks) / SWING
-            if p < WIND then
-                -- Winding up: a faint glint gathering at the edge.
-                local w = p / WIND
-                Glint(frame, geom, e, geom.T * (1 + 0.6 * w), 0.35 * w * w, 0.3, 1, 0.9, 0.7)
-            elseif p < WIND + 0.25 then
+            if p >= WIND and p < WIND + 0.25 then
                 -- The strike: a flash that shrinks, and a short crack of light along the edge.
                 local d = (p - WIND) / 0.25
                 Glint(frame, geom, e, geom.T * (3.4 - 1.6 * d), 1 - d, 0.3 + d * 0.5, 1, 0.92, 0.65)
@@ -285,6 +407,8 @@ local function Mining(st, frame, geom, now, s)
             end
         end
     end
+
+    Pickaxe(st, frame, geom, now, s, start, stopAt)
 
     -- Done: the vein breaks. A heavy strike flashes the whole ring, and rock and sparks burst
     -- off all round.
@@ -316,6 +440,7 @@ local function DrawGatherFx(st, frame, geom)
     draw(st, frame, geom, GetTime(), math.max(0.4, geom.R / 50)) -- sizes and speeds follow the ring's size
     if not used.cut then for _, l in ipairs(fx.cut) do l:Hide() end end
     if not used.glint then fx.glint:Hide() end
+    if not used.tool then fx.tool:Hide() end
     for i = used.bits + 1, BITS do fx.bits[i]:Hide() end
     for i = used.sparks + 1, SPARKS do fx.sparks[i]:Hide() end
 end

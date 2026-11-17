@@ -71,8 +71,8 @@ then fade away, or stay up as a permanent display.
 **Crafting, gathering and casting**
 - **Crafting**: progress through a batch (single crafts optional), with the item's icon.
 - **Gathering**: mining, herbalism and skinning, then what you got. Each profession gets an
-  animation of its own: skinning's knife strokes along the ring, flicking off tufts of fur;
-  mining's pick strikes the ring's edge in sparks and chips of rock.
+  animation of its own: a knife slashes along the ring for skinning, flicking off tufts of fur;
+  a pickaxe strikes the ring's edge for mining, in sparks and chips of rock.
 - **Fishing**: counts down the cast with the fill bobbing like a float, flashes in the usual
   bite windows, then shows the catch. Optionally, right-click anywhere to reel in (out of combat only).
 - **Casts**: casts and channels, timed even in combat. Spell school effects (fire, frost, arcane,
