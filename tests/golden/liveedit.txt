@@ -349,7 +349,7 @@ all on again
   #15 shown=true a=1.00 strata=TOOLTIP mouse=true | Tea / 4:52 / remaining
   #16 shown=true a=1.00 strata=TOOLTIP mouse=true | Mana regen / 4.7s / No regen
   #17 shown=true a=1.00 strata=TOOLTIP mouse=true | Heavy Linen Bandage / 0 / 8 / 8 to go
-  #18 shown=true a=1.00 strata=TOOLTIP mouse=true | Mining / 12% / Mining
+  #18 shown=true a=1.00 strata=TOOLTIP mouse=true | Skinning / 10% / Skinning
   #19 shown=true a=1.00 strata=TOOLTIP mouse=true | Fishing / 20 / Waiting for a bite
   #20 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Casting
   #21 shown=true a=1.00 strata=TOOLTIP mouse=true | Fireball / 2.2 / Defias Conjurer
@@ -382,7 +382,7 @@ after Esc
   #15 shown=true a=1.00 strata=LOW mouse=false | Tea / 4:52 / remaining
   #16 shown=true a=1.00 strata=LOW mouse=false | Mana regen / 4.7s / No regen
   #17 shown=true a=0.60 strata=LOW mouse=false | Heavy Linen Bandage / 0 / 8 / 8 to go
-  #18 shown=true a=0.60 strata=LOW mouse=false | Mining / 12% / Mining
+  #18 shown=true a=0.60 strata=LOW mouse=false | Skinning / 10% / Skinning
   #19 shown=true a=0.60 strata=LOW mouse=false | Fishing / 20 / Waiting for a bite
   #20 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Casting
   #21 shown=true a=1.00 strata=LOW mouse=false | Fireball / 2.2 / Defias Conjurer

@@ -50,6 +50,7 @@ Rings\Clock.lua
 Rings\Timer.lua
 Rings\ManaRegen.lua
 Rings\Craft.lua
+Rings\GatherFx.lua
 Rings\Gather.lua
 Rings\Fishing.lua
 Rings\CastSchools.lua

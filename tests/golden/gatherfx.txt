@@ -1,0 +1,22 @@
+skinning 0.25s               tufts= 1 furthest= 50 lowest= -46 cut= 0 glint=false | Skinning / 8% / Skinning
+skinning 0.50s               tufts= 3 furthest= 57 lowest= -52 cut= 6 glint=true  | Skinning / 16% / Skinning
+skinning 0.75s               tufts= 6 furthest= 69 lowest= -64 cut= 0 glint=false | Skinning / 23% / Skinning
+skinning 1.00s               tufts= 6 furthest= 87 lowest= -82 cut= 5 glint=true  | Skinning / 31% / Skinning
+skinning 1.25s               tufts= 7 furthest= 95 lowest= -81 cut= 0 glint=false | Skinning / 39% / Skinning
+skinning 1.50s               tufts= 6 furthest= 76 lowest= -40 cut= 6 glint=true  | Skinning / 47% / Skinning
+skinning 1.75s               tufts= 8 furthest= 91 lowest= -60 cut= 0 glint=false | Skinning / 54% / Skinning
+skinning 2.00s               tufts= 5 furthest= 63 lowest=   0 cut= 5 glint=true  | Skinning / 62% / Skinning
+skinning 2.25s               tufts= 6 furthest= 64 lowest=   0 cut= 0 glint=false | Skinning / 70% / Skinning
+skinning 2.50s               tufts= 6 furthest= 61 lowest=  -4 cut= 0 glint=false | Skinning / 78% / Skinning
+done +0.05s                  tufts= 9 furthest= 71 lowest= -49 cut= 7 glint=true  | Skinning / Gathered
+done +0.2s (cut going round) tufts=15 furthest= 79 lowest= -55 cut=19 glint=true  | Light Leather / Gathered
+done +0.5s (spray)           tufts=18 furthest= 88 lowest= -74 cut= 0 glint=false | Light Leather / Gathered
+done +1s                     tufts=15 furthest=135 lowest=-129 cut= 0 glint=false | Light Leather / Gathered
+done +2.5s (fur gone)        tufts= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Light Leather / Gathered
+interrupted +0.1s            tufts= 8 furthest= 89 lowest= -56 cut= 0 glint=false | Skinning / Interrupted
+interrupted +2.1s            tufts= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Skinning / Interrupted
+mining                       tufts= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Mining / 50% / Mining
+skinning, animations off     tufts= 0 furthest=  0 lowest=   0 cut= 0 glint=false | Skinning / 33% / Skinning
+preview, skinning            tufts= 6 furthest= 82 lowest= -47 cut= 0 glint=false | Skinning / 50% / Skinning
+preview, skinned             tufts=16 furthest= 89 lowest= -82 cut= 0 glint=false | Light Leather / Gathered
+ERRORS: {}

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Gathering animations** (new; on by default, Gathering > Profession animations). Each gathering
+  profession is getting an animation of its own on the gathering ring, starting with **skinning**:
+  a knife works along the ring's edge in quick strokes, flicking off tufts of fur that tumble away,
+  and when the skin comes off one last cut runs round the ring and fur sprays off all of it.
+  The gathering preview (`/circ gather`) now starts with a skinning.
+
 - **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,
   its fill bobbing around the countdown like a float, with a tug now and then (the ring itself
   stays put). The game doesn't tell addons when a fish bites, so the ring flashes "Watch the bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds

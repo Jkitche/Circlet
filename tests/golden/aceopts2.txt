@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=68 execute=142 range=249 select=82 toggle=190
+counts: color=68 execute=142 range=249 select=82 toggle=191
 general (General)
 progress (Progress rings)
   xp (XP)

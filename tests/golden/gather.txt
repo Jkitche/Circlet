@@ -8,7 +8,7 @@ reeling: Fishing / Reeling in
 caught: Raw Brilliant Smallfish / Caught!
 no catch: Fishing / Nothing caught
 session gathers: 2
-preview: Mining / 40% / Mining
-preview2: Copper Ore / ×2 / Gathered
-edit: Mining / 20% / Mining
+preview: Skinning / 33% / Skinning
+preview2: Light Leather / Gathered
+edit: Skinning / 17% / Skinning
 ERRORS: {}

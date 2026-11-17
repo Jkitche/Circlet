@@ -35,7 +35,7 @@ Show("cast, background 70%", "cast", "FlameBolt", "cast")
 CircletDB.castIconBg = false
 Show("cast, back to badge", "cast", "FlameBolt", "cast")
 CircletDB.gatherIconBg = true
-Show("gather, background", "gather", "Mining", "gather")
+Show("gather, background", "gather", "Pelt", "gather")
 CircletDB.skillIconStyle = "game"
 Show("skill, badge", "skill", "Icons", "skill")
 CircletDB.skillIconBg = true

@@ -101,6 +101,15 @@ local function State(kind, title, frac, channel, ended, how, lost, endedAt, loot
     return st
 end
 
+-- The profession's animation (Rings/GatherFx.lua), while gatherFx is on: when the gather
+-- started and how long it takes, and when and how it ended.
+local function WithFx(st, kind, start, span, endAt, done)
+    if st and db.gatherFx and start and span and ns.GATHER_FX and ns.GATHER_FX[kind] then
+        st.gatherFx, st.fxStart, st.fxSpan, st.fxEndAt, st.fxDone = kind, start, span, endAt, done
+    end
+    return st
+end
+
 local gatherRing = CreateLiveRing({
     key = "gather",
     read = function(now)
@@ -109,20 +118,32 @@ local gatherRing = CreateLiveRing({
             return nil -- end state shown; the ring holds it
         end
         local waiting = g.lootUntil and now < g.lootUntil - 0.15
-        return State(g.kind, LABELS[g.kind], Progress(now), g.channel, g.endedAt ~= nil, g.how, g.lost, g.endedAt,
+        local st = State(g.kind, LABELS[g.kind], Progress(now), g.channel, g.endedAt ~= nil, g.how, g.lost, g.endedAt,
             db.gatherLoot and g.loot or nil, waiting, g.loot ~= nil,
             g.finish and math.max(0, g.finish - now) or nil, g.doneAt)
+        return WithFx(st, g.kind, g.start, g.start and g.finish and g.finish - g.start, g.endedAt, g.how == "done")
     end,
     sample = function(t)
-        local cycle = t % 7
-        if cycle < 2.5 then return State("mining", "Mining", cycle / 2.5, false) end
-        if cycle < 5 then
+        -- Skinning, then mining, each with what you got, then an herb on its way.
+        local now, cycle = GetTime(), t % 12
+        if cycle < 3 then
+            return WithFx(State("skinning", "Skinning", cycle / 3, false), "skinning", now - cycle, 3)
+        end
+        if cycle < 5.5 then
+            local st = State("skinning", "Skinning", 1, false, true, "done", nil, nil,
+                { name = "Light Leather", count = 1, icon = "Interface\\Icons\\INV_Misc_LeatherScrap_03" },
+                nil, nil, nil, now - (cycle - 3))
+            return WithFx(st, "skinning", now - cycle, 3, now - (cycle - 3), true)
+        end
+        if cycle < 8 then return State("mining", "Mining", (cycle - 5.5) / 2.5, false) end
+        if cycle < 10.5 then
             return State("mining", "Mining", 1, false, true, "done", nil, nil,
                 { name = "Copper Ore", count = 2, icon = "Interface\\Icons\\INV_Ore_Copper_01" },
-                nil, nil, nil, GetTime() - (cycle - 2.5))
+                nil, nil, nil, now - (cycle - 8))
         end
-        return State("herb", "Herb Gathering", (cycle - 5) / 1.5, false)
+        return State("herb", "Herb Gathering", (cycle - 10.5) / 1.5, false)
     end,
+    decorate = function(st, frame, geom) ns.DrawGatherFx(st, frame, geom) end,
 })
 
 local function End(how)
@@ -230,6 +251,7 @@ ns.RegisterRing({
         gatherEnabled   = true,
         gatherIcon      = true,  -- profession / item icon in the middle
         gatherLoot      = true,  -- show what you gathered when it finishes
+        gatherFx        = true,  -- an animation for each profession (Rings/GatherFx.lua)
         gatherSize      = 110,
         gatherThickness = 11,
         gatherOpacity   = 100,
@@ -252,13 +274,16 @@ ns.RegisterRing({
                 .. "Fishing drains as the bobber waits. When it finishes it shows what you got (Copper Ore ×2). "
                 .. "Interrupting a gather flashes the progress you lost.",
                 MergeTop(TopRow("gather", "gathering ring", ns.PreviewGatherRing,
-                    "Show a sample mining and herb gather. Also /circ gather."), {
+                    "Show a sample skinning, mining and herb gather. Also /circ gather."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "gatherEnabled", "Show gathering ring", "Show the ring while gathering or fishing."),
                         icon = Toggle(2, "gatherIcon", "Show icon",
                             "The profession's icon while gathering, and the item's icon when it's done."),
                         loot = Toggle(3, "gatherLoot", "Show what you got",
                             "When the gather finishes, show the item and how many you got."),
+                        fx = Toggle(4, "gatherFx", "Profession animations",
+                            "An animation for each profession while you gather. Skinning: a knife works along "
+                            .. "the ring, flicking off tufts of fur, and a last cut sprays fur off all round when it's done."),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),
