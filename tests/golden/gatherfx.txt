@@ -1,5 +1,5 @@
 skinning 0.25s               bits= 2 sparks= 0 far= 50 low=   0 cut= 0 glint=false knife end  57 hand  68             | Skinning / 8% / Skinning
-skinning 0.50s               bits= 6 sparks= 0 far= 59 low=   0 cut= 5 glint=false knife end  49 hand  68             | Skinning / 16% / Skinning
+skinning 0.50s               bits= 6 sparks= 0 far= 59 low=   0 cut= 5 glint=false knife end  50 hand  68             | Skinning / 16% / Skinning
 skinning 0.75s               bits=12 sparks= 0 far= 63 low=   0 cut= 0 glint=false knife end  71 hand  67             | Skinning / 23% / Skinning
 skinning 1.00s               bits=12 sparks= 0 far= 64 low=   0 cut= 6 glint=false knife end  50 hand  68             | Skinning / 31% / Skinning
 skinning 1.25s               bits=14 sparks= 0 far= 65 low=   0 cut= 0 glint=false knife end  71 hand  67             | Skinning / 39% / Skinning
@@ -9,7 +9,7 @@ skinning 2.00s               bits=10 sparks= 0 far= 63 low=   0 cut= 5 glint=fal
 skinning 2.25s               bits=12 sparks= 0 far= 69 low=   0 cut= 0 glint=false knife end  50 hand  68             | Skinning / 70% / Skinning
 skinning 2.50s               bits=12 sparks= 0 far= 74 low=   0 cut= 0 glint=false knife end  57 hand  68             | Skinning / 78% / Skinning
 done +0.05s                  bits=18 sparks= 0 far= 66 low=   0 cut= 7 glint=false knife end  50 hand  68             | Skinning / Gathered
-done +0.2s (cut going round) bits=30 sparks= 0 far= 68 low= -48 cut=19 glint=false knife end  49 hand  68             | Light Leather / Gathered
+done +0.2s (cut going round) bits=30 sparks= 0 far= 68 low= -48 cut=19 glint=false knife end  50 hand  68             | Light Leather / Gathered
 done +0.5s (spray)           bits=36 sparks= 0 far= 68 low= -65 cut= 0 glint=false knife end  50 hand  68 a=0.53      | Light Leather / Gathered
 done +1s                     bits=30 sparks= 0 far=116 low=-115 cut= 0 glint=false -                                  | Light Leather / Gathered
 done +2.5s (fur gone)        bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Light Leather / Gathered

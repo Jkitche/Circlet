@@ -30,6 +30,10 @@ RING = nil
 RING_R = nil
 for _, f in ipairs(allFrames) do if f.sqKey == "gather" and f.fill then RING = f end end
 function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and not tostring(g._text):match("Drag") then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
+-- A distance to the nearest pixel, the same on every system: snapped to a fine grid first, so
+-- one that lands on a half (the knife's tip sits on the ring's middle line, 49.5 out) can't
+-- round up on one system's maths and down on another's.
+function Px(v) return math.floor(math.floor(v * 1000 + 0.5) / 1000 + 0.5) end
 -- What the effect shows: solid bits (fur strands, rock chips), sparks, how far out the furthest is, the cut, the glint.
 function FX(label)
   if not RING._shown then P(string.format("%-28s (hidden)", label)) return end
@@ -62,14 +66,14 @@ function FX(label)
         local hx = t._pt.x + wx * math.cos(r) - wy * math.sin(r)
         local hy = t._pt.y + wx * math.sin(r) + wy * math.cos(r)
         -- The working end and the hand: how far each is from the ring's middle.
-        tool = string.format("%s%s end %3.0f hand %3.0f%s", which, t._mirror and "(m)" or "", math.sqrt(x * x + y * y),
-          math.sqrt(hx * hx + hy * hy),
+        tool = string.format("%s%s end %3d hand %3d%s", which, t._mirror and "(m)" or "", Px(math.sqrt(x * x + y * y)),
+          Px(math.sqrt(hx * hx + hy * hy)),
           (t._alpha or 1) < 0.99 and string.format(" a=%.2f", t._alpha) or "")
       end
     end
   end
-  P(string.format("%-28s bits=%2d sparks=%2d far=%3.0f low=%4.0f cut=%2d glint=%-5s %-34s | %s", label, bits, sparks,
-    far, low, cut, tostring(glint), tool, T(RING)))
+  P(string.format("%-28s bits=%2d sparks=%2d far=%3d low=%4d cut=%2d glint=%-5s %-34s | %s", label, bits, sparks,
+    Px(far), Px(low), cut, tostring(glint), tool, T(RING)))
 end
 function Cast(name, id, len) CAST = { name = name, s = NOW, e = NOW + len, id = id }; Fire("UNIT_SPELLCAST_START", "player", "g", id) end
 function Done(id) CAST = nil; Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", id) end
