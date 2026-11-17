@@ -46,10 +46,10 @@ function FX(label)
     if t._parent == RING and t._shown and (t._alpha or 0) > 0.01 then
       local path = tostring(t._texpath)
       if path:match("star4") then glint = true
-      elseif path:match("Cursor") then
-        -- Where the working end (knife tip / pick point) is: from the image's middle, turned.
-        local which = path:match("Attack") and "knife" or "pick"
-        local tip = which == "knife" and { 0.03, 0.03 } or { 0.92, 0.06 }
+      elseif path:match("Cursor") or path == "4675625" then
+        -- Where the working end (knife tip / pick point / shears' jaws) is: from the image's middle, turned.
+        local which = path:match("Attack") and "knife" or path == "4675625" and "shears" or "pick"
+        local tip = ({ knife = { 0.03, 0.03 }, pick = { 0.92, 0.06 }, shears = { 0.19, 0.19 } })[which]
         local vx, vy = (tip[1] - 0.5) * t._w, (0.5 - tip[2]) * t._w
         local r = t._rot or 0
         local x = t._pt.x + vx * math.cos(r) - vy * math.sin(r)
@@ -86,8 +86,15 @@ Advance(0.5); Done(2575); Advance(0.05); FX("mined +0.05s (heavy strike)")
 Fire("CHAT_MSG_LOOT", "You receive loot: |cffffffff|Hitem:2770::|h[Copper Ore]|h|rx2.")
 Advance(0.25); FX("mined +0.3s (burst)"); Advance(0.4); FX("mined +0.7s"); Advance(1); FX("mined +1.7s (all landed)")
 Advance(5)
--- Herbalism has no animation yet; the option turns them off.
-Cast("Herb Gathering", 2366, 2); Advance(1); FX("herb"); Done(2366); Advance(5)
+-- Herbalism: the shears move in, snip (a little flash, leaves and petals cut loose), pull back;
+-- the last snip sends a gust of leaves off the whole ring.
+Cast("Herb Gathering", 2366, 2)
+for i = 1, 8 do Advance(0.15); FX(string.format("herb %.2fs", i * 0.15)) end
+Advance(0.85); Done(2366); Advance(0.05); FX("picked +0.05s (last snip)")
+Fire("CHAT_MSG_LOOT", "You receive loot: |cffffffff|Hitem:2447::|h[Peacebloom]|h|rx3.")
+Advance(0.35); FX("picked +0.4s (gust)"); Advance(0.8); FX("picked +1.2s"); Advance(1.2); FX("picked +2.4s (all landed)")
+Advance(5)
+-- The option turns them off.
 CircletDB.gatherFx = false
 Cast("Skinning", 8613, 3); Advance(1); FX("skinning, animations off"); Done(8613); Advance(5)
 CircletDB.gatherFx = true
@@ -102,7 +109,7 @@ out = os.environ.get('RENDER')
 if out:
     from PIL import Image, ImageDraw
     kind = os.environ.get('RENDER_KIND', 'skinning')
-    spell = {'skinning': ('Skinning', 8613), 'mining': ('Mining', 2575)}[kind]
+    spell = {'skinning': ('Skinning', 8613), 'mining': ('Mining', 2575), 'herb': ('Herb Gathering', 2366)}[kind]
     lua.execute('Advance(20); Cast("%s", %d, 3)' % spell)
     for n, step in enumerate([0.9, 0.12, 0.12, 0.12, 0.6]):
         lua.execute('Advance(%f)' % step)
@@ -126,14 +133,14 @@ if out:
             d.line([(160 + x1, 160 - y1), (160 + x2, 160 - y2)], fill=col, width=max(1, int(round(w))))
         tool = lua.eval('''(function()
           for _, t in ipairs(ALL_TEX) do
-            if t._parent == RING and t._shown and tostring(t._texpath):match("Cursor") and t._pt then
+            if t._parent == RING and t._shown and (tostring(t._texpath):match("Cursor") or tostring(t._texpath) == "4675625") and t._pt then
               return { tostring(t._texpath), t._pt.x, t._pt.y, t._w, t._rot or 0, t._alpha or 1 }
             end
           end end)()''')
         if tool:
             import math
             path, cx, cy, size, rot, alpha = [tool[i] for i in range(1, 7)]
-            name = 'ch_Attack' if 'Attack' in path else 'ch_Mine'
+            name = 'ch_Attack' if 'Attack' in path else 'shears' if path == '4675625' else 'ch_Mine'
             spr = Image.open(os.path.join(os.environ.get('SPRITES', out), name + '_raw.png')).convert('RGBA')
             spr = spr.resize((int(size), int(size)), Image.LANCZOS).rotate(math.degrees(rot), expand=True, resample=Image.BICUBIC)
             if alpha < 1: spr.putalpha(spr.getchannel('A').point(lambda v: int(v * alpha)))

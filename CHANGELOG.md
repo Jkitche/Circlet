@@ -8,7 +8,9 @@
   flicking off tufts of fur that tumble away, and when the skin comes off it runs right round the
   ring in one last cut that sprays fur off all of it. **Mining**: a pickaxe swings at the ring's
   edge, raising and striking with a flash and a crack of light that throws sparks and chips of
-  rock; when the vein breaks the whole ring flashes and rock and sparks burst off all round. The gathering preview (`/circ gather`) now starts with a
+  rock; when the vein breaks the whole ring flashes and rock and sparks burst off all round.
+  **Herbalism**: pruning shears snip at the ring's edge, each snip cutting leaves and petals loose
+  to flutter down; the last snip sends a gust of them off the whole ring. The gathering preview (`/circ gather`) now starts with a
   skinning, then a mining.
 
 - **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,

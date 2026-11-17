@@ -31,7 +31,18 @@ mined +0.05s (heavy strike)  bits=13 sparks=16 far= 80 low= -53 cut=72 glint=tru
 mined +0.3s (burst)          bits=15 sparks=24 far= 87 low= -87 cut=72 glint=true  pick 40px, end  52 from middle     | Copper Ore / ×2 / Gathered
 mined +0.7s                  bits=10 sparks= 3 far=134 low= -88 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
 mined +1.7s (all landed)     bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
-herb                         bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Herb Gathering / 50% / Herb Gathering
+herb 0.15s                   (hidden)
+herb 0.30s                   bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Copper Ore / ×2 / Gathered
+herb 0.45s                   bits= 5 sparks= 0 far= 57 low= -45 cut= 0 glint=false shears 34px, end  70 from middle   | Herb Gathering / 20% / Herb Gathering
+herb 0.60s                   bits= 5 sparks= 0 far= 60 low= -45 cut= 0 glint=false shears 34px, end  68 from middle   | Herb Gathering / 27% / Herb Gathering
+herb 0.75s                   bits= 6 sparks= 0 far= 62 low= -46 cut= 0 glint=true  shears 32px, end  55 from middle   | Herb Gathering / 33% / Herb Gathering
+herb 0.90s                   bits=10 sparks= 0 far= 64 low= -48 cut= 0 glint=true  shears 34px, end  65 from middle   | Herb Gathering / 40% / Herb Gathering
+herb 1.05s                   bits=10 sparks= 0 far= 67 low= -51 cut= 0 glint=false shears 34px, end  72 from middle   | Herb Gathering / 47% / Herb Gathering
+herb 1.20s                   bits=10 sparks= 0 far= 74 low= -56 cut= 0 glint=false shears 32px, end  55 from middle   | Herb Gathering / 53% / Herb Gathering
+picked +0.05s (last snip)    bits=18 sparks= 0 far= 84 low= -31 cut=72 glint=true  shears 31px, end  55 from middle   | Herb Gathering / Gathered
+picked +0.4s (gust)          bits=28 sparks= 0 far= 77 low= -50 cut= 0 glint=false shears 34px, end  55 from middle a=0.44 | Peacebloom / ×3 / Gathered
+picked +1.2s                 bits=18 sparks= 0 far=101 low= -87 cut= 0 glint=false -                                  | Peacebloom / ×3 / Gathered
+picked +2.4s (all landed)    bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Peacebloom / ×3 / Gathered
 skinning, animations off     bits= 0 sparks= 0 far=  0 low=   0 cut= 0 glint=false -                                  | Skinning / 33% / Skinning
 preview, skinning            bits=12 sparks= 0 far= 82 low= -47 cut= 0 glint=false knife 34px, end  59 from middle    | Skinning / 50% / Skinning
 preview, skinned             bits=32 sparks= 0 far= 89 low= -82 cut= 0 glint=false knife 34px, end  50 from middle a=0.40 | Light Leather / Gathered

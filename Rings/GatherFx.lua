@@ -19,8 +19,10 @@ local ADDON_NAME, ns = ...
 --             of light, and throws sparks and chips of rock that fall away. When the vein
 --             breaks a last heavy strike flashes the whole ring and rock and sparks burst off
 --             all round.
--- The knife and the pickaxe are the game's own cursor art (the crosshair cursors, which have
--- no pointer arrow painted on), turned about where they're held.
+--   herb:     pruning shears snip at the fill's edge, each snip sending leaves and petals
+--             fluttering down. The last snip sends a gust of them off the whole ring.
+-- The tools are the game's own cursor art (the crosshair cursors, which have no pointer arrow
+-- painted on), turned about where they're held.
 
 local TAU = 2 * math.pi
 local STAR_TEX = "Interface\\Cooldown\\star4"
@@ -32,6 +34,9 @@ local TOOLS = {
               grip = { 0.78, 0.78 }, tip = { 0.03, 0.03 } },
     pick  = { tex = "Interface\\Cursor\\Crosshair\\Mine", fallback = "Interface\\Cursor\\Mine",
               grip = { 0.77, 0.875 }, tip = { 0.92, 0.06 } },
+    -- Gold pruning shears (a crosshair cursor known only by its file ID): jaws at the top left.
+    shears = { tex = 4675625, fallback = "Interface\\Cursor\\GatherHerbs",
+               grip = { 0.75, 0.75 }, tip = { 0.19, 0.19 } },
 }
 
 -- A point of the image, from its middle, in screen units (y up) for an image `size` across.
@@ -429,7 +434,116 @@ local function Mining(st, frame, geom, now, s)
     end
 end
 
-local DRAW = { skinning = Skinning, mining = Mining }
+---------------------------------------------------------------- herbalism
+local SNIP = 0.45        -- seconds per snip
+local SNIP_AT = 0.42     -- of a snip: when the jaws close
+local LEAVES_PER = 3     -- leaves cut loose each snip
+local PETALS_PER = 2     -- and petals
+local KEEP_SNIPS = 4     -- snips whose leaves can still be falling
+local LEAF = {
+    { 0.35, 0.65, 0.25 }, -- green
+    { 0.24, 0.50, 0.20 }, -- dark green
+    { 0.52, 0.76, 0.30 }, -- light green
+}
+local PETAL = {
+    { 0.96, 0.95, 0.88 }, -- white
+    { 1.00, 0.84, 0.30 }, -- yellow
+    { 0.95, 0.60, 0.75 }, -- pink
+    { 0.76, 0.62, 0.95 }, -- lavender
+}
+
+-- A leaf or petal: cut loose, it floats out and flutters down, swaying and turning.
+local function Leaf(frame, geom, s, now, born, f, seed, petal, gust)
+    local age = now - born
+    local life = (gust and 1.4 or 1.0) + 0.5 * Hash(seed + 0.1)
+    if age < 0 or age > life then return end
+    local out = ((gust and 26 or 14) + 16 * Hash(seed + 0.2)) * s
+    local along = (Hash(seed + 0.3) - 0.5) * 30 * s
+    local px, py = Thrown(geom, f, age, out, along, (gust and 38 or 24) * s, -60 * s)
+    local sway = math.sin(age * 5 + seed * 3) * 5 * s * math.min(1, age * 2)
+    px = px + sway
+    local spin = Hash(seed + 0.4) * TAU + math.sin(age * 4 + seed) * 0.9
+    local c, len, w
+    if petal then
+        c = PETAL[1 + math.floor(Hash(seed + 0.7) * #PETAL) % #PETAL]
+        len, w = (3 + 1.5 * Hash(seed + 0.6)) * s, math.max(1.5, 3 * s)
+    else
+        c = LEAF[1 + math.floor(Hash(seed + 0.7) * #LEAF) % #LEAF]
+        len, w = (6 + 3 * Hash(seed + 0.6)) * s, math.max(1.5, 2.6 * s)
+    end
+    local hx, hy = math.cos(spin) * len * 0.5, math.sin(spin) * len * 0.5
+    local a = math.min(1, age * 10) * (1 - (age / life) ^ 2)
+    Put(fx.bits, "bits", frame, px - hx, py - hy, px + hx, py + hy, w, c[1], c[2], c[3], a)
+end
+
+-- The shears: they move in until the jaws meet the fill's edge, snip (a quick squeeze and
+-- twist), and pull back out for the next. The last snip lands on the ring's end.
+local SHEARS_GAP = 1.6 -- how far out (in ring widths) they pull back between snips
+local function Shears(st, frame, geom, now, s, start, stopAt)
+    local f, gap, squeeze, a
+    local function Snip(p)
+        if p < SNIP_AT - 0.07 then return 1 - (p / (SNIP_AT - 0.07)) ^ 2, 0 end -- moving in
+        if p < SNIP_AT + 0.08 then return 0, math.sin(math.pi * (p - SNIP_AT + 0.07) / 0.15) end -- the snip
+        return Smooth((p - SNIP_AT - 0.08) / (1 - SNIP_AT - 0.08)), 0 -- pulling back
+    end
+    if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
+        local d = now - st.fxEndAt
+        f, gap, squeeze = 1, 0, d < 0.15 and math.sin(math.pi * d / 0.15) or 0
+        a = ToolAlpha(now, st.fxEndAt + 0.2, 0.3)
+    else
+        local t = math.min(now, stopAt)
+        local i = math.floor((t - start) / SNIP)
+        f = Edge(st, t)
+        gap, squeeze = Snip((t - (start + i * SNIP)) / SNIP)
+        a = ToolAlpha(now, st.fxEndAt, 0.25)
+    end
+    if a <= 0 then return end
+    local x, y, ox, oy, tx, ty = Frame3(geom, f)
+    -- The jaws point into the ring, a little forward; a snip squeezes and twists them.
+    local dx, dy = -ox * 0.85 + tx * 0.5, -oy * 0.85 + ty * 0.5
+    local tool = TOOLS.shears
+    local gx, gy = FromMiddle(tool.grip, 1)
+    local kx, ky = FromMiddle(tool.tip, 1)
+    local turn = Angle(dx, dy) - Angle(kx - gx, ky - gy) + 0.18 * squeeze
+    local h = geom.T * (0.5 + SHEARS_GAP * gap) -- the jaws close just over the band's outside
+    Tool(frame, "shears", 34 * s * (1 - 0.1 * squeeze), turn, "tip", x + ox * h, y + oy * h, a)
+end
+
+local function Herbalism(st, frame, geom, now, s)
+    local start = st.fxStart or now
+    local stopAt = st.fxEndAt or math.huge
+    local k = math.floor((math.min(now, stopAt) - start) / SNIP)
+    for i = k, math.max(0, k - KEEP_SNIPS), -1 do
+        local at = start + (i + SNIP_AT) * SNIP -- when the jaws close
+        if at <= stopAt then
+            local f = Edge(st, at)
+            for m = 1, LEAVES_PER do Leaf(frame, geom, s, now, at + m * 0.02, f, i * 6.17 + m * 1.37, false) end
+            for m = 1, PETALS_PER do Leaf(frame, geom, s, now, at + m * 0.03, f, i * 4.91 + m * 2.53, true) end
+            -- A small bright snip where the jaws meet.
+            local d = now - at
+            if d >= 0 and d < 0.18 then
+                Glint(frame, geom, f, geom.T * (2.4 - 4 * d), 0.8 * (1 - d / 0.18), d * 6, 0.85, 1, 0.7)
+            end
+        end
+    end
+    Shears(st, frame, geom, now, s, start, stopAt)
+
+    -- Done: a last snip, and a gust of leaves and petals off the whole ring.
+    if st.fxDone and st.fxEndAt then
+        local d = now - st.fxEndAt
+        if d >= 0 and d < 0.3 then
+            Cut(frame, geom, 0, 1, 0.45 * (1 - d / 0.3) ^ 2, 0.6, 1, 0.5)
+            Glint(frame, geom, 1, geom.T * (3 - 3 * d), 1 - d / 0.3, d * 5, 0.85, 1, 0.7)
+        end
+        local N = 18
+        for j = 1, N do
+            local f = (j - 0.5) / N
+            Leaf(frame, geom, s, now, st.fxEndAt + 0.04 * (j % 4), f, 1100 + j * 2.3, j % 3 == 0, true)
+        end
+    end
+end
+
+local DRAW = { skinning = Skinning, mining = Mining, herb = Herbalism }
 
 -- Called every frame by the gathering ring (cfg.decorate).
 local function DrawGatherFx(st, frame, geom)

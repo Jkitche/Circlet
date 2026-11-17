@@ -144,7 +144,7 @@ local gatherRing = CreateLiveRing({
                 nil, nil, nil, now - (cycle - 8))
             return WithFx(st, "mining", now - (cycle - 5.5), 2.5, now - (cycle - 8), true)
         end
-        return State("herb", "Herb Gathering", (cycle - 10.5) / 1.5, false)
+        return WithFx(State("herb", "Herb Gathering", (cycle - 10.5) / 1.5, false), "herb", now - (cycle - 10.5), 1.5)
     end,
     decorate = function(st, frame, geom) ns.DrawGatherFx(st, frame, geom) end,
 })
@@ -288,7 +288,8 @@ ns.RegisterRing({
                             "An animation for each profession while you gather. Skinning: a knife slashes along "
                             .. "the ring, flicking off tufts of fur, and a last cut sprays fur off all round when it's done. "
                             .. "Mining: a pickaxe strikes the ring's edge, throwing sparks and chips of rock, and the ring "
-                            .. "flashes as the vein breaks."),
+                            .. "flashes as the vein breaks. Herbalism: pruning shears snip at the ring, leaves and petals "
+                            .. "fluttering off."),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),
