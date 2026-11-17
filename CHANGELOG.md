@@ -1,21 +1,22 @@
 # Changelog
 
-## Unreleased
+## 1.3.0
 
 - **Gathering animations** (new; on by default, Gathering > Profession animations). Each gathering
-  profession is getting an animation of its own at the gathering ring's top right, using the
-  game's own cursor art for the tools. **Skinning**: a knife slashes along the ring in quick
-  strokes, flicking off tufts of fur that tumble away; when the skin comes off it makes one long
-  last slice and a cut runs round the whole ring, spraying fur off all of it. **Mining**: a
+  profession has an animation of its own at the gathering ring's top right, using the game's own
+  cursor art for the tools, held by their handles. **Skinning**: a knife slashes along the ring in
+  quick strokes, flicking off tufts of fur that tumble away; when the skin comes off it makes one
+  long last slice and a cut runs round the whole ring, spraying fur off all of it. **Mining**: a
   pickaxe swings at the ring, raising and striking with a flash and a crack of light that throws
   sparks and chips of rock; when the vein breaks the whole ring flashes and rock and sparks burst
   off all round. **Herbalism**: pruning shears snip at the ring, each snip cutting leaves and
-  petals loose to flutter down; the last snip sends a gust of them off the whole ring. The gathering preview (`/circ gather`) now starts with a
-  skinning, then a mining.
+  petals loose to flutter down; the last snip sends a gust of them off the whole ring. The
+  gathering preview (`/circ gather`) now shows a skinning, a mining and an herb.
 
 - **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,
   its fill bobbing around the countdown like a float, with a tug now and then (the ring itself
-  stays put). The game doesn't tell addons when a fish bites, so the ring flashes "Watch the bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds
+  stays put). The game doesn't tell addons when a fish bites, so the ring flashes "Watch the
+  bobber!" in the windows where bites usually come (about 17, 13, 7 and 3 seconds
   left; turn that off under Fishing > Flash in bite windows). Then it shows what you caught, or
   "Got away". The gathering ring leaves fishing to it (and takes it back if you turn it off).
   **Right-click to reel in** (off until you turn it on): while the line is out and you're out of
@@ -43,6 +44,9 @@
   the game's countdown in the middle; a channel drains. This replaces the filled circle that arcs
   used to get. Where the game doesn't allow that, it falls back to the game's own sweep.
   `/circ targetdebug` says which way the last cast was shown.
+- **Flight log** (for checking flight times): `/circ flightlog` lists your last flights, how long
+  each was predicted to take and how long it really took.
+
 ## 1.2.0
 
 - **Circlet's windows get a look of their own.** The setup wizard, the New in page and the session
