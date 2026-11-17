@@ -285,8 +285,8 @@ ns.RegisterRing({
                         loot = Toggle(3, "gatherLoot", "Show what you got",
                             "When the gather finishes, show the item and how many you got."),
                         fx = Toggle(4, "gatherFx", "Profession animations",
-                            "An animation for each profession while you gather. Skinning: a knife slashes along "
-                            .. "the ring, flicking off tufts of fur, and a last cut sprays fur off all round when it's done. "
+                            "An animation for each profession at the ring's top right while you gather. Skinning: a knife slashes along "
+                            .. "the ring, flicking off tufts of fur, and a cut runs round it spraying fur when it's done. "
                             .. "Mining: a pickaxe strikes the ring's edge, throwing sparks and chips of rock, and the ring "
                             .. "flashes as the vein breaks. Herbalism: pruning shears snip at the ring, leaves and petals "
                             .. "fluttering off."),

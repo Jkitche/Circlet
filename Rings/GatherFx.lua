@@ -6,20 +6,21 @@ local ADDON_NAME, ns = ...
 -- The effects
 ---------------------------------------------------------------------------
 -- Worked out from the time alone (nothing kept between frames), so edit mode's sample plays
--- them too. The gathering ring's state carries:
+-- them too. The tools work at one spot, the ring's top right, whatever the progress; only the
+-- closing flourishes go round the whole ring. The gathering ring's state carries:
 --   st.gatherFx: the profession (only set while gatherFx is on and it has an effect);
---   st.fxStart / st.fxSpan: when the gather started and how long it takes (where the fill's
---     edge is at any moment); st.fxEndAt: when it ended, if it has; st.fxDone: it finished
---     (rather than being interrupted), which plays the closing flourish.
+--   st.fxStart: when the gather started (the tools' rhythm); st.fxEndAt: when it ended, if it
+--     has; st.fxDone: it finished (rather than being interrupted), which plays the closing
+--     flourish.
 --
---   skinning: a knife slashes along the fill's edge in quick strokes, each flicking off a few
+--   skinning: a knife slashes along the ring in quick strokes, each flicking off a few
 --             tufts of fur that tumble down and fade. When it's done one last cut runs round
 --             the whole ring and fur sprays off all of it.
---   mining:   a pickaxe swings at the fill's edge: it winds up, strikes with a flash and a crack
+--   mining:   a pickaxe swings at the ring: it winds up, strikes with a flash and a crack
 --             of light, and throws sparks and chips of rock that fall away. When the vein
 --             breaks a last heavy strike flashes the whole ring and rock and sparks burst off
 --             all round.
---   herb:     pruning shears snip at the fill's edge, each snip sending leaves and petals
+--   herb:     pruning shears snip at the ring, each snip sending leaves and petals
 --             fluttering down. The last snip sends a gust of them off the whole ring.
 -- The tools are the game's own cursor art (the crosshair cursors, which have no pointer arrow
 -- painted on), turned about where they're held.
@@ -93,24 +94,16 @@ local function HideAll()
     for _, l in ipairs(fx.sparks) do l:Hide() end
 end
 
--- Where the fill's edge is (a fraction of the ring) at time t.
-local function Edge(st, t)
-    if not (st.fxStart and st.fxSpan and st.fxSpan > 0) then return 0 end
-    return math.max(0, math.min(1, (t - st.fxStart) / st.fxSpan))
-end
+-- Where the tools work: the ring's top right. Places round the ring here are fractions of
+-- a full turn, clockwise from 12 o'clock, whatever the ring's shape and rotation.
+local SPOT = 0.125
 
--- The point on the ring at fraction f, the way out from the middle there, and the way
--- along the ring (the way the fill grows).
+-- The point at fraction f round the ring's middle line, the way out from the middle there,
+-- and the way along it (clockwise).
 local function Frame3(geom, f)
-    local x, y = ns.RingPoint(geom, f)
-    local x2, y2 = ns.RingPoint(geom, f + 0.002)
-    local tx, ty = x2 - x, y2 - y
-    local tl = math.sqrt(tx * tx + ty * ty)
-    if tl > 0 then tx, ty = tx / tl, ty / tl end
-    local r = math.sqrt(x * x + y * y)
-    local ox, oy = 0, 1
-    if r > 0 then ox, oy = x / r, y / r end
-    return x, y, ox, oy, tx, ty
+    local ang = math.pi / 2 - TAU * f
+    local ox, oy = math.cos(ang), math.sin(ang)
+    return geom.R * ox, geom.R * oy, ox, oy, oy, -ox
 end
 
 -- One line of a pool, from (x1, y1) to (x2, y2).
@@ -134,19 +127,22 @@ local function Thrown(geom, f, age, out, along, up, fall)
     return x + vx * age, y + vy * age + 0.5 * fall * age * age, vx, vy + fall * age
 end
 
--- The cut: a bright arc [from, to] of the ring, thinner than the band.
-local function Cut(frame, geom, from, to, a, r, g, b)
+-- The cut: a bright arc [from, to], thinner than the band. Fractions of a full turn from
+-- 12 o'clock, or with onRing, of the ring itself (its shape and rotation: the flourishes).
+local function Cut(frame, geom, from, to, a, r, g, b, onRing)
     from, to = math.max(0, from), math.min(1, to)
     if to <= from then return end
     local cg = fx.cutGeom
-    cg.R, cg.T, cg.start, cg.sweep, cg.step, cg.reverse = geom.R, math.max(1.5, geom.T * 0.35), geom.start, geom.sweep, geom.step, geom.reverse
+    cg.R, cg.T, cg.step = geom.R, math.max(1.5, geom.T * 0.35), geom.step
+    if onRing then cg.start, cg.sweep, cg.reverse = geom.start, geom.sweep, geom.reverse
+    else cg.start, cg.sweep, cg.reverse = 0, 1, nil end
     for _, l in ipairs(fx.cut) do l:SetColorTexture(r or 0.85, g or 0.92, b or 1, a) end
     ns.DrawArc(fx.cut, from, to, frame, cg, true)
     used.cut = true
 end
 
 local function Glint(frame, geom, f, size, a, rot, r, g, b)
-    local x, y = ns.RingPoint(geom, f)
+    local x, y = Frame3(geom, f)
     fx.glint:ClearAllPoints()
     fx.glint:SetPoint("CENTER", frame, "CENTER", x, y)
     fx.glint:SetSize(size, size)
@@ -219,19 +215,19 @@ local function Tuft(frame, geom, s, now, born, f, seed, burst)
     end
 end
 
--- The knife: its tip slices along the band up to the fill's edge, then it lifts out and back
--- for the next stroke. When it's done it runs right round the ring, then goes.
+-- The knife: its tip slices along the band up to the spot, then it lifts out and back for the
+-- next stroke. When it's done it makes one long last slice, then goes.
 local KNIFE_RUN = 0.35
 local function Knife(st, frame, geom, now, s, start, stopAt)
     local f, lift, a
     if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
-        f, lift = math.min(1, (now - st.fxEndAt) / KNIFE_RUN), 0
+        f, lift = SPOT - 2 * REACH * (1 - math.min(1, (now - st.fxEndAt) / KNIFE_RUN)) ^ 2, 0
         a = ToolAlpha(now, st.fxEndAt + KNIFE_RUN, 0.25)
     else
         local t = math.min(now, stopAt)
         local i = math.floor((t - start) / STROKE)
         local p = (t - (start + i * STROKE)) / STROKE
-        local e = Edge(st, t)
+        local e = SPOT
         if p < 0.45 then
             f, lift = e - REACH * (1 - p / 0.45) ^ 2, 0
         else
@@ -263,16 +259,16 @@ local function Skinning(st, frame, geom, now, s)
         local ks = start + i * STROKE
         local bite = ks + STROKE * 0.45 -- when the knife reaches the edge
         if bite <= stopAt then
-            local f = Edge(st, bite)
+            local f = SPOT
             for m = 1, PER_STROKE do
                 Tuft(frame, geom, s, now, bite + m * 0.03, f, i * 7.13 + m * 1.91, false)
             end
         end
         if i == k and now < stopAt then
-            -- The knife slices along the band up to the edge, leaving a bright cut behind it.
+            -- The knife slices along the band up to the spot, leaving a bright cut behind it.
             local p = (now - ks) / STROKE
             if p < 0.55 then
-                local e = Edge(st, now)
+                local e = SPOT
                 local ease = 1 - (1 - math.min(1, p / 0.45)) ^ 2
                 local head = e - REACH * (1 - ease)
                 Cut(frame, geom, head - 0.06, head, 0.85 * math.sin(math.pi * p / 0.55))
@@ -281,14 +277,14 @@ local function Skinning(st, frame, geom, now, s)
     end
     Knife(st, frame, geom, now, s, start, stopAt)
 
-    -- Done: one last cut round the whole ring, spraying fur as it passes.
+    -- Done: one last cut runs round the whole ring, spraying fur as it passes.
     if st.fxDone and st.fxEndAt then
         local d = now - st.fxEndAt
         local RUN = 0.35
         if d >= 0 and d < RUN + 0.15 then
             local head = d / RUN
             local a = d < RUN and 1 or (1 - (d - RUN) / 0.15)
-            Cut(frame, geom, head - 0.25, head, 0.9 * a)
+            Cut(frame, geom, head - 0.25, head, 0.9 * a, nil, nil, nil, true)
         end
         local N = 14
         for j = 1, N do
@@ -356,12 +352,12 @@ local function Pickaxe(st, frame, geom, now, s, start, stopAt)
     local f, raise, a
     if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
         local d = now - st.fxEndAt
-        f, raise = 1, PICK_RAISE * 0.25 * math.sin(math.pi * math.min(1, d / 0.3))
+        f, raise = SPOT, PICK_RAISE * 0.25 * math.sin(math.pi * math.min(1, d / 0.3))
         a = ToolAlpha(now, st.fxEndAt + 0.3, 0.3)
     else
         local t = math.min(now, stopAt)
         local i = math.floor((t - start) / SWING)
-        f, raise = Edge(st, t), PickAngle((t - (start + i * SWING)) / SWING)
+        f, raise = SPOT, PickAngle((t - (start + i * SWING)) / SWING)
         a = ToolAlpha(now, st.fxEndAt, 0.25)
     end
     if a <= 0 then return end
@@ -397,12 +393,12 @@ local function Mining(st, frame, geom, now, s)
         local ks = start + i * SWING
         local hit = ks + SWING * WIND -- when the pick lands
         if hit <= stopAt then
-            local f = Edge(st, hit)
+            local f = SPOT
             for m = 1, SPARKS_PER do Spark(frame, geom, s, now, hit, f, i * 5.31 + m * 2.17, false) end
             for m = 1, CHIPS_PER do Chip(frame, geom, s, now, hit + m * 0.02, f, i * 3.77 + m * 1.43, false) end
         end
         if i == k and now < stopAt then
-            local e = Edge(st, now)
+            local e = SPOT
             local p = (now - ks) / SWING
             if p >= WIND and p < WIND + 0.25 then
                 -- The strike: a flash that shrinks, and a short crack of light along the edge.
@@ -421,8 +417,8 @@ local function Mining(st, frame, geom, now, s)
         local d = now - st.fxEndAt
         if d >= 0 and d < 0.35 then
             local u = d / 0.35
-            Cut(frame, geom, 0, 1, 0.75 * (1 - u) ^ 2, 1, 0.85, 0.55)
-            Glint(frame, geom, 1, geom.T * (4.5 - 2 * u), 1 - u, 0.3 + u, 1, 0.92, 0.65)
+            Cut(frame, geom, 0, 1, 0.75 * (1 - u) ^ 2, 1, 0.85, 0.55, true)
+            Glint(frame, geom, SPOT, geom.T * (4.5 - 2 * u), 1 - u, 0.3 + u, 1, 0.92, 0.65)
         end
         local N = 12
         for j = 1, N do
@@ -476,7 +472,7 @@ local function Leaf(frame, geom, s, now, born, f, seed, petal, gust)
     Put(fx.bits, "bits", frame, px - hx, py - hy, px + hx, py + hy, w, c[1], c[2], c[3], a)
 end
 
--- The shears: they move in until the jaws meet the fill's edge, snip (a quick squeeze and
+-- The shears: they move in until the jaws meet the spot, snip (a quick squeeze and
 -- twist), and pull back out for the next. The last snip lands on the ring's end.
 local SHEARS_GAP = 1.6 -- how far out (in ring widths) they pull back between snips
 local function Shears(st, frame, geom, now, s, start, stopAt)
@@ -488,12 +484,12 @@ local function Shears(st, frame, geom, now, s, start, stopAt)
     end
     if st.fxDone and st.fxEndAt and now >= st.fxEndAt then
         local d = now - st.fxEndAt
-        f, gap, squeeze = 1, 0, d < 0.15 and math.sin(math.pi * d / 0.15) or 0
+        f, gap, squeeze = SPOT, 0, d < 0.15 and math.sin(math.pi * d / 0.15) or 0
         a = ToolAlpha(now, st.fxEndAt + 0.2, 0.3)
     else
         local t = math.min(now, stopAt)
         local i = math.floor((t - start) / SNIP)
-        f = Edge(st, t)
+        f = SPOT
         gap, squeeze = Snip((t - (start + i * SNIP)) / SNIP)
         a = ToolAlpha(now, st.fxEndAt, 0.25)
     end
@@ -516,7 +512,7 @@ local function Herbalism(st, frame, geom, now, s)
     for i = k, math.max(0, k - KEEP_SNIPS), -1 do
         local at = start + (i + SNIP_AT) * SNIP -- when the jaws close
         if at <= stopAt then
-            local f = Edge(st, at)
+            local f = SPOT
             for m = 1, LEAVES_PER do Leaf(frame, geom, s, now, at + m * 0.02, f, i * 6.17 + m * 1.37, false) end
             for m = 1, PETALS_PER do Leaf(frame, geom, s, now, at + m * 0.03, f, i * 4.91 + m * 2.53, true) end
             -- A small bright snip where the jaws meet.
@@ -532,8 +528,8 @@ local function Herbalism(st, frame, geom, now, s)
     if st.fxDone and st.fxEndAt then
         local d = now - st.fxEndAt
         if d >= 0 and d < 0.3 then
-            Cut(frame, geom, 0, 1, 0.45 * (1 - d / 0.3) ^ 2, 0.6, 1, 0.5)
-            Glint(frame, geom, 1, geom.T * (3 - 3 * d), 1 - d / 0.3, d * 5, 0.85, 1, 0.7)
+            Cut(frame, geom, 0, 1, 0.45 * (1 - d / 0.3) ^ 2, 0.6, 1, 0.5, true)
+            Glint(frame, geom, SPOT, geom.T * (3 - 3 * d), 1 - d / 0.3, d * 5, 0.85, 1, 0.7)
         end
         local N = 18
         for j = 1, N do

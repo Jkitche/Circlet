@@ -3,14 +3,14 @@
 ## Unreleased
 
 - **Gathering animations** (new; on by default, Gathering > Profession animations). Each gathering
-  profession is getting an animation of its own on the gathering ring, using the game's own
-  cursor art for the tools. **Skinning**: a knife slashes along the ring's edge in quick strokes,
-  flicking off tufts of fur that tumble away, and when the skin comes off it runs right round the
-  ring in one last cut that sprays fur off all of it. **Mining**: a pickaxe swings at the ring's
-  edge, raising and striking with a flash and a crack of light that throws sparks and chips of
-  rock; when the vein breaks the whole ring flashes and rock and sparks burst off all round.
-  **Herbalism**: pruning shears snip at the ring's edge, each snip cutting leaves and petals loose
-  to flutter down; the last snip sends a gust of them off the whole ring. The gathering preview (`/circ gather`) now starts with a
+  profession is getting an animation of its own at the gathering ring's top right, using the
+  game's own cursor art for the tools. **Skinning**: a knife slashes along the ring in quick
+  strokes, flicking off tufts of fur that tumble away; when the skin comes off it makes one long
+  last slice and a cut runs round the whole ring, spraying fur off all of it. **Mining**: a
+  pickaxe swings at the ring, raising and striking with a flash and a crack of light that throws
+  sparks and chips of rock; when the vein breaks the whole ring flashes and rock and sparks burst
+  off all round. **Herbalism**: pruning shears snip at the ring, each snip cutting leaves and
+  petals loose to flutter down; the last snip sends a gust of them off the whole ring. The gathering preview (`/circ gather`) now starts with a
   skinning, then a mining.
 
 - **Fishing ring** (new; on by default). While your line is out the ring counts down the cast,
