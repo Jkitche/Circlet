@@ -14,7 +14,9 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # A fixed image and Python, so a new ubuntu-latest (Ubuntu 26 from October 2026) can't
+    # change the tests' Python and its packages under a release.
+    runs-on: ubuntu-24.04
     permissions:
       contents: write # the GitHub release
     env:
@@ -25,11 +27,17 @@ jobs:
         with:
           fetch-depth: 0 # the packager reads tags for the version
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Tests
         run: |
+          sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-dejavu-core # the image tests label their renders
-          pip install lupa pillow
-          python3 tests/run_tests.py
+          python -m pip install lupa pillow
+          python -c "import sys, lupa, PIL; print(sys.version, 'lupa', lupa.__version__, 'pillow', PIL.__version__)"
+          python tests/run_tests.py
 
       - name: Package and upload
         uses: BigWigsMods/packager@v2
