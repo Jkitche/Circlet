@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.3.1
+## 1.3.2
 
-(1.3.0 was tagged but its release didn't go out; this is its first release.)
+(1.3.0 and 1.3.1 were tagged but their releases didn't go out; this is their first release.)
 
 - **Gathering animations** (new; on by default, Gathering > Profession animations). Each gathering
   profession has an animation of its own at the gathering ring's top right, using the game's own
