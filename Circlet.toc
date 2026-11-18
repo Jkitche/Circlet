@@ -70,6 +70,7 @@ Features\Profiles.lua
 Features\Migrations.lua
 Features\EditMode.lua
 Features\Setup.lua
+Features\Radial.lua
 
 UI\OptionsKit.lua
 UI\IconGrid.lua

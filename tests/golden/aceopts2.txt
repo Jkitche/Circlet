@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=68 execute=142 range=249 select=82 toggle=191
+counts: color=68 execute=142 range=250 select=82 toggle=192
 general (General)
 progress (Progress rings)
   xp (XP)
@@ -29,6 +29,7 @@ professions (Professions & casting)
   cast (Casting)
   targetCast (Target casting)
 pin (Quest rings)
+radial (Radial menus)
 totem (Totems) [hidden]
 profiles (Profiles)
 xp boxes: size=Appearance position=Position _position leftover=nil

@@ -229,6 +229,7 @@ end
 ---------------------------------------------------------------- the table
 local function BuildOptionsTable()
     local args = { general = GeneralPage(), profiles = ProfilesPage() }
+    if ns.RadialOptions then args.radial = ns.RadialOptions(O) end
     for key, f in pairs(FOLDERS) do
         args[key] = { type = "group", order = f.order, name = f.name, childGroups = "tree",
                       args = { header = { type = "header", order = 0, name = f.name }, intro = Intro(0.5, f.text) } }
@@ -334,9 +335,22 @@ local function TrySetupOptions()
     return ok, err
 end
 
-local function OpenOptions()
+-- Opens the window at a page: SelectOptionsPage("radial", "menu1").
+local function SelectOptionsPage(...)
+    if not configFrame then return end
+    if not configFrame:IsShown() then
+        configFrame:Show()
+        AceConfigDialog:Open(APP, configFrame)
+    end
+    AceConfigDialog:SelectGroup(APP, ...)
+end
+
+-- With a page (OpenOptions("radial")): opens the window there, even if it's already open.
+local function OpenOptions(...)
     if not configFrame then
         Print("The options window failed to load; slash commands still work (/circ help).")
+    elseif select("#", ...) > 0 then
+        SelectOptionsPage(...)
     elseif configFrame:IsShown() then
         configFrame:Hide()
     else
@@ -366,4 +380,5 @@ end
 
 -- Shared with the files loaded after this one.
 ns.OpenOptions = OpenOptions
+ns.SelectOptionsPage = SelectOptionsPage
 ns.TrySetupOptions = TrySetupOptions

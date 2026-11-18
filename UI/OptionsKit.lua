@@ -16,7 +16,7 @@ local function Learned() return ns.LEARNED end
 
 local function ResetDefaults()
     for key, value in pairs(DEFAULTS) do
-        if not Learned()[key] then db[key] = ns.Copy(value) end
+        if not Learned()[key] and not ns.KEEP_ON_RESET[key] then db[key] = ns.Copy(value) end
     end
     ns.OnXPAlwaysChanged()
     ns.RefreshOptions()
