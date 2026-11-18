@@ -87,7 +87,6 @@ chat:   /circ summary   - this session's summary
 chat:   /circ profile [name] - show or switch profiles
 chat:   /circ setup     - the setup wizard: pick your rings, their look and layout
 chat:   /circ new       - what's new in this version
-chat:   /circ radial    - set up radial menus (hold a key, point, let go)
 chat:   /circ icons     - list the game icons the rings use (found / missing)
 chat:   /circ edit [ring] - edit mode for one ring or all
 chat:   /circ resetpos [ring] - move one ring (or all) back to its default spot

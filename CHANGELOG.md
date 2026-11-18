@@ -2,13 +2,6 @@
 
 ## Unreleased
 
-- **Radial menus** (new; Radial menus in the options, or `/circ radial`). Make rings of spells,
-  items, emotes, macros or macro text, each on a key of your own. Hold the key and the ring opens
-  around your cursor; point at a slice (it lights up and shows its name) and let go of the key to
-  use it. Slices on cooldown show the cooldown sweep over their icon. Letting go with the cursor
-  still in the middle does nothing. Works in combat, though
-  changes you make to menus during a fight take effect when it ends. Up to 8 menus of 12 slices.
-
 - **Tidier options window.** On the General page, the ring on/off checkboxes are now grouped into
   three boxes that match the folders on the left (Progress rings, Travel & status, Professions &
   casting), three to a row. Everywhere else, checkboxes sit two to a row with their explanation in

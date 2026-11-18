@@ -109,13 +109,8 @@ local db = setmetatable({}, {
 })
 
 
--- Settings that "Reset to defaults" leaves alone: things you made yourself, like radial
--- menus. They're still part of profiles.
-local KEEP_ON_RESET = {}
-
 -- Shared with the files loaded after this one.
 ns.DEFAULTS = DEFAULTS
-ns.KEEP_ON_RESET = KEEP_ON_RESET
 ns.FinalizeDefaults = FinalizeDefaults
 ns.FillDefaults = FillDefaults
 ns.db = db

@@ -58,8 +58,6 @@ local function Refresh()
     if ns.ApplyAllOpacity then ns.ApplyAllOpacity() end
     if ns.OnXPAlwaysChanged then ns.OnXPAlwaysChanged() end
     if ns.RefreshPinClicks then ns.RefreshPinClicks() end
-    if ns.ApplyRadial then ns.ApplyRadial() end
-    if ns.RefreshRadialOptions then ns.RefreshRadialOptions() end
     if ns.RefreshOptions then ns.RefreshOptions() end
 end
 
