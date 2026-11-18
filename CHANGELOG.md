@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Tidier options window.** On the General page, the ring on/off checkboxes are now grouped into
+  three boxes that match the folders on the left (Progress rings, Travel & status, Professions &
+  casting), three to a row. Everywhere else, checkboxes sit two to a row with their explanation in
+  the tooltip instead of printed underneath, so pages are shorter and easier to scan.
+
 ## 1.3.2
 
 (1.3.0 and 1.3.1 were tagged but their releases didn't go out; this is their first release.)

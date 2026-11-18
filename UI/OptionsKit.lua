@@ -24,9 +24,12 @@ local function ResetDefaults()
 end
 
 ---------------------------------------------------------------- option builders
+-- Checkboxes sit two to a row; the description shows in the tooltip.
+local TOGGLE_WIDTH = 1.5
+
 local function Toggle(order, key, name, desc, onSet)
     return {
-        type = "toggle", order = order, name = name, desc = desc, descStyle = "inline", width = "full",
+        type = "toggle", order = order, name = name, desc = desc, width = TOGGLE_WIDTH,
         get = function() return db[key] end,
         set = function(_, value)
             db[key] = value
@@ -220,7 +223,7 @@ local function RingTab(order, name, header, intro, args)
             -- def.iconBg: true, or { disabled = fn, note = "..." } when it only applies sometimes.
             local ib = type(def.iconBg) == "table" and def.iconBg or {}
             box.args.iconBg = {
-                type = "toggle", order = 45, width = "full", name = "Icon as background",
+                type = "toggle", order = 45, width = TOGGLE_WIDTH, name = "Icon as background",
                 desc = "Show the icon filling the middle of the ring, behind its text, instead of as a badge "
                     .. "on its top edge." .. (ib.note and (" " .. ib.note) or ""),
                 get = function() return db[key .. "IconBg"] end,
@@ -241,7 +244,7 @@ local function RingTab(order, name, header, intro, args)
         end
         if not def.alwaysInCombat then
             box.args.combat = {
-                type = "toggle", order = 50, width = "full", name = "Show in combat",
+                type = "toggle", order = 50, width = TOGGLE_WIDTH, name = "Show in combat",
                 desc = "Keep this ring on screen while you're in combat. Off: it fades out when combat starts "
                     .. "and comes back when it ends.",
                 get = function() return db[key .. "Combat"] ~= false end,

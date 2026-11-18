@@ -33,18 +33,35 @@ local function Hidden(def)
     return function() return ns.HiddenForClass(def) end
 end
 
--- General page: a checkbox per ring, then layout, effects, summary and reset.
-local function GeneralPage()
-    local rings = {}
+-- The General page's ring checkboxes: one box per folder, three to a row, in the same
+-- order as the list on the left. "XP ring" shows as "XP", since the box title says rings.
+-- Rings whose pages sit at the top of the list still get a box here.
+local BOX_FOR = { pin = "progress", totem = "professions" }
+local LABEL_FOR = { pin = "Pinned quests", totem = "Totems" }
+
+local function RingBoxes()
+    local boxes = {}
     for _, def in ipairs(ns.RINGS) do
         if def.toggle then
+            local folder = def.page and def.page.folder or BOX_FOR[def.key] or "other"
+            if not boxes[folder] then
+                local f = FOLDERS[folder]
+                boxes[folder] = Box(2 + (f and f.order or 9) / 100, f and f.name or "Other rings", {})
+            end
             local t = def.toggle
-            local option = Toggle(def.order, def.key .. "Enabled", t[1], t[2], t[3])
+            local option = Toggle(def.page and def.page.order or def.order, def.key .. "Enabled",
+                LABEL_FOR[def.key] or (t[1]:gsub(" rings?$", "")), t[1] .. ": " .. t[2], t[3])
+            option.width = 1
             if def.class then option.hidden = Hidden(def) end
-            rings[def.key] = option
+            boxes[folder].args[def.key] = option
         end
     end
-    return {
+    return boxes
+end
+
+-- General page: the ring checkboxes, then layout, effects, summary and reset.
+local function GeneralPage()
+    local page = {
         type = "group", order = 1, name = "General",
         args = {
             header = { type = "header", order = 0, name = "Circlet" },
@@ -66,10 +83,9 @@ local function GeneralPage()
                     func = function() ns.OpenWhatsNew() end,
                 },
             }),
-            rings = Box(2, "Rings", rings),
             layout = Box(3, "Layout", {
                 editAll = {
-                    type = "execute", order = 1, width = 1.1,
+                    type = "execute", order = 0.3, width = 1.1,
                     name = function()
                         for _, def in ipairs(ns.RINGS) do
                             if def.edit.get() then return "|cff33ff33Finish editing|r" end
@@ -124,6 +140,8 @@ local function GeneralPage()
             }),
         },
     }
+    for folder, box in pairs(RingBoxes()) do page.args["rings_" .. folder] = box end
+    return page
 end
 
 -- Profiles: named sets of settings, chosen per character.
