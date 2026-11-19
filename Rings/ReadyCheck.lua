@@ -200,7 +200,7 @@ ns.RegisterRing({
             notready = { r = 1.00, g = 0.30, b = 0.25 },
         },
     },
-    page = { folder = "status", order = 4.9, build = function(O)
+    page = { folder = "group", order = 2, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.95, "Ready checks", "Ready Check Ring",

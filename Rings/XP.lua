@@ -379,6 +379,104 @@ fx:SetScript("OnUpdate", function(self, elapsed)
     if t > (FX_LENGTH[self.style] or 1.5) then self:Hide() end
 end)
 
+-- Gain effect -------------------------------------------------------------------
+-- With xpGainFx on, while a gain fills the ring a comet rides the end of the fill (a
+-- glow with a turning star, in the fill's color), shedding sparkles that drift outward
+-- and fade behind it. Where the fill lands, the glow flares once and fades.
+local GAIN_SPARKLES = 20
+local SPARKLE_EVERY, SPARKLE_LIFE = 0.035, 0.6
+local LAND_TIME = 0.5
+
+local gainFx = { sparkles = {}, next = 1, emitAt = 0, landAt = nil }
+local function GainTex(layer, sub, glow)
+    local t = xpRing:CreateTexture(nil, layer, nil, sub)
+    if not glow or t:SetTexture("Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64") == false then
+        t:SetTexture("Interface\\Cooldown\\star4")
+    end
+    t:SetBlendMode("ADD")
+    t:Hide()
+    return t
+end
+gainFx.glow = GainTex("OVERLAY", 5, true)
+gainFx.star = GainTex("OVERLAY", 6)
+for i = 1, GAIN_SPARKLES do gainFx.sparkles[i] = { tex = GainTex("OVERLAY", 4) } end
+
+local function Whiter(c, k) return c.r + (1 - c.r) * k, c.g + (1 - c.g) * k, c.b + (1 - c.b) * k end
+
+local function HideGainFx()
+    gainFx.glow:Hide()
+    gainFx.star:Hide()
+    for _, s in ipairs(gainFx.sparkles) do s.tex:Hide(); s.born = nil end
+    gainFx.landAt = nil
+end
+
+-- moving: the fill is animating a gain this frame. landed: it finished this frame.
+local function DrawGainFx(now, moving, landed)
+    if not db.xpGainFx or ring.R <= 0 then return HideGainFx() end
+    local frac = anim.shown - math.floor(anim.shown + 1e-9)
+    local c = xpRing.tipColor or STATE_COLORS.normal
+    local x, y = ns.RingPoint(ring, frac)
+    local T = math.max(3, ring.T)
+    if landed then gainFx.landAt = now end
+
+    -- The comet's head while it moves; a flare where it lands.
+    local landAge = gainFx.landAt and now - gainFx.landAt
+    if landAge and landAge >= LAND_TIME then gainFx.landAt, landAge = nil, nil end
+    if moving or landAge then
+        local k = moving and 1 or (1 - landAge / LAND_TIME)
+        local swell = moving and 1 or (1 + 0.8 * math.sin(math.pi * math.min(1, landAge / LAND_TIME * 1.5)))
+        local gs = T * 3.2 * swell
+        gainFx.glow:ClearAllPoints()
+        gainFx.glow:SetPoint("CENTER", xpRing, "CENTER", x, y)
+        gainFx.glow:SetSize(gs, gs)
+        gainFx.glow:SetVertexColor(c.r, c.g, c.b)
+        gainFx.glow:SetAlpha(0.9 * k)
+        gainFx.glow:Show()
+        local ss = T * 1.9 * (moving and (0.9 + 0.1 * math.sin(now * 20)) or swell)
+        gainFx.star:ClearAllPoints()
+        gainFx.star:SetPoint("CENTER", xpRing, "CENTER", x, y)
+        gainFx.star:SetSize(ss, ss)
+        gainFx.star:SetVertexColor(Whiter(c, 0.7))
+        gainFx.star:SetAlpha(k)
+        if gainFx.star.SetRotation then gainFx.star:SetRotation(now * 3) end
+        gainFx.star:Show()
+    else
+        gainFx.glow:Hide()
+        gainFx.star:Hide()
+    end
+
+    -- Shed a sparkle every so often while moving, from just behind the head.
+    if moving and now >= gainFx.emitAt then
+        gainFx.emitAt = now + SPARKLE_EVERY
+        local s = gainFx.sparkles[gainFx.next]
+        gainFx.next = gainFx.next % GAIN_SPARKLES + 1
+        local d = math.sqrt(x * x + y * y)
+        local jitter = (math.random() - 0.5) * T * 0.6
+        s.born, s.size = now, 0.6 + math.random() * 0.6
+        s.ox, s.oy = (d > 0 and x / d or 0), (d > 0 and y / d or 1)
+        s.x, s.y = x + s.ox * jitter, y + s.oy * jitter
+        s.drift = T * (0.8 + math.random() * 1.4) * (math.random() < 0.5 and -1 or 1)
+        s.r, s.g, s.b = Whiter(c, 0.4)
+    end
+    for _, s in ipairs(gainFx.sparkles) do
+        local age = s.born and (now - s.born) / SPARKLE_LIFE
+        if age and age < 1 then
+            local e = 1 - (1 - age) ^ 2
+            local size = T * 0.9 * s.size * (1 - 0.6 * age)
+            s.tex:ClearAllPoints()
+            s.tex:SetPoint("CENTER", xpRing, "CENTER", s.x + s.ox * s.drift * e, s.y + s.oy * s.drift * e)
+            s.tex:SetSize(size, size)
+            s.tex:SetVertexColor(s.r, s.g, s.b)
+            s.tex:SetAlpha(1 - age)
+            s.tex:Show()
+        else
+            s.born = nil
+            s.tex:Hide()
+        end
+    end
+end
+ns.XPGainFxParts = function() return gainFx end -- for the tests
+
 local ShowXPIdle -- defined below; the OnUpdate script needs it
 local XPSample   -- edit mode's sample gain, also defined below
 
@@ -562,6 +660,8 @@ local function DrawRing(value)
     end
 
     local stateColor = isRested and STATE_COLORS.rested or STATE_COLORS.normal
+    -- The color at the end of the fill (for the gain effect).
+    xpRing.tipColor = (blueTo > 0 and frac <= blueTo + 1e-6) and STATE_COLORS.rested or STATE_COLORS.normal
 
     if GetTime() < anim.flashUntil then
         xpRing.levelText:SetText("LEVEL UP!")
@@ -614,8 +714,11 @@ end
 xpRing:SetScript("OnUpdate", function(self, elapsed)
     local now = GetTime()
 
+    local moving, landed = false, false
     if anim.t < anim.dur then
+        moving = anim.to ~= anim.from
         anim.t = math.min(anim.dur, anim.t + elapsed)
+        landed = moving and anim.t >= anim.dur
         local p = anim.t / anim.dur
         p = 1 - (1 - p) ^ 3 -- ease out
         local v = anim.from + (anim.to - anim.from) * p
@@ -633,6 +736,7 @@ xpRing:SetScript("OnUpdate", function(self, elapsed)
         rg.shown = rg.from + (rg.to - rg.from) * p
     end
     DrawRing(anim.shown)
+    DrawGainFx(now, moving and not landed, landed)
     UpdateRestIcon((IsResting and IsResting()) or (xpEditing and xpSampleRested == false), ring.R + ring.T / 2,
         XPSize())
 
@@ -993,6 +1097,35 @@ ns.Listen({ "PLAYER_XP_UPDATE:player", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "
     end
 end)
 
+-- /circ showxp: brings the ring up for a few seconds at your current XP (with its text, even
+-- on an always-on ring whose text has faded), whether or not it would show on its own, and
+-- prints the numbers to chat.
+local SHOW_NOW = 4 -- seconds it stays before fading (plus the hold setting)
+local function ShowXPNow()
+    if not (xpState.level and xpState.max and xpState.max > 0) then
+        ns.Print("No XP to show (max level, or the game hasn't said yet).")
+        return
+    end
+    local v = xpState.level + XPFraction(xpState.cur, xpState.max)
+    LayoutXPRing()
+    anim.preview = false
+    anim.restGain = nil
+    anim.session, anim.gainShown, anim.gainFrom = 0, 0, 0
+    anim.from, anim.to, anim.shown, anim.t = v, v, v, anim.dur
+    anim.sessionFrom, anim.restRunout = v, nil
+    anim.holdUntil = GetTime() + SHOW_NOW + (db.xpHold or 0)
+    anim.idleSince = nil -- an always-on ring's faded text comes back
+    xpRing:SetAlpha(math.max(xpRing:GetAlpha(), 0.01))
+    xpRing:Show()
+    DrawRing(v)
+    local rested = LiveRestedXP()
+    ns.Print(string.format("Level %d: %s / %s XP (%.1f%%), %s to go%s.", xpState.level,
+        BreakUpLargeNumbers(xpState.cur), BreakUpLargeNumbers(xpState.max), XPFraction(xpState.cur, xpState.max) * 100,
+        BreakUpLargeNumbers(xpState.max - xpState.cur),
+        rested > 0 and (", " .. BreakUpLargeNumbers(rested) .. " rested") or ""))
+end
+
+ns.RegisterCommand({ "showxp", "myxp" }, ShowXPNow, "show your current XP on the ring for a few seconds")
 ns.RegisterCommand({ "levelup" }, PreviewLevelUp, "preview the level-up effect")
 ns.RegisterCommand({ "rested" }, PreviewRestedGain, "preview the rested XP gained ring")
 
@@ -1036,6 +1169,7 @@ ns.RegisterRing({
         xpAfterCombat = true,
         xpShowDelta   = true,  -- "+23.6%" under the XP gain
         xpLevelFxStyle = "gold", -- level-up effect: "gold", "rainbow" or "none"
+        xpGainFx      = true,  -- a comet riding the fill as XP comes in, with a flare where it lands
         xpAlways      = false, -- keep the XP ring on screen permanently
         xpMinimap     = false, -- draw the XP ring around the minimap (always on; text below the map)
         xpMinimapGap  = 2,     -- gap between the minimap's edge and the ring
@@ -1104,7 +1238,10 @@ ns.RegisterRing({
                         delta = Toggle(4, "xpShowDelta", "Show gain as %",
                             "Add a line under the gain showing it as a share of the level, e.g. +4.2%."),
                     }),
-                    levelUp = Box(3, "Level-up effect", {
+                    levelUp = Box(3, "Effects", {
+                        gainFx = Toggle(0.5, "xpGainFx", "Gain effect",
+                            "As XP comes in, a glowing comet rides the end of the fill shedding sparkles, "
+                            .. "with a flare where it lands."),
                         style = Select(1, "xpLevelFxStyle", "Effect",
                             { gold = "Gold", rainbow = "Rainbow", none = "Off" }, { "gold", "rainbow", "none" },
                             "Gold: a gold flash, shockwaves and sparks. Rainbow: a rainbow swirl around the ring, "

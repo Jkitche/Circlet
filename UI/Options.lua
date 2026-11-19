@@ -19,14 +19,22 @@ local APP = "Circlet"
 local configFrame
 
 -- The folders in the list on the left, and what their pages say.
+-- The same groups as the welcome setup's ring list (Features/Setup.lua).
 local FOLDERS = {
-    progress = { order = 2, name = "Progress rings",
+    progress = { order = 2, name = "Progress",
         text = "Rings that pop up and fill as you gain XP, advance quests, raise skills and reputation, "
             .. "and level your pet." },
-    status = { order = 3, name = "Travel & status",
-        text = "Rings that count down or keep watch: flights, timed quests, corpse runs, breath and ammo." },
-    professions = { order = 4, name = "Professions & casting",
-        text = "Rings for crafting batches, gathering (mining, herbalism, skinning, fishing) and casting." },
+    combat = { order = 3, name = "Combat & casting",
+        text = "Rings for your casts and your target's, the five-second rule on mana, and your ammo." },
+    group = { order = 4, name = "Group",
+        text = "Rings for playing with others: loot rolls and ready checks." },
+    travel = { order = 5, name = "Travel & survival",
+        text = "Rings for getting around and staying alive: flights, your Hearthstone, timed quests, "
+            .. "corpse runs and breath." },
+    professions = { order = 6, name = "Professions",
+        text = "Rings for crafting batches and gathering: mining, herbalism, skinning and fishing." },
+    comfort = { order = 7, name = "Rest & utility",
+        text = "Rings for downtime: eating and drinking, resting at a campfire, the clock and timers." },
 }
 
 local function Hidden(def)
@@ -35,8 +43,8 @@ end
 
 -- The General page's ring checkboxes: one box per folder, three to a row, in the same
 -- order as the list on the left. "XP ring" shows as "XP", since the box title says rings.
--- Rings whose pages sit at the top of the list still get a box here.
-local BOX_FOR = { pin = "progress", totem = "professions" }
+-- A ring with no page of its own could name its box here (all of them have pages now).
+local BOX_FOR = {}
 local LABEL_FOR = { pin = "Pinned quests", totem = "Totems" }
 
 local function RingBoxes()
@@ -274,7 +282,10 @@ local function SetupOptions()
     local status = AceConfigDialog:GetStatusTable(APP)
     status.groups = status.groups or {}
     status.groups.treewidth = status.groups.treewidth or 180
-    status.groups.groups = status.groups.groups or { progress = true, status = true, professions = true }
+    if not status.groups.groups then
+        status.groups.groups = {}
+        for key in pairs(FOLDERS) do status.groups.groups[key] = true end
+    end
     _G.CircletConfigFrame = configFrame
     table.insert(UISpecialFrames, "CircletConfigFrame") -- Esc closes it
 

@@ -9,5 +9,5 @@ interrupted: Heavy Linen Bandage / 1 / 5 / Stopped  fillsegs=15
 later: (hidden)
 single: Heavy Linen Bandage / 0 / 1 / Crafting  fillsegs=34
 single on: Heavy Linen Bandage / 0 / 1 / Crafting  fillsegs=34
-preview: Heavy Linen Bandage / 1 / 8 / 7 to go  fillsegs=12
+preview: Lesser Healing Potion / 1 / 4 / 3 to go  fillsegs=24
 ERRORS: {}

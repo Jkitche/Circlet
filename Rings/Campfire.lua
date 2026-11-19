@@ -233,7 +233,7 @@ ns.RegisterRing({
             rested = { r = 0.35, g = 0.90, b = 0.40 },
         },
     },
-    page = { folder = "status", order = 4.6, build = function(O)
+    page = { folder = "comfort", order = 2, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.7, "Campfire", "Campfire Ring",

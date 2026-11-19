@@ -82,7 +82,7 @@ CircletDB.questColors.progress.r = 0; CircletDB.questX = 999; CircletDB.repSize 
 opts.args.progress.args.quest.args.resetRing.func({})
 table.insert(OUT, "after quest reset: shape=" .. CircletDB.questShape .. " rot=" .. CircletDB.questRotation .. " size=" .. CircletDB.questSize .. " r=" .. CircletDB.questColors.progress.r .. " X=" .. CircletDB.questX .. " rep untouched=" .. CircletDB.repSize)
 CircletDB.pin2X = 5; CircletDB.pinSize = 33
-opts.args.pin.args.resetRing.func({})
+opts.args.progress.args.pin.args.resetRing.func({})
 table.insert(OUT, "after pin reset: pin2X=" .. tostring(rawget(CircletDB, "pin2X")) .. " pinSize=" .. CircletDB.pinSize .. " pinned kept=" .. tostring(CircletDB.pinned ~= nil))
 -- auto edit
 for _, d in ipairs(NSX.RINGS) do NSX.SetRingEditing(d.key, false, true) end

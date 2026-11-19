@@ -65,6 +65,7 @@ chat:   /circ corpse    - preview the corpse ring
 chat:   /circ breath    - preview the breath ring
 chat:   /circ food      - preview the food & drink ring
 chat:   /circ camp      - preview the campfire ring
+chat:   /circ hearth    - preview the hearthstone ring
 chat:   /circ clock     - preview the clock ring
 chat:   /circ craft     - preview the crafting ring
 chat:   /circ gather    - preview the gathering ring
@@ -76,6 +77,7 @@ chat:   /circ ready     - preview the ready check ring
 chat:   /circ regen     - preview the mana regen ring
 chat:   /circ pins      - preview the quest rings
 chat:   /circ totems    - preview the totem rings
+chat:   /circ showxp    - show your current XP on the ring for a few seconds
 chat:   /circ levelup   - preview the level-up effect
 chat:   /circ rested    - preview the rested XP gained ring
 chat:   /circ complete  - preview the objective-complete animation

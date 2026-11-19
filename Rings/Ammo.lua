@@ -263,7 +263,7 @@ ns.RegisterRing({
             restock = { r = 0.30, g = 0.85, b = 0.30 },
         },
     },
-    page = { folder = "status", order = 5, build = function(O)
+    page = { folder = "combat", order = 4, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(7, "Ammo", "Ammo Ring",

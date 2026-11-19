@@ -833,7 +833,7 @@ ns.RegisterRing({
             interrupted = { r = 1.00, g = 0.30, b = 0.30 },
         },
     },
-    page = { folder = "professions", order = 4, build = function(O)
+    page = { folder = "combat", order = 2, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(13.5, "Target casting", "Target Cast Ring",

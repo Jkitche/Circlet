@@ -323,7 +323,7 @@ ns.RegisterRing({
     page = { folder = "progress", order = 4, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(4, "Professions", "Profession Ring",
+            local tab = RingTab(4, "Profession skills", "Profession Ring",
                 "Pops up and fills when a profession (Mining, Tailoring...) or secondary skill (Cooking, First Aid, "
                 .. "Fishing, Riding) goes up, or you train to a new tier. Weapon skills have their own ring.",
                 MergeTop(TopRow("skill", "profession ring", PreviewSkillRing, "Show example skill-ups: a profession, a "

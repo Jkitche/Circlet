@@ -296,7 +296,7 @@ ns.RegisterRing({
             ticks = { r = 0.90, g = 0.90, b = 0.95 },
         },
     },
-    page = { folder = "status", order = 4.7, build = function(O)
+    page = { folder = "comfort", order = 3, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.8, "Clock", "Clock Ring",

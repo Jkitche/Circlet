@@ -363,7 +363,7 @@ ns.RegisterRing({
             learning = { r = 0.75, g = 0.75, b = 0.80 }, -- a route not in the data
         },
     },
-    page = { folder = "status", order = 1, build = function(O)
+    page = { folder = "travel", order = 1, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(8, "Flight", "Flight Ring",

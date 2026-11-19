@@ -270,7 +270,7 @@ ns.RegisterRing({
         pinMovable   = true,  -- quest rings can be dragged in edit mode
         pinned       = {},    -- per character: the pinned quest IDs, in order
     },
-    page = { folder = nil, order = 5, build = function(O)
+    page = { folder = "progress", order = 3.5, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(5, "Quest rings", "Quest Rings",

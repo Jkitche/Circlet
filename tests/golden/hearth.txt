@@ -1,0 +1,14 @@
+nothing: (hidden)
+2s into Hearthstone: Hearthstone / 8.0s / Goldshire fill=15 | motes=30 comet parts=14 wave=false
+cast ring meanwhile: (hidden)
+went off: Hearthstone / Home! fill=72 | motes=30 comet parts=14 wave=true
+later: (hidden)
+interrupted: Hearthstone / Interrupted fill=29
+faded: (hidden)
+Astral Recall: Hearthstone / 7.0s / Goldshire fill=22
+ring off: (hidden) | cast ring: Hearthstone / 8.0 / Casting fill=15
+fx off: motes=0 comet parts=0 wave=false
+Flash Heal: (hidden)
+preview: Hearthstone / 5.7s / Goldshire fill=31
+preview 8s: Hearthstone / Home! fill=72
+ERRORS: {}

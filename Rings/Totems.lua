@@ -325,7 +325,7 @@ ns.RegisterRing({
             air   = { r = 0.80, g = 0.90, b = 1.00 },
         },
     },
-    page = { folder = nil, order = 6, build = function(O)
+    page = { folder = "combat", order = 3.5, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(6, "Totems", "Totem Rings",

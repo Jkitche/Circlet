@@ -437,7 +437,7 @@ ns.RegisterRing({
             marker = { r = 1.00, g = 0.95, b = 0.60 },
         },
     },
-    page = { folder = "status", order = 3, build = function(O)
+    page = { folder = "travel", order = 3, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10, "Corpse", "Corpse Ring",

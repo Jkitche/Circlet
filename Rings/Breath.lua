@@ -224,7 +224,7 @@ ns.RegisterRing({
             feign    = { r = 0.70, g = 0.70, b = 0.75 },
         },
     },
-    page = { folder = "status", order = 4, build = function(O)
+    page = { folder = "travel", order = 4, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.5, "Breath", "Breath Ring",

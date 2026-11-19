@@ -190,7 +190,7 @@ ns.RegisterRing({
             rolled = { r = 0.55, g = 0.85, b = 0.55 },
         },
     },
-    page = { folder = "status", order = 4.8, build = function(O)
+    page = { folder = "group", order = 1, build = function(O)
             local Toggle, Range, Color, Box = O.Toggle, O.Range, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.9, "Loot rolls", "Loot Roll Ring",

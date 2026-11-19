@@ -27,7 +27,7 @@ local GROUPS = {
     { name = "Progress", keys = { "xp", "quest", "pin", "rep", "skill", "weapon", "pet" } },
     { name = "Combat", keys = { "cast", "targetCast", "regen", "totem", "ammo" } },
     { name = "Group", keys = { "loot", "ready" } },
-    { name = "Travel and survival", keys = { "flight", "timed", "corpse", "breath" } },
+    { name = "Travel and survival", keys = { "flight", "hearth", "timed", "corpse", "breath" } },
     { name = "Professions", keys = { "craft", "gather", "fish" } },
     { name = "Comfort", keys = { "food", "camp", "clock", "timer" } },
 }

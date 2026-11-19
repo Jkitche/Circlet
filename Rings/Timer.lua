@@ -248,7 +248,7 @@ ns.RegisterRing({
             done = { r = 0.40, g = 0.90, b = 0.40 },
         },
     },
-    page = { folder = "status", order = 4.75, build = function(O)
+    page = { folder = "comfort", order = 4, build = function(O)
             local Toggle, Range, Color, Execute, Box = O.Toggle, O.Range, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.85, "Timer", "Timer Ring",

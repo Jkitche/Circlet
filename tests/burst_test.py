@@ -96,6 +96,6 @@ CHAN = nil; Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "f2", 7620); Advance(2
 CircletDB.fishEnabled = true
 
 -- Crafting previews: the batch that finishes bursts.
-CircletDB.craftIconBg = true; Slash("craft"); Advance(12.1); P("craft, batch done:  " .. Icon("craft")); Advance(0.6); P("craft, +0.7s:       " .. Icon("craft")); Advance(20)
+CircletDB.craftIconBg = true; Slash("craft"); Advance(6.1); P("craft, batch done:  " .. Icon("craft")); Advance(0.65); P("craft, +0.7s:       " .. Icon("craft")); Advance(20)
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

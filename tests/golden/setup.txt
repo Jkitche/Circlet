@@ -23,6 +23,7 @@
   [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
+        | [x] Hearthstone ring  <Show>
         | [x] Timed quest ring  <Show>
         | [x] Corpse ring  <Show>
         | [x] Breath ring  <Show>
@@ -59,6 +60,7 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
+        | [x] Hearthstone ring  <Show>
         | [x] Timed quest ring  <Show>
         | [x] Corpse ring  <Show>
         | [x] Breath ring  <Show>
@@ -105,7 +107,7 @@ hide XP bar: true
   footer: [Skip setup] [Back] [Next]
 segmented + larger: xp segmented 168, cast segmented 120, pin segmented
 back to keep: xp smooth 140, cast smooth 100, pin segmented
-show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,clock,timer,craft,gather,fish,cast,targetCast,loot,ready,regen,pin
+show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,targetCast,loot,ready,regen,pin
 back -> step 2, editing: ''
 --- step 4
   Welcome to Circlet
@@ -117,26 +119,25 @@ back -> step 2, editing: ''
   (You can come back any time: /circ setup, or Setup on the options window's General tab. Each ring's own page has many more options.)
   footer: [Skip setup] [Back] [Finish]
 finished: open=false setupDone=true seen loot=true
-arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,clock,timer,craft,gather,fish,cast,targetCast,loot,ready,regen,pin
+arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,targetCast,loot,ready,regen,pin
 after /circ edit: editing ''
 after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
-  New in Circlet 1.3.0
-  3 new things
+  New in Circlet 1.4.0
+  1 new thing
   (Added since you last played. Tick what you want; Show puts it on screen.)
-  [x] Fishing ring  <Show>
-  [x] Mana regen ring  <Show>
-  [x] Timer ring  <Show>
+  [x] Hearthstone ring  <Show>
   footer: [Full setup] [Done]
 done, open: false
 ERRORS: {}
 ######## update
 existing player, 3s after login: open=true setupDone=true
 --- new in
-  New in Circlet 1.3.0
-  8 new things
+  New in Circlet 1.4.0
+  9 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
+  [x] Hearthstone ring  <Show>
   [x] Fishing ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Timer ring  <Show>
@@ -177,6 +178,7 @@ next login, open: false
   [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
+        | [x] Hearthstone ring  <Show>
         | [x] Timed quest ring  <Show>
         | [x] Corpse ring  <Show>
         | [x] Breath ring  <Show>

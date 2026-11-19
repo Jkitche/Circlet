@@ -1,0 +1,17 @@
+Alchemy: crafting glow=1 dot=28 | item made glow=2 star=6 dot=28 | done glow=3 star=24 dot=28 | after nothing
+Blacksmithing: crafting glow=1 spark=7 tool | item made glow=2 star=6 spark=7 tool | done glow=3 star=25 spark=7 tool | after nothing
+Engineering: crafting glow=2 star=7 spark=18 | item made glow=3 star=13 spark=18 | done glow=4 star=30 spark=12 | after nothing
+Enchanting: crafting glow=2 star=15 spark=2 | item made glow=3 star=21 spark=2 | done glow=4 star=39 spark=2 | after nothing
+Tailoring: crafting star=1 line=12 | item made glow=1 star=7 line=17 | done glow=2 star=25 line=49 | after nothing
+Leatherworking: crafting dot=18 line=134 spark=24 | item made glow=1 star=6 dot=24 line=166 spark=33 | done glow=2 star=25 dot=72 line=503 spark=97 | after nothing
+Cooking: crafting glow=7 star=7 puff=9 | item made glow=8 star=13 puff=9 | done glow=9 star=31 puff=9 | after nothing
+First Aid: crafting glow=2 spark=12 | item made glow=3 star=6 spark=12 | done glow=4 star=24 spark=12 | after nothing
+Mining: crafting glow=2 star=14 | item made glow=3 star=19 | done glow=4 star=38 | after nothing
+Poisons: crafting glow=1 dot=16 | item made glow=2 star=6 dot=16 | done glow=3 star=24 dot=16 | after nothing
+Fishing: crafting glow=1 star=6 | item made glow=2 star=12 | done glow=3 star=30 | after nothing
+stopped: star=1 line=17
+stopped 1.2s: nothing
+DoCraft enchanting: glow=2 star=15 spark=2
+fx off: nothing
+preview: glow=1 dot=28
+ERRORS: {}

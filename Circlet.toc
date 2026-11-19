@@ -49,10 +49,12 @@ Rings\Campfire.lua
 Rings\Clock.lua
 Rings\Timer.lua
 Rings\ManaRegen.lua
+Rings\CraftFx.lua
 Rings\Craft.lua
 Rings\GatherFx.lua
 Rings\Gather.lua
 Rings\Fishing.lua
+Rings\Hearth.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\TargetCast.lua

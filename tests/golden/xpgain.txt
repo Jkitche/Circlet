@@ -1,0 +1,11 @@
+idle: head=false sparkles=0
+filling: head=true sparkles=5
+just landed: head=true sparkles=2
+settled: head=false sparkles=0
+option off: head=false sparkles=0
+again: head=true sparkles=5
+before showxp: shown=false alpha=0.00 | Drag to move  ·  Shift: no snap  ·  Right-click to reset | Level 16 | +300 XP | +30.0% | 90.0% | Normal
+chat: |cffffd100Circlet|r: Level 16: 900 / 1,000 XP (90.0%), 100 to go.
+showxp: shown=true alpha=1.00 | Drag to move  ·  Shift: no snap  ·  Right-click to reset | Level 16 |  |  | 90.0% | Normal
+showxp later: shown=false alpha=0.00 | Drag to move  ·  Shift: no snap  ·  Right-click to reset | Level 16 |  |  | 90.0% | Normal
+ERRORS: none

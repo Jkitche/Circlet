@@ -27,13 +27,14 @@ function Channel(id) n = n + 1; local g = "Cast-" .. n; Fire("UNIT_SPELLCAST_CHA
 s = open('liveedit_test.py').read()
 exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
 lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
-lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
+NSX = lua.table(); lua.globals().NS = NSX; lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g._text and g._text ~= "" and not tostring(g._text):match("Drag") then table.insert(t, tostring(g._text)) end end return table.concat(t, " / ") end
 function Ring() for _, f in ipairs(allFrames) do if f.sqKey == "regen" and f._shown then return f end end end
 function Fill() local f = Ring(); local n = 0; if f then for _, l in ipairs(f.fill) do if l._shown ~= false and l._x1 then n = n + 1 end end end return n end
 function C() local f = Ring() return f and (T(f) .. " fill=" .. Fill()) or "(hidden)" end
+function Fx() local p = NS.RegenFxParts(); if not p then return "fx none" end local n = 0 for _, m in ipairs(p.motes) do if m.tex._shown then n = n + 1 end end local b = 0 for _, m in ipairs(p.bits) do if m.tex._shown then b = b + 1 end end return "glow=" .. tostring(p.glow._shown and true or false) .. " spark=" .. tostring(p.tipStar._shown and true or false) .. " bits=" .. b .. " motes=" .. n end
 
 P("nothing cast: " .. C())
 Cast(2061); Advance(1); P("Flash Heal, 1s: " .. C())
@@ -68,6 +69,10 @@ Buff(27827, "Spirit of Redemption"); Advance(1); Cast(2061); Advance(1); P("Spir
 Buff(29166, "Innervate"); Advance(1); Cast(2061); Advance(1); P("Innervate: " .. C()); Unbuff(29166); Advance(0.5); P("Innervate ends: " .. C()); Advance(7)
 Buff(12536, "Clearcasting"); Advance(1); Cast(2061); Unbuff(12536); Advance(0.3); Cast(2061); Advance(1); P("free cast, then a paid one right after: " .. C()); Advance(7)
 
+-- The animation: a glow while waiting, motes flowing in once regen starts (or during Innervate).
+Cast(2061); Advance(2); P("fx waiting: " .. Fx()); Advance(3.5); P("fx regen 0.5s: " .. Fx()); Advance(7)
+Buff(29166, "Innervate"); Advance(1); Cast(2061); Advance(1.5); P("fx innervated: " .. Fx()); Unbuff(29166); Advance(7)
+CircletDB.regenFx = false; Cast(2061); Advance(5.5); P("fx off: " .. Fx()); CircletDB.regenFx = true; Advance(7)
 Slash("regen"); Advance(2); P("preview: " .. C()); Advance(4); P("preview 6s: " .. C()); Advance(15)
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

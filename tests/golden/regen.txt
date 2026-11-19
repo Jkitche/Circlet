@@ -22,6 +22,10 @@ Spirit of Redemption: (hidden)
 Innervate: Mana regen / 4.0s / Innervated fill=15
 Innervate ends: Mana regen / 3.5s / No regen fill=22
 free cast, then a paid one right after: Mana regen / 3.7s / No regen fill=19
+fx waiting: glow=true spark=true bits=6 motes=0
+fx regen 0.5s: glow=true spark=false bits=0 motes=4
+fx innervated: glow=true spark=true bits=6 motes=12
+fx off: glow=false spark=false bits=0 motes=0
 preview: Mana regen / 3.0s / No regen fill=29
 preview 6s: Mana regen / Regenerating fill=72
 ERRORS: {}

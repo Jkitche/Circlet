@@ -2,10 +2,41 @@
 
 ## Unreleased
 
-- **Tidier options window.** On the General page, the ring on/off checkboxes are now grouped into
-  three boxes that match the folders on the left (Progress rings, Travel & status, Professions &
-  casting), three to a row. Everywhere else, checkboxes sit two to a row with their explanation in
+- **/circ showxp** (or /circ myxp): brings the XP ring up for a few seconds at your current XP,
+  even when it's hidden or its text has faded, and prints your XP to chat (level, XP into it and
+  to go, rested).
+- **Tidier options window.** The rings are sorted into six folders on the left instead of three:
+  Progress, Combat & casting, Group, Travel & survival, Professions, and Rest & utility (the
+  quest rings and totem pages moved into Progress and Combat & casting). On the General page, the
+  ring on/off checkboxes are grouped into a box for each folder, three to a row. Everywhere else, checkboxes sit two to a row with their explanation in
   the tooltip instead of printed underneath, so pages are shorter and easier to scan.
+- **Mana regen animation** (new; on by default, Mana regen > Animations). While the five-second
+  rule holds your regen back, the ring charges up: a bright spark rides the end of the fill with
+  motes drawn into it, and a glow breathes in the middle, all brightening as regen gets closer. When regen starts
+  again, the glow swells, motes of mana spiral in from the ring to its middle and the spell's icon
+  bursts. During Innervate the mana keeps flowing in through the countdown.
+- **Crafting animations** (new; on by default, Crafting > Profession animations). Each crafting
+  profession gets an animation of its own on the crafting ring, worked out from the trade skill
+  window you craft from. Alchemy: bubbles rising through a shifting potion glow. Blacksmithing: a
+  hammer striking the end of the fill, throwing sparks. Engineering: crackling lightning.
+  Enchanting: orbiting runes and an arcane beam. Tailoring: a needle laying stitches along the
+  fill. Leatherworking: the fill turns to leather as you work, worn, brown and cracked, with a tooled
+  scroll pattern and brass studs, and a needle lacing a thread along it in wide, sweeping waves.
+  Cooking: flames under the ring and steam rising. First Aid: a heartbeat glow and rising
+  crosses. Smelting: molten metal and embers. Poisons: dripping venom. Each item made pops at the
+  end of the fill, and a finished batch bursts in the profession's colors. The preview plays each profession in turn, or pick one
+  under Preview animation. The crafting ring now also follows the older Craft window (Enchanting
+  on older clients).
+- **Hearthstone ring** (new; Travel & status > Hearthstone). While you cast your Hearthstone (or
+  Astral Recall) the ring fills and counts down with the place you're bound to, then says Home!
+  and bursts. With Swirling portal on (the default), three spiral arms of arcane motes turn in
+  its middle, two comets race round the ring, and everything speeds up and brightens as the cast
+  nears its end; when it goes off the swirl collapses into a flash and a shockwave rolls out.
+  The cast ring leaves these casts to it (turn the hearthstone ring off to have the cast ring
+  show them again).
+- **XP gain effect** (new; on by default, XP > Effects > Gain effect). As XP comes in, a glowing
+  comet rides the end of the fill in its color (blue while rested, purple after), shedding
+  sparkles behind it, and flares where the fill lands.
 
 ## 1.3.2
 

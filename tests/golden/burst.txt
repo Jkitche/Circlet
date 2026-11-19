@@ -18,6 +18,6 @@ fish ring, got away:  icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0
 fishing, reeling:   icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
 fishing, caught:    icon Item6303 36 wide, alpha 1.00 | burst: glow yes, 8 sparks
 fishing, got away:  icon Trade_Fishing 31 wide, alpha 1.00 | burst: glow no, 0 sparks
-craft, batch done:  icon INV_Misc_Bandage_18 96 wide, alpha 0.80 | burst: glow yes, 8 sparks
-craft, +0.7s:       icon INV_Misc_Bandage_18 82 wide, alpha 1.00 | burst: glow no, 0 sparks
+craft, batch done:  icon INV_Potion_51 94 wide, alpha 0.73 | burst: glow yes, 8 sparks
+craft, +0.7s:       icon INV_Potion_51 82 wide, alpha 1.00 | burst: glow no, 0 sparks
 ERRORS: {}

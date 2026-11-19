@@ -388,6 +388,7 @@ local function Begin(spellID, guid, channel)
     -- Crafts and gathers have their own rings.
     if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) or (ns.FishingActive and ns.FishingActive()) then return end
     spellID = Clean(spellID)
+    if ns.IsHearthCast and ns.IsHearthCast(spellID) then return end -- the hearthstone ring has it
     local name = spellID and ns.SpellName(spellID)
     local icon = spellID and ns.SpellIcon(spellID)
     if not name then
@@ -490,7 +491,7 @@ ns.RegisterRing({
             rez         = { r = 1.00, g = 0.90, b = 0.55 },
         },
     },
-    page = { folder = "professions", order = 3, build = function(O)
+    page = { folder = "combat", order = 1, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(13, "Casting", "Cast Ring",

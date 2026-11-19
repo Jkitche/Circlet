@@ -119,7 +119,7 @@ ns.RegisterRing({
             warn = { r = 0.95, g = 0.25, b = 0.15 },
         },
     },
-    page = { folder = "status", order = 2, build = function(O)
+    page = { folder = "travel", order = 2, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(9, "Timed", "Timed Quest Ring",
