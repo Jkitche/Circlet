@@ -31,6 +31,9 @@ local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 -- (FLASH_HZ times a second) to grab attention.
 -- cfg.holdWhile(entry), optional: while it returns true the ring stays up (its hold time
 -- starts counting once it returns false).
+-- cfg.decorate(entry, frame, geom, shown, moving, fill), optional, runs every frame after
+-- drawing so a ring can add effects of its own: shown is the fill (0..1), moving is true
+-- while it's animating a change, fill its color; entry.landedAt is when the fill landed.
 
 local FLASH_HZ = 1.5
 
@@ -280,6 +283,7 @@ local function CreateProgressRing(cfg)
         local s = cfg.style(e, p >= 1)
         if p >= 1 and not e.finishFired and anim.t >= anim.dur then
             e.finishFired = true
+            e.landedAt = GetTime()
             local icon = cfg.icon and cfg.icon(e)
             if icon and icon.celebrate then
                 e.iconStart = GetTime()
@@ -322,6 +326,9 @@ local function CreateProgressRing(cfg)
         frame.labelText:SetText(s.label or "")
         frame.labelText:SetTextColor(s.labelColor.r, s.labelColor.g, s.labelColor.b)
         DrawIcon(e)
+        if cfg.decorate then
+            cfg.decorate(e, frame, geom, anim.shown, anim.t < anim.dur and math.abs(anim.to - anim.from) > 1e-9, s.fill)
+        end
     end
 
     local ShowNext -- forward declaration

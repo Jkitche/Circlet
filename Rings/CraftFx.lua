@@ -644,6 +644,7 @@ ns.CraftProfession = OpenProfession
 ns.CraftKindOf = KindOf
 ns.DrawCraftFx = DrawCraftFx
 ns.CraftFxParts = function() return fx end -- for the tests
+ns.CraftPalette = function(kind) return PALETTE[kind] end -- a profession's two colors (the skill ring's effects)
 -- For the options' preview and edit mode's sample: each profession with a recipe to show.
 ns.CRAFT_FX_SAMPLES = {
     { kind = "alchemy",        name = "Alchemy",        recipe = "Lesser Healing Potion", icon = "Interface\\Icons\\INV_Potion_51" },

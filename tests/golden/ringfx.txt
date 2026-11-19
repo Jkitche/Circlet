@@ -1,0 +1,17 @@
+loot deciding:  dice=2 pips=6 glints=0 redglow=false sparkles=6
+loot tossed:    dice=2 pips=4 glints=0 redglow=false sparkles=6
+loot settling:  dice=2 pips=5 glints=2 redglow=false sparkles=6
+loot rolled, late: dice=2 pips=5 glints=0 redglow=false sparkles=6
+loot fx off:    dice=0 pips=0 glints=0 redglow=false sparkles=0
+timed start (fill end under the sand): pile=16 grains=0
+timed later:    pile=16 grains=14
+timed fx off:   pile=0 grains=0
+flight:         arrow=true trail=11 clouds=6 streaks=4 dust=0
+flight no data: arrow=true trail=11 clouds=6 streaks=4 dust=0
+flight fx off:  arrow=false trail=0 clouds=0 streaks=0 dust=0
+skill rising:   glows=1 stars=10 lines=0
+skill landed:   glows=1 stars=10 lines=0
+weapon rising:  glows=1 stars=0 lines=10
+weapon landed:  glows=1 stars=0 lines=9
+skills fx off:  glows=0 stars=0 lines=0 | glows=0 stars=0 lines=0
+ERRORS: {}

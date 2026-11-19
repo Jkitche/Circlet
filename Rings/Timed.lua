@@ -68,7 +68,104 @@ local function State(title, left, total, more)
         frac = total and total > 0 and math.max(0, math.min(1, left / total)) or 1,
         color = c,
         hold = left <= 0 and (db.timedHold or 3) or 0,
+        timed = true, timedWarn = warn, timesUp = left <= 0,
     }
+end
+
+---------------------------------------------------------------------------
+-- The animation: an hourglass
+---------------------------------------------------------------------------
+-- With timedFx on, the ring is the glass: as its time drains, sand trickles from the end
+-- of the fill down into the hollow and piles up in its bottom (behind the text), up to
+-- about half way when time runs out. In the warning stretch the sand reddens and pours
+-- faster; when time's up the stream stops and the pile flashes. Worked out from the time
+-- and the fill, so edit mode's sample plays it too.
+local SAND = { r = 0.88, g = 0.72, b = 0.42 }
+local CHORDS, GRAINS = 16, 14
+local timesUpAt -- when the current ring's time ran out (for the flash)
+local sand -- made on first use
+
+local function BuildSand(frame)
+    sand = { chords = {}, grains = {} }
+    for i = 1, CHORDS do
+        local l = frame:CreateLine(nil, "BACKGROUND", nil, 2)
+        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        l:Hide()
+        sand.chords[i] = l
+    end
+    for i = 1, GRAINS do
+        local t = frame:CreateTexture(nil, "ARTWORK", nil, 3)
+        t:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
+        t:Hide()
+        sand.grains[i] = t
+    end
+end
+
+local function HideSand()
+    if not sand then return end
+    for _, l in ipairs(sand.chords) do l:Hide() end
+    for _, t in ipairs(sand.grains) do t:Hide() end
+end
+
+local function DrawSand(st, frame, geom)
+    if not (st and st.timed and db.timedFx) or not geom or geom.R <= 0 then timesUpAt = nil return HideSand() end
+    if not sand then BuildSand(frame) end
+    local now = GetTime()
+    local T = math.max(3, geom.T)
+    local ri = math.max(4, geom.R - geom.T / 2) - 1
+    local frac = st.frac or 1
+    local warn = st.timedWarn and 1 or 0
+    if st.timesUp then timesUpAt = timesUpAt or now else timesUpAt = nil end
+    local flash = timesUpAt and math.max(0, math.cos(math.pi * 3 * math.min(1, (now - timesUpAt) / 1.2))) or 0
+    local wc = db.timedColors.warn
+    local r = SAND.r + (wc.r - SAND.r) * warn * 0.5
+    local g = SAND.g + (wc.g - SAND.g) * warn * 0.5
+    local b = SAND.b + (wc.b - SAND.b) * warn * 0.5
+
+    -- The pile: a segment of the hollow from the bottom up, in horizontal strips; its top
+    -- strip a little brighter, like the light on the sand's surface.
+    local h = (1 - frac) * ri
+    local surface = -ri + h
+    local step = h / CHORDS
+    for i, l in ipairs(sand.chords) do
+        local y = -ri + step * (i - 0.5)
+        local half = math.sqrt(math.max(0, ri * ri - y * y)) * 0.96
+        if h > 0.5 and half > 0.5 then
+            local top = i == CHORDS
+            local k = top and 1.25 or 1
+            l:SetStartPoint("CENTER", frame, -half, y)
+            l:SetEndPoint("CENTER", frame, half, y)
+            l:SetThickness(step + 0.6)
+            l:SetColorTexture(math.min(1, r * k + flash * 0.5), math.min(1, g * k + flash * 0.5), math.min(1, b * k + flash * 0.4),
+                (top and 0.5 or 0.32) + flash * 0.3)
+            l:Show()
+        else
+            l:Hide()
+        end
+    end
+
+    -- The stream: grains falling from the end of the fill, drawn in toward the middle as they
+    -- fall, onto the pile.
+    local tx, ty = ns.RingPoint(geom, frac)
+    local pouring = not st.timesUp and frac > 0
+    local speed = 1.1 + 0.9 * warn
+    for i, t in ipairs(sand.grains) do
+        if pouring and ty > surface then
+            local u = (now * speed + i / GRAINS) % 1
+            local fall = u * u
+            local x = tx + (tx * 0.15 - tx) * u + math.sin(i * 2.3 + now * 3) * T * 0.15
+            local y = ty + (surface - ty) * fall
+            local s = math.max(1.5, T * 0.32)
+            t:ClearAllPoints()
+            t:SetPoint("CENTER", frame, "CENTER", x, y)
+            t:SetSize(s, s)
+            t:SetVertexColor(math.min(1, r * 1.15), math.min(1, g * 1.15), math.min(1, b * 1.15))
+            t:SetAlpha(math.min(1, u * 8) * 0.9)
+            t:Show()
+        else
+            t:Hide()
+        end
+    end
 end
 
 local timedRing = CreateLiveRing({
@@ -85,6 +182,7 @@ local timedRing = CreateLiveRing({
         local left = math.max(0, 150 - (t * 14) % 160)
         return State("Protecting the Shipment", left, 150, 0)
     end,
+    decorate = DrawSand,
 })
 
 local function PreviewTimedRing() timedRing.Preview(12) end
@@ -92,6 +190,7 @@ local function PreviewTimedRing() timedRing.Preview(12) end
 -- Shared with the files loaded after this one.
 ns.timedRing = timedRing
 ns.PreviewTimedRing = PreviewTimedRing
+ns.TimedSandParts = function() return sand end -- for the tests
 
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
@@ -106,6 +205,7 @@ ns.RegisterRing({
         -- Timed quest ring: escort and other timed quests. Sits on the right, by the quest list.
         timedEnabled   = true,
         timedWarn      = 60, -- seconds left when it turns the warning color
+        timedFx        = true, -- the hourglass: sand pouring from the fill and piling up in the middle
         timedSize      = 110,
         timedThickness = 11,
         timedOpacity   = 100,
@@ -131,6 +231,9 @@ ns.RegisterRing({
                         enabled = Toggle(1, "timedEnabled", "Show timed quest ring", "Count down timed quests."),
                         warn = Range(2, "timedWarn", "Warn at (seconds left)", 10, 300, 10,
                             "Below this much time (or the last 10% of the quest's time) the ring turns the warning color."),
+                        fx = Toggle(3, "timedFx", "Animations",
+                            "An hourglass: sand trickles from the end of the fill and piles up in the middle of the ring "
+                            .. "as time runs out, reddening and pouring faster near the end."),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "timedColors", "fill", "Time left", "Ring color while there's time."),

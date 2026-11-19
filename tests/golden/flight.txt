@@ -1,15 +1,15 @@
 idle                       shown=false a=0.00 fill=0 | 
-direct, 1s                 shown=true a=1.00 fill=1 | to Ironforge / 3:50 / remaining
-direct, 121s               shown=true a=1.00 fill=38 | to Ironforge / 1:50 / remaining
+direct, 1s                 shown=true a=1.00 fill=1 | to Ironforge / 4:18 / remaining
+direct, 121s               shown=true a=1.00 fill=34 | to Ironforge / 2:18 / remaining
 direct, overdue            shown=true a=1.00 fill=72 | to Ironforge / 0:00 / landing
-landed                     shown=true a=1.00 fill=72 | to Ironforge / 3:56 / Arrived
-after hold                 shown=false a=0.00 fill=72 | to Ironforge / 3:56 / Arrived
+landed                     shown=true a=1.00 fill=72 | to Ironforge / 4:21 / Arrived
+after hold                 shown=false a=0.00 fill=72 | to Ironforge / 4:21 / Arrived
 learned anything: false factor=nil
-two hops, 5s               shown=true a=1.00 fill=2 | to Lakeshire / 3:00 / remaining
+two hops, 5s               shown=true a=1.00 fill=2 | to Lakeshire / 3:22 / remaining
 no route data              shown=true a=1.00 fill=19 | to Nowhere / 0:04 / No route data
 flight w/o map click       shown=true a=1.00 fill=19 | Flying / 0:03 / No route data
-log: Stormwind, Elwynn > Ironforge, Dun Morogh nodes 2>6 hops 1 yards 7757 stops 0 predicted 231 actual 236.0
-log: Stormwind, Elwynn > Lakeshire, Redridge nodes 2>4>5 hops 2 yards 6219 stops 0 predicted 185 actual 5.2
+log: Stormwind, Elwynn > Ironforge, Dun Morogh nodes 2>6 hops 1 yards 7757 stops 0 predicted 259 actual 261.0
+log: Stormwind, Elwynn > Lakeshire, Redridge nodes 2>4>5 hops 2 yards 6219 stops 0 predicted 207 actual 5.2
 preview                    shown=true a=1.00 fill=24 | to Ironforge / 1:42 / remaining
 preview no-data part       shown=true a=1.00 fill=19 | to Southshore / 0:26 / No route data
 editing                    shown=true a=1.00 fill=19 | to Ironforge / 1:51 / remaining

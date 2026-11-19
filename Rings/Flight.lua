@@ -22,9 +22,11 @@ local FormatTime = ns.FormatTime
 -- polling UnitOnTaxi.
 
 -- Taxi flying speed in yards per second, taking off and landing included. The game
--- files have path lengths but not the speed, so this was measured once in this client:
--- Orgrimmar -> Crossroads -> Sun Rock Retreat, 4252 + 4495 yards, took 260 seconds.
-local SPEED = 33.6
+-- files have path lengths but not the speed, so it's measured from real flights in this
+-- client (the flight log, /circ flightlog): 13 flights of one and two hops, 2,599 to
+-- 13,299 yards, all flew at 29.9 to 30.0 yards a second (fitted 29.99), within half a
+-- second of yards / 30 on every one, with no extra time per flight or per hop.
+local SPEED = 30
 
 ---------------------------------------------------------------- times from the game's flight paths
 -- Node IDs by English name: the backup for when the flight map can't say a node's ID.
@@ -155,6 +157,161 @@ local function Layout()
     flight.label:SetPoint("TOP", flight.time, "BOTTOM", 0, -2)
 end
 
+---------------------------------------------------------------- the animation
+-- With flightFx on: the player arrow flies along the ring at the end of the fill (or the
+-- head of the circling arc on a route not in the data), pointing the way it's going, with a
+-- contrail fading out behind it. Clouds drift through the middle of the ring and wind
+-- streaks rush past. On landing the arrow touches down in a glow and a puff of dust, and
+-- the clouds part and fade. Worked out from the time, so edit mode's sample plays it too.
+local CLOUDS, STREAKS, TRAIL, DUST = 6, 4, 12, 6
+local GLOW_TEX = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
+local TOUCHDOWN = 1.2 -- seconds the landing plays
+local fx -- made on first use
+
+local function FxTex(tex, layer, sub, blend)
+    local t = flight:CreateTexture(nil, layer, nil, sub)
+    if t:SetTexture(tex) == false then t:SetTexture("Interface\\Cooldown\\star4") end
+    t:SetBlendMode(blend)
+    t:Hide()
+    return t
+end
+
+local function BuildFx()
+    fx = { clouds = {}, streaks = {}, trail = {}, dust = {} }
+    for i = 1, CLOUDS do fx.clouds[i] = FxTex(GLOW_TEX, "BACKGROUND", -4, "BLEND") end
+    for i = 1, STREAKS do
+        local l = flight:CreateLine(nil, "ARTWORK", nil, 1)
+        if l.SetBlendMode then l:SetBlendMode("ADD") end
+        l:Hide()
+        fx.streaks[i] = l
+    end
+    for i = 1, TRAIL do
+        local l = flight:CreateLine(nil, "ARTWORK", nil, 2)
+        if l.SetBlendMode then l:SetBlendMode("ADD") end
+        l:Hide()
+        fx.trail[i] = l
+    end
+    for i = 1, DUST do fx.dust[i] = FxTex(GLOW_TEX, "ARTWORK", 3, "BLEND") end
+    fx.glow = FxTex(GLOW_TEX, "ARTWORK", 4, "ADD")
+    fx.arrow = flight:CreateTexture(nil, "OVERLAY", nil, 7)
+    fx.isArrow = fx.arrow:SetTexture("Interface\\Minimap\\MinimapArrow") ~= false
+    if not fx.isArrow then fx.arrow:SetTexture("Interface\\Cooldown\\star4") end
+    fx.arrow:Hide()
+end
+
+local function HideFx()
+    if not fx then return end
+    for _, t in ipairs(fx.clouds) do t:Hide() end
+    for _, l in ipairs(fx.streaks) do l:Hide() end
+    for _, l in ipairs(fx.trail) do l:Hide() end
+    for _, t in ipairs(fx.dust) do t:Hide() end
+    fx.glow:Hide()
+    fx.arrow:Hide()
+end
+
+local function Hash(n)
+    local x = math.sin(n * 12.9898 + 78.233) * 43758.5453
+    return x - math.floor(x)
+end
+
+-- head: where the arrow is (a fraction round the ring); landedAge: seconds since landing.
+local function DrawFlightFx(now, head, c, landedAge)
+    if not db.flightFx or not geom or geom.R <= 0 then return HideFx() end
+    if not fx then BuildFx() end
+    local R, T = geom.R, math.max(3, geom.T)
+    local ri = math.max(4, R - T / 2)
+    local landing = landedAge and math.min(1, landedAge / TOUCHDOWN) or 0
+    if landedAge and landedAge >= TOUCHDOWN then return HideFx() end
+    local k = 1 - landing
+
+    -- Clouds: soft puffs drifting right to left at their own heights and speeds, fading in
+    -- and out at the sides of the hollow. Landing, they part outward and fade.
+    for i, t in ipairs(fx.clouds) do
+        local speed = 0.05 + 0.05 * Hash(i)
+        local u = (now * speed + Hash(i + 10)) % 1
+        local x = (1 - 2 * u) * ri * 0.9
+        local y = (Hash(i + 20) * 2 - 1) * ri * 0.55
+        local part = 1 + landing * 0.8
+        local edge = math.max(0, 1 - (math.abs(x) / (ri * 0.9)) ^ 3)
+        local s = ri * (0.55 + 0.35 * Hash(i + 30))
+        t:ClearAllPoints()
+        t:SetPoint("CENTER", flight, "CENTER", x * part, y * part)
+        t:SetSize(s * 1.5, s)
+        t:SetVertexColor(0.95, 0.97, 1)
+        t:SetAlpha(0.32 * edge * k)
+        t:Show()
+    end
+    -- Wind streaks: thin lines rushing past.
+    for i, l in ipairs(fx.streaks) do
+        local u = (now * (0.6 + 0.3 * Hash(i + 40)) + Hash(i + 50)) % 1
+        local x = (1 - 2 * u) * ri * 0.95
+        local y = (Hash(i + 60 + math.floor(now * (0.6 + 0.3 * Hash(i + 40)) + Hash(i + 50))) * 2 - 1) * ri * 0.6
+        local len = ri * 0.35
+        local a = math.sin(math.pi * u) * 0.35 * k
+        l:SetStartPoint("CENTER", flight, x, y)
+        l:SetEndPoint("CENTER", flight, x + len, y)
+        l:SetThickness(math.max(1, T * 0.12))
+        l:SetColorTexture(1, 1, 1, a)
+        l:SetShown(a > 0.01)
+    end
+
+    -- The arrow, and its contrail behind it along the ring.
+    local x, y = ns.RingPoint(geom, head)
+    local x2, y2 = ns.RingPoint(geom, math.min(1, head + 0.004))
+    if head >= 0.996 then
+        local xb, yb = ns.RingPoint(geom, head - 0.004)
+        x2, y2 = x + (x - xb), y + (y - yb)
+    end
+    local ang = math.atan2 and math.atan2(y2 - y, x2 - x) or math.atan(y2 - y, x2 - x)
+    local px, py = x, y
+    for i, l in ipairs(fx.trail) do
+        local f = head - i * 0.012
+        if f < 0 then f = f + 1 end
+        local qx, qy = ns.RingPoint(geom, f)
+        local a = (1 - i / TRAIL) * 0.75 * k
+        l:SetStartPoint("CENTER", flight, px, py)
+        l:SetEndPoint("CENTER", flight, qx, qy)
+        l:SetThickness(math.max(1, T * 0.4 * (1 - i / TRAIL)))
+        l:SetColorTexture(1, 1, 1, a)
+        l:SetShown(a > 0.01)
+        px, py = qx, qy
+    end
+    local bob = math.sin(now * 3) * T * 0.15 * k -- a little rise and fall in the air
+    local s = T * (fx.isArrow and 2.6 or 1.8) * (1 - 0.35 * landing)
+    fx.arrow:ClearAllPoints()
+    fx.arrow:SetPoint("CENTER", flight, "CENTER", x + bob * x / R, y + bob * y / R)
+    fx.arrow:SetSize(s, s)
+    fx.arrow:SetVertexColor(1, 1, 1)
+    if fx.arrow.SetRotation then fx.arrow:SetRotation(ang - math.pi / 2) end -- it points up at 0
+    fx.arrow:SetAlpha(1 - landing ^ 2)
+    fx.arrow:Show()
+    -- A glow under it, flaring as it touches down.
+    local flare = landedAge and math.sin(math.pi * math.min(1, landedAge / 0.6)) or 0
+    fx.glow:ClearAllPoints()
+    fx.glow:SetPoint("CENTER", flight, "CENTER", x, y)
+    local gs = T * (3 + 4 * flare)
+    fx.glow:SetSize(gs, gs)
+    fx.glow:SetVertexColor(c.r, c.g, c.b)
+    fx.glow:SetAlpha((0.5 + 0.5 * flare) * (landedAge and (1 - landing) or 1))
+    fx.glow:Show()
+    -- Landing: a puff of dust spreading from where it touched down.
+    for i, t in ipairs(fx.dust) do
+        if landedAge then
+            local a2 = i / DUST * 2 * math.pi
+            local d = T * 3 * (1 - (1 - landing) ^ 2)
+            t:ClearAllPoints()
+            t:SetPoint("CENTER", flight, "CENTER", x + math.cos(a2) * d, y + math.sin(a2) * d * 0.6)
+            local ds = T * (1.5 + 2 * landing)
+            t:SetSize(ds, ds)
+            t:SetVertexColor(0.85, 0.8, 0.7)
+            t:SetAlpha(0.5 * (1 - landing))
+            t:Show()
+        else
+            t:Hide()
+        end
+    end
+end
+
 -- What to draw right now: dest, elapsed, total (nil = not in the data), landed.
 local function Current(now)
     if editing or now < previewUntil then
@@ -173,7 +330,7 @@ end
 local function Draw(now)
     Layout()
     local dest, elapsed, total, landed = Current(now)
-    if not elapsed then return end
+    if not elapsed then return HideFx() end
     local c = db.flightColors
     for _, l in ipairs(flight.fill2) do l:Hide() end
 
@@ -184,6 +341,7 @@ local function Draw(now)
         flight.time:SetTextColor(1, 1, 1)
         flight.label:SetText("Arrived")
         flight.label:SetTextColor(c.fill.r, c.fill.g, c.fill.b)
+        DrawFlightFx(now, 1, c.fill, trip and trip.landed and now - trip.landed or TOUCHDOWN)
     elseif total then
         local frac = math.min(1, elapsed / math.max(1, total))
         for _, l in ipairs(flight.fill) do l:SetColorTexture(c.fill.r, c.fill.g, c.fill.b, 1) end
@@ -193,6 +351,7 @@ local function Draw(now)
         flight.time:SetTextColor(1, 1, 1)
         flight.label:SetText(left > 0 and "remaining" or "landing")
         flight.label:SetTextColor(0.8, 0.8, 0.8)
+        DrawFlightFx(now, frac, c.fill)
     else
         -- Route not in the data: a quarter arc circling, and the time in the air.
         local spin = (elapsed * 0.35) % 1
@@ -207,6 +366,7 @@ local function Draw(now)
         flight.time:SetTextColor(1, 1, 1)
         flight.label:SetText("No route data")
         flight.label:SetTextColor(c.learning.r, c.learning.g, c.learning.b)
+        DrawFlightFx(now, (spin + 0.25) % 1, c.learning)
     end
     flight.dest:SetText(dest and ("to " .. dest) or "Flying")
     flight.dest:SetTextColor(1, 0.82, 0)
@@ -338,6 +498,7 @@ ns.RegisterCommand({ "flightlog" }, ShowFlightLog) -- the flight log (for checki
 ns.SetFlightEditing = SetFlightEditing
 ns.IsFlightEditing = function() return editing end
 ns.PreviewFlightRing = PreviewFlightRing
+ns.FlightFxParts = function() return fx end -- for the tests
 
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
@@ -350,6 +511,7 @@ ns.RegisterRing({
     defaults = {
         -- Flight ring: a countdown to landing on flight paths.
         flightEnabled     = true,
+        flightFx          = true, -- the arrow and contrail, clouds and wind, and the touchdown
         flightSize        = 120,
         flightThickness   = 12,
         flightOpacity     = 100,
@@ -374,6 +536,10 @@ ns.RegisterRing({
                     "Show the ring counting down a route, then one that isn't in the data. Also /circ flight."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "flightEnabled", "Show flight ring", "Show the ring while you're on a flight path."),
+                        fx = Toggle(2, "flightFx", "Animations",
+                            "The player arrow flies along the end of the fill with a contrail behind it, clouds drift "
+                            .. "through the middle of the ring and wind streaks past, and when you land the arrow touches "
+                            .. "down in a glow and a puff of dust as the clouds part."),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "flightColors", "fill", "Countdown", "Ring color while counting down to landing."),

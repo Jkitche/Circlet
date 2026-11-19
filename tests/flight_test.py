@@ -35,14 +35,14 @@ function T(f) local t = {} for _, g in ipairs(ALL_FS) do if g._parent == f and g
 function S(l) local n = 0 for _, x in ipairs(F.fill) do if x._shown ~= false and x._x1 then n = n + 1 end end
   P(string.format("%-26s shown=%s a=%.2f fill=%d | %s", l, tostring(F._shown), F._alpha or 0, n, T(F))) end
 S("idle")
--- Direct: Stormwind -> Ironforge, 7757 yards at 33.6 yd/s = 231 s, from the very first flight.
+-- Direct: Stormwind -> Ironforge, 7757 yards at 30 yd/s = 259 s, from the very first flight.
 TakeTaxiNode(2); Advance(0.5); ON_TAXI = true; Advance(1); S("direct, 1s")
 Advance(120); S("direct, 121s")
-Advance(115); S("direct, overdue")
+Advance(140); S("direct, overdue")
 ON_TAXI = false; Advance(0.5); S("landed")
 Advance(6); S("after hold")
 P("learned anything: " .. tostring(CircletDB.flightTimes ~= nil and next(CircletDB.flightTimes) ~= nil) .. " factor=" .. tostring(CircletDB.flightFactor))
--- Two hops: Stormwind -> Sentinel Hill -> Lakeshire, 2329 + 3890 yards = 185 s.
+-- Two hops: Stormwind -> Sentinel Hill -> Lakeshire, 2329 + 3890 yards = 207 s (at 30 yards a second).
 TakeTaxiNode(4); Advance(0.3); ON_TAXI = true; Advance(5.2); S("two hops, 5s")
 ON_TAXI = false; Advance(6)
 -- Not in the data: counts up.
