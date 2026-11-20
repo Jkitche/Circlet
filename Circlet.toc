@@ -72,6 +72,7 @@ Features\Profiles.lua
 Features\Migrations.lua
 Features\EditMode.lua
 Features\Setup.lua
+Features\SwingProbe.lua
 
 UI\OptionsKit.lua
 UI\IconGrid.lua
