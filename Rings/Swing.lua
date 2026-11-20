@@ -177,7 +177,7 @@ ns.PreviewSwingRing = function() swingRing.Preview(SAMPLE_SPEED * 4) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "swing", name = "Swing", order = 14.2, since = "1.5.0",
+    key = "swing", name = "Swing", order = 14.2,
     iconBg = true,
     ring = swingRing,
     gameBar = "the game's swing timer bars", -- WoW Forever's own (Features/DefaultUI.lua)

@@ -138,7 +138,7 @@ ns.PreviewShotRing = function() shotRing.Preview(SAMPLE_SPEED * 3) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "shot", name = "Shot", order = 14.3, since = "1.5.0",
+    key = "shot", name = "Shot", order = 14.3,
     iconBg = true,
     ring = shotRing,
     gameBar = "the game's ranged swing timer bar", -- WoW Forever's own (Features/DefaultUI.lua)
