@@ -25,8 +25,8 @@ local FOLDERS = {
         text = "Rings that pop up and fill as you gain XP, advance quests, raise skills and reputation, "
             .. "and level your pet." },
     combat = { order = 3, name = "Combat & casting",
-        text = "Rings for your casts and your target's, your melee swings, the five-second rule on mana, "
-            .. "and your ammo." },
+        text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
+            .. "on mana, and your ammo." },
     group = { order = 4, name = "Group",
         text = "Rings for playing with others: loot rolls and ready checks." },
     travel = { order = 5, name = "Travel & survival",

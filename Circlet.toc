@@ -58,6 +58,7 @@ Rings\Hearth.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\Swing.lua
+Rings\Shot.lua
 Rings\TargetCast.lua
 Rings\LootRoll.lua
 Rings\ReadyCheck.lua

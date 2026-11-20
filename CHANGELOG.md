@@ -9,6 +9,10 @@
   a spell with a cast time restarts it, and haste or slows rescale it. The game keeps the combat
   log from addons, so swings are spotted from the hits your target takes; in a group someone
   else's hit can now and then be taken for yours. Main hand only.
+- **Shot timer ring** (new; Combat & casting > Shot timer). While Auto Shot repeats (or a wand's
+  Shoot, or Throw), the ring fills over your ranged weapon's speed and counts down to the next
+  shot. For Auto Shot's last half second, its aim, when moving holds the shot back, the ring
+  turns red and says Aiming, or Hold still if you're moving.
 - Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
 
 ## 1.4.0

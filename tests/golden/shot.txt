@@ -1,0 +1,18 @@
+idle: (hidden)
+Auto Shot on: Shot / Ready fill=72 color=0.38,0.50,0.30
+1s after a shot: Shot / 1.8 fill=26 color=0.23,0.40,0.20
+aiming: Shot / 0.3 / Aiming fill=65 color=0.50,0.20,0.15
+moving while aiming: Shot / 0.2 / Hold still fill=67 color=0.50,0.20,0.15
+held back (still moving): Shot / Ready / Hold still fill=72 color=0.38,0.50,0.30
+next shot: Shot / 2.3 fill=13 color=0.23,0.40,0.20
+after Aimed Shot: Shot / Ready fill=72 color=0.38,0.50,0.30
+during Aimed Shot: Shot / Casting fill=0
+Aimed Shot interrupted: Shot / Ready fill=72 color=0.38,0.50,0.30
+Multi-Shot (instant): Shot / Ready fill=72 color=0.38,0.50,0.30
+stopped: (hidden)
+wand near the end: Shot / 0.2 fill=63 color=0.23,0.40,0.20
+aim off: Shot / 0.3 fill=65 color=0.23,0.40,0.20
+ring off: (hidden)
+preview: Shot / 1.8 fill=26 color=0.23,0.40,0.20
+preview aiming: Shot / 0.3 / Aiming fill=65 color=0.50,0.20,0.15
+ERRORS: {}

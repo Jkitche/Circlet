@@ -24,6 +24,8 @@ around the minimap.
 - **Mana regen**: the five-second rule, counting down to when your mana regen starts again.
 - **Swing timer**: counts down to your next melee swing while you auto-attack, with how the last
   one went.
+- **Shot timer**: counts down to your next Auto Shot, wand shot or throw, and warns you to hold
+  still through Auto Shot's aim.
 - **Crafting** batches and **gathering** (with what you got). Finishing throws off a burst of
   sparks.
 - **Flight paths**: counts down to landing; route times are learned as you fly.

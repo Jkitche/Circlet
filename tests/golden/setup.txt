@@ -16,6 +16,7 @@
   == Combat
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
+  [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
@@ -54,6 +55,7 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   == Combat
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
+  [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
@@ -109,7 +111,7 @@ hide XP bar: true
   footer: [Skip setup] [Back] [Next]
 segmented + larger: xp segmented 168, cast segmented 120, pin segmented
 back to keep: xp smooth 140, cast smooth 100, pin segmented
-show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,targetCast,loot,ready,regen,pin
+show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 back -> step 2, editing: ''
 --- step 4
   Welcome to Circlet
@@ -121,14 +123,15 @@ back -> step 2, editing: ''
   (You can come back any time: /circ setup, or Setup on the options window's General tab. Each ring's own page has many more options.)
   footer: [Skip setup] [Back] [Finish]
 finished: open=false setupDone=true seen loot=true
-arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,targetCast,loot,ready,regen,pin
+arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 after /circ edit: editing ''
 after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
   New in Circlet 1.5.0
-  1 new thing
+  2 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
+  [x] Shot timer ring  <Show>
   [x] Swing timer ring  <Show>
   footer: [Full setup] [Done]
 done, open: false
@@ -137,8 +140,9 @@ ERRORS: {}
 existing player, 3s after login: open=true setupDone=true
 --- new in
   New in Circlet 1.5.0
-  10 new things
+  11 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
+  [x] Shot timer ring  <Show>
   [x] Swing timer ring  <Show>
   [x] Hearthstone ring  <Show>
   [x] Fishing ring  <Show>
@@ -174,6 +178,7 @@ next login, open: false
   == Combat
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
+  [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>

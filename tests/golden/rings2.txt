@@ -69,6 +69,7 @@ edit all:
    Hearthstone / 8.6s / Goldshire @x=0
    Fireball / 1.5 / Casting @x=0
    Swing / 1.6 / Hit @x=0
+   Shot / 1.8 @x=0
    Fireball / 1.5 / Defias Conjurer @x=0
    |cffa336edIronfoe|r / 56 / Need or Greed?  +1 @x=0
    Ready check: Thrall / 33 / Are you ready? @x=0
