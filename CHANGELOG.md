@@ -1,33 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- **Debuff rings** (new; off by default, Combat & casting > Debuffs). A ring round your
-  portrait and your target's, in the color of the top debuff's type (magic, curse, disease,
-  poison, or none for bleeds and physical effects), draining as it runs out. On your target it
-  shows only your own debuffs by default (your Rend, your poisons), or all of them; on you, all
-  of them or only ones you can dispel. Addons can't read debuffs in combat any more, so the game
-  itself picks the debuff, colors the ring and runs its timer; Circlet only supplies the ring.
-  Each type has its own layered, animated effect (Effects per type, on by default), over a
-  soft glow that pulses behind the ring in the type's color. Magic: two fields of sparkles
-  turning opposite ways and twinkling, and a band of arcane runes turning outside the ring.
-  Poison: bubbles round the ring, small bubbles rising off it and venom dripping. Curse: wisps
-  swirling backwards, thin wisps turning the other way and shadow motes rising. Disease:
-  pulsing spores, a swarm of flies circling and bubbles rising. Bleeds and other debuffs with
-  no type: blood running down at two speeds and specks throbbing like a heartbeat. The game
-  swaps the effects by type too, so they work in combat.
-  The game only says "Magic", not fire or frost, so School effects from your casts (off by
-  default) adds the school from what you cast: Flame Shock or Immolate on your target puts
-  flames round its portrait, Frost Shock or Frostbolt ice shards and falling snow, Shadow Word:
-  Pain or Corruption shadow wisps, Moonfire or Insect Swarm leaves, Polymorph arcane runes,
-  Holy Fire rays of light, for the spell's duration (read from its description, so every rank
-  is right), fading out at the end. Each target keeps its own, so swapping back brings it
-  back. It's a best guess: a resisted spell still shows, one dispelled early shows until its
-  time would have run out, and other players' spells don't show.
-  Colors, thickness, gap and opacity are adjustable, with an optional countdown. Settings
-  changed in combat apply when it ends. `/circ debuff` previews them, `/circ debuffdebug`
-  reports what this client supports.
-
 ## 1.4.0
 
 - **Hearthstone ring** (new; Travel & survival > Hearthstone). While you cast your Hearthstone

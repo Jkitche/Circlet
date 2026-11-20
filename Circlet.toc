@@ -58,7 +58,6 @@ Rings\Hearth.lua
 Rings\CastSchools.lua
 Rings\Cast.lua
 Rings\TargetCast.lua
-Rings\Debuffs.lua
 Rings\LootRoll.lua
 Rings\ReadyCheck.lua
 Rings\QuestPins.lua

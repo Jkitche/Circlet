@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=76 execute=150 range=262 select=88 toggle=213
+counts: color=70 execute=147 range=259 select=86 toggle=205
 general (General)
 progress (Progress)
   xp (XP)
@@ -15,7 +15,6 @@ combat (Combat & casting)
   targetCast (Target casting)
   regen (Mana regen)
   totem (Totems) [hidden]
-  debuff (Debuffs)
   ammo (Ammo)
 group (Group)
   loot (Loot rolls)

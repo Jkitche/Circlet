@@ -22,8 +22,6 @@ around the minimap.
   frost, motes for arcane, wisps for shadow, a swirl for nature, rays for holy. Resurrections
   rise in holy light and finish with a pillar of light.
 - **Mana regen**: the five-second rule, counting down to when your mana regen starts again.
-- **Debuff rings** (off by default): a ring round your portrait and your target's in the
-  debuff type's color (magic, curse, disease, poison), draining as it runs out. Works in combat.
 - **Crafting** batches and **gathering** (with what you got). Finishing throws off a burst of
   sparks.
 - **Flight paths**: counts down to landing; route times are learned as you fly.
