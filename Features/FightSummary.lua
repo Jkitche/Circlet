@@ -6,8 +6,10 @@ local db, Print, IsSecret, Clean, CleanNumber, SafeCall = ns.db, ns.Print, ns.Is
 ---------------------------------------------------------------------------
 -- Fight summary
 ---------------------------------------------------------------------------
--- When a fight ends, a small pane shows what happened in it, then fades away (it stays while
--- the mouse is over it; click the X to close it, drag it to move it):
+-- When a fight ends, a small pane shows what happened in it: no background, just outlined
+-- text over the world. It fades in while rising into place, stays a while (longer while the
+-- mouse is over it; the X to close it shows then), and fades out drifting upward. Drag it to
+-- move it. It shows:
 --   * damage you dealt, your DPS and the damage you took, big across the top;
 --   * how long it lasted, who you fought, XP gained and kills, your healing, your top
 --     ability, what you avoided (dodges, parries, blocks, misses, absorbs, resists) out of
@@ -33,7 +35,7 @@ local PLURAL = { dodge = "dodges", parry = "parries", block = "blocks", miss = "
                  resist = "resists", immune = "immune", deflect = "deflects", evade = "evades" }
 local NOT_CASTS = { [75] = true, [5019] = true, [2764] = true, [6603] = true } -- auto attacks, not casts
 local METER = { done = 0, dps = 1, healing = 2, interrupts = 5, dispels = 6, taken = 7 }
-local W, PAD, ROW = 300, 14, 17
+local W, PAD, ROW = 300, 6, 17
 
 local fight      -- the fight under way
 local last       -- the last fight's summary (shown again by /circ fight)
@@ -156,10 +158,20 @@ pane:SetMovable(true)
 pane:EnableMouse(true)
 pane:RegisterForDrag("LeftButton")
 pane:Hide()
-ns.SkinPanel(pane, { header = 40 })
+
+-- No background: every line is outlined, with a drop shadow, to read over the world.
+local function Readable(fs, size)
+    if size then
+        local font = fs:GetFont()
+        fs:SetFont(type(font) == "string" and font or STANDARD_TEXT_FONT, size, "OUTLINE")
+    end
+    fs:SetShadowColor(0, 0, 0, 1)
+    fs:SetShadowOffset(1, -1)
+end
 
 pane.title = pane:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-pane.title:SetPoint("TOPLEFT", pane, "TOPLEFT", 48, -8)
+pane.title:SetPoint("TOPLEFT", pane, "TOPLEFT", PAD, -8)
+Readable(pane.title, 15)
 pane.title:SetTextColor(1, 0.86, 0.45)
 pane.title:SetText("Fight summary")
 pane.subtitle = pane:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -167,8 +179,10 @@ pane.subtitle:SetPoint("TOPLEFT", pane.title, "BOTTOMLEFT", 0, -2)
 pane.subtitle:SetWidth(W - 90)
 pane.subtitle:SetJustifyH("LEFT")
 pane.subtitle:SetWordWrap(false)
+Readable(pane.subtitle, 11)
 pane.close = CreateFrame("Button", nil, pane, "UIPanelCloseButton")
 pane.close:SetPoint("TOPRIGHT", pane, "TOPRIGHT", -2, -2)
+pane.close:Hide() -- only while the mouse is over the pane
 
 -- The three big numbers.
 local bigs = {}
@@ -179,8 +193,11 @@ for i, label in ipairs({ "Damage", "DPS", "Taken" }) do
     b.value = b:CreateFontString(nil, "OVERLAY")
     b.value:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
     b.value:SetPoint("TOP", b, "TOP", 0, 0)
+    Readable(b.value)
     b.label = b:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     b.label:SetPoint("TOP", b.value, "BOTTOM", 0, -3)
+    b.label:SetTextColor(0.8, 0.8, 0.8)
+    Readable(b.label, 10)
     b.label:SetText(label)
     bigs[i] = b
 end
@@ -199,6 +216,8 @@ local function Row(i)
     r.value:SetJustifyH("RIGHT")
     r.value:SetWidth(W - PAD * 2 - 90)
     r.value:SetWordWrap(false)
+    Readable(r.label, 11)
+    Readable(r.value, 11)
     rows[i] = r
     return r
 end
@@ -274,15 +293,17 @@ local function Draw(s)
     pane:SetHeight(y + PAD - 4)
 end
 
--- Where the pane goes: <x> from the screen's center, its top <fromTop> below the screen's top.
-local function Place()
+-- Where the pane goes: <x> from the screen's center, its top <fromTop> below the screen's top
+-- (lift: pixels above that, for the rise in and the drift out).
+local function Place(lift)
     pane:ClearAllPoints()
-    pane:SetPoint("TOP", UIParent, "TOP", db.fightX or 0, -(db.fightFromTop or 500))
+    pane:SetPoint("TOP", UIParent, "TOP", db.fightX or 0, -(db.fightFromTop or 500) + (lift or 0))
     pane:SetScale((db.fightScale or 100) / 100)
 end
 
-pane:SetScript("OnDragStart", function(self) self:StartMoving() end)
+pane:SetScript("OnDragStart", function(self) self.dragging = true; self:StartMoving() end)
 pane:SetScript("OnDragStop", function(self)
+    self.dragging = false
     self:StopMovingOrSizing()
     local scale = self:GetEffectiveScale() / UIParent:GetEffectiveScale()
     local cx = (self:GetLeft() + self:GetWidth() / 2) * scale
@@ -295,16 +316,34 @@ end)
 ---------------------------------------------------------------------------
 -- Showing and fading
 ---------------------------------------------------------------------------
-local shownAt, editing, refreshUntil = 0, false, 0
+local RISE, RISE_TIME, DRIFT, FADE_TIME = 24, 0.4, 14, 1
+local shownAt, holdFrom, editing, refreshUntil = 0, 0, false, 0
 
 local function Show(s)
     pane.shownFor = s
-    Place()
     Draw(s)
-    pane:SetAlpha(1)
+    shownAt, holdFrom = Now(), Now()
+    pane:SetAlpha(0)
+    Place(-RISE)
     pane:Show()
-    shownAt = Now()
 end
+
+-- Every frame: rising in (fade in, eased), holding, then drifting up and fading out.
+pane:SetScript("OnUpdate", function(self)
+    local now = Now()
+    local hover = self:IsMouseOver() == true
+    self.close:SetShown(hover or editing)
+    if self.dragging then return end
+    local hold = db.fightSeconds or 12
+    if hover and hold > 0 then holdFrom = math.max(holdFrom, now - math.max(0, hold - 1)) end
+    local rise = math.min(1, (now - shownAt) / RISE_TIME)
+    rise = 1 - (1 - rise) ^ 3
+    local out = 0
+    if not editing and hold > 0 then out = math.max(0, math.min(1, (now - holdFrom - hold) / FADE_TIME)) end
+    if out >= 1 then self:Hide() return end
+    self:SetAlpha(rise * (1 - out))
+    Place(-RISE * (1 - rise) + DRIFT * out)
+end)
 
 -- Reads the meter and the counts into the last fight's summary (again while numbers settle).
 local function Collect(s)
@@ -345,7 +384,7 @@ local SAMPLE = { secs = 27, foes = { "Gray Bear", "Young Wolf" }, xp = 236, kill
                  taken = 412, top = "Heroic Strike", topAmount = 642, avoided = { dodge = 2, parry = 1, block = 3, miss = 1 },
                  attacks = 19, crushing = 0, critsTaken = 1, critsDealt = 4, casts = 7 }
 
-local function Preview() Show(SAMPLE); shownAt = Now() end
+local function Preview() Show(SAMPLE) end
 
 local ticker = CreateFrame("Frame")
 ticker.t = 0
@@ -354,14 +393,8 @@ ticker:SetScript("OnUpdate", function(self, elapsed)
     if self.t < 0.1 then return end
     self.t = 0
     if not pane:IsShown() then return end
-    local now = Now()
-    if editing then pane:SetAlpha(1) return end
-    if last and now < refreshUntil and pane.shownFor == last then Collect(last); Draw(last) end
-    local hold = db.fightSeconds or 12
-    if hold <= 0 or pane:IsMouseOver() == true then shownAt = math.max(shownAt, now - math.min(hold, 1)) return end
-    local age = now - shownAt
-    if age >= hold + 1 then pane:Hide()
-    elseif age > hold then pane:SetAlpha(1 - (age - hold)) end
+    -- The meter and kill XP can settle a moment after combat ends.
+    if last and Now() < refreshUntil and pane.shownFor == last then Collect(last); Draw(last) end
 end)
 
 local function SetEditing(on)
@@ -369,7 +402,7 @@ local function SetEditing(on)
     if editing then Show(SAMPLE) else pane:Hide() end
 end
 
-ns.Listen({ "PLAYER_LOGIN" }, Place)
+ns.Listen({ "PLAYER_LOGIN" }, function() Place() end)
 
 ns.RegisterCommand({ "fight" }, function()
     if pane:IsShown() and not editing then pane:Hide() return end

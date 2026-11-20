@@ -60,9 +60,13 @@ XP = 1236
 Advance(17)
 Fire("PLAYER_REGEN_ENABLED")
 Fire("CHAT_MSG_COMBAT_XP_GAIN", "Young Wolf dies, you gain 116 experience.") -- just after combat ends
-Advance(0.5)
+Advance(0.1)
+function Motion() local p = FS.pane return string.format("alpha %.2f, y %.1f", p._alpha or 1, p._pt and p._pt.y or 0) end
+P("0.1s in, rising: " .. Motion())
+Advance(0.4)
 P("after the fight: " .. Pane())
-Advance(12); P("12.5s later, fading: " .. Pane()); Advance(1); P("gone: " .. Pane())
+P("0.5s in, in place: " .. Motion())
+Advance(12); P("12.5s later, fading and drifting up: " .. Motion()); Advance(1); P("gone: " .. Pane())
 -- Too short: no pane.
 Fire("PLAYER_REGEN_DISABLED"); Advance(2); Fire("PLAYER_REGEN_ENABLED"); Advance(0.3); P("2s fight: " .. Pane())
 -- Hit nothing: no pane (only fights you dealt damage in).
