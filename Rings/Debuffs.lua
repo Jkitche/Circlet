@@ -339,6 +339,25 @@ local function DressButton(r, tex, outer)
     end
 end
 
+-- Whether obj has a method (without noting it as missing).
+local function Has(obj, method) return obj and type(obj[method]) == "function" end
+
+local function IsFrame(v, c) return type(v) == "table" and v ~= c and type(v.GetObjectType) == "function" end
+
+-- The aura button the container made for us, if there's one yet. A slot (AddAuraSlot) has
+-- its button from the start; a group (AddAuraGroup, on clients without slots) may only make
+-- it when a debuff first shows (initializeFrame then hands it to us).
+local function FindButton(r)
+    local c = r.container
+    if r.kind == "slot" and Has(c, "GetAuraSlotFrame") then
+        local ok, b = pcall(c.GetAuraSlotFrame, c, "debuff")
+        if ok and IsFrame(b, c) then return b end
+    elseif r.kind == "group" and Has(c, "GetAuraGroupFrame") then
+        local ok, b = pcall(c.GetAuraGroupFrame, c, "debuff", 1)
+        if ok and IsFrame(b, c) then return b end
+    end
+end
+
 local function Container(unit)
     local r = live[unit]
     if r then return r end
@@ -348,18 +367,29 @@ local function Container(unit)
     if not ok or not c then Note("AuraContainer: " .. tostring(c)) return nil end
     NoMouse(c)
     Try(c, "SetUnit", unit)
-    local slotOk, button = Try(c, "AddAuraSlot", "debuff", FILTERS[unit].all, {})
-    if not (slotOk and type(button) == "table") then
-        local got, b2 = Try(c, "GetAuraSlotFrame", "debuff")
-        button = got and b2 or nil
-    end
-    if type(button) ~= "table" or button == c then
-        -- no slot frame to dress (a client without slots): leave the container empty
-        if button == c then button = nil end
-    end
-    r = { container = c, button = button }
+    r = { container = c, unit = unit }
     live[unit] = r
-    if not button then Note(unit .. ": no aura slot frame") end
+    local opts = { initializeFrame = function(frame)
+        -- A new button: dress it now if we may, else as soon as combat ends.
+        if IsFrame(frame, c) and r.button ~= frame then
+            r.button, r.dressed = frame, false
+            applied[unit] = nil
+        end
+    end }
+    if Has(c, "AddAuraSlot") then
+        r.kind = "slot"
+        local slotOk, b = Try(c, "AddAuraSlot", "debuff", FILTERS[unit].all, opts)
+        if slotOk and IsFrame(b, c) then r.button = b end
+    elseif Has(c, "AddAuraGroup") then
+        r.kind = "group"
+        local groupOk, b = Try(c, "AddAuraGroup", "debuff", FILTERS[unit].all, opts)
+        if groupOk and IsFrame(b, c) then r.button = b end
+        Try(c, "SetAuraGroupMaxFrameCount", "debuff", 1)
+    else
+        r.kind = "none"
+        Note("container has neither AddAuraSlot nor AddAuraGroup")
+    end
+    r.button = r.button or FindButton(r)
     return r
 end
 
@@ -398,8 +428,21 @@ local function Apply(unit)
     local placed, tex, outer = Place(r.container, unit)
     if not placed then Note(unit .. ": no portrait to put the ring round") return true end
     local which = unit == "player" and (db.debuffPlayerFilter or "all") or (db.debuffTargetFilter or "all")
-    Try(r.container, "SetAuraSlotFilterString", "debuff", FILTERS[unit][which] or "HARMFUL")
-    Try(r.container, "SetAuraSlotEnabled", "debuff", true)
+    local filter = FILTERS[unit][which] or "HARMFUL"
+    local c = r.container
+    if r.kind == "slot" then
+        Try(c, "SetAuraSlotFilterString", "debuff", filter)
+        if Has(c, "SetAuraSlotEnabled") then Try(c, "SetAuraSlotEnabled", "debuff", true) end
+    elseif r.kind == "group" then
+        if Has(c, "SetAuraGroupFilterString") then Try(c, "SetAuraGroupFilterString", "debuff", filter) end
+        if Has(c, "SetAuraGroupEnabled") then Try(c, "SetAuraGroupEnabled", "debuff", true) end
+        if Has(c, "SetAuraGroupMaxFrameCount") then Try(c, "SetAuraGroupMaxFrameCount", "debuff", 1) end
+        -- One button the size of the ring, filling the container.
+        if Has(c, "SetAuraGroupLayout") then
+            Try(c, "SetAuraGroupLayout", "debuff", { elementWidth = outer * 2, elementHeight = outer * 2 })
+        end
+    end
+    r.button = r.button or FindButton(r)
     Try(r.container, "SetEnabled", true)
     r.container:SetAlpha((db.debuffOpacity or 100) / 100)
     r.container:Show()
@@ -407,6 +450,7 @@ local function Apply(unit)
         Try(r.button, "ClearAllPoints")
         Try(r.button, "SetAllPoints", r.container)
         DressButton(r, tex, outer)
+        r.dressed = true
     end
     Try(r.container, "UpdateAllAuras")
     return true
@@ -562,7 +606,7 @@ local function DebuffDebug()
     for _, unit in ipairs(UNITS) do
         local r = live[unit]
         Print(string.format("  %s: %s%s%s", unit, r and "container" or "no container",
-            r and (r.button and ", slot" or ", no slot") or "",
+            r and (r.button and (", " .. tostring(r.kind) .. " button") or (", no button yet (" .. tostring(r.kind) .. ")")) or "",
             r and r.button and ((r.colored and ", colored" or ", not colored") .. (r.drain and ", drains" or ", no drain")
                 .. ", effects " .. tostring(r.fxOk or 0) .. "/" .. #FX) or ""))
     end
@@ -596,6 +640,16 @@ local function DebuffDebug()
                     tostring(select(2, pcall(function() return b:GetParent() == c end)))))
             end
         end
+    end
+    local r = live.player or live.target
+    if r then
+        local names, mt = {}, getmetatable(r.container)
+        local idx = mt and mt.__index
+        if type(idx) == "table" then
+            for k in pairs(idx) do if type(k) == "string" and k:find("Aura") then names[#names + 1] = k end end
+        end
+        table.sort(names)
+        Print("  container kind: " .. tostring(r.kind) .. "; its aura methods: " .. (#names > 0 and table.concat(names, ", ") or "(couldn't list)"))
     end
     if #diag == 0 then Print("  Nothing went wrong setting up.") end
     for _, m in ipairs(diag) do Print("  " .. m) end
