@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Debuff rings** (new; off by default, Combat & casting > Debuffs). A ring round your
+  portrait and your target's, in the color of the top debuff's type (magic, curse, disease,
+  poison, or none for bleeds and physical effects), draining as it runs out. On your target it
+  shows only your own debuffs by default (your Rend, your poisons), or all of them; on you, all
+  of them or only ones you can dispel. Addons can't read debuffs in combat any more, so the game
+  itself picks the debuff, colors the ring and runs its timer; Circlet only supplies the ring.
+  Colors, thickness, gap and opacity are adjustable, with an optional countdown. Settings
+  changed in combat apply when it ends. `/circ debuff` previews them, `/circ debuffdebug`
+  reports what this client supports.
+
 ## 1.4.0
 
 - **Hearthstone ring** (new; Travel & survival > Hearthstone). While you cast your Hearthstone

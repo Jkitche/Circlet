@@ -75,6 +75,7 @@ chat:   /circ target    - preview the target cast ring
 chat:   /circ loot      - preview the loot roll ring
 chat:   /circ ready     - preview the ready check ring
 chat:   /circ regen     - preview the mana regen ring
+chat:   /circ debuff    - preview the debuff rings
 chat:   /circ pins      - preview the quest rings
 chat:   /circ totems    - preview the totem rings
 chat:   /circ showxp    - show your current XP on the ring for a few seconds

@@ -31,6 +31,7 @@ end
 local function ResetPosition(key, quiet)
     key = key:match("^(%l+)%d+$") or key -- quest / totem rings share one position per group
     local x = DEFAULTS[key .. "X"]
+    if x == nil then return end -- rings fixed to something else (debuff rings: the portraits)
     if key == "pin" then x = math.max(0, math.floor(UIParent:GetWidth() / 2 - 330)) end -- by the quest list
     SetPosition(key, x, DEFAULTS[key .. "FromTop"])
     if not quiet then Print(Name(key) .. " ring position reset.") end

@@ -1,0 +1,18 @@
+off by default: (no calls)
+no rings
+turned on: SetUnit player / player AddAuraSlot debuff HARMFUL / player filter HARMFUL / player SetEnabled true / player SetHideTooltipInCombat true / player ClearDispelTypeTextures / player AddDispelTypeTexture table table / player SetDurationCooldown table / player ClearDurationText / SetUnit target / target AddAuraSlot debuff HARMFUL / target filter HARMFUL|PLAYER / target SetEnabled true / target SetHideTooltipInCombat true / target ClearDispelTypeTextures / target AddDispelTypeTexture table table / target SetDurationCooldown table / target ClearDurationText
+player shown size=74.0 tex=Interface\AddOns\Circlet\Textures\Ring88 swipe=Interface\AddOns\Circlet\Textures\Ring88 | target shown size=74.0 tex=Interface\AddOns\Circlet\Textures\Ring88 swipe=Interface\AddOns\Circlet\Textures\Ring88
+nothing changed: (no calls)
+thicker: player filter HARMFUL / player SetEnabled true / player SetHideTooltipInCombat true / player ClearDispelTypeTextures / player AddDispelTypeTexture table table / player SetDurationCooldown table / player ClearDurationText / target filter HARMFUL|PLAYER / target SetEnabled true / target SetHideTooltipInCombat true / target ClearDispelTypeTextures / target AddDispelTypeTexture table table / target SetDurationCooldown table / target ClearDurationText
+player shown size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76 | target shown size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76
+changed in combat: (no calls)
+combat over: player filter HARMFUL / player SetEnabled true / player SetHideTooltipInCombat true / player ClearDispelTypeTextures / player AddDispelTypeTexture table table / player SetDurationCooldown table / player ClearDurationText / target filter HARMFUL / target SetEnabled true / target SetHideTooltipInCombat true / target ClearDispelTypeTextures / target AddDispelTypeTexture table table / target SetDurationCooldown table / target ClearDurationText
+target off: target SetEnabled false
+player shown size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76 | target hidden size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76
+no drain, time on: player filter HARMFUL / player SetEnabled true / player SetHideTooltipInCombat true / player ClearDispelTypeTextures / player AddDispelTypeTexture table table / player ClearDurationCooldown / player SetDurationText table / target SetEnabled false
+preview: player 0.0,1.0,0.0 6 | target hidden
+6s later: player 0.6,0.0,1.0 6 | target 0.6,0.4,0.0 6
+preview over: player hidden
+turned off: target filter HARMFUL / target SetEnabled true / target SetHideTooltipInCombat true / target ClearDispelTypeTextures / target AddDispelTypeTexture table table / target ClearDurationCooldown / target SetDurationText table / player SetEnabled false / target SetEnabled false
+player hidden size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76 | target hidden size=84.0 tex=Interface\AddOns\Circlet\Textures\Ring76 swipe=Interface\AddOns\Circlet\Textures\Ring76
+ERRORS: {}

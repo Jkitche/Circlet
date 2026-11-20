@@ -17,6 +17,7 @@
   [x] Cast ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
+  [ ] Debuff rings  <Show>
   [x] Ammo ring  <Show>
   == Group
   [x] Loot roll ring  <Show>
@@ -54,6 +55,7 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Cast ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
+  [ ] Debuff rings  <Show>
   [x] Ammo ring  <Show>
   == Group
   [x] Loot roll ring  <Hide>
@@ -124,19 +126,20 @@ after /circ edit: editing ''
 after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
-  New in Circlet 1.4.0
+  New in Circlet 1.5.0
   1 new thing
   (Added since you last played. Tick what you want; Show puts it on screen.)
-  [x] Hearthstone ring  <Show>
+  [ ] Debuff rings  <Show>
   footer: [Full setup] [Done]
 done, open: false
 ERRORS: {}
 ######## update
 existing player, 3s after login: open=true setupDone=true
 --- new in
-  New in Circlet 1.4.0
-  9 new things
+  New in Circlet 1.5.0
+  10 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
+  [ ] Debuff rings  <Show>
   [x] Hearthstone ring  <Show>
   [x] Fishing ring  <Show>
   [x] Mana regen ring  <Show>
@@ -172,6 +175,7 @@ next login, open: false
   [x] Cast ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
+  [ ] Debuff rings  <Show>
   [x] Ammo ring  <Show>
   == Group
   [ ] Loot roll ring  <Show>
