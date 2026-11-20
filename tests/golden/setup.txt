@@ -131,11 +131,25 @@ after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
   New in Circlet 1.4.0
-  3 new things
+  17 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Hearthstone ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Swing timer ring  <Show>
+  [x] Crafting animations  <Show>
+  [x] XP ring: gain animation  <Show>
+  [x] Mana regen ring: animation  <Show>
+  [x] Flight ring: animation  <Show>
+  [x] Loot roll ring: dice  <Show>
+  [x] Timed quest ring: hourglass  <Show>
+  [x] Profession skill ring: animation  <Show>
+  [x] Weapon skill ring: animation  <Show>
+  [ ] Hide the game's swing timer bars  <Show>
+  [ ] Hide the game's ranged swing timer bar  <Show>
+   *  Flight times fixed  <Show>
+   *  /circ showxp
+   *  Tidier options window
+   *  Edit all rings: one message
   footer: [Full setup] [Done]
 done, open: false
 ERRORS: {}
@@ -143,19 +157,33 @@ ERRORS: {}
 existing player, 3s after login: open=true setupDone=true
 --- new in
   New in Circlet 1.4.0
-  11 new things
+  25 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Hearthstone ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Swing timer ring  <Show>
+  [x] Crafting animations  <Show>
+  [x] XP ring: gain animation  <Show>
+  [x] Mana regen ring: animation  <Show>
+  [x] Flight ring: animation  <Show>
+  [x] Loot roll ring: dice  <Show>
+  [x] Timed quest ring: hourglass  <Show>
+  [x] Profession skill ring: animation  <Show>
+  [x] Weapon skill ring: animation  <Show>
+  [ ] Hide the game's swing timer bars  <Show>
+  [ ] Hide the game's ranged swing timer bar  <Show>
+   *  Flight times fixed  <Show>
+   *  /circ showxp
+   *  Tidier options window
+   *  Edit all rings: one message
   [x] Fishing ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Timer ring  <Show>
   [ ] Clock ring  <Show>
-  [x] Corpse ring: revive animation  <Show>
   [x] Loot roll ring  <Show>
   [x] Ready check ring  <Show>
   [x] Target cast ring  <Show>
+  [x] Corpse ring: revive animation  <Show>
   footer: [Full setup] [Done]
 loot off, show ready -> loot=false editing: ready
 done: open=false editing: '' seen ready=true

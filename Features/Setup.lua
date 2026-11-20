@@ -32,11 +32,54 @@ local GROUPS = {
     { name = "Comfort", keys = { "food", "camp", "clock", "timer" } },
 }
 
--- New features that aren't rings of their own: an on/off setting and a ring to show it on.
+-- Everything else in a release that isn't a ring of its own: with a setting, an on/off box
+-- (and show: a ring to show it on); without one, just the news (fixes, changes, commands).
 local NEW_FEATURES = {
     { id = "corpseReviveFx", since = "1.2.0", name = "Corpse ring: revive animation",
       desc = "Your soul drifts back into the ring when you revive in your own body.",
       setting = "corpseReviveFx", show = "corpse" },
+    -- 1.4.0
+    { id = "craftFx", since = "1.4.0", name = "Crafting animations",
+      desc = "Each crafting profession gets its own animation on the crafting ring: bubbling potions, a hammer "
+          .. "and sparks, lightning, runes, a stitching needle, flames and steam and more.",
+      setting = "craftFx", show = "craft" },
+    { id = "xpGainFx", since = "1.4.0", name = "XP ring: gain animation",
+      desc = "A glowing comet rides the end of the fill as XP comes in, with a flare where it lands.",
+      setting = "xpGainFx", show = "xp" },
+    { id = "regenFx", since = "1.4.0", name = "Mana regen ring: animation",
+      desc = "A spark charges while the five-second rule holds your regen back; mana spirals in when it starts again.",
+      setting = "regenFx", show = "regen" },
+    { id = "flightFx", since = "1.4.0", name = "Flight ring: animation",
+      desc = "The arrow flies along the fill with a contrail through clouds and wind, then touches down in a puff of dust.",
+      setting = "flightFx", show = "flight" },
+    { id = "lootFx", since = "1.4.0", name = "Loot roll ring: dice",
+      desc = "Two dice rattle while you decide, then tumble and land on their numbers when you roll.",
+      setting = "lootFx", show = "loot" },
+    { id = "timedFx", since = "1.4.0", name = "Timed quest ring: hourglass",
+      desc = "Sand trickles from the end of the fill and piles up as time runs out.",
+      setting = "timedFx", show = "timed" },
+    { id = "skillFx", since = "1.4.0", name = "Profession skill ring: animation",
+      desc = "A spark rides the fill shedding glitter, then bursts; a new tier or the cap sends a gold shimmer round.",
+      setting = "skillFx", show = "skill" },
+    { id = "weaponFx", since = "1.4.0", name = "Weapon skill ring: animation",
+      desc = "A steel swoosh, a clang and a spray of sparks; capping a skill sends a blade glint round the ring.",
+      setting = "weaponFx", show = "weapon" },
+    { id = "swingHideDefault", since = "1.4.0", name = "Hide the game's swing timer bars",
+      desc = "Let the swing timer ring replace WoW Forever's own melee swing timer bars.",
+      setting = "swingHideDefault", show = "swing" },
+    { id = "shotHideDefault", since = "1.4.0", name = "Hide the game's ranged swing timer bar",
+      desc = "Let the shot timer ring replace WoW Forever's own ranged swing timer bar.",
+      setting = "shotHideDefault", show = "shot" },
+    { id = "flightTimesFixed", since = "1.4.0", name = "Flight times fixed",
+      desc = "The flight ring counted down about 11% too fast; it now lands within a second of the real time.",
+      show = "flight" },
+    { id = "showxpCommand", since = "1.4.0", name = "/circ showxp",
+      desc = "Brings the XP ring up for a few seconds at your current XP and prints your XP to chat." },
+    { id = "optionsFolders", since = "1.4.0", name = "Tidier options window",
+      desc = "Rings sorted into six folders, ring checkboxes grouped by folder, and checkboxes two to a row "
+          .. "with their explanations in tooltips." },
+    { id = "editAllSaved", since = "1.4.0", name = "Edit all rings: one message",
+      desc = "Finishing Edit all rings says \"All ring positions saved.\" once, not a line for every ring." },
 }
 
 local STYLES = { { "keep", "Keep each ring's own" }, { "smooth", "Smooth" }, { "segmented", "Segmented" }, { "thin", "Thin" } }
@@ -76,20 +119,26 @@ local function NewItems(unseenOnly)
     for _, def in ipairs(ns.RINGS) do
         if def.since and Shown(def) then
             table.insert(list, { id = def.key, since = def.since, name = def.toggle[1], desc = def.toggle[2],
-                                 setting = def.key .. "Enabled", onSet = def.toggle[3], show = def.key })
+                                 setting = def.key .. "Enabled", onSet = def.toggle[3], show = def.key, rank = 1 })
         end
     end
-    for _, f in ipairs(NEW_FEATURES) do
+    for i, f in ipairs(NEW_FEATURES) do
         local def = Def(f.show)
-        if not def or Shown(def) then table.insert(list, f) end
+        if not def or Shown(def) then
+            f.rank, f.order = f.setting and 2 or 3, i -- settings before plain news, as listed
+            table.insert(list, f)
+        end
     end
     if unseenOnly then
         local seen = db.seenNew or {}
         for i = #list, 1, -1 do if seen[list[i].id] then table.remove(list, i) end end
     end
+    -- Newest release first; in each, new rings (by name), then new settings, then the news.
     table.sort(list, function(a, b)
         if a.since ~= b.since then return Newer(a.since, b.since) end
-        return a.name < b.name
+        if a.rank ~= b.rank then return a.rank < b.rank end
+        if a.rank == 1 then return a.name < b.name end
+        return a.order < b.order
     end)
     return list
 end
@@ -257,8 +306,9 @@ local function NewPage()
     for _, item in ipairs(newItems) do
         table.insert(items, { kind = "check", col = 1, wide = true, id = "new:" .. item.id, text = item.name, desc = item.desc,
             since = item.since,
-            on = db[item.setting] and true or false,
-            onClick = function() SetEnabled(item.setting, not db[item.setting], item.onSet) end,
+            info = not item.setting, -- just the news: no on/off box
+            on = (not item.setting) or (db[item.setting] and true or false),
+            onClick = item.setting and function() SetEnabled(item.setting, not db[item.setting], item.onSet) end or nil,
             showId = item.show and ("shownew:" .. item.id) or nil, showOn = item.show and Def(item.show)
                 and Def(item.show).edit and Def(item.show).edit.get(),
             onShow = item.show and function() ToggleShow(item.show) end or nil })
@@ -329,9 +379,40 @@ local function DrawSteps(n)
     frame.steps.text:SetText(n .. "/" .. STEPS)
 end
 
-local body = CreateFrame("Frame", nil, frame)
-body:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -(HEADER + 12))
-body:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, FOOTER + 6)
+-- The page body scrolls (with the mouse wheel) when it's taller than the window: the New in
+-- page can list a whole release. A slim bar on the right shows where you are.
+local scroll = CreateFrame("ScrollFrame", nil, frame)
+scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -(HEADER + 12))
+scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, FOOTER + 6)
+local body = CreateFrame("Frame", nil, scroll)
+body:SetSize(W - 40, 10)
+scroll:SetScrollChild(body)
+local bar = scroll:CreateTexture(nil, "OVERLAY")
+bar:SetColorTexture(1, 0.84, 0.30, 0.5)
+bar:SetWidth(3)
+bar:Hide()
+
+local function Num(v) return type(v) == "number" and v or 0 end
+local function MaxScroll() return math.max(0, Num(body:GetHeight()) - Num(scroll:GetHeight())) end
+local function SetScroll(v)
+    local max = MaxScroll()
+    v = math.max(0, math.min(max, Num(v)))
+    scroll:SetVerticalScroll(v)
+    local view = Num(scroll:GetHeight())
+    if max > 0 and view > 0 then
+        local total = view + max
+        local h = math.max(20, view * view / total)
+        bar:SetHeight(h)
+        bar:ClearAllPoints()
+        bar:SetPoint("TOPRIGHT", scroll, "TOPRIGHT", 14, -(view - h) * v / max)
+        bar:Show()
+    else
+        bar:Hide()
+    end
+end
+scroll:EnableMouseWheel(true)
+scroll:SetScript("OnMouseWheel", function(_, delta) SetScroll(Num(scroll:GetVerticalScroll()) - delta * 40) end)
+local scrolledFor -- the page the scroll position belongs to (a new page starts at the top)
 
 local COL_X, COL_W, ROW_H = { 0, 340 }, 320, 23
 local FULL_W = COL_X[2] + COL_W
@@ -536,14 +617,19 @@ Render = function()
             w.check:SetPoint("TOPLEFT", w, "TOPLEFT", panel and 6 or 0, panel and -4 or 1)
             w.check:SetChecked(item.on)
             w.check:SetScript("OnClick", function() Click(item.id) end)
+            w.check:SetShown(not item.info)
             w.text:SetText(item.text)
             w.text:SetTextColor(item.on and 1 or 0.6, item.on and 1 or 0.6, item.on and 1 or 0.62)
             w.desc:SetText(panel and item.desc or "")
             w.desc:SetWidth(width - 140)
+            if panel then -- tall enough for a description that wraps
+                local dh = w.desc.GetStringHeight and w.desc:GetStringHeight()
+                if type(dh) == "number" and dh > 0 then h = math.max(h, 30 + dh) w:SetHeight(h) end
+            end
             w.tag:ClearAllPoints()
             w.tag:SetPoint("RIGHT", w.show, "LEFT", -10, 0)
             w.tag:SetText(panel and item.since and ("NEW  " .. item.since) or "")
-            Tooltip(w.check, item.text, item.desc, w.hl)
+            if not item.info then Tooltip(w.check, item.text, item.desc, w.hl) end
             w.show:ClearAllPoints()
             w.show:SetPoint("RIGHT", w, "RIGHT", panel and -8 or 0, panel and 0 or 0)
             if item.showId then
@@ -599,6 +685,10 @@ Render = function()
             rowH[c] = math.max(rowH[c], ch)
         end
     end
+    EndCardRow(1); EndCardRow(2)
+    body:SetHeight(math.max(10, y[1], y[2]))
+    local page = mode .. ":" .. tostring(step)
+    if scrolledFor ~= page then scrolledFor = page; SetScroll(0) else SetScroll(scroll:GetVerticalScroll()) end
     local right = -12
     for i = #buttons, 1, -1 do
         local spec = buttons[i]
@@ -734,7 +824,7 @@ ns.Setup = {
             if item.kind == "header" then table.insert(out, pre .. "== " .. item.text)
             elseif item.kind == "note" then table.insert(out, pre .. "(" .. (item.text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) .. ")")
             elseif item.kind == "check" then
-                table.insert(out, pre .. (item.on and "[x] " or "[ ] ") .. item.text
+                table.insert(out, pre .. (item.info and " *  " or item.on and "[x] " or "[ ] ") .. item.text
                     .. (item.showId and (item.showOn and "  <Hide>" or "  <Show>") or ""))
             elseif item.kind == "choice" then table.insert(out, pre .. (item.selected and "(*) " or "( ) ") .. item.text)
             elseif item.kind == "button" then table.insert(out, pre .. "[" .. item.text .. "]") end

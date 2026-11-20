@@ -68,6 +68,8 @@
   turns the game's Swing Timer setting off instead, and puts it back when you turn it off.
   `/circ swingbars` shows what was found.
 - Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
+- The "New in" page lists everything in the release, not just the new rings: new animations and
+  options (each with its on/off box and Show), then fixes and changes.
 
 ## 1.3.2
 
