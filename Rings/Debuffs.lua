@@ -27,11 +27,25 @@ local db, Print = ns.db, ns.Print
 -- redone after combat if a setting changed during it), and every call is guarded: if this
 -- client lacks a piece, that piece is skipped and noted (/circ debuffdebug).
 --
+-- Effects per type (debuffFx): one more texture per kind of effect, each a dispel-type
+-- texture too, style CustomAsset: its customDispelAssetMap gives its own art
+-- (Textures/DebuffFx<Kind>.tga, made by tools/make_debuff_fx.py) for its types and a blank
+-- texture for every other, so the game shows only the effect for the debuff it picked, and
+-- tints it from the same color map. Each has a looping animation (turning, twinkling,
+-- dripping) that the button plays when its aura shows (AddAuraShownAnimation), and that we
+-- start ourselves out of combat as well. Poison: bubbles round the ring. Curse: wisps
+-- swirling backwards. Magic: twinkling sparkles. Disease: pulsing spores. No type (bleeds and
+-- physical effects): blood running down from the bottom of the ring.
+--
 -- Edit mode and the preview draw sample rings of our own (plain textures), since a real one
 -- needs a real debuff.
 
 local STYLE_PRESERVE = 3 -- Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset
-local RING_TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\Ring%d"
+local STYLE_CUSTOM = 4   -- Enum.CustomAuraButtonDispelTypeTextureStyle.CustomAsset
+local TEXTURES = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\"
+local RING_TEX = TEXTURES .. "Ring%d"
+local BLANK = TEXTURES .. "Blank"
+local FX_SCALE = 1.5 -- the effect textures are drawn 1.5x the ring, centered on it
 
 -- The dispel types the color map names, and the color setting each one uses. The game's
 -- names; "None" covers debuffs with no type (bleeds on clients that don't type them).
@@ -39,6 +53,20 @@ local TYPES = {
     { "Magic", "magic" }, { "Curse", "curse" }, { "Disease", "disease" }, { "Poison", "poison" },
     { "Bleed", "bleed" }, { "Enrage", "none" }, { "None", "none" },
 }
+
+-- The effects: which dispel types each is for, its art, and its looping animation.
+--   turn   seconds per turn (negative: counter-clockwise)
+--   pulse  { from alpha, to alpha, seconds } back and forth
+--   grow   { from scale, to scale, seconds } back and forth
+--   drip   { distance, seconds }: slides down and fades, over and over
+local FX = {
+    { kind = "poison", types = { "Poison" }, file = "DebuffFxPoison", turn = 24, pulse = { 0.55, 1, 1.2 } },
+    { kind = "curse", types = { "Curse" }, file = "DebuffFxCurse", turn = -5, pulse = { 0.6, 1, 2 } },
+    { kind = "magic", types = { "Magic" }, file = "DebuffFxMagic", turn = 16, pulse = { 0.35, 1, 0.6 } },
+    { kind = "disease", types = { "Disease" }, file = "DebuffFxDisease", turn = 40, grow = { 0.94, 1.06, 1.6 } },
+    { kind = "bleed", types = { "Bleed", "Enrage", "None" }, file = "DebuffFxBleed", drip = { 10, 1.5 } },
+}
+local FX_FOR = { none = "bleed" } -- a sample's color name -> its effect, where they differ
 
 local FILTERS = {
     player = { all = "HARMFUL", dispel = "HARMFUL|RAID_PLAYER_DISPELLABLE" },
@@ -126,6 +154,98 @@ local function ColorMap(plain)
     return map
 end
 
+-- Looping animations for one effect texture; returns the groups.
+local function Animate(tex, fx)
+    local groups = {}
+    local function Group(looping)
+        local ok, ag = pcall(tex.CreateAnimationGroup, tex)
+        if not ok or not ag then return nil end
+        ag:SetLooping(looping)
+        table.insert(groups, ag)
+        return ag
+    end
+    if fx.turn then
+        local ag = Group("REPEAT")
+        if ag then
+            local a = ag:CreateAnimation("Rotation")
+            a:SetDegrees(fx.turn > 0 and -360 or 360) -- positive degrees turn counter-clockwise
+            a:SetDuration(math.abs(fx.turn))
+            if a.SetOrigin then pcall(a.SetOrigin, a, "CENTER", 0, 0) end
+        end
+    end
+    if fx.pulse then
+        local ag = Group("BOUNCE")
+        if ag then
+            local a = ag:CreateAnimation("Alpha")
+            a:SetFromAlpha(fx.pulse[1]); a:SetToAlpha(fx.pulse[2]); a:SetDuration(fx.pulse[3])
+            if a.SetSmoothing then a:SetSmoothing("IN_OUT") end
+        end
+    end
+    if fx.grow then
+        local ag = Group("BOUNCE")
+        if ag then
+            local a = ag:CreateAnimation("Scale")
+            local from, to = fx.grow[1], fx.grow[2]
+            if a.SetScaleFrom then
+                pcall(a.SetScaleFrom, a, from, from); pcall(a.SetScaleTo, a, to, to)
+            else
+                pcall(a.SetFromScale, a, from, from); pcall(a.SetToScale, a, to, to)
+            end
+            a:SetDuration(fx.grow[3])
+            if a.SetSmoothing then a:SetSmoothing("IN_OUT") end
+        end
+    end
+    if fx.drip then
+        local ag = Group("REPEAT")
+        if ag then
+            local m = ag:CreateAnimation("Translation")
+            m:SetOffset(0, -fx.drip[1]); m:SetDuration(fx.drip[2])
+            local f = ag:CreateAnimation("Alpha")
+            f:SetFromAlpha(1); f:SetToAlpha(0); f:SetDuration(fx.drip[2])
+            if f.SetSmoothing then f:SetSmoothing("IN") end
+        end
+    end
+    return groups
+end
+
+-- One effect texture per kind on a frame (the aura button or a sample), with its animations.
+local function FxTextures(holder, owner)
+    if holder.fx then return holder.fx end
+    holder.fx = {}
+    for _, fx in ipairs(FX) do
+        local tex = owner:CreateTexture(nil, "OVERLAY")
+        tex:SetPoint("CENTER", owner, "CENTER", 0, 0)
+        holder.fx[fx.kind] = { tex = tex, groups = Animate(tex, fx), def = fx }
+    end
+    return holder.fx
+end
+
+local function SizeFx(holder, outer)
+    for _, f in pairs(holder.fx or {}) do f.tex:SetSize(outer * 2 * FX_SCALE, outer * 2 * FX_SCALE) end
+end
+
+local function PlayFx(f, on)
+    for _, ag in ipairs(f.groups) do
+        if on then
+            if not ag:IsPlaying() then ag:Play() end
+        else
+            ag:Stop()
+        end
+    end
+end
+
+-- The asset map for one effect: its art for its types, blank for every other.
+local function AssetMap(fx, wrap)
+    local mine = {}
+    for _, t in ipairs(fx.types) do mine[t] = true end
+    local map = {}
+    for _, t in ipairs(TYPES) do
+        local path = mine[t[1]] and (TEXTURES .. fx.file) or BLANK
+        map[t[1]] = wrap and { asset = path } or path
+    end
+    return map
+end
+
 ---------------------------------------------------------------------------
 -- The real rings: one aura container per unit
 ---------------------------------------------------------------------------
@@ -167,6 +287,34 @@ local function DressButton(r, tex, outer)
         ok = Try(b, "AddDispelTypeTexture", r.ring, opts) or Try(b, "SetAuraBorder", r.ring, opts)
     end
     r.colored = ok
+
+    -- Effects: the game shows the one for the debuff's type.
+    local fxs = FxTextures(r, b)
+    SizeFx(r, outer)
+    Try(b, "ClearAuraShownAnimations")
+    r.fxOk = 0
+    for _, fx in ipairs(FX) do
+        local f = fxs[fx.kind]
+        if db.debuffFx then
+            local o = { style = STYLE_CUSTOM, showWhenHarmful = true, showWithoutDispelType = true,
+                        customDispelAssetMap = AssetMap(fx, true), customDispelColorMap = opts.customDispelColorMap }
+            local ok = Try(b, "AddDispelTypeTexture", f.tex, o)
+            if not ok then -- the map's entries as bare paths instead
+                o.customDispelAssetMap = AssetMap(fx, false)
+                ok = Try(b, "AddDispelTypeTexture", f.tex, o)
+            end
+            if ok then
+                r.fxOk = r.fxOk + 1
+                for _, ag in ipairs(f.groups) do Try(b, "AddAuraShownAnimation", ag) end
+                PlayFx(f, true)
+            else
+                f.tex:Hide()
+            end
+        else
+            PlayFx(f, false)
+            f.tex:Hide()
+        end
+    end
 
     -- Drain: the game's duration on our ring-shaped sweep.
     local cd = r.cd
@@ -223,7 +371,7 @@ local function Signature(unit)
     end
     return table.concat({ tostring(db.debuffEnabled), tostring(db["debuff" .. (unit == "player" and "Player" or "Target")]),
         tostring(db.debuffThickness), tostring(db.debuffGap), tostring(db.debuffDrain), tostring(db.debuffTime),
-        tostring(db.debuffOpacity), tostring(db.debuffPlayerFilter), tostring(db.debuffTargetFilter),
+        tostring(db.debuffOpacity), tostring(db.debuffPlayerFilter), tostring(db.debuffTargetFilter), tostring(db.debuffFx),
         table.concat(cs, ";") }, "|")
 end
 
@@ -294,6 +442,7 @@ local function Sample(unit)
     NoMouse(s.cd)
     s.text = s:CreateFontString(nil, "OVERLAY")
     s.text:SetPoint("BOTTOM", s, "BOTTOM", 0, -2)
+    FxTextures(s, s)
     s:Hide()
     samples[unit] = s
     return s
@@ -325,6 +474,19 @@ local function ShowSample(unit, i)
         cd:Hide()
     end
     TimeFont(s.text, outer)
+    SizeFx(s, outer)
+    local fxKind = FX_FOR[kind] or kind
+    for k, f in pairs(s.fx) do
+        local on = db.debuffFx and k == fxKind
+        if on then
+            f.tex:SetTexture(TEXTURES .. f.def.file)
+            f.tex:SetVertexColor(c.r, c.g, c.b, 1)
+            f.tex:Show()
+        else
+            f.tex:Hide()
+        end
+        PlayFx(f, on)
+    end
     s.started, s.kind = GetTime(), kind
     s:Show()
 end
@@ -401,7 +563,8 @@ local function DebuffDebug()
         local r = live[unit]
         Print(string.format("  %s: %s%s%s", unit, r and "container" or "no container",
             r and (r.button and ", slot" or ", no slot") or "",
-            r and r.button and ((r.colored and ", colored" or ", not colored") .. (r.drain and ", drains" or ", no drain")) or ""))
+            r and r.button and ((r.colored and ", colored" or ", not colored") .. (r.drain and ", drains" or ", no drain")
+                .. ", effects " .. tostring(r.fxOk or 0) .. "/" .. #FX) or ""))
     end
     if #diag == 0 then Print("  Nothing went wrong setting up.") end
     for _, m in ipairs(diag) do Print("  " .. m) end
@@ -410,6 +573,9 @@ ns.RegisterCommand({ "debuffdebug" }, DebuffDebug)
 
 ns.PreviewDebuffRings = Preview
 ns.DebuffRingsInfo = function() return live, samples, diag end -- tests
+ns.DebuffAssetFor = function(kind, typeName) -- tests
+    for _, fx in ipairs(FX) do if fx.kind == kind then return AssetMap(fx, false)[typeName] end end
+end
 
 ---------------------------------------------------------------------------
 -- Registration
@@ -431,6 +597,7 @@ ns.RegisterRing({
         debuffOpacity   = 100,
         debuffDrain     = true,
         debuffTime      = false,
+        debuffFx        = true,  -- an animated effect per debuff type
         debuffColors = { -- the game's own debuff colors
             magic   = { r = 0.20, g = 0.60, b = 1.00 },
             curse   = { r = 0.60, g = 0.00, b = 1.00 },
@@ -463,6 +630,10 @@ ns.RegisterRing({
                         drain = Toggle(6, "debuffDrain", "Drain as it runs out",
                             "The ring empties as the debuff wears off. Off: a full ring while it lasts."),
                         time = Toggle(7, "debuffTime", "Show time left", "The game's countdown under the portrait."),
+                        fx = Toggle(8, "debuffFx", "Effects per type",
+                            "An animated effect for each type: bubbles round the ring for poison, swirling wisps for "
+                            .. "curses, twinkling sparkles for magic, pulsing spores for disease, and blood running "
+                            .. "down for bleeds and other debuffs with no type."),
                     }),
                     colors = Box(3, "Colors", {
                         magic = Color(1, "debuffColors", "magic", "Magic", "Magic debuffs."),
@@ -481,7 +652,7 @@ ns.RegisterRing({
                         opacity = Range(3, "debuffOpacity", "Opacity", 20, 100, 5, "How solid the ring is."),
                     }),
                 }))
-            for _, k in ipairs({ "player", "playerFilter", "target", "targetFilter", "drain", "time" }) do
+            for _, k in ipairs({ "player", "playerFilter", "target", "targetFilter", "drain", "time", "fx" }) do
                 tab.args.general.args[k].disabled = off
             end
             tab.args.general.args.playerFilter.disabled = function() return off() or db.debuffPlayer == false end

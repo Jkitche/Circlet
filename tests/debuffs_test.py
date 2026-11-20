@@ -72,10 +72,17 @@ CircletDB.debuffDrain = false; CircletDB.debuffTime = true; Advance(1); Calls("n
 -- Preview: our own sample rings, cycling colors.
 local _, samples = NS.DebuffRingsInfo()
 Slash("debuff"); Advance(0.6)
-local function S(u) local s = samples[u]; return s and s._shown and (s.ring._vc .. " " .. tostring(s.text._text)) or "hidden" end
+local function S(u) local s = samples[u]; if not (s and s._shown) then return "hidden" end
+  local fx = {} for k, f in pairs(s.fx) do if f.tex._shown then table.insert(fx, k .. "@" .. tostring(f.tex._vc) .. "/" .. f.tex._w) end end
+  return s.ring._vc .. " " .. tostring(s.text._text) .. " fx=" .. table.concat(fx, ",") end
 P("preview: player " .. S("player") .. " | target " .. S("target"))
 CircletDB.debuffTarget = true; Advance(6); P("6s later: player " .. S("player") .. " | target " .. S("target"))
 Advance(8); P("preview over: player " .. S("player"))
+CircletDB.debuffFx = false; Slash("debuff"); Advance(0.6); P("effects off: player " .. S("player")); Advance(14)
+-- The asset map given to the game for the poison effect: its art for poison, blank otherwise.
+local live = NS.DebuffRingsInfo(); local t = {}
+for k, v in pairs(live.player.fx.poison.tex) do end
+P("poison fx asset: " .. tostring(NS.DebuffAssetFor and NS.DebuffAssetFor("poison", "Poison")) .. " | curse: " .. tostring(NS.DebuffAssetFor and NS.DebuffAssetFor("poison", "Curse")))
 CircletDB.debuffEnabled = false; Advance(1); Calls("turned off"); P(Info())
 Slash("debuffdebug")
 ''')
