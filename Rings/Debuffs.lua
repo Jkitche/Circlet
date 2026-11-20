@@ -363,7 +363,13 @@ local function Container(unit)
     if r then return r end
     local _, unitFrame = Portrait(unit)
     if not unitFrame then return nil end
-    local ok, c = pcall(CreateFrame, "AuraContainer", nil, unitFrame)
+    -- The slot and group methods come from the container template (like the buttons'
+    -- CustomAuraButtonTemplate); the bare frame type only knows its unit.
+    local ok, c = pcall(CreateFrame, "AuraContainer", nil, unitFrame, "CustomAuraContainerTemplate")
+    if not ok or not c then
+        Note("CustomAuraContainerTemplate: " .. tostring(c))
+        ok, c = pcall(CreateFrame, "AuraContainer", nil, unitFrame)
+    end
     if not ok or not c then Note("AuraContainer: " .. tostring(c)) return nil end
     NoMouse(c)
     Try(c, "SetUnit", unit)
@@ -643,11 +649,17 @@ local function DebuffDebug()
     end
     local r = live.player or live.target
     if r then
-        local names, mt = {}, getmetatable(r.container)
-        local idx = mt and mt.__index
-        if type(idx) == "table" then
-            for k in pairs(idx) do if type(k) == "string" and k:find("Aura") then names[#names + 1] = k end end
+        local names, seen, mt = {}, {}, getmetatable(r.container)
+        local function Collect(t)
+            for k, v in pairs(t) do
+                if type(k) == "string" and type(v) == "function" and not seen[k]
+                    and (k:find("Aura") or k:find("Unit") or k:find("Filter")) then
+                    seen[k] = true; names[#names + 1] = k
+                end
+            end
         end
+        pcall(Collect, r.container) -- methods mixed in by a template
+        if mt and type(mt.__index) == "table" then pcall(Collect, mt.__index) end
         table.sort(names)
         Print("  container kind: " .. tostring(r.kind) .. "; its aura methods: " .. (#names > 0 and table.concat(names, ", ") or "(couldn't list)"))
     end
