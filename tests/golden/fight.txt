@@ -1,0 +1,11 @@
+after the fight: Fight summary | vs Gray Bear +1  ·  0:27 | 1,843 | Damage | 68 | DPS | 412 | Taken | XP gained | 236  (2 kills) | Top ability | Auto Attack  900 | Avoided | 5 of 8 attacks | 1 dodge, 1 parry, 2 blocks, 1 miss | Crushing blows | 1 | Crits taken | 1 | Crits on target | 2 | Spells cast | 2  [alpha 1.00]
+12.5s later, fading: Fight summary | vs Gray Bear +1  ·  0:27 | 1,843 | Damage | 68 | DPS | 412 | Taken | XP gained | 236  (2 kills) | Top ability | Auto Attack  900 | Avoided | 5 of 8 attacks | 1 dodge, 1 parry, 2 blocks, 1 miss | Crushing blows | 1 | Crits taken | 1 | Crits on target | 2 | Spells cast | 2  [alpha 0.50]
+gone: (no pane)
+2s fight: (no pane)
+no damage dealt: (no pane)
+meter still hidden: Fight summary | vs Young Wolf  ·  0:06 | <drawn by game> | Damage | <drawn by game> | DPS | 412 | Taken | Top ability | Auto Attack  900  [alpha 1.00]
+settled: Fight summary | vs Young Wolf  ·  0:06 | 950 | Damage | 158 | DPS | 412 | Taken | Top ability | Auto Attack  900  [alpha 1.00]
+level up: Fight summary | vs Young Wolf  ·  0:05 | 500 | Damage | 50 | DPS | 412 | Taken | XP gained | 160 | Top ability | Auto Attack  900  [alpha 1.00]
+off: (no pane)
+/circ fight: Fight summary | vs Young Wolf  ·  0:06 | 500 | Damage | 50 | DPS | 412 | Taken | Top ability | Auto Attack  900  [alpha 1.00]
+ERRORS: {}

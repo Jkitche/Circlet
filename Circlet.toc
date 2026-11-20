@@ -69,6 +69,7 @@ Features\PanelSkin.lua
 Features\Discovery.lua
 Features\Welcome.lua
 Features\Summary.lua
+Features\FightSummary.lua
 Features\DefaultUI.lua
 Features\Profiles.lua
 Features\Migrations.lua

@@ -88,6 +88,7 @@ chat:   /circ ring <name> - pin a quest to its own ring (or right-click it in th
 chat:   /circ discover  - preview the discovered area animation
 chat:   /circ hello     - preview the welcome animation
 chat:   /circ summary   - this session's summary
+chat:   /circ fight     - show the last fight's summary again (or a sample)
 chat:   /circ profile [name] - show or switch profiles
 chat:   /circ setup     - the setup wizard: pick your rings, their look and layout
 chat:   /circ new       - what's new in this version

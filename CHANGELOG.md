@@ -63,6 +63,14 @@
   Shoot, or Throw), the ring fills over your ranged weapon's speed and counts down to the next
   shot. For Auto Shot's last half second, its aim, when moving holds the shot back, the ring
   turns red and says Aiming, or Hold still if you're moving.
+- **Fight summary** (new; Combat & casting > Fight summary). When a fight ends, a small pane
+  shows your damage, DPS and damage taken, how long it lasted and who you fought, XP and kills,
+  healing, your top ability, what you avoided (dodges, parries, blocks, misses, absorbs) out of
+  the attacks against you, crushing blows, crits taken and dealt, interrupts, dispels and spells
+  cast. The numbers come from the game's own damage meter; the game hides how much a block or
+  absorb stopped, so what you avoided is counted in attacks. It fades after 12 seconds (stays
+  while the mouse is over it), can be dragged anywhere, skips fights under 4 seconds and fights
+  you didn't hit anything in, and `/circ fight` shows the last one again.
 - The swing and shot timer rings can hide WoW Forever's own swing timer bars (each ring's
   "Hide the game's ... bar" option, off by default). If the bars can't be found, the option
   turns the game's Swing Timer setting off instead, and puts it back when you turn it off.
