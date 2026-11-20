@@ -1,0 +1,21 @@
+idle: (hidden)
+auto-attack on, no swing yet: Swing / Ready fill=72
+1s after a glancing swing: Swing / 2.3 / Glancing fill=22
+3.2s: Swing / 0.1 / Glancing fill=70
+3.7s, out of range: Swing / Ready / Glancing fill=72
+Earth Shock (nature) 0.5s into a swing: Swing / 2.8 / Hit fill=12
+someone else's hit too soon: Swing / 2.5 / Hit fill=19
+dodged: Swing / 3.0 / Dodged fill=7
+Stormstrike's hit isn't a swing: Swing / 1.7 / Dodged fill=35
+after Lesser Healing Wave: Swing / 3.0 fill=7
+while casting: Swing / Casting fill=0
+interrupted: Swing / 3.0 fill=7
+crit: Swing / 3.0 / Crit fill=7
+hasted halfway: Swing / 1.1 / Crit fill=37
+auto-attack off: (hidden)
+Heroic Strike (rank 2): Swing / 2.1 / Heroic Strike fill=14
+results off: Swing / 2.1 fill=14
+ring off: (hidden)
+preview: Swing / 1.3 / Hit fill=36
+preview later: Swing / 1.3 / Crit fill=36
+ERRORS: {}

@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=70 execute=147 range=259 select=86 toggle=205
+counts: color=74 execute=152 range=269 select=89 toggle=210
 general (General)
 progress (Progress)
   xp (XP)
@@ -12,6 +12,7 @@ progress (Progress)
   pet (Pet)
 combat (Combat & casting)
   cast (Casting)
+  swing (Swing timer)
   targetCast (Target casting)
   regen (Mana regen)
   totem (Totems) [hidden]

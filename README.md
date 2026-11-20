@@ -80,6 +80,8 @@ then fade away, or stay up as a permanent display.
   shadow, nature, holy) with a strength setting, and a resurrection animation.
 - **Mana regen**: the five-second rule after you spend mana, counting down to when your mana
   regen starts again.
+- **Swing timer**: time to your next melee swing while you auto-attack, and how the last one
+  went (hit, crit, glancing, dodged, parried...).
 - **Target casts**: what your target is casting or channeling, who's casting it, and whether
   you can interrupt it; red with the lost part flashing when it's interrupted.
 - **Finish burst**: when a gather, craft or interaction finishes, the icon swells and throws

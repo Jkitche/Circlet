@@ -71,6 +71,7 @@ chat:   /circ craft     - preview the crafting ring
 chat:   /circ gather    - preview the gathering ring
 chat:   /circ fish      - preview the fishing ring
 chat:   /circ cast      - preview the cast ring
+chat:   /circ swing     - preview the swing timer ring
 chat:   /circ target    - preview the target cast ring
 chat:   /circ loot      - preview the loot roll ring
 chat:   /circ ready     - preview the ready check ring

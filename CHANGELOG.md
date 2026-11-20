@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Swing timer ring** (new; Combat & casting > Swing timer). While you auto-attack, the ring
+  fills over your weapon's speed and counts down to your next melee swing, then says Ready
+  until it lands, with how the last swing went underneath (Hit, Crit, Glancing, Miss, Dodged,
+  Parried, Blocked). Heroic Strike, Cleave, Maul and Raptor Strike count as the swing, finishing
+  a spell with a cast time restarts it, and haste or slows rescale it. The game keeps the combat
+  log from addons, so swings are spotted from the hits your target takes; in a group someone
+  else's hit can now and then be taken for yours. Main hand only.
+
 ## 1.4.0
 
 - **Hearthstone ring** (new; Travel & survival > Hearthstone). While you cast your Hearthstone
