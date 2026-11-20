@@ -131,9 +131,11 @@ after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
   New in Circlet 1.4.0
-  1 new thing
+  3 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Hearthstone ring  <Show>
+  [x] Shot timer ring  <Show>
+  [x] Swing timer ring  <Show>
   footer: [Full setup] [Done]
 done, open: false
 ERRORS: {}
@@ -141,9 +143,11 @@ ERRORS: {}
 existing player, 3s after login: open=true setupDone=true
 --- new in
   New in Circlet 1.4.0
-  9 new things
+  11 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Hearthstone ring  <Show>
+  [x] Shot timer ring  <Show>
+  [x] Swing timer ring  <Show>
   [x] Fishing ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Timer ring  <Show>

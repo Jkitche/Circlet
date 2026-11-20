@@ -1,24 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- **Swing timer ring** (new; Combat & casting > Swing timer). While you auto-attack, the ring
-  fills over your weapon's speed and counts down to your next melee swing, then says Ready
-  until it lands, with how the last swing went underneath (Hit, Crit, Glancing, Miss, Dodged,
-  Parried, Blocked). Heroic Strike, Cleave, Maul and Raptor Strike count as the swing, finishing
-  a spell with a cast time restarts it, and haste or slows rescale it. The game keeps the combat
-  log from addons, so swings are spotted from the hits your target takes; in a group someone
-  else's hit can now and then be taken for yours. Main hand only.
-- **Shot timer ring** (new; Combat & casting > Shot timer). While Auto Shot repeats (or a wand's
-  Shoot, or Throw), the ring fills over your ranged weapon's speed and counts down to the next
-  shot. For Auto Shot's last half second, its aim, when moving holds the shot back, the ring
-  turns red and says Aiming, or Hold still if you're moving.
-- The swing and shot timer rings can hide WoW Forever's own swing timer bars (each ring's
-  "Hide the game's ... bar" option, off by default). If the bars can't be found, the option
-  turns the game's Swing Timer setting off instead, and puts it back when you turn it off.
-  `/circ swingbars` shows what was found.
-- Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
-
 ## 1.4.0
 
 - **Hearthstone ring** (new; Travel & survival > Hearthstone). While you cast your Hearthstone
@@ -71,6 +52,22 @@
   ring on/off checkboxes are grouped into a box for each folder, three to a row. Everywhere else,
   checkboxes sit two to a row with their explanation in the tooltip instead of printed
   underneath, so pages are shorter and easier to scan.
+- **Swing timer ring** (new; Combat & casting > Swing timer). While you auto-attack, the ring
+  fills over your weapon's speed and counts down to your next melee swing, then says Ready
+  until it lands, with how the last swing went underneath (Hit, Crit, Glancing, Miss, Dodged,
+  Parried, Blocked). Heroic Strike, Cleave, Maul and Raptor Strike count as the swing, finishing
+  a spell with a cast time restarts it, and haste or slows rescale it. The game keeps the combat
+  log from addons, so swings are spotted from the hits your target takes; in a group someone
+  else's hit can now and then be taken for yours. Main hand only.
+- **Shot timer ring** (new; Combat & casting > Shot timer). While Auto Shot repeats (or a wand's
+  Shoot, or Throw), the ring fills over your ranged weapon's speed and counts down to the next
+  shot. For Auto Shot's last half second, its aim, when moving holds the shot back, the ring
+  turns red and says Aiming, or Hold still if you're moving.
+- The swing and shot timer rings can hide WoW Forever's own swing timer bars (each ring's
+  "Hide the game's ... bar" option, off by default). If the bars can't be found, the option
+  turns the game's Swing Timer setting off instead, and puts it back when you turn it off.
+  `/circ swingbars` shows what was found.
+- Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
 
 ## 1.3.2
 
