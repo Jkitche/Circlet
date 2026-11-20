@@ -566,6 +566,37 @@ local function DebuffDebug()
             r and r.button and ((r.colored and ", colored" or ", not colored") .. (r.drain and ", drains" or ", no drain")
                 .. ", effects " .. tostring(r.fxOk or 0) .. "/" .. #FX) or ""))
     end
+    -- Where things are: the container, its slot's button, the portrait. Calls on the button
+    -- may throw (forbidden in combat) or answer with secrets; both are reported as such.
+    local function Ask(obj, method, ...)
+        if not (obj and obj[method]) then return "n/a" end
+        local res = { pcall(obj[method], obj, ...) }
+        if not res[1] then return "blocked" end
+        local out = {}
+        for i = 2, #res do
+            local v = res[i]
+            if ns.IsSecret(v) then out[#out + 1] = "secret"
+            elseif type(v) == "number" then out[#out + 1] = string.format("%.0f", v)
+            else out[#out + 1] = tostring(v) end
+        end
+        return table.concat(out, "x")
+    end
+    for _, unit in ipairs(UNITS) do
+        local r = live[unit]
+        local portrait, unitFrame = Portrait(unit)
+        Print(string.format("  %s portrait: %s size %s, frame %s", unit, portrait and "found" or "MISSING",
+            Ask(portrait, "GetSize"), unitFrame and (unitFrame:IsVisible() and "visible" or "hidden") or "MISSING"))
+        if r then
+            local c, b = r.container, r.button
+            Print(string.format("    container: shown %s, visible %s, size %s, unit %s, level %s", Ask(c, "IsShown"),
+                Ask(c, "IsVisible"), Ask(c, "GetSize"), Ask(c, "GetUnit"), Ask(c, "GetFrameLevel")))
+            if b then
+                Print(string.format("    slot button: shown %s, visible %s, size %s, points %s, parent is container %s",
+                    Ask(b, "IsShown"), Ask(b, "IsVisible"), Ask(b, "GetSize"), Ask(b, "GetNumPoints"),
+                    tostring(select(2, pcall(function() return b:GetParent() == c end)))))
+            end
+        end
+    end
     if #diag == 0 then Print("  Nothing went wrong setting up.") end
     for _, m in ipairs(diag) do Print("  " .. m) end
 end
