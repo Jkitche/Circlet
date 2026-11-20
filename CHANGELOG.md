@@ -68,8 +68,9 @@
   healing, your top ability, what you avoided (dodges, parries, blocks, misses, absorbs) out of
   the attacks against you, crushing blows, crits taken and dealt, interrupts, dispels and spells
   cast. The numbers come from the game's own damage meter; the game hides how much a block or
-  absorb stopped, so what you avoided is counted in attacks. It has no background, just
-  outlined text over the world: it fades in rising into place, and after 12 seconds (longer
+  absorb stopped, so what you avoided is counted in attacks. It's meant to be barely
+  noticeable: no background, just faint white text over the world (45% opacity, adjustable;
+  full while the mouse is over it). It fades in rising into place, and after 12 seconds (longer
   while the mouse is over it) drifts up as it fades out. It can be dragged anywhere, skips fights under 4 seconds and fights
   you didn't hit anything in, and `/circ fight` shows the last one again.
 - The swing and shot timer rings can hide WoW Forever's own swing timer bars (each ring's

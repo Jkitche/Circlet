@@ -159,20 +159,20 @@ pane:EnableMouse(true)
 pane:RegisterForDrag("LeftButton")
 pane:Hide()
 
--- No background: every line is outlined, with a drop shadow, to read over the world.
+-- No background, and meant to be barely noticeable: plain white text, no outline, just a
+-- soft shadow to lift it off the world. The whole pane sits at a low opacity (fightOpacity)
+-- and comes up to full while the mouse is over it.
 local function Readable(fs, size)
-    if size then
-        local font = fs:GetFont()
-        fs:SetFont(type(font) == "string" and font or STANDARD_TEXT_FONT, size, "OUTLINE")
-    end
-    fs:SetShadowColor(0, 0, 0, 1)
+    local font = fs:GetFont()
+    fs:SetFont(type(font) == "string" and font or STANDARD_TEXT_FONT, size or 11, "")
+    fs:SetTextColor(1, 1, 1)
+    fs:SetShadowColor(0, 0, 0, 0.7)
     fs:SetShadowOffset(1, -1)
 end
 
 pane.title = pane:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 pane.title:SetPoint("TOPLEFT", pane, "TOPLEFT", PAD, -8)
-Readable(pane.title, 15)
-pane.title:SetTextColor(1, 0.86, 0.45)
+Readable(pane.title, 14)
 pane.title:SetText("Fight summary")
 pane.subtitle = pane:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 pane.subtitle:SetPoint("TOPLEFT", pane.title, "BOTTOMLEFT", 0, -2)
@@ -191,19 +191,15 @@ for i, label in ipairs({ "Damage", "DPS", "Taken" }) do
     b:SetSize((W - PAD * 2) / 3, 42)
     b:SetPoint("TOPLEFT", pane, "TOPLEFT", PAD + (i - 1) * (W - PAD * 2) / 3, -48)
     b.value = b:CreateFontString(nil, "OVERLAY")
-    b.value:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
+    b.value:SetFont(STANDARD_TEXT_FONT, 18, "")
     b.value:SetPoint("TOP", b, "TOP", 0, 0)
-    Readable(b.value)
+    Readable(b.value, 18)
     b.label = b:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     b.label:SetPoint("TOP", b.value, "BOTTOM", 0, -3)
-    b.label:SetTextColor(0.8, 0.8, 0.8)
     Readable(b.label, 10)
     b.label:SetText(label)
     bigs[i] = b
 end
-bigs[1].value:SetTextColor(1, 0.82, 0.35)
-bigs[2].value:SetTextColor(1, 1, 1)
-bigs[3].value:SetTextColor(1, 0.45, 0.40)
 
 local rows = {}
 local function Row(i)
@@ -341,7 +337,10 @@ pane:SetScript("OnUpdate", function(self)
     local out = 0
     if not editing and hold > 0 then out = math.max(0, math.min(1, (now - holdFrom - hold) / FADE_TIME)) end
     if out >= 1 then self:Hide() return end
-    self:SetAlpha(rise * (1 - out))
+    -- Faint (fightOpacity), easing up to full while the mouse is over it.
+    local faint = (db.fightOpacity or 45) / 100
+    self.look = (self.look or faint) + ((hover and 1 or faint) - (self.look or faint)) * 0.2
+    self:SetAlpha(rise * (1 - out) * self.look)
     Place(-RISE * (1 - rise) + DRIFT * out)
 end)
 
@@ -425,6 +424,7 @@ ns.RegisterRing({
         fightMinSeconds  = 4,    -- shorter fights don't get one
         fightOnlyDamage  = true, -- only after fights you dealt damage in
         fightScale       = 100,
+        fightOpacity     = 45,   -- barely there; full while the mouse is over it
         fightX           = 0,
         fightFromTop     = 500,
     },
@@ -448,6 +448,8 @@ ns.RegisterRing({
                         min = Range(4, "fightMinSeconds", "Shortest fight (seconds)", 0, 30, 1,
                             "Fights shorter than this don't get a summary."),
                         scale = Range(5, "fightScale", "Size (%)", 60, 160, 5, "How big the pane is."),
+                        opacity = Range(7, "fightOpacity", "Opacity (%)", 10, 100, 5,
+                            "How faint the pane is. It comes up to full while the mouse is over it."),
                         reset = Execute(6, "Reset position", function()
                             db.fightX, db.fightFromTop = ns.DEFAULTS.fightX, ns.DEFAULTS.fightFromTop
                             Place()
