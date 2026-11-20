@@ -224,13 +224,14 @@ local function SizeFx(holder, outer)
     for _, f in pairs(holder.fx or {}) do f.tex:SetSize(outer * 2 * FX_SCALE, outer * 2 * FX_SCALE) end
 end
 
+-- Plays or stops a sample's effect. Only for the samples: once an animation is handed to an
+-- aura button (AddAuraShownAnimation) the game owns it, and asking about it (IsPlaying) or
+-- driving it from here is forbidden. So we remember what we started instead of asking.
 local function PlayFx(f, on)
+    if f.owned or f.playing == on then return end
+    f.playing = on
     for _, ag in ipairs(f.groups) do
-        if on then
-            if not ag:IsPlaying() then ag:Play() end
-        else
-            ag:Stop()
-        end
+        if on then pcall(ag.Play, ag) else pcall(ag.Stop, ag) end
     end
 end
 
@@ -291,7 +292,6 @@ local function DressButton(r, tex, outer)
     -- Effects: the game shows the one for the debuff's type.
     local fxs = FxTextures(r, b)
     SizeFx(r, outer)
-    Try(b, "ClearAuraShownAnimations")
     r.fxOk = 0
     for _, fx in ipairs(FX) do
         local f = fxs[fx.kind]
@@ -305,13 +305,18 @@ local function DressButton(r, tex, outer)
             end
             if ok then
                 r.fxOk = r.fxOk + 1
-                for _, ag in ipairs(f.groups) do Try(b, "AddAuraShownAnimation", ag) end
-                PlayFx(f, true)
+                if not f.owned then
+                    -- Start them once while they're still ours, then hand them over: the game
+                    -- plays them whenever the debuff shows.
+                    PlayFx(f, true)
+                    for _, ag in ipairs(f.groups) do Try(b, "AddAuraShownAnimation", ag) end
+                    f.owned = true
+                end
             else
                 f.tex:Hide()
             end
         else
-            PlayFx(f, false)
+            Try(b, "RemoveDispelTypeTexture", f.tex)
             f.tex:Hide()
         end
     end
