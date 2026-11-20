@@ -24,8 +24,6 @@ around the minimap.
 - **Mana regen**: the five-second rule, counting down to when your mana regen starts again.
 - **Swing timer**: counts down to your next melee swing while you auto-attack, with how the last
   one went.
-- **Fight summary**: after each fight, a pane with your damage, DPS, damage taken, fight time,
-  XP and kills, top ability, and the attacks you avoided.
 - **Shot timer**: counts down to your next Auto Shot, wand shot or throw, and warns you to hold
   still through Auto Shot's aim.
 - **Crafting** batches and **gathering** (with what you got). Finishing throws off a burst of
