@@ -16,6 +16,14 @@
   pulsing spores, a swarm of flies circling and bubbles rising. Bleeds and other debuffs with
   no type: blood running down at two speeds and specks throbbing like a heartbeat. The game
   swaps the effects by type too, so they work in combat.
+  The game only says "Magic", not fire or frost, so School effects from your casts (off by
+  default) adds the school from what you cast: Flame Shock or Immolate on your target puts
+  flames round its portrait, Frost Shock or Frostbolt ice shards and falling snow, Shadow Word:
+  Pain or Corruption shadow wisps, Moonfire or Insect Swarm leaves, Polymorph arcane runes,
+  Holy Fire rays of light, for the spell's duration (read from its description, so every rank
+  is right), fading out at the end. Each target keeps its own, so swapping back brings it
+  back. It's a best guess: a resisted spell still shows, one dispelled early shows until its
+  time would have run out, and other players' spells don't show.
   Colors, thickness, gap and opacity are adjustable, with an optional countdown. Settings
   changed in combat apply when it ends. `/circ debuff` previews them, `/circ debuffdebug`
   reports what this client supports.

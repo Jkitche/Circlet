@@ -83,6 +83,24 @@ CircletDB.debuffFx = false; Slash("debuff"); Advance(0.6); P("effects off: playe
 local live = NS.DebuffRingsInfo(); local t = {}
 for k, v in pairs(live.player.fx.poisonBubbles.tex) do end
 P("poison fx asset: " .. tostring(NS.DebuffAssetFor and NS.DebuffAssetFor("poisonBubbles", "Poison")) .. " | curse: " .. tostring(NS.DebuffAssetFor and NS.DebuffAssetFor("poisonBubbles", "Curse")))
+-- School layers from your own casts on the target.
+CircletDB.debuffFx = true; CircletDB.debuffTarget = true; CircletDB.debuffSchoolFx = true
+C_Spell = C_Spell or {}
+C_Spell.GetSpellDescription = function(id) if id == 8050 then return "Instantly sears the target with fire, causing 25 Fire damage immediately and 28 Fire damage over 12 sec." end end
+GetSpellInfo = GetSpellInfo or function(id) local n = ({ [8050] = "Flame Shock", [8052] = "Flame Shock", [8056] = "Frost Shock" })[id]; return n end
+UNITS.target = { guid = "Mob-1", name = "Gray Bear", hostile = true }
+local function School() local f, marks = NS.DebuffSchoolFrame(); if not (f and f._shown) then return "none" end
+  return tostring(f.school) .. " alpha=" .. string.format("%.2f", f._alpha) end
+Advance(1); P("no cast: " .. School())
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1", 8050); Advance(0.2); P("Flame Shock: " .. School())
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-2", 403); Advance(0.2); P("Lightning Bolt (no debuff): " .. School())
+UNITS.target = { guid = "Mob-2", name = "Wolf" }; Fire("PLAYER_TARGET_CHANGED"); Advance(0.2); P("other target: " .. School())
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-3", 8056); Advance(0.2); P("Frost Shock on it: " .. School())
+UNITS.target = { guid = "Mob-1", name = "Gray Bear" }; Fire("PLAYER_TARGET_CHANGED"); Advance(0.2); P("back to the bear: " .. School())
+Advance(10.9); P("fading: " .. School()); Advance(1); P("ran out: " .. School())
+CircletDB.debuffSchoolFx = false; Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-4", 8050); Advance(0.2); P("setting off: " .. School())
+CircletDB.debuffSchoolFx = true; Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-5", 8052); Advance(0.2); P("rank 2 by name: " .. School())
+UNITS.target = nil; Fire("PLAYER_TARGET_CHANGED"); Advance(0.2)
 CircletDB.debuffEnabled = false; Advance(1); Calls("turned off"); P(Info())
 Slash("debuffdebug")
 ''')

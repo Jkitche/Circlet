@@ -230,6 +230,93 @@ def splatter(rng):
     return finish(a)
 
 
+# --- Spell school layers (your own casts on the target) ---------------------------------
+
+def flames(rng):
+    """Tongues of flame licking outward all round the ring, longest at the top."""
+    a = canvas(); d = ImageDraw.Draw(a)
+    n = 22
+    for i in range(n):
+        ang = i * 360 / n + rng.uniform(-5, 5)
+        up = (1 + math.cos(math.radians(ang))) / 2      # 1 at the top, 0 at the bottom
+        ln = R * (0.16 + 0.22 * up) * rng.uniform(0.75, 1.2)
+        w = R * rng.uniform(0.06, 0.09)
+        base_r = R * 0.9
+        # a flame: a curved teardrop from the band outward, leaning upward
+        steps = 30
+        lean = rng.uniform(-6, 6)
+        for k in range(steps):
+            t = k / steps
+            x, y = at(ang + lean * t, base_r + ln * t)
+            y -= ln * 0.35 * t * t * (1 - up * 0.5)       # flames lean up
+            ww = w * (1 - t) ** 0.8 + SS * 0.5
+            d.ellipse((x - ww, y - ww, x + ww, y + ww), fill=int(255 - 120 * t))
+    return finish(a, blur=1.6)
+
+
+def shards(rng):
+    """Ice crystals jutting out of the ring."""
+    a = canvas(); d = ImageDraw.Draw(a)
+    n = 16
+    for i in range(n):
+        ang = i * 360 / n + rng.uniform(-6, 6)
+        ln = R * rng.uniform(0.14, 0.3)
+        w = R * rng.uniform(0.035, 0.06)
+        for spread, scale in ((0, 1), (rng.choice((-14, 14)), 0.55)):
+            a0 = math.radians(ang + spread)
+            bx, by = at(ang + spread * 0.2, R * 0.92)
+            tx, ty = bx + math.sin(a0) * ln * scale, by - math.cos(a0) * ln * scale
+            px, py = math.cos(a0) * w * scale, math.sin(a0) * w * scale
+            d.polygon([(bx - px, by - py), (tx, ty), (bx + px, by + py)], fill=225)
+            d.line([(bx, by), (tx, ty)], fill=255, width=SS)
+    return finish(a, blur=0.3)
+
+
+def snow(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    for i in range(22):
+        x, y = at(rng.uniform(0, 360), R * rng.uniform(0.85, 1.3))
+        s = rng.uniform(2.2, 5) * SS
+        for k in range(3):
+            an = math.radians(k * 60 + rng.uniform(0, 30))
+            dx, dy = math.cos(an) * s, math.sin(an) * s
+            d.line([(x - dx, y - dy), (x + dx, y + dy)], fill=245, width=int(0.9 * SS))
+        d.ellipse((x - SS, y - SS, x + SS, y + SS), fill=255)
+    return finish(a)
+
+
+def leaves(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    # a vine along the band
+    d.ellipse((C - R * 1.05, C - R * 1.05, C + R * 1.05, C + R * 1.05), outline=120, width=int(1.2 * SS))
+    for i in range(18):
+        ang = i * 20 + rng.uniform(-6, 6)
+        cx, cy = at(ang, R * 1.05)
+        ln, w = R * rng.uniform(0.12, 0.18), R * rng.uniform(0.045, 0.065)
+        side = 1 if i % 2 else -1
+        a0 = math.radians(ang + side * 50)
+        tx, ty = cx + math.sin(a0) * ln, cy - math.cos(a0) * ln
+        mx, my = (cx + tx) / 2, (cy + ty) / 2
+        nx, ny = math.cos(a0) * w, math.sin(a0) * w
+        d.polygon([(cx, cy), (mx + nx, my + ny), (tx, ty), (mx - nx, my - ny)], fill=230)
+        d.line([(cx, cy), (tx, ty)], fill=120, width=SS)
+    return finish(a, blur=0.4)
+
+
+def rays(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    n = 16
+    for i in range(n):
+        ang = i * 360 / n
+        ln = R * (0.42 if i % 2 == 0 else 0.26)
+        w = 4.5 if i % 2 == 0 else 3
+        x0, y0 = at(ang - w, R * 0.95)
+        x1, y1 = at(ang + w, R * 0.95)
+        tx, ty = at(ang, R * 0.95 + ln)
+        d.polygon([(x0, y0), (tx, ty), (x1, y1)], fill=170)
+    return finish(a, blur=2.5)
+
+
 os.makedirs(out_dir, exist_ok=True)
 ART = {
     'Glow': glow,
@@ -240,6 +327,7 @@ ART = {
     'DiseaseSpores': disease, 'Flies': flies,
     'Drip': bleed, 'DripB': lambda rng: bleed(rng, angles=(118, 140, 158, 176, 195, 214, 236), specks=False),
     'Splatter': splatter,
+    'Flames': flames, 'Shards': shards, 'Snow': snow, 'Leaves': leaves, 'Rays': rays,
 }
 for name, fn in ART.items():
     tga(fn(random.Random(name)), os.path.join(out_dir, 'DebuffFx%s.tga' % name))

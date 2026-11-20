@@ -506,6 +506,206 @@ local function ApplyAll(force)
 end
 
 ---------------------------------------------------------------------------
+-- School layers: your own casts on the target (debuffSchoolFx)
+---------------------------------------------------------------------------
+-- The game's ring only knows a debuff's dispel type (Magic covers fire, frost, shadow...).
+-- But the client does tell us what *you* cast, even in combat. So when you cast one of the
+-- debuff spells below, the target's portrait gets a layer in that spell's school (flames,
+-- ice, shadow, leaves, runes, light) for the spell's duration. It's a frame of our own over
+-- the portrait (not part of the game's aura button), so we can time and animate it freely.
+-- It can't see the debuff itself, so it's a best guess: a resisted spell still shows, one
+-- dispelled early keeps showing until its time is up, and other players' spells don't show.
+-- Kept per target (by GUID), so swapping back to a target brings its layer back.
+-- Durations come from the spell's description ("... over 12 sec."), so every rank is right;
+-- the numbers here are for when the description can't be read.
+local SCHOOL_SPELLS = {
+    fire   = { [8050] = 12, [348] = 15, [11366] = 12, [133] = 8 },        -- Flame Shock, Immolate, Pyroblast, Fireball
+    frost  = { [8056] = 8, [116] = 7, [120] = 8, [122] = 8 },              -- Frost Shock, Frostbolt, Cone of Cold, Frost Nova
+    shadow = { [589] = 18, [172] = 18, [18265] = 30, [5782] = 15, [689] = 5, [15286] = 60,
+               [6789] = 3, [8122] = 8, [15407] = 3 },                      -- SW:Pain, Corruption, Siphon Life, Fear, Drain Life, VE, Death Coil, Scream, Mind Flay
+    nature = { [8921] = 12, [5570] = 12, [339] = 15, [770] = 40 },         -- Moonfire, Insect Swarm, Entangling Roots, Faerie Fire
+    arcane = { [118] = 20 },                                               -- Polymorph
+    holy   = { [14914] = 10, [853] = 6 },                                  -- Holy Fire, Hammer of Justice
+}
+local SCHOOL_LAYERS = {
+    fire   = { color = { 1.00, 0.45, 0.10 }, { art = "Glow", pulse = { 0.5, 1, 0.5 } },
+               { art = "Flames", pulse = { 0.65, 1, 0.22 }, grow = { 0.97, 1.05, 0.35 } },
+               { art = "Motes", rise = { 22, 1.2 } } },
+    frost  = { color = { 0.55, 0.85, 1.00 }, { art = "Glow", pulse = { 0.4, 0.8, 1.6 } },
+               { art = "Shards", turn = 45, pulse = { 0.6, 1, 1.3 } },
+               { art = "Snow", drip = { 16, 2.6 } } },
+    shadow = { color = { 0.60, 0.25, 0.90 }, { art = "Glow", pulse = { 0.3, 0.8, 1.4 } },
+               { art = "CurseWisps", turn = -6, pulse = { 0.5, 1, 1.8 } },
+               { art = "Motes", rise = { 14, 2.2 } } },
+    nature = { color = { 0.35, 0.95, 0.35 }, { art = "Glow", pulse = { 0.4, 0.85, 1.5 } },
+               { art = "Leaves", turn = 14, grow = { 0.97, 1.03, 1.8 } },
+               { art = "Rise", rise = { 12, 2.4 } } },
+    arcane = { color = { 0.85, 0.50, 1.00 }, { art = "Glow", pulse = { 0.4, 0.9, 1.0 } },
+               { art = "MagicRunes", turn = -20, pulse = { 0.5, 1, 1.6 } },
+               { art = "MagicStarsSmall", turn = 12, pulse = { 0.25, 1, 0.5 } } },
+    holy   = { color = { 1.00, 0.90, 0.50 }, { art = "Glow", pulse = { 0.5, 1, 1.2 } },
+               { art = "Rays", turn = 30, pulse = { 0.4, 1, 1.6 } },
+               { art = "Motes", rise = { 16, 1.8 } } },
+}
+local SCHOOL_FADE = 0.6 -- seconds to fade out at the end
+
+local schoolByID, schoolByName = {}, nil
+for school, spells in pairs(SCHOOL_SPELLS) do
+    for id, secs in pairs(spells) do schoolByID[id] = { school = school, secs = secs, id = id } end
+end
+
+-- The school and duration of one of your casts, or nil if it isn't one of these spells.
+local function SchoolSpell(spellID)
+    if not spellID then return nil end
+    if schoolByID[spellID] then return schoolByID[spellID] end
+    if not schoolByName then -- other ranks: by name
+        local names, any = {}, false
+        for _, info in pairs(schoolByID) do
+            local n = ns.SpellName(info.id)
+            if n then names[n], any = info, true end
+        end
+        if not any then return nil end
+        schoolByName = names
+    end
+    local n = ns.SpellName(spellID)
+    return n and schoolByName[n] or nil
+end
+
+local function SpellSeconds(spellID, fallback)
+    local get = (C_Spell and C_Spell.GetSpellDescription) or _G.GetSpellDescription
+    local text = ns.Clean(ns.SafeCall(get, spellID))
+    if type(text) == "string" then
+        local best
+        for n in text:gmatch("(%d+%.?%d*) sec") do best = tonumber(n) end
+        if best and best > 0 and best <= 120 then return best end
+    end
+    return fallback
+end
+
+local marks = {}   -- target GUID -> { school, until }
+local schoolFx     -- the frame over the target portrait
+
+local function SchoolFrame()
+    if schoolFx then return schoolFx end
+    local _, unitFrame = Portrait("target")
+    if not unitFrame then return nil end
+    -- On UIParent (not the target frame) so edit mode's sample shows without a target too;
+    -- it's hidden whenever the target frame is.
+    schoolFx = CreateFrame("Frame", nil, UIParent)
+    schoolFx:SetFrameStrata(unitFrame:GetFrameStrata() or "MEDIUM")
+    NoMouse(schoolFx)
+    schoolFx.layers = {}
+    for school, def in pairs(SCHOOL_LAYERS) do
+        local list = {}
+        for i, layer in ipairs(def) do
+            local tex = schoolFx:CreateTexture(nil, "OVERLAY", nil, i)
+            tex:SetPoint("CENTER")
+            tex:SetTexture(TEXTURES .. "DebuffFx" .. layer.art)
+            tex:SetVertexColor(def.color[1], def.color[2], def.color[3], 1)
+            if tex.SetBlendMode then tex:SetBlendMode("ADD") end
+            tex:Hide()
+            table.insert(list, { tex = tex, groups = Animate(tex, layer) })
+        end
+        schoolFx.layers[school] = list
+    end
+    schoolFx:Hide()
+    schoolFx.t = 0
+    schoolFx:SetScript("OnUpdate", function(self, elapsed) -- the fade at the end, and running out
+        self.t = self.t + elapsed
+        if self.t < 0.05 then return end
+        self.t = 0
+        ns.UpdateDebuffSchool()
+    end)
+    return schoolFx
+end
+
+local function TargetGUID() return ns.Clean(ns.SafeCall(UnitGUID, "target")) end
+
+-- Shows school's layers on the frame (nil: none), sized to the target ring.
+local function ShowSchool(frame, school, alpha)
+    if not frame then return end
+    if not school then
+        if frame.school then
+            for _, l in ipairs(frame.layers[frame.school]) do l.tex:Hide(); PlayFx(l, false) end
+            frame.school = nil
+        end
+        frame:Hide()
+        return
+    end
+    if frame.school ~= school then
+        ShowSchool(frame, nil)
+        frame.school = school
+        for _, l in ipairs(frame.layers[school]) do l.tex:Show(); PlayFx(l, true) end
+    end
+    local placed, _, outer = Place(frame, "target")
+    if not placed then frame:Hide() return end
+    frame:SetFrameLevel(frame:GetFrameLevel() + 2)
+    for _, l in ipairs(frame.layers[school]) do l.tex:SetSize(outer * 2 * FX_SCALE, outer * 2 * FX_SCALE) end
+    frame:SetAlpha(alpha * (db.debuffOpacity or 100) / 100)
+    frame:Show()
+end
+
+local function SchoolOn()
+    return db.debuffEnabled and db.debuffTarget ~= false and db.debuffSchoolFx
+end
+
+-- The current target's mark: its school and how much is left, or nil.
+local function CurrentMark()
+    local guid = TargetGUID()
+    local m = guid and marks[guid]
+    if not m then return nil end
+    local left = m["until"] - GetTime()
+    if left <= 0 then marks[guid] = nil return nil end
+    return m.school, left
+end
+
+local sampleSchool -- edit mode / preview: the school the target's sample shows, or nil
+
+local function UpdateSchool()
+    if sampleSchool then
+        ShowSchool(SchoolFrame(), sampleSchool, 1)
+        return
+    end
+    local _, unitFrame = Portrait("target")
+    if not SchoolOn() or not (unitFrame and unitFrame:IsVisible())
+        or (UnitIsDead and ns.SafeCall(UnitIsDead, "target") == true) then
+        if schoolFx then ShowSchool(schoolFx, nil) end
+        return
+    end
+    local school, left = CurrentMark()
+    if not school then
+        if schoolFx then ShowSchool(schoolFx, nil) end
+        return
+    end
+    ShowSchool(SchoolFrame(), school, math.min(1, left / SCHOOL_FADE))
+end
+
+ns.UpdateDebuffSchool = UpdateSchool
+
+local function SetSampleSchool(school)
+    if sampleSchool == school then return end
+    sampleSchool = school
+    UpdateSchool()
+end
+
+ns.Listen({ "UNIT_SPELLCAST_SUCCEEDED:player" }, function(_, _, _, spellID)
+    if not SchoolOn() then return end
+    local info = SchoolSpell(ns.CleanNumber(spellID))
+    if not info then return end
+    local guid = TargetGUID()
+    if not guid then return end
+    marks[guid] = { school = info.school, ["until"] = GetTime() + SpellSeconds(spellID, info.secs) }
+    UpdateSchool()
+end)
+ns.Listen({ "PLAYER_TARGET_CHANGED", "UNIT_HEALTH:target" }, function() UpdateSchool() end)
+
+-- Forget marks that have run out (or whose targets were left behind long ago).
+local function SweepMarks()
+    local now = GetTime()
+    for guid, m in pairs(marks) do if m["until"] <= now then marks[guid] = nil end end
+end
+
+---------------------------------------------------------------------------
 -- Samples: edit mode and the preview
 ---------------------------------------------------------------------------
 local SAMPLE_ORDER = { "poison", "curse", "magic", "disease", "bleed", "none" }
@@ -573,10 +773,15 @@ local function ShowSample(unit, i)
     end
     s.started, s.kind = GetTime(), kind
     s:Show()
+    -- The target's magic sample also shows a school layer (fire), as your Flame Shock would.
+    if unit == "target" then
+        SetSampleSchool((db.debuffSchoolFx and kind == "magic") and "fire" or nil)
+    end
 end
 
 local function HideSamples()
     for _, s in pairs(samples) do s:Hide() end
+    SetSampleSchool(nil)
 end
 
 local sampleStep = 0
@@ -621,6 +826,7 @@ ticker:SetScript("OnUpdate", function(self, elapsed)
     self.t = 0
     if not ns.loaded then return end
     ApplyAll(false)
+    SweepMarks()
     if SampleActive() then
         local s = samples.player or samples.target
         if s and s.started and GetTime() - s.started >= 6 then CycleSamples() end
@@ -704,6 +910,7 @@ ns.RegisterCommand({ "debuffdebug" }, DebuffDebug)
 
 ns.PreviewDebuffRings = Preview
 ns.DebuffRingsInfo = function() return live, samples, diag end -- tests
+ns.DebuffSchoolFrame = function() return schoolFx, marks end -- tests
 ns.DebuffAssetFor = function(kind, typeName) -- tests
     for _, fx in ipairs(FX) do if fx.kind == kind then return AssetMap(fx, false)[typeName] end end
 end
@@ -729,6 +936,7 @@ ns.RegisterRing({
         debuffDrain     = true,
         debuffTime      = false,
         debuffFx        = true,  -- an animated effect per debuff type
+        debuffSchoolFx  = false, -- your own spells' schools on the target (a best guess)
         debuffColors = { -- the game's own debuff colors
             magic   = { r = 0.20, g = 0.60, b = 1.00 },
             curse   = { r = 0.60, g = 0.00, b = 1.00 },
@@ -765,6 +973,13 @@ ns.RegisterRing({
                             "An animated effect for each type: bubbles round the ring for poison, swirling wisps for "
                             .. "curses, twinkling sparkles for magic, pulsing spores for disease, and blood running "
                             .. "down for bleeds and other debuffs with no type."),
+                        school = Toggle(9, "debuffSchoolFx", "School effects from your casts",
+                            "When you cast a debuff spell on your target, its portrait also gets that spell's school: "
+                            .. "flames for Flame Shock or Immolate, ice for Frost Shock or Frostbolt, shadow for Shadow "
+                            .. "Word: Pain or Corruption, leaves for Moonfire or Insect Swarm, runes for Polymorph, light "
+                            .. "for Holy Fire, for as long as the spell lasts. A best guess: the game doesn't say which "
+                            .. "debuff is which, so this goes by what you cast. A resisted spell still shows, one dispelled "
+                            .. "early shows until its time would have run out, and other players' spells don't show."),
                     }),
                     colors = Box(3, "Colors", {
                         magic = Color(1, "debuffColors", "magic", "Magic", "Magic debuffs."),
@@ -783,11 +998,12 @@ ns.RegisterRing({
                         opacity = Range(3, "debuffOpacity", "Opacity", 20, 100, 5, "How solid the ring is."),
                     }),
                 }))
-            for _, k in ipairs({ "player", "playerFilter", "target", "targetFilter", "drain", "time", "fx" }) do
+            for _, k in ipairs({ "player", "playerFilter", "target", "targetFilter", "drain", "time", "fx", "school" }) do
                 tab.args.general.args[k].disabled = off
             end
             tab.args.general.args.playerFilter.disabled = function() return off() or db.debuffPlayer == false end
             tab.args.general.args.targetFilter.disabled = function() return off() or db.debuffTarget == false end
+            tab.args.general.args.school.disabled = function() return off() or db.debuffTarget == false end
             return tab
         end },
 })
