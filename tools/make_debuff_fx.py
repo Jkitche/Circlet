@@ -56,13 +56,6 @@ def at(angle_deg, radius):
     return C + math.sin(a) * radius, C - math.cos(a) * radius
 
 
-def layer(*imgs):
-    out = canvas()
-    for im in imgs:
-        out = Image.fromarray(__import__('numpy').maximum(__import__('numpy').array(out), __import__('numpy').array(im)))
-    return out
-
-
 def poison(rng):
     a = canvas(); d = ImageDraw.Draw(a)
     for i in range(18):
@@ -134,23 +127,120 @@ def disease(rng):
     return Image.alpha_composite(finish(blobs, blur=3.5), finish(dots))
 
 
-def bleed(rng):
+def bleed(rng, angles=(128, 150, 166, 184, 203, 226), specks=True):
     a = canvas(); d = ImageDraw.Draw(a)
-    for ang in (128, 150, 166, 184, 203, 226):
+    for ang in angles:
         x, y = at(ang + rng.uniform(-4, 4), R * 0.97)
         ln = rng.uniform(10, 22) * SS
         w = rng.uniform(2.2, 3.6) * SS
         # A run down from the band ending in a round drop.
         d.polygon([(x - w * 0.5, y), (x + w * 0.5, y), (x + w * 0.35, y + ln), (x - w * 0.35, y + ln)], fill=240)
         d.ellipse((x - w, y + ln - w, x + w, y + ln + w * 1.2), fill=255)
-    for i in range(14):
+    for i in range(14 if specks else 0):
         x, y = at(rng.uniform(100, 260), R * rng.uniform(1.02, 1.3))
         s = rng.uniform(1, 2.4) * SS
         d.ellipse((x - s, y - s, x + s, y + s), fill=220)
     return finish(a)
 
 
+def glow(rng):
+    """A soft halo on and around the band."""
+    a = canvas(); d = ImageDraw.Draw(a)
+    w = R * 0.16
+    d.ellipse((C - R - w, C - R - w, C + R + w, C + R + w), outline=200, width=int(w * 2))
+    return finish(a, blur=7)
+
+
+def small_stars(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    glow_l = canvas(); dg = ImageDraw.Draw(glow_l)
+    for i in range(16):
+        x, y = at(i * 22.5 + 11 + rng.uniform(-6, 6), R * rng.uniform(0.78, 1.3))
+        s = rng.uniform(2.5, 7) * SS
+        star(d, x, y, s, 255)
+        dg.ellipse((x - s * 0.7, y - s * 0.7, x + s * 0.7, y + s * 0.7), fill=120)
+    return Image.alpha_composite(finish(glow_l, blur=2), finish(a))
+
+
+def runes(rng):
+    """Arcane glyphs in a band outside the ring, between two thin circles."""
+    a = canvas(); d = ImageDraw.Draw(a)
+    lw = int(1.1 * SS)
+    for rr in (R * 1.12, R * 1.36):
+        d.ellipse((C - rr, C - rr, C + rr, C + rr), outline=150, width=lw)
+    n = 14
+    for i in range(n):
+        cx, cy = at(i * 360 / n, R * 1.24)
+        h = R * 0.085
+        pts = [(cx + rng.uniform(-h, h), cy + rng.uniform(-h, h)) for _ in range(4)]
+        d.line(pts, fill=255, width=int(1.4 * SS), joint='curve')
+        if rng.random() < 0.6:
+            q = h * 0.35
+            px, py = cx + rng.uniform(-h, h) * 0.6, cy + rng.uniform(-h, h) * 0.6
+            d.ellipse((px - q, py - q, px + q, py + q), outline=255, width=int(1.2 * SS))
+    return finish(a)
+
+
+def rise(rng, n=22, lo=0.85, hi=1.2, smin=1.5, smax=4.2, ring=True):
+    """Small bubbles or motes all round the ring (the animation carries them upward)."""
+    a = canvas(); d = ImageDraw.Draw(a)
+    for i in range(n):
+        x, y = at(rng.uniform(0, 360), R * rng.uniform(lo, hi))
+        s = rng.uniform(smin, smax) * SS
+        if ring:
+            d.ellipse((x - s, y - s, x + s, y + s), fill=40, outline=235, width=int(1.1 * SS))
+        else:
+            d.ellipse((x - s, y - s, x + s, y + s), fill=230)
+    return finish(a, blur=0.3 if ring else 0.8)
+
+
+def thin_wisps(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    for arm in range(5):
+        start = arm * 72 + rng.uniform(-10, 10)
+        steps = 70
+        for k in range(steps):
+            t = k / steps
+            x, y = at(start - t * 90, R * (0.9 + 0.38 * t))
+            w = (1 - t) * 2.6 * SS + 0.6 * SS
+            d.ellipse((x - w, y - w, x + w, y + w), fill=int(70 + 170 * (1 - t)))
+    return finish(a, blur=0.8)
+
+
+def flies(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    for cluster in range(5):
+        base = cluster * 72 + rng.uniform(-15, 15)
+        for i in range(5):
+            x, y = at(base + rng.uniform(-10, 10), R * rng.uniform(1.08, 1.32))
+            s = rng.uniform(1.1, 1.9) * SS
+            d.ellipse((x - s, y - s * 0.8, x + s, y + s * 0.8), fill=255)
+            # wings
+            d.ellipse((x - s * 1.6, y - s * 1.9, x - s * 0.2, y - s * 0.5), fill=110)
+            d.ellipse((x + s * 0.2, y - s * 1.9, x + s * 1.6, y - s * 0.5), fill=110)
+    return finish(a)
+
+
+def splatter(rng):
+    a = canvas(); d = ImageDraw.Draw(a)
+    for i in range(26):
+        x, y = at(rng.uniform(0, 360), R * rng.uniform(0.98, 1.34))
+        s = rng.uniform(0.9, 3.2) * SS
+        d.ellipse((x - s, y - s, x + s, y + s), fill=230)
+    return finish(a)
+
+
 os.makedirs(out_dir, exist_ok=True)
-for name, fn in (('Poison', poison), ('Curse', curse), ('Magic', magic), ('Disease', disease), ('Bleed', bleed)):
+ART = {
+    'Glow': glow,
+    'MagicStars': magic, 'MagicStarsSmall': small_stars, 'MagicRunes': runes,
+    'PoisonBubbles': poison, 'Rise': rise,
+    'CurseWisps': curse, 'CurseWispsThin': thin_wisps,
+    'Motes': lambda rng: rise(rng, n=26, lo=0.8, hi=1.3, smin=1.2, smax=2.8, ring=False),
+    'DiseaseSpores': disease, 'Flies': flies,
+    'Drip': bleed, 'DripB': lambda rng: bleed(rng, angles=(118, 140, 158, 176, 195, 214, 236), specks=False),
+    'Splatter': splatter,
+}
+for name, fn in ART.items():
     tga(fn(random.Random(name)), os.path.join(out_dir, 'DebuffFx%s.tga' % name))
 tga(Image.new('RGBA', (8, 8), (0, 0, 0, 0)), os.path.join(out_dir, 'Blank.tga'))

@@ -27,15 +27,21 @@ local db, Print = ns.db, ns.Print
 -- redone after combat if a setting changed during it), and every call is guarded: if this
 -- client lacks a piece, that piece is skipped and noted (/circ debuffdebug).
 --
--- Effects per type (debuffFx): one more texture per kind of effect, each a dispel-type
--- texture too, style CustomAsset: its customDispelAssetMap gives its own art
--- (Textures/DebuffFx<Kind>.tga, made by tools/make_debuff_fx.py) for its types and a blank
--- texture for every other, so the game shows only the effect for the debuff it picked, and
--- tints it from the same color map. Each has a looping animation (turning, twinkling,
--- dripping) that the button plays when its aura shows (AddAuraShownAnimation), and that we
--- start ourselves out of combat as well. Poison: bubbles round the ring. Curse: wisps
--- swirling backwards. Magic: twinkling sparkles. Disease: pulsing spores. No type (bleeds and
--- physical effects): blood running down from the bottom of the ring.
+-- Effects per type (debuffFx): layers of effect textures, each a dispel-type texture too,
+-- style CustomAsset: its customDispelAssetMap gives its own art (Textures/DebuffFx<Art>.tga,
+-- made by tools/make_debuff_fx.py) for its types and a blank texture for every other, so the
+-- game shows only the layers for the debuff it picked, and tints them from the same color map.
+-- Each layer has looping animations (turning, pulsing, rising, dripping), started once while
+-- they're still ours and then handed to the button, which plays them when its aura shows
+-- (AddAuraShownAnimation; after that they're the game's and can't even be asked about).
+--   every type: a soft glow behind the ring, pulsing
+--   magic:   two fields of sparkles turning opposite ways and twinkling, and a band of
+--            arcane runes turning slowly outside the ring
+--   poison:  bubbles round the ring, small bubbles rising off it, venom dripping
+--   curse:   wisps swirling backwards, thin wisps the other way, shadow motes rising
+--   disease: pulsing spores, a swarm of flies circling, bubbles rising
+--   no type (bleeds, physical effects): blood running down at two speeds, and specks of
+--            blood throbbing like a heartbeat
 --
 -- Edit mode and the preview draw sample rings of our own (plain textures), since a real one
 -- needs a real debuff.
@@ -54,19 +60,40 @@ local TYPES = {
     { "Bleed", "bleed" }, { "Enrage", "none" }, { "None", "none" },
 }
 
--- The effects: which dispel types each is for, its art, and its looping animation.
+-- The effect layers: which dispel types each is for, its art, and its looping animations.
 --   turn   seconds per turn (negative: counter-clockwise)
 --   pulse  { from alpha, to alpha, seconds } back and forth
 --   grow   { from scale, to scale, seconds } back and forth
 --   drip   { distance, seconds }: slides down and fades, over and over
+--   rise   { distance, seconds }: slides up and fades, over and over
+--   add    drawn additively (glows); back: drawn behind the ring
+local NO_TYPE = { "Bleed", "Enrage", "None" }
+local ALL_TYPES = { "Magic", "Curse", "Disease", "Poison", "Bleed", "Enrage", "None" }
 local FX = {
-    { kind = "poison", types = { "Poison" }, file = "DebuffFxPoison", turn = 24, pulse = { 0.55, 1, 1.2 } },
-    { kind = "curse", types = { "Curse" }, file = "DebuffFxCurse", turn = -5, pulse = { 0.6, 1, 2 } },
-    { kind = "magic", types = { "Magic" }, file = "DebuffFxMagic", turn = 16, pulse = { 0.35, 1, 0.6 } },
-    { kind = "disease", types = { "Disease" }, file = "DebuffFxDisease", turn = 40, grow = { 0.94, 1.06, 1.6 } },
-    { kind = "bleed", types = { "Bleed", "Enrage", "None" }, file = "DebuffFxBleed", drip = { 10, 1.5 } },
+    { kind = "glow", types = ALL_TYPES, art = "Glow", add = true, back = true, pulse = { 0.35, 0.9, 1.3 } },
+    { kind = "magicRunes", types = { "Magic" }, art = "MagicRunes", add = true, turn = -30, pulse = { 0.4, 0.85, 2.2 } },
+    { kind = "magicStars", types = { "Magic" }, art = "MagicStars", add = true, turn = 16, pulse = { 0.35, 1, 0.6 } },
+    { kind = "magicStarsSmall", types = { "Magic" }, art = "MagicStarsSmall", add = true, turn = -11, pulse = { 0.2, 1, 0.45 } },
+    { kind = "poisonBubbles", types = { "Poison" }, art = "PoisonBubbles", turn = 24, pulse = { 0.55, 1, 1.2 } },
+    { kind = "poisonRise", types = { "Poison" }, art = "Rise", rise = { 16, 1.8 } },
+    { kind = "poisonDrip", types = { "Poison" }, art = "Drip", drip = { 9, 2.2 } },
+    { kind = "curseWisps", types = { "Curse" }, art = "CurseWisps", turn = -5, pulse = { 0.6, 1, 2 } },
+    { kind = "curseThin", types = { "Curse" }, art = "CurseWispsThin", add = true, turn = 9, pulse = { 0.3, 0.9, 1.4 } },
+    { kind = "curseMotes", types = { "Curse" }, art = "Motes", rise = { 18, 2.4 } },
+    { kind = "diseaseSpores", types = { "Disease" }, art = "DiseaseSpores", turn = 40, grow = { 0.94, 1.06, 1.6 } },
+    { kind = "diseaseFlies", types = { "Disease" }, art = "Flies", turn = 3.5 },
+    { kind = "diseaseRise", types = { "Disease" }, art = "Rise", rise = { 12, 2.6 } },
+    { kind = "bleedDrip", types = NO_TYPE, art = "Drip", drip = { 10, 1.5 } },
+    { kind = "bleedDripB", types = NO_TYPE, art = "DripB", drip = { 13, 2.1 } },
+    { kind = "bleedSpecks", types = NO_TYPE, art = "Splatter", pulse = { 0.3, 1, 0.38 } },
 }
-local FX_FOR = { none = "bleed" } -- a sample's color name -> its effect, where they differ
+-- A sample's color name -> the dispel type whose layers it shows.
+local SAMPLE_TYPE = { poison = "Poison", curse = "Curse", magic = "Magic", disease = "Disease", bleed = "Bleed", none = "None" }
+
+local function ForType(fx, typeName)
+    for _, t in ipairs(fx.types) do if t == typeName then return true end end
+    return false
+end
 
 local FILTERS = {
     player = { all = "HARMFUL", dispel = "HARMFUL|RAID_PLAYER_DISPELLABLE" },
@@ -195,13 +222,14 @@ local function Animate(tex, fx)
             if a.SetSmoothing then a:SetSmoothing("IN_OUT") end
         end
     end
-    if fx.drip then
+    local slide = fx.drip and { -fx.drip[1], fx.drip[2] } or fx.rise and { fx.rise[1], fx.rise[2] }
+    if slide then
         local ag = Group("REPEAT")
         if ag then
             local m = ag:CreateAnimation("Translation")
-            m:SetOffset(0, -fx.drip[1]); m:SetDuration(fx.drip[2])
+            m:SetOffset(0, slide[1]); m:SetDuration(slide[2])
             local f = ag:CreateAnimation("Alpha")
-            f:SetFromAlpha(1); f:SetToAlpha(0); f:SetDuration(fx.drip[2])
+            f:SetFromAlpha(1); f:SetToAlpha(0); f:SetDuration(slide[2])
             if f.SetSmoothing then f:SetSmoothing("IN") end
         end
     end
@@ -212,9 +240,10 @@ end
 local function FxTextures(holder, owner)
     if holder.fx then return holder.fx end
     holder.fx = {}
-    for _, fx in ipairs(FX) do
-        local tex = owner:CreateTexture(nil, "OVERLAY")
+    for i, fx in ipairs(FX) do
+        local tex = owner:CreateTexture(nil, fx.back and "BACKGROUND" or "OVERLAY", nil, fx.back and 0 or math.min(7, i % 8))
         tex:SetPoint("CENTER", owner, "CENTER", 0, 0)
+        if fx.add and tex.SetBlendMode then tex:SetBlendMode("ADD") end
         holder.fx[fx.kind] = { tex = tex, groups = Animate(tex, fx), def = fx }
     end
     return holder.fx
@@ -241,7 +270,7 @@ local function AssetMap(fx, wrap)
     for _, t in ipairs(fx.types) do mine[t] = true end
     local map = {}
     for _, t in ipairs(TYPES) do
-        local path = mine[t[1]] and (TEXTURES .. fx.file) or BLANK
+        local path = mine[t[1]] and (TEXTURES .. "DebuffFx" .. fx.art) or BLANK
         map[t[1]] = wrap and { asset = path } or path
     end
     return map
@@ -530,11 +559,11 @@ local function ShowSample(unit, i)
     end
     TimeFont(s.text, outer)
     SizeFx(s, outer)
-    local fxKind = FX_FOR[kind] or kind
-    for k, f in pairs(s.fx) do
-        local on = db.debuffFx and k == fxKind
+    local typeName = SAMPLE_TYPE[kind] or "None"
+    for _, f in pairs(s.fx) do
+        local on = db.debuffFx and ForType(f.def, typeName)
         if on then
-            f.tex:SetTexture(TEXTURES .. f.def.file)
+            f.tex:SetTexture(TEXTURES .. "DebuffFx" .. f.def.art)
             f.tex:SetVertexColor(c.r, c.g, c.b, 1)
             f.tex:Show()
         else

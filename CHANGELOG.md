@@ -8,10 +8,14 @@
   shows only your own debuffs by default (your Rend, your poisons), or all of them; on you, all
   of them or only ones you can dispel. Addons can't read debuffs in combat any more, so the game
   itself picks the debuff, colors the ring and runs its timer; Circlet only supplies the ring.
-  Each type has its own animated effect (Effects per type, on by default): bubbles drifting
-  round the ring for poison, wisps swirling backwards for curses, twinkling sparkles for magic,
-  pulsing spores for disease, and blood running down from the ring for bleeds and other debuffs
-  with no type. The game swaps the effect by type too, so it works in combat.
+  Each type has its own layered, animated effect (Effects per type, on by default), over a
+  soft glow that pulses behind the ring in the type's color. Magic: two fields of sparkles
+  turning opposite ways and twinkling, and a band of arcane runes turning outside the ring.
+  Poison: bubbles round the ring, small bubbles rising off it and venom dripping. Curse: wisps
+  swirling backwards, thin wisps turning the other way and shadow motes rising. Disease:
+  pulsing spores, a swarm of flies circling and bubbles rising. Bleeds and other debuffs with
+  no type: blood running down at two speeds and specks throbbing like a heartbeat. The game
+  swaps the effects by type too, so they work in combat.
   Colors, thickness, gap and opacity are adjustable, with an optional countdown. Settings
   changed in combat apply when it ends. `/circ debuff` previews them, `/circ debuffdebug`
   reports what this client supports.
