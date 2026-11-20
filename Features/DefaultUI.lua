@@ -13,6 +13,7 @@ local db = ns.db
 --   breath  the breath / fatigue bars  timed  the quest timer
 --   totem   the totem timers under your portrait
 --   targetCast  the cast bar under the target frame
+--   swing / shot  WoW Forever's own swing timer bars (melee / ranged)
 -- They're faded out (alpha 0, mouse off) rather than hidden, so the game's own layout and
 -- show/hide logic carry on untouched; turning the option off brings them straight back.
 -- Frame names cover both the modern and the classic interface; whichever exist are used.
@@ -103,6 +104,80 @@ local function UpdateOthers()
     Suppress(G("TargetFrameSpellBar"), db.targetCastHideDefault and true or false)
 end
 
+-- WoW Forever's own swing timer bars (its showSwingTimer option). Their frames aren't
+-- documented, so they're found by name: any named frame with "swing" in it (not ours),
+-- ranged when the name also says ranged, range, shot or auto, melee otherwise. Looked for
+-- again every few seconds while a hide option is on and none has turned up (the bars can be
+-- made late). If none can be found, turning either option on switches the game's swing
+-- timer off instead (both bars), and turning both off puts it back as it was.
+local swingBars = { swing = {}, shot = {} }
+local lastScan, scans = -100, 0
+local CVAR = "showSwingTimer"
+
+local function GetCVarValue(name)
+    local get = (C_CVar and C_CVar.GetCVar) or _G.GetCVar
+    return get and select(2, pcall(get, name)) or nil
+end
+local function SetCVarValue(name, v)
+    local set = (C_CVar and C_CVar.SetCVar) or _G.SetCVar
+    return set and pcall(set, name, v)
+end
+
+local function ScanSwingBars()
+    if not EnumerateFrames then return end
+    swingBars.swing, swingBars.shot = {}, {}
+    local f = EnumerateFrames()
+    while f do
+        local ok, name = pcall(f.GetName, f)
+        if ok and type(name) == "string" and not name:find("^Circlet") then
+            local low = name:lower()
+            if low:find("swing") then
+                local kind = (low:find("ranged") or low:find("range") or low:find("shot") or low:find("auto"))
+                    and "shot" or "swing"
+                if f.SetAlpha then table.insert(swingBars[kind], f) end
+            end
+        end
+        f = EnumerateFrames(f)
+    end
+end
+
+local function UpdateSwingBars()
+    local hideSwing, hideShot = db.swingHideDefault and true or false, db.shotHideDefault and true or false
+    local now = GetTime()
+    if (hideSwing or hideShot) and #swingBars.swing + #swingBars.shot == 0 and now - lastScan > 5 then
+        lastScan, scans = now, scans + 1
+        ScanSwingBars()
+    end
+    for _, f in ipairs(swingBars.swing) do Suppress(f, hideSwing) end
+    for _, f in ipairs(swingBars.shot) do Suppress(f, hideShot) end
+    -- No frames found: the game's own switch, put back when both options are off.
+    if InCombatLockdown and InCombatLockdown() then return end
+    local found = #swingBars.swing + #swingBars.shot > 0
+    if (hideSwing or hideShot) and not found and scans >= 2 then
+        local cur = GetCVarValue(CVAR)
+        if cur ~= nil and cur ~= "0" then
+            CircletDB.swingTimerCVarWas = cur
+            SetCVarValue(CVAR, "0")
+        end
+    elseif not (hideSwing and not found or hideShot and not found) and CircletDB.swingTimerCVarWas then
+        SetCVarValue(CVAR, CircletDB.swingTimerCVarWas)
+        CircletDB.swingTimerCVarWas = nil
+    end
+end
+
+-- /circ swingbars: what was found.
+ns.RegisterCommand({ "swingbars" }, function()
+    ScanSwingBars()
+    local function Names(list)
+        local t = {}
+        for _, f in ipairs(list) do t[#t + 1] = select(2, pcall(f.GetName, f)) or "?" end
+        return #t > 0 and table.concat(t, ", ") or "none"
+    end
+    ns.Print("Game swing timer bars: melee " .. Names(swingBars.swing) .. "; ranged " .. Names(swingBars.shot)
+        .. "; " .. CVAR .. " = " .. tostring(GetCVarValue(CVAR))
+        .. (CircletDB.swingTimerCVarWas and (" (Circlet turned it off; was " .. CircletDB.swingTimerCVarWas .. ")") or ""))
+end)
+
 local ticker = CreateFrame("Frame")
 ticker.t = 0
 ticker:SetScript("OnUpdate", function(self, elapsed)
@@ -112,4 +187,5 @@ ticker:SetScript("OnUpdate", function(self, elapsed)
     UpdateTrackingBars()
     UpdateCastBar()
     UpdateOthers()
+    UpdateSwingBars()
 end)

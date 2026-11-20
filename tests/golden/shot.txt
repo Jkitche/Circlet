@@ -15,4 +15,9 @@ aim off: Shot / 0.3 fill=65 color=0.23,0.40,0.20
 ring off: (hidden)
 preview: Shot / 1.8 fill=26 color=0.23,0.40,0.20
 preview aiming: Shot / 0.3 / Aiming fill=65 color=0.50,0.20,0.15
+no bars found, hide melee: melee a=nil ranged a=nil cvar=0
+option off again: melee a=nil ranged a=nil cvar=1
+bars found, hide melee: melee a=0 ranged a=1 cvar=1
+hide ranged too: melee a=0 ranged a=0 cvar=1
+both off: melee a=1 ranged a=1 cvar=1
 ERRORS: {}

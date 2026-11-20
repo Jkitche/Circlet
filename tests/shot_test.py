@@ -47,5 +47,22 @@ Fire("STOP_AUTOREPEAT_SPELL"); Advance(2); CircletDB.shotAim = true
 CircletDB.shotEnabled = false; Fire("START_AUTOREPEAT_SPELL"); Cast(75); Advance(0.5); P("ring off: " .. C())
 Fire("STOP_AUTOREPEAT_SPELL"); Advance(2); CircletDB.shotEnabled = true
 Slash("shot"); Advance(1); P("preview: " .. C()); Advance(1.5); P("preview aiming: " .. C()); Advance(10)
+-- Hiding the game's own swing timer bars (found by name), and the setting when there are none.
+CVARS = { showSwingTimer = "1" }
+C_CVar = { GetCVar = function(k) return CVARS[k] end, SetCVar = function(k, v) CVARS[k] = v end }
+local function Bars() return string.format("melee a=%s ranged a=%s cvar=%s", tostring(MH and MH._alpha), tostring(RG and RG._alpha), CVARS.showSwingTimer) end
+EnumerateFrames = function(prev) if NOFRAMES then return nil end
+  local i = 0; if prev then for k, f in ipairs(allFrames) do if f == prev then i = k end end end
+  local f = allFrames[i + 1]; return f end
+RegionMethods.GetName = function(s) return s._name end
+NOFRAMES = true
+CircletDB.swingHideDefault = true; Advance(12); P("no bars found, hide melee: " .. Bars())
+CircletDB.swingHideDefault = false; Advance(0.3); P("option off again: " .. Bars())
+NOFRAMES = false
+MH = CreateFrame("Frame"); MH._name = "ForeverSwingTimerMainHand"; MH._alpha = 1
+RG = CreateFrame("Frame"); RG._name = "ForeverSwingTimerRangedBar"; RG._alpha = 1
+CircletDB.swingHideDefault = true; Advance(6); P("bars found, hide melee: " .. Bars())
+CircletDB.shotHideDefault = true; Advance(0.3); P("hide ranged too: " .. Bars())
+CircletDB.swingHideDefault = false; CircletDB.shotHideDefault = false; Advance(0.3); P("both off: " .. Bars())
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

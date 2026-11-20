@@ -180,6 +180,7 @@ ns.RegisterRing({
     key = "swing", name = "Swing", order = 14.2, since = "1.5.0",
     iconBg = true,
     ring = swingRing,
+    gameBar = "the game's swing timer bars", -- WoW Forever's own (Features/DefaultUI.lua)
     alwaysInCombat = true,
     preview = ns.PreviewSwingRing, slash = { "swing" }, help = "preview the swing timer ring",
     toggle = { "Swing timer ring", "Time to your next melee swing while you auto-attack." },

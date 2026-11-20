@@ -141,6 +141,7 @@ ns.RegisterRing({
     key = "shot", name = "Shot", order = 14.3, since = "1.5.0",
     iconBg = true,
     ring = shotRing,
+    gameBar = "the game's ranged swing timer bar", -- WoW Forever's own (Features/DefaultUI.lua)
     alwaysInCombat = true,
     preview = ns.PreviewShotRing, slash = { "shot", "autoshot" }, help = "preview the shot timer ring",
     toggle = { "Shot timer ring", "Time to your next Auto Shot, wand shot or throw." },

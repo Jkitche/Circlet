@@ -13,6 +13,10 @@
   Shoot, or Throw), the ring fills over your ranged weapon's speed and counts down to the next
   shot. For Auto Shot's last half second, its aim, when moving holds the shot back, the ring
   turns red and says Aiming, or Hold still if you're moving.
+- The swing and shot timer rings can hide WoW Forever's own swing timer bars (each ring's
+  "Hide the game's ... bar" option, off by default). If the bars can't be found, the option
+  turns the game's Swing Timer setting off instead, and puts it back when you turn it off.
+  `/circ swingbars` shows what was found.
 - Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
 
 ## 1.4.0

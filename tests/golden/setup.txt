@@ -90,6 +90,8 @@ next -> editing: ''
   [ ] Hide the game's cast bar while crafting
   [ ] Hide the game's cast bar while gathering
   [ ] Hide the game's cast bar
+  [ ] Hide the game's swing timer bars
+  [ ] Hide the game's ranged swing timer bar
   [ ] Hide the game's target cast bar
   footer: [Skip setup] [Back] [Next]
 hide XP bar: true
