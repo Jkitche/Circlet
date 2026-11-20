@@ -9,6 +9,7 @@
   a spell with a cast time restarts it, and haste or slows rescale it. The game keeps the combat
   log from addons, so swings are spotted from the hits your target takes; in a group someone
   else's hit can now and then be taken for yours. Main hand only.
+- Finishing "Edit all rings" says "All ring positions saved." once instead of a line per ring.
 
 ## 1.4.0
 

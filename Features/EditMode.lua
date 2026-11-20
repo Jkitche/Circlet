@@ -175,8 +175,15 @@ local function ToggleRingEditing(key)
     if editor then SetRingEditing(key, not editor.get()) end
 end
 
+-- One chat line for the lot: the ring's own when only one was being edited.
 local function StopAllEditing()
-    for _, def in ipairs(RINGS) do SetRingEditing(def.key, false) end
+    local keys = EditingKeys()
+    for _, def in ipairs(RINGS) do SetRingEditing(def.key, false, true) end
+    if #keys == 1 then
+        Print(Name(keys[1]) .. " ring position saved.")
+    elseif #keys > 1 then
+        Print("All ring positions saved.")
+    end
 end
 
 -- /circ edit with no ring: start all of them, or finish if any are being edited.
