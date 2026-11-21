@@ -67,25 +67,33 @@ panel:SetScript("OnDragStart", panel.StartMoving)
 panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
 panel:SetClampedToScreen(true)
 panel:Hide()
--- Circlet's window look (Features/PanelSkin.lua): header band with the turning logo,
--- gold border and accent line, a rule over the footer.
-ns.SkinPanel(panel, { header = 52, footer = 38 })
+-- Circlet's window look (Features/PanelSkin.lua: header with the turning logo, gold border,
+-- a rule over the footer), in the options window's colors and controls (UI/Widgets.lua).
+local HEADER, FOOTER = 52, 44
+local Wd = ns.W
+local skin = ns.SkinPanel(panel, { header = HEADER, footer = FOOTER })
+Wd.ThemePanel(panel, skin, HEADER, FOOTER)
 table.insert(UISpecialFrames, "CircletSummaryFrame") -- Esc closes it
 
-panel.title = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-panel.title:SetPoint("TOP", panel, "TOP", 0, -10)
-panel.title:SetTextColor(1, 0.86, 0.45)
-panel.title:SetShadowOffset(1, -1)
-panel.subtitle = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-panel.subtitle:SetPoint("TOP", panel.title, "BOTTOM", 0, -4)
-panel.close = CreateFrame("Button", nil, panel, "UIPanelCloseButton")
-panel.close:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -2, -2)
-panel.reset = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-panel.reset:SetSize(120, 22)
-panel.reset:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -12, 10)
-panel.reset:SetText("Start new session")
-panel.footer = panel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-panel.footer:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 14, 16)
+panel.title = Wd.Text(panel, 20, 1, 1, 1, "OVERLAY", Wd.TITLE_FONT)
+panel.title:SetPoint("TOPLEFT", skin.logo, "TOPRIGHT", 12, 0)
+panel.subtitle = Wd.Text(panel, 12, Wd.MUTED[1], Wd.MUTED[2], Wd.MUTED[3])
+panel.subtitle:SetPoint("TOPLEFT", panel.title, "BOTTOMLEFT", 1, -4)
+panel.close = Wd.CloseButton(panel, function() panel:Hide() end)
+panel.close:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -11, -11)
+panel.reset = Wd.Button(panel, 150, 28, "Start new session")
+panel.reset:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -14, 8)
+panel.reset.tipTitle = "Start new session"
+panel.reset.tipText = "Clear this session's totals and start counting again from now."
+panel.footer = Wd.Text(panel, 11, 0.5, 0.48, 0.5)
+panel.footer:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 16, 17)
+panel.footer:SetPoint("RIGHT", panel.reset, "LEFT", -20, 0)
+panel.footer:SetWordWrap(false)
+panel.empty = Wd.Text(panel, 13, Wd.MUTED[1], Wd.MUTED[2], Wd.MUTED[3])
+panel.empty:SetPoint("TOP", panel, "TOP", 0, -(HEADER + 28))
+panel.empty:SetJustifyH("CENTER")
+panel.empty:SetText("Nothing gained yet this session.")
+panel.empty:Hide()
 panel.footer:SetText("/circ summary  ·  also shown when you log out")
 
 local tiles = {}
@@ -99,16 +107,18 @@ local function Tile(i)
     t.geom.R = RING / 2 - t.geom.T / 2
     t.ringFrame = CreateFrame("Frame", nil, t)
     t.ringFrame:SetSize(RING, RING)
-    t.ringFrame:SetPoint("TOP", t, "TOP", 0, -4)
+    t.ringFrame:SetPoint("TOP", t, "TOP", 0, -6)
     t.bg = NewRingLayer("BACKGROUND", 0, TRACK, 1, t.ringFrame)
     t.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, t.ringFrame)
     t.value = t.ringFrame:CreateFontString(nil, "OVERLAY")
     t.value:SetFont(STANDARD_TEXT_FONT, 17, "OUTLINE")
     t.value:SetPoint("CENTER", t.ringFrame, "CENTER", 0, 0)
-    t.label = t:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    t.label:SetPoint("TOP", t.ringFrame, "BOTTOM", 0, -6)
-    t.sub = t:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    t.sub:SetPoint("TOP", t.label, "BOTTOM", 0, -2)
+    t.label = Wd.Text(t, 11, Wd.HEADING[1], Wd.HEADING[2], Wd.HEADING[3])
+    t.label:SetPoint("TOP", t.ringFrame, "BOTTOM", 0, -7)
+    t.label:SetJustifyH("CENTER")
+    t.sub = Wd.Text(t, 11, Wd.MUTED[1], Wd.MUTED[2], Wd.MUTED[3])
+    t.sub:SetPoint("TOP", t.label, "BOTTOM", 0, -3)
+    t.sub:SetJustifyH("CENTER")
     t.sub:SetWidth(TILE_W - 6)
     t.sub:SetWordWrap(false)
     tiles[i] = t
@@ -149,6 +159,13 @@ local function Duration(seconds)
     return m .. "m"
 end
 
+-- A ring color toned down for the panel: a quarter of the way to grey, and a little darker
+-- (the quest ring's complete green is very bright against the dark window).
+local function Soft(c)
+    local function f(v) return (v * 0.75 + 0.5 * 0.25) * 0.88 end
+    return { r = f(c.r), g = f(c.g), b = f(c.b) }
+end
+
 -- The tiles to show: { value, label, sub, color, frac }.
 local function BuildTiles()
     local s = session or NewSession()
@@ -163,16 +180,23 @@ local function BuildTiles()
     elseif max and max > 0 and not IsSecret(max) then
         xpSub = string.format("%.0f%% of a level", s.xp / max * 100)
     end
-    table.insert(list, { value = "+" .. Short(s.xp), label = "Experience", sub = xpSub, color = purple, frac = levelFrac })
+    -- Only what changed this session: a tile at zero is left out.
+    if s.xp > 0 or s.levels > 0 then
+        table.insert(list, { value = "+" .. Short(s.xp), label = "Experience", sub = xpSub, color = purple, frac = levelFrac })
+    end
 
-    table.insert(list, { value = tostring(s.quests), label = "Quests done",
-                         sub = s.objectives > 0 and (s.objectives .. " objectives") or nil,
-                         color = db.questColors.complete, frac = 1 })
+    if s.quests > 0 or s.objectives > 0 then
+        table.insert(list, { value = tostring(s.quests), label = "Quests done",
+                             sub = s.objectives > 0 and (s.objectives .. " objectives") or nil,
+                             color = Soft(db.questColors.complete), frac = 1 })
+    end
 
     local money = Money() - (s.money or 0)
-    table.insert(list, { value = Coins(money), label = "Money", sub = nil,
-                         color = money >= 0 and { r = 1, g = 0.82, b = 0 } or { r = 0.9, g = 0.25, b = 0.2 },
-                         frac = 1, small = true })
+    if money ~= 0 then
+        table.insert(list, { value = Coins(money), label = "Money", sub = nil,
+                             color = money >= 0 and { r = 1, g = 0.82, b = 0 } or { r = 0.9, g = 0.25, b = 0.2 },
+                             frac = 1, small = true })
+    end
 
     local skillSum, topSkill, topSkillN = Total(s.skills)
     if skillSum > 0 then
@@ -211,7 +235,10 @@ local function ShowSummary()
     local list, s = BuildTiles()
     local rows = math.ceil(#list / COLUMNS)
     local cols = math.min(COLUMNS, #list)
-    panel:SetSize(math.max(380, cols * TILE_W + 32), 64 + rows * TILE_H + 44)
+    -- At least wide enough for the footer's hint and button side by side; with nothing to
+    -- show yet, a line saying so instead of the tiles.
+    panel:SetSize(math.max(470, cols * TILE_W + 32), 66 + math.max(rows * TILE_H, #list == 0 and 50 or 0) + FOOTER)
+    panel.empty:SetShown(#list == 0)
     panel.title:SetText("This session")
     panel.subtitle:SetText(Duration(time() - (s.start or time())) .. " played")
     for i, info in ipairs(list) do
@@ -220,13 +247,13 @@ local function ShowSummary()
         local rowCount = (row == rows - 1) and (#list - row * COLUMNS) or COLUMNS
         local x = (col - (rowCount - 1) / 2) * TILE_W
         t:ClearAllPoints()
-        t:SetPoint("TOP", panel, "TOP", x, -58 - row * TILE_H)
+        t:SetPoint("TOP", panel, "TOP", x, -(HEADER + 12) - row * TILE_H)
         ns.DrawTrack(t.ringFrame, t.bg, t.geom, 2)
         for _, l in ipairs(t.fill) do l:SetColorTexture(info.color.r, info.color.g, info.color.b, 1) end
         DrawArc(t.fill, 0, info.frac or 1, t.ringFrame, t.geom)
         t.value:SetFont(STANDARD_TEXT_FONT, info.small and 12 or 17, "OUTLINE")
         t.value:SetText(info.value)
-        t.label:SetText(info.label)
+        t.label:SetText(info.label:upper())
         t.sub:SetText(info.sub or "")
         t:Show()
     end
@@ -238,7 +265,7 @@ local function ToggleSummary()
     if panel:IsShown() then panel:Hide() else ShowSummary() end
 end
 
-panel.reset:SetScript("OnClick", function()
+panel.reset.onClick = (function()
     db.sessions[CharKey()] = NewSession()
     session = db.sessions[CharKey()]
     ShowSummary()

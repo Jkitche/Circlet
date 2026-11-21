@@ -33,7 +33,7 @@ end
 chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
 chunk("Circlet", lua.table())
 lua.execute('Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)')
-LAYER = {"BACKGROUND":0,"BORDER":1,"ARTWORK":2}
+LAYER = {"BACKGROUND":0,"BORDER":1,"ARTWORK":2,"OVERLAY":3}
 big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
 def render_all(label):
     imgs = []

@@ -1253,6 +1253,20 @@ ns.RegisterRing({
                     }),
                     size = SizeBox(4, "xp", "XP ring", "Offset from the center of the screen."),
                 }))
+            -- Settings only show when they do something: the minimap border's own settings with
+            -- it on; idle-text settings when the ring is always up; pop-up settings (how long it
+            -- stays, showing while resting) only when it isn't; size and position not around the map.
+            local function AlwaysOn() return db.xpAlways or db.xpMinimap end
+            local general, look = tab.args.general.args, tab.args.size.args
+            general.always.hidden = function() return db.xpMinimap end
+            general.minimapGap.hidden = function() return not db.xpMinimap end
+            general.minimapBehind.hidden = function() return not db.xpMinimap end
+            general.hideText.hidden = function() return not AlwaysOn() end
+            general.hideDelay.hidden = function() return not AlwaysOn() end
+            general.resting.hidden = AlwaysOn
+            look.hold.hidden = AlwaysOn
+            look.size.hidden = function() return db.xpMinimap end
+            if tab.args.position then tab.args.position.hidden = function() return db.xpMinimap end end
             return tab
         end },
 })

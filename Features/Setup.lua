@@ -352,22 +352,22 @@ table.insert(UISpecialFrames, "CircletSetupFrame") -- Esc closes it
 local HEADER, FOOTER = 58, 44
 local GOLD = ns.SKIN_GOLD
 local skin = ns.SkinPanel(frame, { header = HEADER, footer = FOOTER })
+-- In the options window's colors and controls (UI/Widgets.lua).
+local Wd = ns.W
+Wd.ThemePanel(frame, skin, HEADER, FOOTER)
 
-frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
-frame.title:SetPoint("TOPLEFT", skin.logo, "TOPRIGHT", 10, -2)
-frame.title:SetTextColor(1, 0.86, 0.45)
-frame.title:SetShadowOffset(1, -1)
-frame.subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-frame.subtitle:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 1, -3)
-frame.subtitle:SetTextColor(0.80, 0.80, 0.85)
-frame.close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-frame.close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
+frame.title = Wd.Text(frame, 20, 1, 1, 1, "OVERLAY", Wd.TITLE_FONT)
+frame.title:SetPoint("TOPLEFT", skin.logo, "TOPRIGHT", 12, -1)
+frame.subtitle = Wd.Text(frame, 12, Wd.MUTED[1], Wd.MUTED[2], Wd.MUTED[3])
+frame.subtitle:SetPoint("TOPLEFT", frame.title, "BOTTOMLEFT", 1, -4)
+frame.close = Wd.CloseButton(frame, function() frame:Hide() end)
+frame.close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -12, -14)
 
 -- The step ring, in the header's right corner: one notch per step, filled up to this one.
 local STEP_R = 15
 frame.steps = CreateFrame("Frame", nil, frame)
 frame.steps:SetSize(STEP_R * 2, STEP_R * 2)
-frame.steps:SetPoint("RIGHT", frame, "TOPRIGHT", -44, -HEADER / 2)
+frame.steps:SetPoint("RIGHT", frame, "TOPRIGHT", -56, -HEADER / 2)
 local stepGeom = { R = STEP_R - 2, T = 4, step = 2 * math.pi / ns.XP_SEGMENTS, style = "segmented", notches = STEPS, gapPx = 3 }
 frame.steps.track = ns.NewRingLayer("BACKGROUND", 1, ns.TRACK, 1, frame.steps)
 frame.steps.fill = ns.NewRingLayer("ARTWORK", 0, GOLD, 1, frame.steps)
@@ -388,8 +388,8 @@ local body = CreateFrame("Frame", nil, scroll)
 body:SetSize(W - 40, 10)
 scroll:SetScrollChild(body)
 local bar = scroll:CreateTexture(nil, "OVERLAY")
-bar:SetColorTexture(1, 0.84, 0.30, 0.5)
-bar:SetWidth(3)
+bar:SetColorTexture(0.5, 0.42, 0.36, 0.7)
+bar:SetWidth(5)
 bar:Hide()
 
 local function Num(v) return type(v) == "number" and v or 0 end
@@ -471,17 +471,17 @@ local function DrawMini(m, style, r, lit)
 end
 
 local makers = {
-    -- Gold section title with a line under it fading out to the right.
+    -- Section title: small warm capitals over a faint line, like the options window's.
     header = function()
         local f = CreateFrame("Frame", nil, body)
         f:SetSize(COL_W, 20)
-        f.text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        f.text:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, 4)
-        f.text:SetTextColor(1, 0.84, 0.40)
+        f.text = Wd.Text(f, 11, Wd.HEADING[1], Wd.HEADING[2], Wd.HEADING[3])
+        f.text:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, 5)
         f.line = f:CreateTexture(nil, "ARTWORK")
         f.line:SetPoint("BOTTOMLEFT"); f.line:SetPoint("BOTTOMRIGHT")
         f.line:SetHeight(1)
-        ns.SkinGradient(f.line, "HORIZONTAL", GOLD.r, GOLD.g, GOLD.b, 0.7, GOLD.r, GOLD.g, GOLD.b, 0)
+        ns.SkinGradient(f.line, "HORIZONTAL", 1, 1, 1, 0.12, 1, 1, 1, 0)
+        f.SetLabel = function(self, t) self.text:SetText(tostring(t or ""):upper()) end
         return f
     end,
     -- A clickable card: a picture (mini rings) or just a label; gold border and tick when picked.
@@ -491,26 +491,26 @@ local makers = {
         c.bg:SetAllPoints()
         c.glow = c:CreateTexture(nil, "BACKGROUND", nil, 1)
         c.glow:SetAllPoints()
-        ns.SkinGradient(c.glow, "VERTICAL", GOLD.r, GOLD.g, GOLD.b, 0.02, GOLD.r, GOLD.g, GOLD.b, 0.20)
-        c.edges = ns.SkinEdges(c, "BORDER", 0, 1, 0, 1, 1, 1, 0.12)
-        c.label = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        ns.SkinGradient(c.glow, "VERTICAL", GOLD.r, GOLD.g, GOLD.b, 0.02, GOLD.r, GOLD.g, GOLD.b, 0.16)
+        c.edges = ns.SkinEdges(c, "BORDER", 0, 1, 0, 1, 1, 1, 0.10)
+        c.label = Wd.Text(c, 12, 0.88, 0.88, 0.88)
+        c.label:SetJustifyH("CENTER")
         c.tick = c:CreateTexture(nil, "OVERLAY")
-        c.tick:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
-        c.tick:SetSize(18, 18)
-        c.tick:SetPoint("TOPRIGHT", c, "TOPRIGHT", -3, -3)
+        c.tick:SetTexture(Wd.DOT)
+        c.tick:SetVertexColor(GOLD.r, GOLD.g, GOLD.b, 1)
+        c.tick:SetSize(9, 9)
+        c.tick:SetPoint("TOPRIGHT", c, "TOPRIGHT", -7, -7)
         c.minis = {}
-        c:SetScript("OnEnter", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.35) end end)
-        c:SetScript("OnLeave", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.12) end end)
+        c:SetScript("OnEnter", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.3) end end)
+        c:SetScript("OnLeave", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.10) end end)
         return c
     end,
     button = function()
-        local b = CreateFrame("Button", nil, body, "UIPanelButtonTemplate")
-        b:SetSize(150, 22)
+        local b = Wd.Button(body, 150, 26, "")
         return b
     end,
     note = function()
-        local f = body:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        f:SetJustifyH("LEFT")
+        local f = Wd.Text(body, 12, Wd.BODY_TEXT[1], Wd.BODY_TEXT[2], Wd.BODY_TEXT[3])
         f:SetWordWrap(true)
         return f
     end,
@@ -519,31 +519,29 @@ local makers = {
         -- Hover highlight; on the New in page also a panel, border and a NEW tag.
         w.hl = w:CreateTexture(nil, "BACKGROUND", nil, 2)
         w.hl:SetAllPoints()
-        w.hl:SetColorTexture(1, 1, 1, 0.06)
+        w.hl:SetColorTexture(1, 1, 1, 0.04)
         w.hl:Hide()
         w.panel = w:CreateTexture(nil, "BACKGROUND", nil, 1)
         w.panel:SetAllPoints()
-        ns.SkinGradient(w.panel, "HORIZONTAL", 0.12, 0.10, 0.05, 0.85, 0.06, 0.06, 0.09, 0.85)
-        w.edges = ns.SkinEdges(w, "BORDER", 0, 1, 0, GOLD.r, GOLD.g, GOLD.b, 0.25)
-        w.tag = w:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        w.tag:SetTextColor(1, 0.84, 0.30)
-        w.check = CreateFrame("CheckButton", nil, w, "UICheckButtonTemplate")
-        w.check:SetSize(24, 24)
-        w.check:SetPoint("TOPLEFT", w, "TOPLEFT", 0, 1)
-        w.text = w:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-        w.text:SetPoint("TOPLEFT", w.check, "TOPRIGHT", 2, -5)
-        w.text:SetJustifyH("LEFT")
-        w.desc = w:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        w.desc:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -2)
-        w.desc:SetJustifyH("LEFT")
-        w.show = CreateFrame("Button", nil, w, "UIPanelButtonTemplate")
-        w.show:SetSize(58, 20)
+        w.panel:SetColorTexture(1, 1, 1, 0.035)
+        w.edges = ns.SkinEdges(w, "BORDER", 0, 1, 0, 1, 1, 1, 0.07)
+        w.tag = Wd.Text(w, 10, GOLD.r, GOLD.g, GOLD.b)
+        -- An on/off switch, as in the options window; clicking it clicks w.clickId.
+        w.check = Wd.Switch(w, function() if w.onToggle then w.onToggle() end end)
+        w.check.SetChecked = w.check.SetOn
+        w.check.GetChecked = function(self) return self.on end
+        w.text = Wd.Text(w, 13, 0.93, 0.93, 0.93)
+        w.text:SetPoint("TOPLEFT", w.check, "TOPRIGHT", 10, -3)
+        w.desc = Wd.Text(w, 11, 0.62, 0.6, 0.6)
+        w.desc:SetPoint("TOPLEFT", w.text, "BOTTOMLEFT", 0, -3)
+        w.show = Wd.Button(w, 58, 22, "")
         w.show:SetPoint("TOPRIGHT", w, "TOPRIGHT", 0, 0)
         return w
     end,
     footer = function()
-        local b = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-        b:SetSize(110, 22)
+        local b = Wd.Button(frame, 110, 28, "")
+        b.Disable = function(self) self:SetEnabled(false) end
+        b.Enable = function(self) self:SetEnabled(true) end
         return b
     end,
 }
@@ -585,15 +583,15 @@ Render = function()
             f:ClearAllPoints()
             f:SetPoint("TOPLEFT", body, "TOPLEFT", x, -(y[c] + 4))
             f:SetWidth(COL_W)
-            f.text:SetText(item.text)
+            f:SetLabel(item.text)
             y[c] = y[c] + 30
         elseif item.kind == "button" then
             local b = Acquire("button")
             b:ClearAllPoints()
             b:SetPoint("TOPLEFT", body, "TOPLEFT", x + 2, -(y[c] + 2))
             b:SetText(item.text)
-            b:SetScript("OnClick", function() Click(item.id) end)
-            y[c] = y[c] + 28
+            b.onClick = function() Click(item.id) end
+            y[c] = y[c] + 32
         elseif item.kind == "note" then
             local f = Acquire("note")
             f:ClearAllPoints()
@@ -614,9 +612,9 @@ Render = function()
             w.panel:SetShown(panel)
             for _, e in pairs(w.edges) do e:SetShown(panel) end
             w.check:ClearAllPoints()
-            w.check:SetPoint("TOPLEFT", w, "TOPLEFT", panel and 6 or 0, panel and -4 or 1)
+            w.check:SetPoint("TOPLEFT", w, "TOPLEFT", panel and 10 or 2, panel and -8 or -1)
             w.check:SetChecked(item.on)
-            w.check:SetScript("OnClick", function() Click(item.id) end)
+            w.onToggle = function() Click(item.id) end
             w.check:SetShown(not item.info)
             w.text:SetText(item.text)
             w.text:SetTextColor(item.on and 1 or 0.6, item.on and 1 or 0.6, item.on and 1 or 0.62)
@@ -634,7 +632,7 @@ Render = function()
             w.show:SetPoint("RIGHT", w, "RIGHT", panel and -8 or 0, panel and 0 or 0)
             if item.showId then
                 w.show:SetText(item.showOn and "Hide" or "Show")
-                w.show:SetScript("OnClick", function() Click(item.showId) end)
+                w.show.onClick = function() Click(item.showId) end
                 Tooltip(w.show, item.text, item.showOn and "Take it off the screen again."
                     or "Put it on screen with sample content. You can drag it into place.", w.hl)
                 w.show:Show()
@@ -653,12 +651,12 @@ Render = function()
             card:SetPoint("TOPLEFT", body, "TOPLEFT", x + cardX[c], -y[c])
             card:SetSize(cw, ch)
             card.picked = item.selected
-            card.bg:SetColorTexture(item.selected and 0.10 or 0.06, item.selected and 0.09 or 0.06,
-                item.selected and 0.06 or 0.09, 0.92)
+            card.bg:SetColorTexture(item.selected and 0.15 or 0.10, item.selected and 0.11 or 0.08,
+                item.selected and 0.08 or 0.085, 0.95)
             card.glow:SetShown(item.selected)
             card.tick:SetShown(item.selected)
             SetEdges(card.edges, item.selected and GOLD.r or 1, item.selected and GOLD.g or 1,
-                item.selected and GOLD.b or 1, item.selected and 0.95 or 0.12)
+                item.selected and GOLD.b or 1, item.selected and 0.95 or 0.10)
             card.label:ClearAllPoints()
             if art then card.label:SetPoint("BOTTOM", card, "BOTTOM", 0, 8) else card.label:SetPoint("CENTER") end
             card.label:SetWidth(cw - 12)
@@ -695,14 +693,22 @@ Render = function()
         local b = Acquire("footer")
         b:ClearAllPoints()
         if spec.side == "left" then
-            b:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 12, 12)
+            b:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 14, 8)
         else
-            b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", right, 12)
-            right = right - 116
+            b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", right - 2, 8)
+            right = right - 120
         end
         b:SetText(spec.text)
         if spec.enabled == false then b:Disable() else b:Enable() end
-        b:SetScript("OnClick", function() Click(spec.id) end)
+        -- The way forward (Next / Finish / Done) in gold, like the options window's Close.
+        if spec.id == "next" or spec.id == "done" then
+            b:SetAccent()
+        else
+            b.borderColor = { 0.33, 0.26, 0.24 }
+            Wd.SetBorderColor(b.border, 0.33, 0.26, 0.24, 1)
+            b.label:SetTextColor(0.92, 0.92, 0.92)
+        end
+        b.onClick = function() Click(spec.id) end
     end
 end
 

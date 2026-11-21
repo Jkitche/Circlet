@@ -66,6 +66,7 @@ Rings\QuestPins.lua
 Rings\Totems.lua
 
 Features\PanelSkin.lua
+UI\Widgets.lua
 Features\Discovery.lua
 Features\Welcome.lua
 Features\Summary.lua

@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=77 execute=157 range=279 select=92 toggle=217
+counts: color=77 execute=157 range=279 select=92 toggle=245
 general (General)
 progress (Progress)
   xp (XP)
@@ -42,12 +42,15 @@ rotation min/max 0/359 get(-90)=270
 after apply: gatherShape=arc totemRotation=45 pinBorder=4 totemSize kept=50
 after quest reset: shape=ring rot=180 size=120 r=1.0 X=-170 rep untouched=222
 after pin reset: pin2X=nil pinSize=100 pinned kept=true
+window opens: true
 skill page: skill editing=true
 gather page: skill=false gather=true
 general page: gather=false
 pin page: pin=true
-window closed: pin=false
+window closed: pin=false shown=false
 auto off: xp=false
-tree expanded: true width=180
+xp popup: always,resting,hold,size position=true
+xp always: always,hideText,size position=true
+xp minimap: minimapGap,hideText position=false
 compartment opens: true
 ERRORS: {}

@@ -10,6 +10,7 @@ local ADDON_NAME, ns = ...
 
 local DEFAULTS = {
     optionsAutoEdit = true, -- options window: a ring's page puts that ring in edit mode while it's open
+    optionsScale = 100,     -- options window: its size, in percent
     summaryOnLogout = true, -- show the session summary when you start logging out
     sessions = {}, -- per character: what's been gained this session (for /circ summary)
     loginFx     = true, -- the welcome animation when you log in

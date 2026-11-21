@@ -9,14 +9,6 @@ for f in ['LibStub/LibStub.lua','CallbackHandler-1.0/CallbackHandler-1.0.lua','A
     load(open(L+f).read(), f)()
 lua.execute('''
 OUT = {}
--- stub AceGUI / AceConfigDialog (real ones need the full frame API)
-local gui = LibStub:NewLibrary("AceGUI-3.0", 1)
-function gui:Create() local w = { shown = false }
-  function w:Hide() self.shown = false end; function w:Show() self.shown = true end; function w:IsShown() return self.shown end
-  function w:SetTitle(t) self.title = t end; function w:SetStatusText(t) self.status = t end; function w:SetLayout() end; function w:SetWidth() end; function w:SetHeight() end
-  return w end
-local dlg = LibStub:NewLibrary("AceConfigDialog-3.0", 1)
-STATUS = {}; function dlg:GetStatusTable() return STATUS end; function dlg:SetDefaultSize() end; function dlg:Open(app) OPENED = (OPENED or 0) + 1 end
 C_AddOns = C_AddOns or {}; C_AddOns.GetAddOnMetadata = function() return "0.24.0" end
 PlaySound = function() end
 ''')
@@ -84,20 +76,34 @@ table.insert(OUT, "after quest reset: shape=" .. CircletDB.questShape .. " rot="
 CircletDB.pin2X = 5; CircletDB.pinSize = 33
 opts.args.progress.args.pin.args.resetRing.func({})
 table.insert(OUT, "after pin reset: pin2X=" .. tostring(rawget(CircletDB, "pin2X")) .. " pinSize=" .. CircletDB.pinSize .. " pinned kept=" .. tostring(CircletDB.pinned ~= nil))
--- auto edit
+-- auto edit: a ring's page in the window puts that ring in edit mode while it's open
 for _, d in ipairs(NSX.RINGS) do NSX.SetRingEditing(d.key, false, true) end
 Slash(""); Advance(0.5)
-STATUS.groups.selected = "progress\001skill"; Advance(0.5)
+table.insert(OUT, "window opens: " .. tostring(CircletConfigFrame:IsShown()))
+NSX.OpenOptions("progress.skill"); Advance(0.5)
 table.insert(OUT, "skill page: skill editing=" .. tostring(RING_EDITORS_GET("skill")))
-STATUS.groups.selected = "professions\001gather"; Advance(0.5)
+NSX.OpenOptions("professions.gather"); Advance(0.5)
 table.insert(OUT, "gather page: skill=" .. tostring(RING_EDITORS_GET("skill")) .. " gather=" .. tostring(RING_EDITORS_GET("gather")))
-STATUS.groups.selected = "general"; Advance(0.5)
+NSX.OpenOptions("general"); Advance(0.5)
 table.insert(OUT, "general page: gather=" .. tostring(RING_EDITORS_GET("gather")))
-STATUS.groups.selected = "pin"; Advance(0.5); table.insert(OUT, "pin page: pin=" .. tostring(RING_EDITORS_GET("pin")))
-Slash(""); Advance(0.5); table.insert(OUT, "window closed: pin=" .. tostring(RING_EDITORS_GET("pin")))
-CircletDB.optionsAutoEdit = false; Slash(""); STATUS.groups.selected = "progress\001xp"; Advance(0.5)
+NSX.OpenOptions("progress.pin"); Advance(0.5); table.insert(OUT, "pin page: pin=" .. tostring(RING_EDITORS_GET("pin")))
+Slash(""); Advance(0.5); table.insert(OUT, "window closed: pin=" .. tostring(RING_EDITORS_GET("pin")) .. " shown=" .. tostring(CircletConfigFrame:IsShown()))
+CircletDB.optionsAutoEdit = false; NSX.OpenOptions("progress.xp"); Advance(0.5)
 table.insert(OUT, "auto off: xp=" .. tostring(RING_EDITORS_GET("xp"))); Slash("")
-table.insert(OUT, "tree expanded: " .. tostring(STATUS.groups.groups.progress) .. " width=" .. tostring(STATUS.groups.treewidth))
+-- XP page: settings follow the mode (popup / always on / minimap border)
+local function XPShown()
+  local m = {}
+  for _, box in ipairs({ "general", "size" }) do
+    for k, o in pairs(xpArgs[box].args) do if not (type(o.hidden) == "function" and o.hidden()) then m[k] = true end end
+  end
+  local keys = {}
+  for _, k in ipairs({ "always", "minimapGap", "hideText", "resting", "hold", "size" }) do if m[k] then keys[#keys + 1] = k end end
+  return table.concat(keys, ",") .. " position=" .. tostring(not xpArgs.position.hidden())
+end
+CircletDB.xpAlways, CircletDB.xpMinimap = false, false; table.insert(OUT, "xp popup: " .. XPShown())
+CircletDB.xpAlways = true; table.insert(OUT, "xp always: " .. XPShown())
+CircletDB.xpMinimap = true; table.insert(OUT, "xp minimap: " .. XPShown())
+CircletDB.xpAlways, CircletDB.xpMinimap = false, false
 Circlet_OnAddonCompartmentClick(); table.insert(OUT, "compartment opens: " .. tostring(CircletConfigFrame:IsShown())); Circlet_OnAddonCompartmentClick()
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

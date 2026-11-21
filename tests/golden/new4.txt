@@ -17,15 +17,16 @@ resting at inn:
 left inn:
 session: xp=400 quests=1 deaths=1 levels=0
 summary shown=true title=This session / 0m played
+   tile text: Start new session
    tile text: +400
-   tile text: Experience
+   tile text: EXPERIENCE
    tile text: 40% of a level
    tile text: 1
-   tile text: Quests done
+   tile text: QUESTS DONE
    tile text: +2|cffffd100g|r 34|cffc7c7cfs|r
-   tile text: Money
+   tile text: MONEY
    tile text: 1
-   tile text: Death
+   tile text: DEATH
 timed preview:
     Protecting the Shipment / 2:16 / remaining
 corpse preview:

@@ -46,12 +46,22 @@
 - **/circ showxp** (or /circ myxp): brings the XP ring up for a few seconds at your current XP,
   even when it's hidden or its text has faded, and prints your XP to chat (level, XP into it and
   to go, rested).
-- **Tidier options window.** The rings are sorted into six folders on the left instead of three:
-  Progress, Combat & casting, Group, Travel & survival, Professions, and Rest & utility (the
-  quest rings and totem pages moved into Progress and Combat & casting). On the General page, the
-  ring on/off checkboxes are grouped into a box for each folder, three to a row. Everywhere else,
-  checkboxes sit two to a row with their explanation in the tooltip instead of printed
-  underneath, so pages are shorter and easier to scan.
+- **New options window.** Redesigned from scratch in Circlet's own dark-and-gold look. On the
+  left: General, Profiles, Edit all rings, What's new and the Setup wizard, a search box, and
+  every ring sorted into six folders (Progress, Combat & casting, Group, Travel & survival,
+  Professions, Rest & utility), each with a dot that turns the ring on or off with a click. On
+  the right: the page's title and description, tabs (a ring's settings, and its look &
+  position), and its settings in titled sections, two to a row, with on/off switches, sliders
+  you can also type a number into, dropdowns and color swatches; hover any setting for what it
+  does. Each ring's Edit mode, Preview and Reset buttons sit along the bottom, and a Window
+  scale slider sizes the whole window. A folder's own page has a switch for each of its rings.
+- **XP ring settings follow its mode.** The XP ring's page only shows what applies: the
+  minimap border's distance and layering when it's on, the idle-text options when the ring is
+  always shown, how long it stays and showing while resting only when it pops up, and no size
+  or position around the minimap.
+- **Matching windows.** The setup wizard, What's new and the session summary use the options
+  window's colors, switches and buttons. The summary now leaves out anything that hasn't
+  changed this session, and says so when nothing has yet.
 - **Swing timer ring** (new; Combat & casting > Swing timer). While you auto-attack, the ring
   fills over your weapon's speed and counts down to your next melee swing, then says Ready
   until it lands, with how the last swing went underneath (Hit, Crit, Glancing, Miss, Dodged,
