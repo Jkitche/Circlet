@@ -79,4 +79,5 @@ edit all:
    7 @x=0
    39 @x=0
    1:49 @x=0
+   Soulstone / 27m / Thrall @x=0
 ERRORS: {}

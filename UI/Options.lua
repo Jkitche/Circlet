@@ -24,7 +24,7 @@ local FOLDERS = {
         text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
             .. "on mana, and your ammo." },
     group = { order = 4, name = "Group",
-        text = "Rings for playing with others: loot rolls and ready checks." },
+        text = "Rings for playing with others: loot rolls, ready checks and (for warlocks) your soulstone." },
     travel = { order = 5, name = "Travel & survival",
         text = "Rings for getting around and staying alive: flights, your Hearthstone, timed quests, "
             .. "corpse runs and breath." },

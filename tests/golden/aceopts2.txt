@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=77 execute=157 range=279 select=92 toggle=245
+counts: color=80 execute=162 range=289 select=95 toggle=253
 general (General)
 progress (Progress)
   xp (XP)
@@ -21,6 +21,7 @@ combat (Combat & casting)
 group (Group)
   loot (Loot rolls)
   ready (Ready checks)
+  soulstone (Soulstone) [hidden]
 travel (Travel & survival)
   flight (Flight)
   hearth (Hearthstone)

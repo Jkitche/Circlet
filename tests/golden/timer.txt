@@ -70,6 +70,7 @@ chat:   /circ clock     - preview the clock ring
 chat:   /circ craft     - preview the crafting ring
 chat:   /circ gather    - preview the gathering ring
 chat:   /circ fish      - preview the fishing ring
+chat:   /circ soulstone - preview the soulstone ring
 chat:   /circ cast      - preview the cast ring
 chat:   /circ swing     - preview the swing timer ring
 chat:   /circ shot      - preview the shot timer ring

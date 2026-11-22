@@ -9,6 +9,11 @@
   cast nears its end; when it goes off the swirl collapses into a flash and a shockwave rolls
   out. The cast ring leaves these casts to it (turn the hearthstone ring off to have the cast
   ring show them again).
+- **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,
+  the ring drains over its 30 minutes with their name and the time left, turning red in the
+  last five, then says Expired, or Used if it's gone early. Out of combat it checks the stone is
+  still on them and takes the time from the buff. It survives a reload or logging out, and out
+  of combat it reminds you when you have a soulstone ready and none is out.
 - **Crafting animations** (new; on by default, Crafting > Profession animations). Each of WoW
   Forever's crafting professions gets an animation of its own on the crafting ring, worked out
   from the trade skill window you craft from. Alchemy: bubbles rising through a shifting potion

@@ -1,0 +1,19 @@
+a stone in the bags, none out: Soulstone / None out / Ready to place fill=72
+reminder off: (hidden)
+Shadow Bolt isn't a stone: Soulstone / None out / Ready to place fill=72
+placed on Thrall: Soulstone / 30m / Thrall fill=72
+10 minutes on: Soulstone / 20m / Thrall fill=48
+saved: Thrall
+buff says 18m: Soulstone / 18m / Thrall fill=43
+in combat, buff gone (unseen): Soulstone / 18m / Thrall fill=42
+out of combat, it's gone: Soulstone / Used / Thrall fill=0
+later, stone on cooldown: (hidden)
+on yourself: Soulstone / 30m / Gul'dan fill=72
+mid-stone, always off: (hidden)
+last 4 minutes: Soulstone / 4m / Gul'dan fill=10
+ran out: Soulstone / Expired / Gul'dan fill=0
+then: Soulstone / None out / Ready to place fill=72
+no stone in the bags: (hidden)
+preview: Soulstone / 26m / Thrall fill=62
+preview later: Soulstone / 4m / Thrall fill=9
+ERRORS: {}

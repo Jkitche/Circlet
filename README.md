@@ -80,6 +80,8 @@ then fade away, or stay up as a permanent display.
   shadow, nature, holy) with a strength setting, and a resurrection animation.
 - **Mana regen**: the five-second rule after you spend mana, counting down to when your mana
   regen starts again.
+- **Soulstone** (warlocks): who has your soulstone and how long it has left, and a reminder
+  when none is out.
 - **Swing timer**: time to your next melee swing while you auto-attack, and how the last one
   went (hit, crit, glancing, dodged, parried...).
 - **Shot timer**: time to your next Auto Shot, wand shot or throw, with Auto Shot's aim (hold
