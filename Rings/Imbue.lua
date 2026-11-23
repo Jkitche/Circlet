@@ -9,7 +9,8 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 -- While your main hand has a shaman weapon imbue, the ring drains over it with the imbue's
 -- name and the time left, turning the warning color in the last 30 seconds and saying
 -- Faded when it's gone. With imbueFx on, each imbue has its own animation:
---   Rockbiter    stone chunks orbiting the ring, tumbling, with grit falling away
+--   Rockbiter    stones orbiting the ring, tumbling, with grit falling away (the stones are
+--                Textures/Rock1-4.tga, made by tools/make_rock_textures.py)
 --   Flametongue  tongues of flame licking outward all round, embers rising, a warm glow
 --   Frostbrand   ice crystals twinkling and turning, snowflakes drifting down, a cold glow
 --   Windfury     wind streaks whipping round the ring at different heights
@@ -154,7 +155,7 @@ imbueRing = CreateLiveRing({
 ---------------------------------------------------------------------------
 local GLOW_TEX = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
 local STAR_TEX = "Interface\\Cooldown\\star4"
-local SQUARE_TEX = "Interface\\Buttons\\WHITE8X8"
+local ROCK_TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\Rock"
 local N = 16 -- pieces per effect
 
 local fx
@@ -174,7 +175,8 @@ local function Build(frame)
     for i = 1, N do
         -- Fixed per piece so they don't move in lockstep.
         fx.pieces[i] = { glow = Tex(frame, "ARTWORK", 2, GLOW_TEX, true), star = Tex(frame, "ARTWORK", 3, STAR_TEX, true),
-                         block = Tex(frame, "ARTWORK", 2, SQUARE_TEX, false),
+                         block = Tex(frame, "ARTWORK", 2, ROCK_TEX .. ((i - 1) % 4 + 1), false),
+                         grit = Tex(frame, "ARTWORK", 1, ROCK_TEX .. ((i + 1) % 4 + 1), false),
                          phase = (i * 0.618) % 1, speed = 0.7 + (i * 0.37) % 0.6, size = 0.6 + (i * 0.53) % 0.7,
                          lane = ((i * 0.437) % 1) * 2 - 1 }
         fx.bits[i] = Tex(frame, "ARTWORK", 4, STAR_TEX, true)
@@ -184,7 +186,7 @@ end
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
-    for i, p in ipairs(fx.pieces) do p.glow:Hide(); p.star:Hide(); p.block:Hide(); fx.bits[i]:Hide() end
+    for i, p in ipairs(fx.pieces) do p.glow:Hide(); p.star:Hide(); p.block:Hide(); p.grit:Hide(); fx.bits[i]:Hide() end
 end
 
 -- x, y of a point at angle a (radians, clockwise from the top) and radius r.
@@ -199,29 +201,29 @@ end
 
 local DRAW = {}
 
--- Rockbiter: chunks of stone orbiting slowly just outside the band, tumbling, bobbing in
--- and out; grit falling away from them.
+-- Rockbiter: stones orbiting slowly just outside the band, tumbling, bobbing in and out;
+-- grit (tiny stones) falling away from them.
 function DRAW.rock(frame, now, R, T, warn)
     local orbit = now * 0.35
     for i, p in ipairs(fx.pieces) do
-        if i <= 9 then
-            local a = orbit + (i / 9) * math.pi * 2 + p.lane * 0.2
-            local r = R + T * 0.6 + math.sin(now * 1.3 + i) * T * 0.35
+        if i <= 8 then
+            local a = orbit + (i / 8) * math.pi * 2 + p.lane * 0.2
+            local r = R + T * 0.9 + math.sin(now * 1.3 + i) * T * 0.35
             local x, y = At(a, r)
-            local s = T * (0.55 + 0.45 * p.size)
-            Put(p.block, frame, x, y, s, s * (0.7 + 0.3 * p.size))
-            p.block:SetVertexColor(0.45 + 0.15 * p.size, 0.36 + 0.1 * p.size, 0.24, 1)
-            if p.block.SetRotation then p.block:SetRotation(now * (0.8 + p.speed) * (i % 2 == 0 and 1 or -1)) end
-            p.block:SetAlpha(0.95)
-            -- Grit: a speck falling from each chunk.
+            local s = T * (1.3 + 0.8 * p.size)
+            Put(p.block, frame, x, y, s)
+            p.block:SetVertexColor(1, 0.97, 0.92, 1)
+            if p.block.SetRotation then p.block:SetRotation(now * (0.25 + p.speed * 0.3) * (i % 2 == 0 and 1 or -1) + i) end
+            p.block:SetAlpha(1)
+            -- Grit: a tiny stone falling from each one, turning as it goes.
             local u = (now * p.speed * 0.7 + p.phase) % 1
-            Put(fx.bits[i], frame, x + p.lane * T * 0.3, y - u * T * 2.5, T * 0.35)
-            fx.bits[i]:SetVertexColor(0.75, 0.62, 0.42)
-            fx.bits[i]:SetAlpha((1 - u) * 0.6)
+            Put(p.grit, frame, x + p.lane * T * 0.4, y - s * 0.3 - u * T * 2.8, T * 0.55 * (1 - u * 0.4))
+            if p.grit.SetRotation then p.grit:SetRotation(now * 3 + i) end
+            p.grit:SetAlpha((1 - u) * 0.9)
         else
-            p.block:Hide(); fx.bits[i]:Hide()
+            p.block:Hide(); p.grit:Hide()
         end
-        p.glow:Hide(); p.star:Hide()
+        p.glow:Hide(); p.star:Hide(); fx.bits[i]:Hide()
     end
     Put(fx.glow, frame, 0, 0, R * 1.6)
     fx.glow:SetVertexColor(0.6, 0.45, 0.25)
@@ -240,7 +242,7 @@ function DRAW.flame(frame, now, R, T, warn)
         Put(p.glow, frame, x, y, T * 1.3 * flick, T * 1.3 * flick + out)
         p.glow:SetVertexColor(1, 0.45 + 0.35 * flick, 0.1)
         p.glow:SetAlpha(0.55 * flick)
-        p.star:Hide(); p.block:Hide()
+        p.star:Hide(); p.block:Hide(); p.grit:Hide()
         -- Embers: rising from the top half of the ring and drifting.
         local u = (now * p.speed * 0.6 + p.phase) % 1
         local ea = p.lane * 1.1
@@ -267,7 +269,7 @@ function DRAW.frost(frame, now, R, T, warn)
         p.star:SetVertexColor(0.7, 0.9, 1)
         if p.star.SetRotation then p.star:SetRotation(now * 0.6 + i) end
         p.star:SetAlpha(0.35 + 0.65 * tw)
-        p.glow:Hide(); p.block:Hide()
+        p.glow:Hide(); p.block:Hide(); p.grit:Hide()
         -- Snow: falling across the whole ring, swaying.
         local u = (now * p.speed * 0.25 + p.phase) % 1
         local sx = p.lane * R * 0.9 + math.sin(now * 1.4 + i) * T * 0.8
@@ -296,7 +298,7 @@ function DRAW.wind(frame, now, R, T, warn)
         if p.glow.SetRotation then p.glow:SetRotation(-a) end
         p.glow:SetVertexColor(0.75, 1, 0.95)
         p.glow:SetAlpha((0.7 - seg * 0.16) * gust)
-        p.star:Hide(); p.block:Hide(); fx.bits[i]:Hide()
+        p.star:Hide(); p.block:Hide(); p.grit:Hide(); fx.bits[i]:Hide()
     end
     Put(fx.glow, frame, 0, 0, R * 1.6)
     fx.glow:SetVertexColor(0.6, 0.95, 0.9)

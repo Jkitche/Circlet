@@ -12,7 +12,7 @@
 - **Weapon imbue ring** (new, shamans; Combat & casting > Weapon imbue). While your main hand
   has a weapon imbue, the ring drains over it with the imbue's name and the time left, turning
   red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own animation:
-  Rockbiter sends chunks of stone orbiting the ring with grit falling away, Flametongue licks
+  Rockbiter sends shaded stones orbiting the ring with grit falling away, Flametongue licks
   flames outward all round with embers rising, Frostbrand sets ice crystals twinkling round the
   band with snow drifting down, and Windfury whips streaks of wind round the ring in gusts.
 - **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,

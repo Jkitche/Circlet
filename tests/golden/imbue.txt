@@ -1,7 +1,7 @@
 no imbue: (hidden)
 Flametongue (known enchant): Flametongue / 4:58 fill=72 fx[GenericGlow64=17 star4=16]
 2 minutes on: Flametongue / 2:58 fill=43 fx[GenericGlow64=17 star4=16]
-Rockbiter cast over it: Rockbiter / 4:58 fill=72 fx[GenericGlow64=1 star4=9 WHITE8X8=9]
+Rockbiter cast over it: Rockbiter / 4:58 fill=72 fx[GenericGlow64=1 Rock=16]
 Frostbrand, unknown enchant (learned from the cast): Frostbrand / 4:58 fill=72 fx[GenericGlow64=1 star4=32]
 removed: Frostbrand / Faded fill=0 fx[]
 same enchant again, no cast (learned): Frostbrand / 4:58 fill=72 fx[GenericGlow64=1 star4=32]
@@ -13,7 +13,7 @@ then: (hidden)
 just put on, always off: Flametongue / 4:58 fill=72 fx[GenericGlow64=17 star4=16]
 mid-way, always off: (hidden)
 animations off: Flametongue / 4:47 fill=70 fx[]
-preview: Rockbiter / 4:15 fill=62 fx[GenericGlow64=1 star4=9 WHITE8X8=9]
+preview: Rockbiter / 4:15 fill=62 fx[GenericGlow64=1 Rock=16]
 preview: Flametongue / 4:15 fill=62 fx[GenericGlow64=17 star4=16]
 preview: Frostbrand / 4:15 fill=62 fx[GenericGlow64=1 star4=32]
 preview: Windfury / 4:15 fill=62 fx[GenericGlow64=17]

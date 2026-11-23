@@ -39,11 +39,12 @@ function Fx(f)
   for _, t in ipairs(ALL_TEX or {}) do
     if t._parent == f and t._shown and t._tex and (t._alpha or 1) > 0 then
       local k = tostring(t._tex):match("([^\\\\]+)$")
-      if k == "star4" or k == "GenericGlow64" or k == "WHITE8X8" then counts[k] = (counts[k] or 0) + 1 end
+      if k and k:match("^Rock%d$") then k = "Rock" end
+      if k == "star4" or k == "GenericGlow64" or k == "Rock" then counts[k] = (counts[k] or 0) + 1 end
     end
   end
   local out = {}
-  for _, k in ipairs({ "GenericGlow64", "star4", "WHITE8X8" }) do if counts[k] then table.insert(out, k .. "=" .. counts[k]) end end
+  for _, k in ipairs({ "GenericGlow64", "star4", "Rock" }) do if counts[k] then table.insert(out, k .. "=" .. counts[k]) end end
   return " fx[" .. table.concat(out, " ") .. "]"
 end
 function C() local f = Ring() return f and (T(f) .. " fill=" .. Fill(f) .. Fx(f)) or "(hidden)" end
