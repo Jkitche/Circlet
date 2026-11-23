@@ -22,6 +22,8 @@ around the minimap.
   frost, motes for arcane, wisps for shadow, a swirl for nature, rays for holy. Resurrections
   rise in holy light and finish with a pillar of light.
 - **Mana regen**: the five-second rule, counting down to when your mana regen starts again.
+- **Weapon imbue** (shamans): time left on your weapon imbue, with orbiting stones, flames,
+  ice and snow, or whipping wind depending on which it is.
 - **Soulstone** (warlocks): who has your soulstone and how long it has left, with a reminder
   when you have one ready and none is out.
 - **Swing timer**: counts down to your next melee swing while you auto-attack, with how the last

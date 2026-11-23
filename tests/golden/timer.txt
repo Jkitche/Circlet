@@ -72,6 +72,7 @@ chat:   /circ gather    - preview the gathering ring
 chat:   /circ fish      - preview the fishing ring
 chat:   /circ soulstone - preview the soulstone ring
 chat:   /circ cast      - preview the cast ring
+chat:   /circ imbue     - preview the weapon imbue ring
 chat:   /circ swing     - preview the swing timer ring
 chat:   /circ shot      - preview the shot timer ring
 chat:   /circ target    - preview the target cast ring

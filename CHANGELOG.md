@@ -9,6 +9,12 @@
   cast nears its end; when it goes off the swirl collapses into a flash and a shockwave rolls
   out. The cast ring leaves these casts to it (turn the hearthstone ring off to have the cast
   ring show them again).
+- **Weapon imbue ring** (new, shamans; Combat & casting > Weapon imbue). While your main hand
+  has a weapon imbue, the ring drains over it with the imbue's name and the time left, turning
+  red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own animation:
+  Rockbiter sends chunks of stone orbiting the ring with grit falling away, Flametongue licks
+  flames outward all round with embers rising, Frostbrand sets ice crystals twinkling round the
+  band with snow drifting down, and Windfury whips streaks of wind round the ring in gusts.
 - **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,
   the ring drains over its 30 minutes with their name and the time left, turning red in the
   last five, then says Expired, or Used if it's gone early. Out of combat it checks the stone is

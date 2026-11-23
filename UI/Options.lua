@@ -22,7 +22,7 @@ local FOLDERS = {
             .. "and level your pet." },
     combat = { order = 3, name = "Combat & casting",
         text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
-            .. "on mana, and your ammo." },
+            .. "on mana, your ammo, and (for shamans) totems and weapon imbues." },
     group = { order = 4, name = "Group",
         text = "Rings for playing with others: loot rolls, ready checks and (for warlocks) your soulstone." },
     travel = { order = 5, name = "Travel & survival",

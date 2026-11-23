@@ -65,6 +65,7 @@ Rings\ReadyCheck.lua
 Rings\QuestPins.lua
 Rings\Totems.lua
 Rings\Soulstone.lua
+Rings\Imbue.lua
 
 Features\PanelSkin.lua
 UI\Widgets.lua

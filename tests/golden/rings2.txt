@@ -80,4 +80,5 @@ edit all:
    39 @x=0
    1:49 @x=0
    Soulstone / 27m / Thrall @x=0
+   Rockbiter / 4:15 @x=0
 ERRORS: {}
