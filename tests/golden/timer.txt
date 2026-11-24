@@ -70,9 +70,10 @@ chat:   /circ clock     - preview the clock ring
 chat:   /circ craft     - preview the crafting ring
 chat:   /circ health    - preview your health and power ring
 chat:   /circ targethealth - preview the target health ring
+chat:   /circ tot       - preview the target of target ring
 chat:   /circ gather    - preview the gathering ring
-chat:   /circ fish      - preview the fishing ring
 chat:   /circ soulstone - preview the soulstone ring
+chat:   /circ fish      - preview the fishing ring
 chat:   /circ cast      - preview the cast ring
 chat:   /circ imbue     - preview the weapon imbue ring
 chat:   /circ swing     - preview the swing timer ring

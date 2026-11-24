@@ -15,7 +15,17 @@
     turned towards the ring's centre so the moving edge is a clean radial cut.
   - **Damage trail and heal glow**: where the values can be read, health you lose stays behind as
     a red trail for a moment and then drains after the band, and health you gain glows softly as
-    it fills in. Nothing flashes.
+    it fills in.
+  - **Flash on big hits**: the health band flashes red for a moment when one hit takes 15% or
+    more (adjustable). When the values are hidden the game won't say how big a hit was, so then
+    critical and crushing hits count.
+  - **Right-click menu**: right-click a ring for the game's own menu for that unit, as on its
+    frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to the world.
+  - **Level badge**: the level on a gold-rimmed disc at the bottom left of the ring (on by default
+    for yours; on the others in the game's difficulty colours).
+  - **In-combat indicator** (your ring): crossed swords at the top right while you're in combat.
+  - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
+    after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug` and `/circ masktest` report what this client lets the rings see and do (for
     bug reports).
 - **Text sizes for every ring** (Look & position > Text sizes). Every piece of text on every ring

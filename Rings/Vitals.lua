@@ -6,7 +6,7 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.Cre
 local NewRingLayer, DrawArc, TRACK = ns.NewRingLayer, ns.DrawArc, ns.TRACK
 
 ---------------------------------------------------------------------------
--- Health & power rings (playerHp: you; targetHp: your target)
+-- Health & power rings (playerHp: you; targetHp: your target; totHp: its target, smaller)
 ---------------------------------------------------------------------------
 -- The outer band is health, the thinner band inside it power (mana, rage, energy, focus),
 -- with the health (and power) as text in the middle and, optionally, the unit's name.
@@ -135,11 +135,16 @@ end
 -- Readable values: the fill eases to a new value the way the XP ring's does (<key>Smooth:
 -- fast at first, settling at the end, longer for a bigger change); a loss leaves a red trail
 -- that holds a moment, then drains after the fill, and a gain glows softly as it fills in
--- (<key>Trail). Nothing flashes. Hidden values (WoW Forever always hides your own): the game
--- eases them itself in the eased bands below; trail and glow need to know how much changed,
--- which the game won't tell addons, so they only show for readable values.
+-- (<key>Trail). Hidden values (WoW Forever always hides your own): the game eases them itself
+-- in the eased bands below; trail and glow need to know how much changed, which the game won't
+-- tell addons, so they only show for readable values.
+-- Big hits (<key>BigHit): the health band flashes red, briefly. With readable values, when one
+-- loss takes <key>BigHitSize % of it or more; with hidden ones the size of a hit can't be known
+-- (UNIT_COMBAT's amount is hidden too), so critical and crushing hits count as big.
 local TRAIL_HOLD, TRAIL_DRAIN = 0.45, 0.9 -- seconds the trail holds; band per second it drains
 local GLOW_TIME = 1.0
+local FLASH_TIME = 0.45
+local bigHitAt = {} -- ring key -> GetTime() of the last critical / crushing hit its unit took
 
 local tracks = {} -- "playerHp:hp", "targetHp:pw", ...
 local function Track(id)
@@ -171,6 +176,9 @@ local function Step(key, tr, target, now, isHealth)
     if target < before - 0.002 then
         tr.trailTop = math.max(tr.trailTop or 0, tr.shown, before)
         tr.trailAt = now
+        if isHealth and (before - target) * 100 >= (tonumber(db[key .. "BigHitSize"]) or 15) then
+            bigHitAt[key] = now
+        end
     elseif target > before + 0.002 then
         tr.glowFrom, tr.glowTo, tr.glowAt = math.min(tr.shown, before), target, now
         if tr.trailTop and target >= tr.trailTop then tr.trailTop = nil end
@@ -400,6 +408,8 @@ local easeNow = {}
 -- When the game says a value changed (it doesn't say how).
 local changes = {} -- "playerHp:hp" -> GetTime() the game last said that value changed
 local UNIT_KEY = { player = "playerHp", target = "targetHp" }
+-- Units the game sends no health / power / portrait events for.
+local NO_EVENTS = { targettarget = true }
 
 -- Everything the ring shows for `unit`: health fill (frac, or a gate for hidden values),
 -- power, texts (plain strings, or functions that put hidden ones on a font string).
@@ -409,7 +419,7 @@ local function UnitState(key, unit)
     local healthPct = function(curve) return UnitHealthPercent(unit, false, curve) end
     local now = GetTime()
     local hpTrack = Track(key .. ":hp")
-    st.hpTrack, st.hpChanged = hpTrack, changes[key .. ":hp"]
+    st.hpTrack, st.hpChanged = hpTrack, NO_EVENTS[unit] and math.floor(GetTime() * 5) or changes[key .. ":hp"]
     local dead = Clean(SafeCall(UnitIsDeadOrGhost, unit))
     if dead then st.dead = Clean(SafeCall(UnitIsGhost, unit)) and "Ghost" or "Dead" end
     if Readable(hp, hpMax) and hpMax > 0 then
@@ -440,7 +450,8 @@ local function UnitState(key, unit)
         token = token or POWER_TOKENS[ptype or 0]
         local pw, pwMax = SafeCall(UnitPower, unit, ptype), SafeCall(UnitPowerMax, unit, ptype)
         local pwTrack = Track(key .. ":pw")
-        local pwr = { color = PowerColor(key, token), token = token, track = pwTrack, changed = changes[key .. ":pw"] }
+        local pwr = { color = PowerColor(key, token), token = token, track = pwTrack,
+                      changed = NO_EVENTS[unit] and math.floor(GetTime() * 5) or changes[key .. ":pw"] }
         local powerPct = function(curve) return UnitPowerPercent(unit, ptype, false, curve) end
         if pwTrack.token ~= token then ResetTrack(key .. ":pw"); pwTrack.token = token end -- shapeshifted
         if Readable(pw, pwMax) then
@@ -472,7 +483,7 @@ local function UnitState(key, unit)
         local name = SafeCall(UnitName, unit)
         st.name = name -- may be hidden: handed to the font string as it is
         local level = CleanNumber(SafeCall(UnitLevel, unit))
-        if level and level > 0 and key == "targetHp" then st.level = level end
+        if level and level > 0 and key ~= "playerHp" then st.level = level end
     end
     return st
 end
@@ -501,6 +512,8 @@ local function Wanted(key, st)
 end
 
 ---------------------------------------------------------------- drawing: the inner band and text
+local DISC = "Interface\\CharacterFrame\\TempPortraitAlphaMask" -- a soft-edged white disc
+
 local function Parts(frame)
     if frame.vit then return frame.vit end
     local v = {}
@@ -512,7 +525,8 @@ local function Parts(frame)
     v.eh, v.ep = {}, {} -- eased bands' bars (health, power)
     local white = { r = 1, g = 1, b = 1 }
     for _, b in ipairs({ "h", "p" }) do
-        v[b] = { trail = NewRingLayer("ARTWORK", -1, white, 1, frame), glow = NewRingLayer("ARTWORK", 2, white, 1, frame) }
+        v[b] = { trail = NewRingLayer("ARTWORK", -1, white, 1, frame), glow = NewRingLayer("ARTWORK", 2, white, 1, frame),
+                 flash = NewRingLayer("ARTWORK", 3, white, 1, frame) }
     end
     local function Text(layer)
         local fs = frame:CreateFontString(nil, layer or "OVERLAY")
@@ -532,8 +546,108 @@ local function Parts(frame)
         v.portrait:AddMaskTexture(v.mask)
     end
     v.portrait:Hide()
+    -- Badges on the band: the level (bottom left) and the in-combat swords (top right). On a
+    -- child frame, so they sit over the bands and the texts.
+    local bf = CreateFrame("Frame", nil, frame)
+    bf:SetAllPoints(frame)
+    bf:SetFrameLevel(frame:GetFrameLevel() + 5)
+    local function Badge()
+        local bd = { parent = bf }
+        bd.edge = bf:CreateTexture(nil, "BACKGROUND")
+        bd.edge:SetTexture(DISC)
+        bd.edge:SetVertexColor(0, 0, 0, 0.9)
+        bd.fill = bf:CreateTexture(nil, "ARTWORK")
+        bd.fill:SetTexture(DISC)
+        bd.edge:Hide(); bd.fill:Hide()
+        return bd
+    end
+    v.lvl = Badge()
+    v.lvl.fill:SetVertexColor(0.11, 0.08, 0.10, 1)
+    -- Its outline: a gold rim between the dark edge and the fill.
+    v.lvl.rim = bf:CreateTexture(nil, "BORDER")
+    v.lvl.rim:SetTexture(DISC)
+    v.lvl.rim:SetVertexColor(0.85, 0.66, 0.28, 1)
+    v.lvl.rim:Hide()
+    v.lvl.text = bf:CreateFontString(nil, "OVERLAY")
+    v.lvl.text:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE") -- a font before any SetText (sized when drawn)
+    v.lvl.text:SetShadowOffset(1, -1)
+    v.lvl.text:SetJustifyH("CENTER")
+    v.lvl.text:SetPoint("CENTER", v.lvl.fill, "CENTER", 0.5, 0)
+    v.cmb = Badge()
+    v.cmb.fill:SetVertexColor(0.32, 0.05, 0.04, 1)
+    v.cmb.icon = bf:CreateTexture(nil, "OVERLAY")
+    v.cmb.icon:SetTexture("Interface\\CharacterFrame\\UI-StateIcon")
+    v.cmb.icon:SetTexCoord(0.5, 1, 0, 0.5) -- the crossed swords
+    v.cmb.icon:SetPoint("CENTER", v.cmb.fill, "CENTER")
+    v.cmb.icon:Hide()
     frame.vit = v
     return v
+end
+
+-- A badge's disc, centered on the band at <deg> degrees (0 = right, counter-clockwise).
+local function PlaceBadge(bd, R, deg, d)
+    local k = R .. ":" .. deg .. ":" .. d
+    if bd.k ~= k then
+        bd.k = k
+        local a = math.rad(deg)
+        local x, y = R * math.cos(a), R * math.sin(a)
+        bd.edge:ClearAllPoints(); bd.edge:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.edge:SetSize(d, d)
+        local inset = 3
+        if bd.rim then
+            -- Outline: about a tenth of the disc, at least 2 px, inside a 1 px dark edge.
+            local w = math.max(2, math.floor(d * 0.1 + 0.5))
+            bd.rim:ClearAllPoints(); bd.rim:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.rim:SetSize(d - 2, d - 2)
+            inset = 2 + 2 * w
+        end
+        bd.fill:ClearAllPoints(); bd.fill:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.fill:SetSize(d - inset, d - inset)
+    end
+    bd.edge:Show(); bd.fill:Show()
+    if bd.rim then bd.rim:Show() end
+end
+local function HideBadge(bd)
+    bd.edge:Hide(); bd.fill:Hide()
+    if bd.rim then bd.rim:Hide() end
+    if bd.text then bd.text:SetText("") end
+    if bd.icon then bd.icon:Hide() end
+end
+
+-- The level badge (<key>Level): the unit's level on a disc at the bottom left of the ring;
+-- others' levels in the game's difficulty colors, "??" for ones too high to tell.
+local function DrawLevel(key, v, st, geom, d)
+    if not db[key .. "Level"] then HideBadge(v.lvl) return end
+    local unit = st.unit or "player"
+    local level = st.level or CleanNumber(SafeCall(UnitLevel, unit))
+    if not st.unit and key ~= "playerHp" then level = st.level or 18 end
+    if not level then HideBadge(v.lvl) return end
+    d = math.floor(d * 1.4 + 0.5) -- bigger than the combat badge: it carries text
+    PlaceBadge(v.lvl, geom.R, 225, d)
+    local fk = d .. ":" .. ((tonumber(db[key .. "LevelTextSize"]) or 100))
+    if v.lvl.fk ~= fk then
+        v.lvl.fk = fk
+        local size = math.max(6, math.floor(d * 0.5 * (tonumber(db[key .. "LevelTextSize"]) or 100) / 100 + 0.5))
+        v.lvl.text:SetFont(STANDARD_TEXT_FONT, size, "OUTLINE")
+    end
+    local r, g, b = 1, 0.82, 0.25
+    if key ~= "playerHp" and st.unit and GetQuestDifficultyColor then
+        local ok, c = pcall(GetQuestDifficultyColor, level > 0 and level or 999)
+        if ok and type(c) == "table" and c.r then r, g, b = c.r, c.g, c.b end
+    end
+    v.lvl.text:SetTextColor(r, g, b)
+    v.lvl.text:SetText(level > 0 and tostring(level) or "??")
+end
+
+-- The in-combat badge (<key>Combat, your ring): crossed swords at the top right while you're
+-- in combat, gently pulsing. Edit mode and previews show it so it can be placed.
+local function DrawCombat(key, v, st, geom, d, now)
+    local on = db[key .. "CombatIcon"]
+    if on and st.unit then on = Clean(SafeCall(UnitAffectingCombat, st.unit)) and true or false end
+    if not on then HideBadge(v.cmb) return end
+    PlaceBadge(v.cmb, geom.R, 45, d)
+    v.cmb.icon:SetSize(d * 0.8, d * 0.8)
+    v.cmb.icon:Show()
+    local a = 0.8 + 0.2 * math.sin(now * 4)
+    v.cmb.fill:SetAlpha(a)
+    v.cmb.icon:SetAlpha(a)
 end
 
 -- Portraits to redraw (by ring key): when the target or a portrait changes.
@@ -544,7 +658,9 @@ local function DrawPortrait(key, v, unit, room)
     local size = math.max(8, room - 2)
     v.portrait:SetSize(size, size)
     if v.mask then v.mask:SetSize(size, size) end
+    if NO_EVENTS[unit] and GetTime() - (v.portraitAt or 0) > 1 then portraitDirty[key] = true end
     if portraitDirty[key] or v.portraitUnit ~= unit then
+        v.portraitAt = GetTime()
         portraitDirty[key] = nil
         v.portraitUnit = unit
         pcall(SetPortraitTexture, v.portrait, unit)
@@ -600,6 +716,18 @@ local function Effects(key, L, tr, g, frame, c, now, trailColor)
         end
     else
         HideLayer(L.glow)
+    end
+end
+
+-- A big hit: the whole health band flashes red, fading out fast (FLASH_TIME).
+local function BigHitFlash(key, L, g, frame, now)
+    local at = bigHitAt[key]
+    if db[key .. "BigHit"] and at and now - at < FLASH_TIME then
+        local k = 1 - (now - at) / FLASH_TIME
+        for _, l in ipairs(L.flash) do l:SetColorTexture(1, 0.3, 0.25, 0.55 * k * k) end
+        DrawArc(L.flash, 0, 1, frame, g, true)
+    else
+        HideLayer(L.flash)
     end
 end
 
@@ -664,12 +792,14 @@ local function DrawVitals(key, st, frame, geom)
         HideEased(v.eh); HideEased(v.ep)
         v.hp:SetText(""); v.hp2:SetText(""); v.pw:SetText(""); v.name:SetText("")
         v.portrait:Hide()
+        HideBadge(v.lvl); HideBadge(v.cmb)
         return
     end
     local b = ns.BorderWidthOf(key)
     local inner = geom.R - geom.T / 2 - b
     local now = GetTime()
     Effects(key, v.h, st.hpTrack, geom, frame, st.color, now, HEALTH_TRAIL)
+    BigHitFlash(key, v.h, geom, frame, now)
     if st.easedOn then
         DrawEased(v.eh, frame, geom, st.color, st.eased, st.hpChanged, easeNow[key .. ":hp"])
         easeNow[key .. ":hp"] = nil
@@ -753,9 +883,13 @@ local function DrawVitals(key, st, frame, geom)
     v.hp2:SetTextColor(0.8, 0.8, 0.8)
     HealthText(key, st, v.hp, v.hp2, split)
     PowerText(key, p, v.pw)
+    -- Badges: about two band-widths across, never tiny.
+    local d = math.floor(math.max(14, geom.T * 1.7, geom.R * 0.36) + 0.5)
+    DrawLevel(key, v, st, geom, d)
+    DrawCombat(key, v, st, geom, d, now)
     if st.name ~= nil then
         v.name:SetTextColor(1, 0.82, 0.25)
-        if st.level then Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level) else Put(v.name, nil, st.name) end
+        if st.level and not db[key .. "Level"] then Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level) else Put(v.name, nil, st.name) end
     else
         v.name:SetText("")
     end
@@ -793,7 +927,7 @@ local function Sample(key, t)
     end
     if db[key .. "Name"] then
         st.name = SAMPLE_NAMES[key] or Clean(SafeCall(UnitName, "player")) or "You"
-        if key == "targetHp" then st.level = 18 end
+        if key == "targetHp" then st.level = 18 elseif key == "totHp" then st.level = 20 end
     end
     return st
 end
@@ -815,6 +949,7 @@ local function MakeRing(key, unit)
             { id = "NameText", name = "Name", desc = "The name (and level) above the health." },
             { id = "HealthText", name = "Health", desc = "The health in the middle, and its percentage line." },
             { id = "PowerText", name = "Power", desc = "The mana, rage or energy under the health." },
+            { id = "LevelText", name = "Level", desc = "The level on its badge at the bottom left." },
         },
         decorate = function(st, frame, geom) DrawVitals(key, st, frame, geom) end,
     })
@@ -823,6 +958,136 @@ end
 
 local playerRing = MakeRing("playerHp", "player")
 local targetRing = MakeRing("targetHp", "target")
+local totRing = MakeRing("totHp", "targettarget")
+
+---------------------------------------------------------------- right-click menus
+-- The game's own unit menu on right-click, the way unit frames do it: a secure unit button
+-- (right-click = togglemenu) over each ring, so the game opens the menu itself and its
+-- protected entries (Set Focus...) keep working, with nothing tainted. Secure buttons can't be
+-- moved, shown or hidden by addon code in combat, so they aren't the rings' children (a ring can
+-- fade and slide freely): out of combat each button follows its ring where it actually is (auto-
+-- arrange included) and shows exactly while the ring does; in combat the game shows and hides it
+-- itself (a state driver: while the unit exists), where it was when combat started. Left clicks
+-- pass through to the world; in edit mode the buttons step aside so the rings can be dragged.
+local MENU_RINGS = {
+    { key = "playerHp", unit = "player", ring = playerRing, name = "CircletPlayerHpMenu" },
+    { key = "targetHp", unit = "target", ring = targetRing, name = "CircletTargetHpMenu" },
+    { key = "totHp", unit = "targettarget", ring = totRing, name = "CircletTotHpMenu" },
+}
+local menuDebug = {}
+
+local function MenuButton(m)
+    if m.button then return m.button end
+    local ok, b = pcall(CreateFrame, "Button", m.name, UIParent, "SecureUnitButtonTemplate")
+    if not ok or not b then menuDebug[m.key] = "couldn't make the button: " .. tostring(b) return nil end
+    b:SetAttribute("unit", m.unit)
+    b:SetAttribute("*type1", nil)
+    b:SetAttribute("*type2", "togglemenu")
+    b:SetAttribute("type2", "togglemenu")
+    b:RegisterForClicks("AnyUp")
+    if b.SetPassThroughButtons then pcall(b.SetPassThroughButtons, b, "LeftButton") end
+    b:SetFrameStrata(ns.RING_STRATA)
+    b:SetFrameLevel(50)
+    b:EnableMouse(true)
+    b:Hide()
+    m.button = b
+    return b
+end
+
+local function Wants(m)
+    return db[m.key .. "Enabled"] and db[m.key .. "Menu"] and not m.ring.IsEditing()
+end
+
+-- Where the ring is: its real center if it has one, else its saved spot.
+local function RingSpot(m)
+    local f = m.ring.frame
+    local size = f:GetWidth()
+    if not size or size <= 0 then size = tonumber(db[m.key .. "Size"]) or 110 end
+    local x, y = f:GetCenter()
+    if x and y then
+        local k = f:GetEffectiveScale() / UIParent:GetEffectiveScale()
+        return "BOTTOMLEFT", x * k, y * k, size * k
+    end
+    return "TOP", tonumber(db[m.key .. "X"]) or 0, -((tonumber(db[m.key .. "FromTop"]) or 0) + size / 2), size
+end
+
+local function PlaceMenu(m, b)
+    local rel, x, y, size = RingSpot(m)
+    local k = string.format("%s:%.1f:%.1f:%.1f", rel, x, y, size)
+    if m.spot == k then return end
+    m.spot = k
+    b:ClearAllPoints()
+    b:SetPoint("CENTER", UIParent, rel, x, y)
+    b:SetSize(size, size)
+end
+
+-- Out of combat: follow the ring, shown while it is.
+local function SyncMenus()
+    if InCombatLockdown and InCombatLockdown() then return end
+    for _, m in ipairs(MENU_RINGS) do
+        local want = Wants(m)
+        local b = (want or m.button) and MenuButton(m)
+        if b then
+            if m.driver then pcall(UnregisterStateDriver, b, "visibility"); m.driver = nil end
+            local f = m.ring.frame
+            local up = want and f:IsVisible() and f:GetAlpha() > 0.05
+            if up then
+                PlaceMenu(m, b)
+                if not b:IsShown() then b:Show() end
+            elseif b:IsShown() then
+                b:Hide()
+            end
+        end
+    end
+end
+
+-- Combat starting (still allowed to set things up): the game takes over showing them.
+local function HandOver()
+    if InCombatLockdown and InCombatLockdown() then return end
+    for _, m in ipairs(MENU_RINGS) do
+        local b = m.button
+        if b and Wants(m) then
+            PlaceMenu(m, b)
+            if RegisterStateDriver then
+                pcall(RegisterStateDriver, b, "visibility", "[@" .. m.unit .. ",exists] show; hide")
+                m.driver = true
+            end
+        end
+    end
+end
+ns.Listen({ "PLAYER_REGEN_DISABLED" }, HandOver)
+ns.Listen({ "PLAYER_REGEN_ENABLED" }, SyncMenus)
+
+local menuWatch = CreateFrame("Frame")
+menuWatch.t = 0
+menuWatch:SetScript("OnUpdate", function(self, elapsed)
+    self.t = self.t + elapsed
+    if self.t < 0.1 or not CircletDB then return end
+    self.t = 0
+    SyncMenus()
+end)
+
+-- /circ menudebug: where the menu buttons are and what they'd do.
+ns.RegisterCommand({ "menudebug" }, function()
+    for _, m in ipairs(MENU_RINGS) do
+        local b = m.button
+        if not b then
+            ns.Print(m.key .. ": no button (" .. (menuDebug[m.key] or (Wants(m) and "not made yet" or "off")) .. ")")
+        else
+            local x, y = b:GetCenter()
+            local rx, ry = m.ring.frame:GetCenter()
+            ns.Print(string.format("%s: shown %s, mouse %s, over %s, at %s,%s (ring at %s,%s), size %d, unit %s, type2 %s, protected %s",
+                m.key, tostring(b:IsVisible()), tostring(b:IsMouseEnabled()), tostring(b:IsMouseOver()),
+                x and math.floor(x) or "?", y and math.floor(y) or "?", rx and math.floor(rx) or "?", ry and math.floor(ry) or "?",
+                b:GetWidth() or 0, tostring(b:GetAttribute("unit")), tostring(b:GetAttribute("*type2")),
+                tostring(b:IsProtected())))
+        end
+    end
+    local focus = GetMouseFoci and GetMouseFoci() or (GetMouseFocus and { GetMouseFocus() }) or {}
+    local names = {}
+    for _, f in ipairs(focus) do names[#names + 1] = tostring(f.GetName and f:GetName() or f) end
+    ns.Print("Under the mouse: " .. (#names > 0 and table.concat(names, ", ") or "nothing"))
+end)
 
 ns.Listen({ "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_ENABLED", "UNIT_MAXHEALTH:player" }, CheckScale)
 
@@ -837,9 +1102,28 @@ ns.Listen({ "UNIT_POWER_UPDATE" }, function(_, unit)
     if key then changes[key .. ":pw"] = GetTime() end
 end)
 -- A new target: its bands start from its own values, not slide over from the last one's.
+-- Critical and crushing hits taken (UNIT_COMBAT: the kind of hit can be read, its size can't):
+-- with hidden values, the big hits.
+ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag)
+    local key = UNIT_KEY[unit]
+    if not key then return end
+    action, flag = Clean(action), Clean(flag)
+    if action == "WOUND" and (flag == "CRITICAL" or flag == "CRUSHING") then
+        local tr = tracks[key .. ":hp"]
+        if not tr or tr.hidden then bigHitAt[key] = GetTime() end -- readable: sized by the loss
+    end
+end)
+
+local function FreshStart(key)
+    ResetTrack(key .. ":hp"); ResetTrack(key .. ":pw")
+    easeNow[key .. ":hp"], easeNow[key .. ":pw"] = true, true
+    portraitDirty[key] = true
+end
 ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
-    ResetTrack("targetHp:hp"); ResetTrack("targetHp:pw")
-    easeNow["targetHp:hp"], easeNow["targetHp:pw"] = true, true
+    FreshStart("targetHp"); FreshStart("totHp")
+end)
+ns.Listen({ "UNIT_TARGET" }, function(_, unit)
+    if unit == "target" then FreshStart("totHp") end
 end)
 
 ns.Listen({ "PLAYER_TARGET_CHANGED", "UNIT_PORTRAIT_UPDATE", "PLAYER_ENTERING_WORLD" }, function(event, unit)
@@ -852,6 +1136,7 @@ ns.Listen({ "PLAYER_TARGET_CHANGED", "UNIT_PORTRAIT_UPDATE", "PLAYER_ENTERING_WO
 end)
 
 ns.PreviewPlayerHpRing = function() playerRing.Preview(12) end
+ns.PreviewTotHpRing = function() totRing.Preview(12) end
 
 -- /circ masktest: how this client applies masks (which way SetRotation turns them, what the
 -- corner texture coordinates do), as white squares masked by Textures/HalfPlane, each labelled
@@ -922,7 +1207,7 @@ ns.RegisterCommand({ "hpdebug" }, function()
                   hasHealthPercent = type(UnitHealthPercent) == "function", hasCurves = CurvesWork() and true or false,
                   hasScaleTo100 = (CurveConstants and CurveConstants.ScaleTo100) and true or false,
                   issecretvalue = issecretvalue ~= nil, percentScale = percentScale }
-    for unit, key in pairs({ player = "playerHp", target = "targetHp" }) do
+    for unit, key in pairs({ player = "playerHp", target = "targetHp", targettarget = "totHp" }) do
         if Clean(SafeCall(UnitExists, unit)) then
             local tr = tracks[key .. ":hp"] or {}
             local u = {
@@ -998,18 +1283,24 @@ local function Register(spec)
         [key .. "SplitText"] = false,      -- "Value and percent": the number and % on two lines
         [key .. "Smooth"]    = true,       -- transitions (see above)
         [key .. "Trail"]     = true,
+        [key .. "BigHit"]    = spec.bigHit and true or false,
+        [key .. "Menu"]      = true,       -- right-click menu
+        [key .. "BigHitSize"] = 15,
         [key .. "HealthTextSize"] = 100,   -- text sizes, % of the usual size for the ring
         [key .. "PowerTextSize"]  = 100,
         [key .. "NameTextSize"]   = 100,
+        [key .. "LevelTextSize"]  = 100,
+        [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
+        [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
         [key .. "Portrait"]  = false,      -- the unit's portrait filling the middle
         [key .. "PortraitAlpha"] = 70,
         [key .. "Name"]      = spec.name,
         [key .. "ColorMode"] = spec.colorMode,
-        [key .. "Size"]      = 110,
-        [key .. "Thickness"] = 12,
+        [key .. "Size"]      = spec.size or 110,
+        [key .. "Thickness"] = spec.thickness or 12,
         [key .. "Opacity"]   = 100,
         [key .. "X"]         = spec.x,
-        [key .. "FromTop"]   = 470,
+        [key .. "FromTop"]   = spec.fromTop or 470,
         [key .. "Hold"]      = 1,
         [key .. "Style"]     = "smooth",
         [key .. "Border"]    = 2,
@@ -1046,6 +1337,17 @@ local function Register(spec)
                                 .. "on a second, smaller line under it, instead of side by side."),
                             name = Toggle(7, key .. "Name", spec.nameLabel, spec.nameDesc),
                             portrait = Toggle(8, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
+                            level = Toggle(7.3, key .. "Level", "Level badge",
+                                "The level on a small disc at the bottom left of the ring"
+                                .. (key == "playerHp" and "." or ", in the game's difficulty colors (\"??\" when "
+                                .. "it's too high to tell). The name then leaves its level off.")),
+                            combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
+                                "Crossed swords on a small disc at the top right of the ring while you're in combat. "
+                                .. "Edit mode and previews show it so you can see where it sits.") or nil,
+                            menu = Toggle(8.5, key .. "Menu", "Right-click menu",
+                                "Right-click the ring for the game's own menu for " .. spec.menuWho .. ", as on its "
+                                .. "frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to "
+                                .. "the world. In combat it stays where the ring was when the fight started."),
                             portraitAlpha = Range(9, key .. "PortraitAlpha", "Portrait opacity", 10, 100, 5,
                                 "How strongly the portrait shows. Lower keeps the numbers on it easier to read.",
                                 { disabled = function() return not db[key .. "Portrait"] end }),
@@ -1055,6 +1357,13 @@ local function Register(spec)
                                 "The bands ease to a new value instead of jumping, like the XP ring. When the game "
                                 .. "hides the values (WoW Forever always hides your own), it does the easing itself; "
                                 .. "the band is then one solid color, and the Segmented style can't ease."),
+                            bigHit = Toggle(3, key .. "BigHit", "Flash on big hits",
+                                "The health band flashes red for a moment on a big hit. When the game hides the "
+                                .. "values (always for your own, in combat for others) it won't say how big a hit was, "
+                                .. "so then critical and crushing hits count as big."),
+                            bigHitSize = Range(4, key .. "BigHitSize", "Big hit (% of health)", 5, 50, 1,
+                                "How much one hit has to take to count as big, when the values can be read.",
+                                { disabled = function() return not db[key .. "BigHit"] end }),
                             trail = Toggle(2, key .. "Trail", "Damage trail and heal glow",
                                 "Health you lose stays behind as a red trail for a moment, then drains away after the "
                                 .. "band; health you gain glows softly as it fills in. Power does the same. Only when "
@@ -1084,7 +1393,7 @@ end
 
 Register({
     key = "playerHp", ring = playerRing, title = "Health", order = 12.9, pageOrder = 1.5,
-    show = "combat", name = false, colorMode = "health", x = -230,
+    show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, menuWho = "yourself",
     preview = ns.PreviewPlayerHpRing, slash = { "health", "hp" }, help = "preview your health and power ring",
     toggleName = "Health ring", toggleDesc = "Your health, with your mana, rage or energy inside it.",
     gameBar = "the game's player frame",
@@ -1101,7 +1410,7 @@ Register({
 
 Register({
     key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 1.6,
-    show = "always", name = true, colorMode = "class", x = 230,
+    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, menuWho = "your target",
     preview = ns.PreviewTargetHpRing, slash = { "targethealth", "thp" }, help = "preview the target health ring",
     toggleName = "Target health ring", toggleDesc = "Your target's health and power, with its name.",
     gameBar = "the game's target frame",
@@ -1115,4 +1424,22 @@ Register({
     portraitLabel = "Use target portrait as center frame",
     portraitDesc = "Your target's portrait fills the middle of the ring, behind the numbers, and changes with your "
         .. "target. In edit mode and previews your own portrait stands in.",
+})
+
+Register({
+    key = "totHp", ring = totRing, title = "Target of target", order = 12.97, pageOrder = 1.7,
+    show = "always", name = true, colorMode = "class", x = 330, fromTop = 490, size = 70, thickness = 8, menuWho = "it",
+    preview = ns.PreviewTotHpRing, slash = { "tot", "targettarget" }, help = "preview the target of target ring",
+    toggleName = "Target of target ring", toggleDesc = "A small ring for your target's target: who it's after.",
+    gameBar = "the game's target of target frame",
+    pageName = "Target of target", header = "Target of Target Ring", what = "target of target ring",
+    intro = "A smaller ring beside the target ring for your target's target: who your target is after, so you "
+        .. "can see at a glance when it turns on you or a healer. Its health round the ring and its power inside, "
+        .. "with its name. The game sends no updates for this unit, so the ring checks it several times a second.",
+    showDesc = "Whenever your target has a target; when you're in combat or it isn't at full health; or only in "
+        .. "combat.",
+    nameLabel = "Show name and level", nameDesc = "The name, and level, above the health.",
+    portraitLabel = "Use its portrait as center frame",
+    portraitDesc = "Its portrait fills the middle of the ring, behind the numbers. In edit mode and previews your "
+        .. "own portrait stands in.",
 })

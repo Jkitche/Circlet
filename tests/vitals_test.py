@@ -7,6 +7,10 @@ lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
 local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; if n then _G[n] = f end return f end
+RegionMethods.SetAttribute = function(s, k, v) s["_attr_" .. k] = v end
+DRIVERS = {}
+RegisterStateDriver = function(f, what, cond) DRIVERS[f] = cond end
+UnregisterStateDriver = function(f, what) DRIVERS[f] = nil end
 -- Units: { hp, max, power, pmax, ptype, token, dead, name, level, reaction, player, class }
 UNITS = {}
 SECRET = false -- hide health and power (as in combat)
@@ -200,6 +204,74 @@ UNITS.player.hp = 200; Fire("UNIT_HEALTH", "player"); Advance(0.1); P("hidden hi
 Advance(0.2); P("  at 0.3 s: " .. FX("playerHp"))
 Advance(0.8); P("  1 s on, caught up: " .. FX("playerHp"))
 SECRET = false; COMBAT = false; UNITS.player.hp = 1000; CircletDB.playerHpShow = "combat"; Advance(3)
+
+-- Big hits: the health band flashes red. Readable: a loss of 15% or more at once; hidden: a
+-- critical or crushing hit (UNIT_COMBAT says the kind, not the size).
+local function Flash(key) local f = Ring(key); return f and f.vit and (Lit(f.vit.h.flash)) or 0 end
+CircletDB.playerHpShow = "always"; UNITS.player.hp = 1000; Advance(2)
+UNITS.player.hp = 900; Advance(0.1); P("readable, 10% hit: flash " .. Flash("playerHp")); Advance(1)
+UNITS.player.hp = 650; Advance(0.1); P("readable, 25% hit: flash " .. Flash("playerHp")); Advance(0.6)
+P("  0.7 s on: flash " .. Flash("playerHp")); Advance(1)
+SECRET = true; COMBAT = true; Advance(0.5)
+Fire("UNIT_COMBAT", "player", "WOUND", "", 120, 1); Advance(0.1); P("hidden, ordinary hit: flash " .. Flash("playerHp")); Advance(1)
+Fire("UNIT_COMBAT", "player", "WOUND", "CRITICAL", 400, 1); Advance(0.1); P("hidden, critical hit: flash " .. Flash("playerHp")); Advance(1)
+Fire("UNIT_COMBAT", "player", "WOUND", "CRUSHING", 400, 1); Advance(0.1); P("hidden, crushing blow: flash " .. Flash("playerHp")); Advance(1)
+Fire("UNIT_COMBAT", "player", "DODGE", "", 0, 1); Advance(0.1); P("hidden, dodged: flash " .. Flash("playerHp")); Advance(1)
+CircletDB.playerHpBigHit = false; Fire("UNIT_COMBAT", "player", "WOUND", "CRITICAL", 400, 1); Advance(0.1)
+P("option off, critical: flash " .. Flash("playerHp")); CircletDB.playerHpBigHit = true
+SECRET = false; COMBAT = false; CircletDB.playerHpShow = "combat"; Advance(2)
+P("defaults: you " .. tostring(CircletDB.playerHpBigHit) .. ", target " .. tostring(CircletDB.targetHpBigHit) .. ", target of target " .. tostring(CircletDB.totHpBigHit))
+
+-- Right-click menus: a secure unit button per ring. Out of combat it follows the ring and shows
+-- while the ring does; when combat starts the game takes over (a state driver).
+RegionMethods.IsVisible = function(s) return s._shown end
+RegionMethods.GetCenter = function(s) return s._cx, s._cy end
+RegionMethods.SetPoint = function(s, p, rel, rp, x, y) s._pt = { p, rp, x, y } end
+local function Spot(b) return b._pt and table.concat({ tostring(b._pt[1]), tostring(b._pt[2]), tostring(b._pt[3]), tostring(b._pt[4]) }, " ") or "-" end
+CircletDB.targetHpShow = "always"; UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 2 }
+Advance(1)
+local mb = CircletTargetHpMenu
+P("target menu: " .. tostring(mb ~= nil) .. ", unit " .. tostring(mb and mb._attr_unit) .. ", right-click " .. tostring(mb and mb["_attr_*type2"])
+  .. ", shown " .. tostring(mb and mb:IsShown()))
+local tf = Ring("targetHp"); tf._cx, tf._cy = 900, 500; Advance(0.3)
+P("  ring moved (auto-arrange): at " .. Spot(mb))
+tf._cx, tf._cy = nil, nil
+UNITS.target = nil; Advance(2); P("  no target, ring gone: shown " .. tostring(mb:IsShown()))
+UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 2 }
+Advance(1); P("  target again: shown " .. tostring(mb:IsShown()))
+NS.SetRingEditing("targetHp", true, true); Advance(0.3); P("  edit mode: shown " .. tostring(mb:IsShown()))
+NS.SetRingEditing("targetHp", false, true); Advance(1)
+Fire("PLAYER_REGEN_DISABLED"); COMBAT = true; Advance(0.3); P("  combat: driver " .. tostring(DRIVERS[mb]))
+CircletDB.targetHpMenu = false; Advance(0.3); P("  turned off in combat: driver still " .. tostring(DRIVERS[mb] ~= nil) .. " (waits)")
+COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(0.3); P("  after combat: driver " .. tostring(DRIVERS[mb]) .. ", shown " .. tostring(mb:IsShown()))
+CircletDB.targetHpMenu = true; Advance(0.3)
+CircletDB.playerHpShow = "always"; Advance(1)
+P("your menu: unit " .. tostring(CircletPlayerHpMenu and CircletPlayerHpMenu._attr_unit) .. ", shown " .. tostring(CircletPlayerHpMenu and CircletPlayerHpMenu:IsShown()))
+CircletDB.playerHpShow = "combat"; Advance(3); UNITS.player.power = UNITS.player.pmax; UNITS.player.hp = UNITS.player.max; Advance(3); P("  ring hidden (full, out of combat): ring " .. tostring(Ring("playerHp") ~= nil) .. ", menu shown " .. tostring(CircletPlayerHpMenu:IsShown()))
+P("defaults: menus " .. tostring(CircletDB.playerHpMenu) .. "/" .. tostring(CircletDB.targetHpMenu) .. "/" .. tostring(CircletDB.totHpMenu))
+
+-- Badges: the level (bottom left) and, on your ring, crossed swords while in combat.
+CircletDB.playerHpShow = "always"; UNITS.player.level = 42; Advance(1)
+local pv = Ring("playerHp").vit
+P("level badge: " .. tostring(pv.lvl.text._text) .. ", disc " .. tostring(pv.lvl.fill:IsShown()) .. ", combat badge " .. tostring(pv.cmb.icon:IsShown()))
+COMBAT = true; Advance(0.3); P("  in combat: combat badge " .. tostring(pv.cmb.icon:IsShown())); COMBAT = false; Advance(0.3)
+CircletDB.playerHpCombatIcon = false; COMBAT = true; Advance(0.3); P("  option off: combat badge " .. tostring(pv.cmb.icon:IsShown())); COMBAT = false; CircletDB.playerHpCombatIcon = true
+CircletDB.playerHpLevel = false; Advance(0.3); P("  level off: disc " .. tostring(pv.lvl.fill:IsShown())); CircletDB.playerHpLevel = true
+local tv = Ring("targetHp").vit
+P("target: level badge off by default: disc " .. tostring(tv.lvl.fill:IsShown()) .. ", name " .. tostring(tv.name._text))
+CircletDB.targetHpLevel = true; Advance(0.3)
+P("  on: " .. tostring(tv.lvl.text._text) .. ", name " .. tostring(tv.name._text)); CircletDB.targetHpLevel = false
+CircletDB.playerHpShow = "combat"; Advance(2)
+
+-- Target of target: a small ring for who your target is after; no events, so it keeps checking.
+UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 2 }
+UNITS.targettarget = { hp = 300, max = 1000, power = 200, pmax = 400, ptype = 0, token = "MANA", name = "Jaina", level = 20, player = true }
+Advance(0.5); P("target of target: " .. C("totHp"))
+UNITS.targettarget.hp = 700; Advance(1); P("  its health changed (no event): " .. C("totHp"))
+UNITS.targettarget = nil; Advance(2); P("  target has no target: " .. C("totHp"))
+UNITS.target = nil; Advance(2)
+TargetFrameToT = CreateFrame("Frame", "TargetFrameToT"); CircletDB.totHpHideDefault = true; Advance(0.3)
+P("target of target frame hidden: alpha " .. TargetFrameToT:GetAlpha()); CircletDB.totHpHideDefault = false; Advance(0.3)
 
 -- Hide the game's frames.
 PlayerFrame = CreateFrame("Frame", "PlayerFrame"); TargetFrame = CreateFrame("Frame", "TargetFrame")

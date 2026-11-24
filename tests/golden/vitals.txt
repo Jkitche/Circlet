@@ -40,6 +40,36 @@ hidden, a change: nothing flashes: fill 29, trail 0, glow 0
 hidden hit 40% -> 20%, 0.1 s: fill 14, trail 0, glow 0
   at 0.3 s: fill 14, trail 0, glow 0
   1 s on, caught up: fill 14, trail 0, glow 0
+readable, 10% hit: flash 0
+readable, 25% hit: flash 72
+  0.7 s on: flash 0
+hidden, ordinary hit: flash 0
+hidden, critical hit: flash 72
+hidden, crushing blow: flash 72
+hidden, dodged: flash 0
+option off, critical: flash 0
+defaults: you true, target true, target of target false
+target menu: true, unit target, right-click togglemenu, shown true
+  ring moved (auto-arrange): at CENTER BOTTOMLEFT 900.0 500.0
+  no target, ring gone: shown false
+  target again: shown true
+  edit mode: shown false
+  combat: driver [@target,exists] show; hide
+  turned off in combat: driver still true (waits)
+  after combat: driver nil, shown false
+your menu: unit player, shown true
+  ring hidden (full, out of combat): ring false, menu shown false
+defaults: menus true/true/true
+level badge: 42, disc true, combat badge false
+  in combat: combat badge true
+  option off: combat badge false
+  level off: disc false
+target: level badge off by default: disc false, name Kobold 5
+  on: 5, name Kobold
+target of target: health 22 segs, power 36 segs | Jaina 20 / 30% / 50%
+  its health changed (no event): health 51 segs, power 36 segs | Jaina 20 / 70% / 50%
+  target has no target: (hidden)
+target of target frame hidden: alpha 0
 player frame alpha 0, target frame alpha 1
 player frame back: 1
 ERRORS: {}
