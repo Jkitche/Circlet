@@ -42,6 +42,37 @@ local function PlaceRing(frame, key, size)
     frame.editHint:SetPoint("TOP", frame, "CENTER", 0, -(size / 2 + 4))
 end
 
+---------------------------------------------------------------- text sizes
+-- Every text on a ring can be sized: each ring's texts are registered as roles ({ id, name,
+-- desc }; ns.RegisterTextRoles), and <key><id>Size is that text's size as a % of its usual
+-- one (default 100; the usual size follows the ring's). A ring's options page gets a slider
+-- per role (UI/OptionsKit.lua RingTab), and the sizes are part of its layout key, so a change
+-- shows at once. Grouped rings (totem1, pin2...) share their group's roles and sizes.
+local TEXT_ROLES = {}
+local function GroupOf(key) return key:match("^(%l+)%d+$") or key end
+
+local function RegisterTextRoles(key, roles) TEXT_ROLES[GroupOf(key)] = roles end
+
+local function TextScale(key, id)
+    local v = tonumber(db[key .. id .. "Size"])
+    return (v and v > 0 and v or 100) / 100
+end
+
+-- A text's font size: base px (its usual size for this ring), at least min, both scaled
+-- (at 100% exactly the sizes the rings always had).
+local function FontSize(key, id, base, min)
+    local s = TextScale(key, id)
+    return math.max(5, math.floor((min or 0) * s), math.floor(base * s))
+end
+
+local function TextSizesKey(key)
+    local roles = TEXT_ROLES[GroupOf(key)]
+    if not roles then return "" end
+    local t = {}
+    for i, r in ipairs(roles) do t[i] = tostring(db[key .. r.id .. "Size"] or "") end
+    return table.concat(t, ",")
+end
+
 -- Recomputes the ring's geometry and redraws its track and border, but only when a
 -- setting that affects them changed (size, thickness, style, border, shape, or `extra`,
 -- anything else the caller's layout depends on). Returns nil when nothing changed, else
@@ -50,7 +81,7 @@ end
 -- thicknessSize: size to work out the band width from (default `size`).
 local function UpdateGeometry(frame, key, size, extra, thicknessSize)
     local layoutKey = size .. ":" .. db[key .. "Thickness"] .. ":" .. tostring(db[key .. "Style"])
-        .. ":" .. ns.BorderKey(key) .. ":" .. tostring(extra)
+        .. ":" .. ns.BorderKey(key) .. ":" .. tostring(extra) .. ":" .. TextSizesKey(key)
     if frame.layoutKey == layoutKey then return nil end
     frame.layoutKey = layoutKey
     local geom, textT = frame.geom, nil
@@ -73,4 +104,8 @@ end
 ns.NewRingFrame = NewRingFrame
 ns.PlaceRing = PlaceRing
 ns.UpdateGeometry = UpdateGeometry
+ns.RegisterTextRoles = RegisterTextRoles
+ns.TextRoles = function(key) return TEXT_ROLES[GroupOf(key)] end
+ns.TextScale = TextScale
+ns.FontSize = FontSize
 ns.RingText = RingText

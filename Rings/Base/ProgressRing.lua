@@ -40,6 +40,14 @@ local FLASH_HZ = 1.5
 local function CreateProgressRing(cfg)
     local key = cfg.key
     local function opt(name) return db[key .. name] end
+    -- Its texts, top to bottom, for their size settings.
+    ns.RegisterTextRoles(key, {
+        { id = "Name", name = "Name", desc = "The top line: what changed (the objective, skill, faction...)." },
+        { id = "Gain", name = "Gain", desc = "The big text in the middle: how much it went up (or down)." },
+        { id = "Delta", name = "Gain as %", desc = "Under the gain, with Show gain as % on." },
+        { id = "Rank", name = "Progress", desc = "Where it stands now (5 / 8, 120 / 150, Honored...)." },
+        { id = "Label", name = "Bottom line", desc = "The last line: the quest, the next rank, and so on." },
+    })
 
     local holder = RingHolder(key)
     local frame = ns.NewRingFrame(key)
@@ -246,11 +254,11 @@ local function CreateProgressRing(cfg)
         local showDelta = opt("ShowDelta") and true or false
         local inner = ns.UpdateGeometry(frame, key, size, showDelta)
         if not inner then return end
-        frame.gainText:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.22)), "OUTLINE")
-        frame.deltaText:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.11)), "OUTLINE")
-        frame.nameText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.12)), "OUTLINE")
-        frame.rankText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.13)), "OUTLINE")
-        frame.labelText:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.10)), "OUTLINE")
+        frame.gainText:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Gain", inner * 0.22, 10), "OUTLINE")
+        frame.deltaText:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Delta", inner * 0.11, 7), "OUTLINE")
+        frame.nameText:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Name", inner * 0.12, 8), "OUTLINE")
+        frame.rankText:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Rank", inner * 0.13, 8), "OUTLINE")
+        frame.labelText:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Label", inner * 0.10, 7), "OUTLINE")
         -- Long names (objectives, quest titles) are cut off rather than spilling over the ring.
         for _, fs in ipairs({ frame.nameText, frame.labelText }) do
             fs:SetWidth(inner - 6)

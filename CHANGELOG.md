@@ -1,5 +1,42 @@
 # Changelog
 
+## Unreleased
+
+- **Health & power rings** (new; Combat & casting > Health & power, and Target health). Your
+  health round the ring with your mana, rage, energy or focus in a thinner band inside it, and the
+  same for your target with its name and level (players in their class color, creatures red,
+  yellow or green by how they feel about you). The health in the middle as a percentage, the
+  number, both, or both on two lines; the power under it. Optionally your or your target's
+  portrait fills the middle. Shows always, in combat or when anything isn't full, or only in
+  combat, and can hide the game's own player and target frames.
+  - **Smooth changes**: the bands ease to a new value like the XP ring. WoW Forever hides health
+    and power from addons (your own too, even out of combat), so the game does the easing: the
+    band is built from short pieces, each cut by a mask that follows a status bar the game eases,
+    turned towards the ring's centre so the moving edge is a clean radial cut.
+  - **Damage trail and heal glow**: where the values can be read, health you lose stays behind as
+    a red trail for a moment and then drains after the band, and health you gain glows softly as
+    it fills in. Nothing flashes.
+  - `/circ hpdebug` and `/circ masktest` report what this client lets the rings see and do (for
+    bug reports).
+- **Text sizes for every ring** (Look & position > Text sizes). Every piece of text on every ring
+  has its own size, 50% to 200% of its usual size (which still follows the ring's): the title,
+  main text and bottom line on most rings, the name, gain, gain %, progress and bottom line on the
+  pop-up rings, and so on. At 100% everything is exactly as before.
+- **Weapon imbue ring** (new, shamans; Combat & casting > Weapon imbue). While your main hand
+  has a weapon imbue, the ring drains over it with the imbue's name and the time left, turning
+  red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own animation:
+  Rockbiter sends shaded stones orbiting the ring with grit falling away, Flametongue turns the
+  ring to molten lava (lumps of glowing, cracked crust creeping round, bubbles popping, drips
+  falling off the bottom), Frostbrand sets ice crystals twinkling round the band with snow
+  drifting down, and Windfury whips streaks of wind round the ring in gusts. Particles move at
+  their own speeds, some each way round. The imbue is read off the weapon's tooltip first, so
+  the right animation shows even for ranks Circlet doesn't list.
+- **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,
+  the ring drains over its 30 minutes with their name and the time left, turning red in the
+  last five, then says Expired, or Used if it's gone early. Out of combat it checks the stone is
+  still on them and takes the time from the buff. It survives a reload or logging out, and out
+  of combat it reminds you when you have a soulstone ready and none is out.
+
 ## 1.4.0
 
 - **Hearthstone ring** (new; Travel & survival > Hearthstone). While you cast your Hearthstone
@@ -9,17 +46,6 @@
   cast nears its end; when it goes off the swirl collapses into a flash and a shockwave rolls
   out. The cast ring leaves these casts to it (turn the hearthstone ring off to have the cast
   ring show them again).
-- **Weapon imbue ring** (new, shamans; Combat & casting > Weapon imbue). While your main hand
-  has a weapon imbue, the ring drains over it with the imbue's name and the time left, turning
-  red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own animation:
-  Rockbiter sends shaded stones orbiting the ring with grit falling away, Flametongue licks
-  flames outward all round with embers rising, Frostbrand sets ice crystals twinkling round the
-  band with snow drifting down, and Windfury whips streaks of wind round the ring in gusts.
-- **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,
-  the ring drains over its 30 minutes with their name and the time left, turning red in the
-  last five, then says Expired, or Used if it's gone early. Out of combat it checks the stone is
-  still on them and takes the time from the buff. It survives a reload or logging out, and out
-  of combat it reminds you when you have a soulstone ready and none is out.
 - **Crafting animations** (new; on by default, Crafting > Profession animations). Each of WoW
   Forever's crafting professions gets an animation of its own on the crafting ring, worked out
   from the trade skill window you craft from. Alchemy: bubbles rising through a shifting potion

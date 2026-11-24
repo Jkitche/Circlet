@@ -68,6 +68,8 @@ chat:   /circ camp      - preview the campfire ring
 chat:   /circ hearth    - preview the hearthstone ring
 chat:   /circ clock     - preview the clock ring
 chat:   /circ craft     - preview the crafting ring
+chat:   /circ health    - preview your health and power ring
+chat:   /circ targethealth - preview the target health ring
 chat:   /circ gather    - preview the gathering ring
 chat:   /circ fish      - preview the fishing ring
 chat:   /circ soulstone - preview the soulstone ring
@@ -87,6 +89,8 @@ chat:   /circ rested    - preview the rested XP gained ring
 chat:   /circ complete  - preview the objective-complete animation
 chat:   /circ timer <time> [label] - start a countdown ring: 5m, 1:30, 90, 1h20m, with a label after; +2m adds time; stop
 chat:   /circ ring <name> - pin a quest to its own ring (or right-click it in the quest log); /circ ring clear
+chat:   /circ masktest  - show how this client applies masks (for bug reports)
+chat:   /circ hpdebug   - what the health rings can see (for bug reports)
 chat:   /circ discover  - preview the discovered area animation
 chat:   /circ hello     - preview the welcome animation
 chat:   /circ summary   - this session's summary

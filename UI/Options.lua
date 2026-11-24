@@ -379,7 +379,7 @@ end
 -- Long pages split into tabs: a ring's look and position, and the General page's ring list.
 local TAB_ORDER = { Settings = 1, Rings = 2, ["Look & position"] = 3 }
 local function TabOf(path, section)
-    if section.key == "size" or section.key == "position" then return "Look & position" end
+    if section.key == "size" or section.key == "text" or section.key == "position" then return "Look & position" end
     if path == "general" and section.key:find("^rings_") then return "Rings" end
     return "Settings"
 end

@@ -40,11 +40,13 @@ function Fx(f)
     if t._parent == f and t._shown and t._tex and (t._alpha or 1) > 0 then
       local k = tostring(t._tex):match("([^\\\\]+)$")
       if k and k:match("^Rock%d$") then k = "Rock" end
-      if k == "star4" or k == "GenericGlow64" or k == "Rock" then counts[k] = (counts[k] or 0) + 1 end
+      if k and k:match("^Flame%d$") then k = "Flame" end
+      if k and k:match("^Lava%d$") then k = "Lava" end
+      if k == "star4" or k == "GenericGlow64" or k == "Rock" or k == "Flame" or k == "Lava" then counts[k] = (counts[k] or 0) + 1 end
     end
   end
   local out = {}
-  for _, k in ipairs({ "GenericGlow64", "star4", "Rock" }) do if counts[k] then table.insert(out, k .. "=" .. counts[k]) end end
+  for _, k in ipairs({ "GenericGlow64", "star4", "Rock", "Flame", "Lava" }) do if counts[k] then table.insert(out, k .. "=" .. counts[k]) end end
   return " fx[" .. table.concat(out, " ") .. "]"
 end
 function C() local f = Ring() return f and (T(f) .. " fill=" .. Fill(f) .. Fx(f)) or "(hidden)" end
@@ -53,15 +55,27 @@ P("no imbue: " .. C())
 Imbue(300, 5); Advance(1.2); P("Flametongue (known enchant): " .. C())
 Advance(120); P("2 minutes on: " .. C())
 Cast(8017); Imbue(300, 29); Advance(1.2); P("Rockbiter cast over it: " .. C())
-Cast(8033); Imbue(300, 9999); Advance(1.2); P("Frostbrand, unknown enchant (learned from the cast): " .. C())
+Cast(8033); Imbue(300, 9999); Advance(1.2); P("Frostbrand, unknown enchant (the cast, as a stand-in): " .. C())
 ENCH = nil; Advance(1.2); P("removed: " .. C())
-Advance(5); Imbue(300, 9999); Advance(1.2); P("same enchant again, no cast (learned): " .. C())
+Advance(5); Imbue(300, 9999); Advance(1.2); P("same enchant again, no cast (casts aren't learned): " .. C())
+ENCH = nil; Advance(6)
+-- Old versions learned enchants from casts, some wrongly; those are dropped and ignored.
+CircletDB.imbueLearned = { [683] = "frost", [1667] = "wind" }; Fire("PLAYER_LOGIN")
+Imbue(300, 683); Advance(1.2); P("Rockbiter 683 after a wrong old lesson: " .. C() .. " (old table: " .. tostring(CircletDB.imbueLearned) .. ")")
 ENCH = nil; Advance(6)
 TOOLTIP = "Windfury 3 (5 min)"; Imbue(300, 7777); Advance(1.2); P("unknown, from the tooltip: " .. C())
+ENCH = nil; Advance(6); TOOLTIP = nil
+Imbue(300, 7777); Advance(1.2); P("same unknown enchant, tooltip not ready (learned from the tooltip): " .. C())
+TOOLTIP = "Flametongue 3 (5 min)"; Imbue(300, 1666); Advance(1.2); P("tooltip and known rank agree: " .. C())
+ENCH = nil; Advance(6)
+TOOLTIP = "Frostbrand 5 (5 min)"; Imbue(300, 1666); Advance(1.2); P("tooltip wins over the table: " .. C())
+ENCH = nil; Advance(6)
+TOOLTIP = "Windfury 3 (5 min)"; Imbue(300, 7777); Advance(1.2)
 ENCH.endsAt = NOW + 25; Advance(1.2); P("last 25s: " .. C())
 SECRETW = true; Advance(10); P("hidden in combat, clock runs: " .. C())
 SECRETW = false; Advance(16); P("ran out: " .. C())
 Advance(5); P("then: " .. C())
+TOOLTIP = "Flametongue 1 (5 min)"
 CircletDB.imbueAlways = false; Imbue(300, 5); Advance(1.2); P("just put on, always off: " .. C())
 Advance(10); P("mid-way, always off: " .. C()); CircletDB.imbueAlways = true
 CircletDB.imbueFx = false; Advance(1.2); P("animations off: " .. C()); CircletDB.imbueFx = true

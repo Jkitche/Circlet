@@ -34,6 +34,7 @@ pet gain:
 pet level:
    Wolf / +5,500 / 300 / 10,600 / Now level 24! @x=0
 pet gain, hidden mid-fight:
+   100% / 100% @x=0
 fight over:
    Wolf / +600 / 900 / 10,600 / Level 24 @x=0
 overlap (pet should be pushed):
@@ -81,4 +82,6 @@ edit all:
    1:49 @x=0
    Soulstone / 27m / Thrall @x=0
    Rockbiter / 4:15 @x=0
+   95% / 90% @x=0
+   95% / 90% @x=0
 ERRORS: {}

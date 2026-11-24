@@ -139,14 +139,21 @@ if hooksecurefunc and TakeTaxiNode then
 end
 
 ---------------------------------------------------------------- drawing
+-- The flight ring's texts, top to bottom, for their size settings.
+ns.RegisterTextRoles("flight", {
+    { id = "Dest", name = "Destination", desc = "The top line: where you're flying to." },
+    { id = "Time", name = "Time left", desc = "The big countdown in the middle." },
+    { id = "Label", name = "Bottom line", desc = "Under the time: the route, or why there's no time." },
+})
+
 local function Layout()
     local size = db.flightSize
     ns.PlaceRing(flight, "flight", size)
     local inner = ns.UpdateGeometry(flight, "flight", size)
     if not inner then return end
-    flight.time:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.27)), "OUTLINE")
-    flight.dest:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.13)), "OUTLINE")
-    flight.label:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.12)), "OUTLINE")
+    flight.time:SetFont(STANDARD_TEXT_FONT, ns.FontSize("flight", "Time", inner * 0.27, 10), "OUTLINE")
+    flight.dest:SetFont(STANDARD_TEXT_FONT, ns.FontSize("flight", "Dest", inner * 0.13, 7), "OUTLINE")
+    flight.label:SetFont(STANDARD_TEXT_FONT, ns.FontSize("flight", "Label", inner * 0.12, 7), "OUTLINE")
     flight.dest:SetWidth(inner * 0.92)
     flight.dest:SetWordWrap(false)
     flight.time:ClearAllPoints()

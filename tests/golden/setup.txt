@@ -14,15 +14,17 @@
   [x] Weapon skill ring  <Show>
   [x] Pet ring  <Show>
   == Combat
+  [x] Health ring  <Show>
+  [x] Target health ring  <Show>
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
-  == Group
-  [x] Loot roll ring  <Show>
-  [x] Ready check ring  <Show>
+        | == Group
+        | [x] Loot roll ring  <Show>
+        | [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
         | [x] Hearthstone ring  <Show>
@@ -53,15 +55,17 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Weapon skill ring  <Show>
   [ ] Pet ring  <Show>
   == Combat
+  [x] Health ring  <Show>
+  [x] Target health ring  <Show>
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
-  == Group
-  [x] Loot roll ring  <Hide>
-  [x] Ready check ring  <Show>
+        | == Group
+        | [x] Loot roll ring  <Hide>
+        | [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
         | [x] Hearthstone ring  <Show>
@@ -88,6 +92,8 @@ next -> editing: ''
   [ ] Hide the game's quest timer
   [ ] Hide the game's breath bar
   [ ] Hide the game's cast bar while crafting
+  [ ] Hide the game's player frame
+  [ ] Hide the game's target frame
   [ ] Hide the game's cast bar while gathering
   [ ] Hide the game's cast bar
   [ ] Hide the game's swing timer bars
@@ -113,7 +119,7 @@ hide XP bar: true
   footer: [Skip setup] [Back] [Next]
 segmented + larger: xp segmented 168, cast segmented 120, pin segmented
 back to keep: xp smooth 140, cast smooth 100, pin segmented
-show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
+show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 back -> step 2, editing: ''
 --- step 4
   Welcome to Circlet
@@ -125,40 +131,27 @@ back -> step 2, editing: ''
   (You can come back any time: /circ setup, or Setup on the options window's General tab. Each ring's own page has many more options.)
   footer: [Skip setup] [Back] [Finish]
 finished: open=false setupDone=true seen loot=true
-arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
+arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 after /circ edit: editing ''
 after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
-  New in Circlet 1.4.0
-  17 new things
+  New in Circlet 1.5.0
+  2 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
-  [x] Hearthstone ring  <Show>
-  [x] Shot timer ring  <Show>
-  [x] Swing timer ring  <Show>
-  [x] Crafting animations  <Show>
-  [x] XP ring: gain animation  <Show>
-  [x] Mana regen ring: animation  <Show>
-  [x] Flight ring: animation  <Show>
-  [x] Loot roll ring: dice  <Show>
-  [x] Timed quest ring: hourglass  <Show>
-  [x] Profession skill ring: animation  <Show>
-  [x] Weapon skill ring: animation  <Show>
-  [ ] Hide the game's swing timer bars  <Show>
-  [ ] Hide the game's ranged swing timer bar  <Show>
-   *  Flight times fixed  <Show>
-   *  /circ showxp
-   *  Tidier options window
-   *  Edit all rings: one message
+  [x] Health ring  <Show>
+  [x] Target health ring  <Show>
   footer: [Full setup] [Done]
 done, open: false
 ERRORS: {}
 ######## update
 existing player, 3s after login: open=true setupDone=true
 --- new in
-  New in Circlet 1.4.0
-  25 new things
+  New in Circlet 1.5.0
+  27 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
+  [x] Health ring  <Show>
+  [x] Target health ring  <Show>
   [x] Hearthstone ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Swing timer ring  <Show>
@@ -207,15 +200,17 @@ next login, open: false
   [x] Weapon skill ring  <Show>
   [x] Pet ring  <Show>
   == Combat
+  [x] Health ring  <Show>
+  [x] Target health ring  <Show>
   [x] Cast ring  <Show>
   [x] Swing timer ring  <Show>
   [x] Shot timer ring  <Show>
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
-  == Group
-  [ ] Loot roll ring  <Show>
-  [x] Ready check ring  <Show>
+        | == Group
+        | [ ] Loot roll ring  <Show>
+        | [x] Ready check ring  <Show>
         | == Travel and survival
         | [x] Flight ring  <Show>
         | [x] Hearthstone ring  <Show>

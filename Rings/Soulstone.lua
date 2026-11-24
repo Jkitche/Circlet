@@ -241,7 +241,7 @@ ns.PreviewSoulstoneRing = function() stoneRing.Preview(24) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "soulstone", name = "Soulstone", order = 13.5, since = "1.4.0",
+    key = "soulstone", name = "Soulstone", order = 13.5, since = "1.5.0",
     class = { WARLOCK = true },
     iconBg = true,
     ring = stoneRing,

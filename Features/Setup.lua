@@ -25,7 +25,7 @@ local db, Print, SafeCall, DEFAULTS = ns.db, ns.Print, ns.SafeCall, ns.DEFAULTS
 -- The rings, by group, in the order they're listed. A ring that isn't here goes to "Other".
 local GROUPS = {
     { name = "Progress", keys = { "xp", "quest", "pin", "rep", "skill", "weapon", "pet" } },
-    { name = "Combat", keys = { "cast", "swing", "shot", "targetCast", "regen", "totem", "imbue", "ammo" } },
+    { name = "Combat", keys = { "playerHp", "targetHp", "cast", "swing", "shot", "targetCast", "regen", "totem", "imbue", "ammo" } },
     { name = "Group", keys = { "loot", "ready", "soulstone" } },
     { name = "Travel and survival", keys = { "flight", "hearth", "timed", "corpse", "breath" } },
     { name = "Professions", keys = { "craft", "gather", "fish" } },

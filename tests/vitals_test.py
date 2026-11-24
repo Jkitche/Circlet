@@ -1,0 +1,210 @@
+# Health & power rings (Rings/Vitals.lua): readable values fill the ring directly; hidden
+# (secret) values fill it segment by segment through step curves and SetAlpha, and their
+# text goes to the font string unread. Also: what shows when (Show setting), death, no
+# power, edit mode samples, and the hide-the-game's-frame options.
+from lupa import LuaRuntime
+lua = LuaRuntime(unpack_returned_tuples=True)
+lua.execute(open('mock.lua').read())
+lua.execute('''
+local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; if n then _G[n] = f end return f end
+-- Units: { hp, max, power, pmax, ptype, token, dead, name, level, reaction, player, class }
+UNITS = {}
+SECRET = false -- hide health and power (as in combat)
+COMBAT = false
+issecretvalue = function(v) return type(v) == "table" and v.secret == true end
+local function S(v) if SECRET then return { secret = true, v = v } end return v end
+UnitExists = function(u) return UNITS[u] ~= nil end
+UnitHealth = function(u) return S(UNITS[u].hp) end
+UnitHealthMax = function(u) return S(UNITS[u].max) end
+UnitPower = function(u) return S(UNITS[u].power) end
+UnitPowerMax = function(u) return S(UNITS[u].pmax) end
+UnitPowerType = function(u) return UNITS[u].ptype, UNITS[u].token end
+UnitIsDeadOrGhost = function(u) return UNITS[u].dead or false end
+UnitIsGhost = function() return false end
+UnitName = function(u) return UNITS[u].name end
+UnitLevel = function(u) return UNITS[u].level or 1 end
+UnitReaction = function(u) return UNITS[u].reaction or 2 end
+UnitIsPlayer = function(u) return UNITS[u].player or false end
+UnitIsTapDenied = function() return false end
+UnitClass = function(u) return "Mage", UNITS[u] and UNITS[u].class or "MAGE" end
+RAID_CLASS_COLORS = { MAGE = { r = 0.25, g = 0.78, b = 0.92 }, WARRIOR = { r = 0.78, g = 0.61, b = 0.43 } }
+UnitAffectingCombat = function() return COMBAT end
+InCombatLockdown = function() return COMBAT end
+-- 12.0-style curves: a step curve's points; the percent functions run 0..1 through it and
+-- hand back a hidden result (a table the mock's SetAlpha records as given).
+C_CurveUtil = { CreateCurve = function()
+  local c = { pts = {} }
+  function c:SetType() end
+  function c:AddPoint(x, y) table.insert(self.pts, { x, y }) end
+  -- Evaluate takes a stored hidden value too (handing back a hidden result), as the lagging
+  -- trail hopes the game allows.
+  function c:Evaluate(x)
+    local hid = issecretvalue(x); if hid then x = x.v end
+    local y = 0 for _, p in ipairs(self.pts) do if x >= p[1] then y = p[2] end end
+    if hid then return { secret = true, v = y } end
+    return y end
+  return c end }
+Enum = { LuaCurveType = { Step = 1 } }
+CurveConstants = { ScaleTo100 = { Evaluate = function(_, x) return x * 100 end } }
+local function Pct(cur, max, curve)
+  local p = max > 0 and cur / max or 0
+  local v = curve and curve:Evaluate(p) or p
+  return SECRET and { secret = true, v = v } or v
+end
+UnitHealthPercent = function(u, _, curve) return Pct(UNITS[u].hp, UNITS[u].max, curve) end
+UnitPowerPercent = function(u, _, _, curve) return Pct(UNITS[u].power, UNITS[u].pmax, curve) end
+-- Font strings: hidden values are recorded as <hidden v>, so the test can see what the
+-- game would draw without the addon having read it.
+local function Show(v) if issecretvalue(v) then return "<" .. string.format("%.0f", v.v) .. ">" end return tostring(v) end
+RegionMethods.SetFormattedText = function(s, fmt, ...)
+  local args = { ... }
+  for i, a in ipairs(args) do if issecretvalue(a) then args[i] = a.v end end
+  local ok, txt = pcall(string.format, fmt, unpack(args))
+  s._text = ok and txt:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "") or "?"
+  for _, a in ipairs({ ... }) do if issecretvalue(a) then s._text = s._text .. " (hidden)" break end end
+end
+''')
+s = open('liveedit_test.py').read()
+exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
+lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
+# The mock's SetText records plain values; a hidden one shows as <v>.
+lua.execute('''
+local origFS = RegionMethods.CreateFontString
+RegionMethods.CreateFontString = function(self, ...)
+  local f = origFS(self, ...)
+  f.SetText = function(me, t) if issecretvalue(t) then me._text = "<" .. tostring(t.v) .. "> (hidden)" else me._text = t end end
+  f.SetFormattedText = RegionMethods.SetFormattedText
+  return f
+end
+''')
+NSX = lua.table(); lua.globals().NS = NSX
+lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
+lua.execute('''
+UNITS.player = { hp = 900, max = 1000, power = 300, pmax = 1200, ptype = 0, token = "MANA", name = "Jaina", level = 20, player = true }
+Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
+function Ring(key) for _, f in ipairs(allFrames) do if f.sqKey == key and f._shown and f._alpha > 0 then return f end end end
+local function Lit(lines)
+  local n, hidden = 0, 0
+  for _, l in ipairs(lines or {}) do
+    if l._shown ~= false and l._x1 then
+      if issecretvalue(l._alpha) then hidden = hidden + 1; if l._alpha.v > 0 then n = n + 1 end
+      elseif (l._alpha or 1) > 0 then n = n + 1 end
+    end
+  end
+  return n, hidden
+end
+function C(key)
+  local f = Ring(key)
+  if not f then return "(hidden)" end
+  local v = f.vit or {}
+  local hp, hh = Lit(f.fill)
+  local pw, ph = Lit(v.fill)
+  local t = function(fs) return fs and fs._text and fs._text ~= "" and tostring(fs._text) or "-" end
+  local health = t(v.hp) .. (v.hp2 and v.hp2._text and v.hp2._text ~= "" and (" // " .. tostring(v.hp2._text)) or "")
+  return string.format("health %d segs%s, power %d segs%s | %s / %s / %s", hp, hh > 0 and " (gated)" or "", pw,
+    ph > 0 and " (gated)" or "", t(v.name), health, t(v.pw))
+end
+
+-- Your ring: out of combat at 90% health, 25% mana: not full, so it shows.
+P("you, not full: " .. C("playerHp"))
+UNITS.player.hp, UNITS.player.power = 1000, 1200; Advance(2); P("you, full, out of combat: " .. C("playerHp"))
+COMBAT = true; Advance(0.5); P("you, full, in combat: " .. C("playerHp"))
+-- Hidden in combat: the ring fills segment by segment, text handed over unread.
+UNITS.player.hp, UNITS.player.power = 400, 600; SECRET = true; Advance(0.5); P("you, hidden (40%, 50%): " .. C("playerHp"))
+CircletDB.playerHpText = "both"; Advance(0.2); P("you, hidden, value and percent: " .. C("playerHp"))
+CircletDB.playerHpText = "value"; Advance(0.2); P("you, hidden, value: " .. C("playerHp")); CircletDB.playerHpText = "percent"
+SECRET = false; COMBAT = false; UNITS.player.hp, UNITS.player.power = 1000, 1200; Advance(3)
+
+-- A warrior: rage from empty shows only while there's some.
+UNITS.player.ptype, UNITS.player.token, UNITS.player.power, UNITS.player.pmax = 1, "RAGE", 0, 100; Advance(2)
+P("warrior, full health, no rage: " .. C("playerHp"))
+UNITS.player.power = 35; Advance(0.5); P("warrior, 35 rage: " .. C("playerHp"))
+UNITS.player.power = 0; UNITS.player.ptype, UNITS.player.token, UNITS.player.pmax = 0, "MANA", 1200; UNITS.player.power = 1200; Advance(3)
+
+-- Target: whenever you have one, with name, level and reaction color.
+UNITS.target = { hp = 300, max = 1200, power = 0, pmax = 0, ptype = 1, token = "RAGE", name = "Defias Bandit", level = 18, reaction = 2 }
+Advance(0.5); P("target, hostile, no power: " .. C("targetHp"))
+local f = Ring("targetHp"); local c = f and f.fill[1]._c
+P("  hostile color: " .. (c and string.format("%.2f %.2f %.2f", c[1], c[2], c[3]) or "?"))
+UNITS.target.dead = true; Advance(0.3); P("target dead: " .. C("targetHp")); UNITS.target.dead = nil
+SECRET = true; COMBAT = true; Advance(0.3); P("target hidden (25%): " .. C("targetHp")); SECRET = false; COMBAT = false
+UNITS.target = nil; Advance(2); P("no target: " .. C("targetHp"))
+CircletDB.targetHpShow = "combatOnly"; UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 4 }
+Advance(1); P("target, only in combat, out of combat: " .. C("targetHp"))
+COMBAT = true; Advance(0.5); P("target, only in combat, in combat: " .. C("targetHp")); COMBAT = false; CircletDB.targetHpShow = "always"
+CircletDB.targetHpPower = false; Advance(0.3); P("target, power band off: " .. C("targetHp")); CircletDB.targetHpPower = true
+UNITS.target = nil; Advance(2)
+
+-- A client without the percent functions: hidden values can't fill, but nothing breaks.
+local uhp, upp = UnitHealthPercent, UnitPowerPercent
+UnitHealthPercent, UnitPowerPercent = nil, nil; SECRET = true; COMBAT = true; Advance(0.5)
+P("no percent functions, hidden: " .. C("playerHp"))
+UnitHealthPercent, UnitPowerPercent = uhp, upp; SECRET = false; COMBAT = false; Advance(3)
+
+-- Edit mode samples (and previews), both rings.
+NS.SetRingEditing("playerHp", true, true); NS.SetRingEditing("targetHp", true, true); Advance(1)
+P("edit, you: " .. C("playerHp")); P("edit, target: " .. C("targetHp"))
+NS.SetRingEditing("playerHp", false, true); NS.SetRingEditing("targetHp", false, true); Advance(3)
+
+-- Portraits in the middle, and the power text moved about.
+PORTRAITS = 0
+SetPortraitTexture = function(tex, unit) tex._portrait = unit; PORTRAITS = PORTRAITS + 1 end
+local function Portrait(key) local f = Ring(key); local p = f and f.vit and f.vit.portrait
+  return p and p._shown and (tostring(p._portrait) .. " at " .. string.format("%.2f", p._alpha)) or "none" end
+UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 4 }
+Advance(0.5); P("portrait off: " .. Portrait("targetHp"))
+CircletDB.targetHpPortrait = true; Advance(0.5); P("target portrait: " .. Portrait("targetHp"))
+local n = PORTRAITS; Advance(1); P("redrawn while nothing changed: " .. (PORTRAITS - n))
+Fire("PLAYER_TARGET_CHANGED"); Advance(0.2); P("new target: redrawn " .. (PORTRAITS - n) .. " time(s)")
+CircletDB.targetHpPortraitAlpha = 40; Advance(0.2); P("dimmer: " .. Portrait("targetHp"))
+CircletDB.playerHpPortrait = true; CircletDB.playerHpShow = "always"; Advance(0.5); P("your portrait: " .. Portrait("playerHp"))
+CircletDB.playerHpShow = "combat"
+CircletDB.targetHpPortrait = false; CircletDB.playerHpPortrait = false
+UNITS.target = nil; Advance(2)
+
+-- Number and % on two lines (only with Value and percent).
+UNITS.player.hp = 650; Advance(0.5)
+CircletDB.playerHpSplitText = true; Advance(0.2); P("split, but text is percent: " .. C("playerHp"))
+CircletDB.playerHpText = "both"; Advance(0.2); P("value and percent, split: " .. C("playerHp"))
+SECRET = true; COMBAT = true; Advance(0.3); P("split, hidden: " .. C("playerHp")); SECRET = false; COMBAT = false
+CircletDB.playerHpSplitText = false; Advance(0.2); P("value and percent, one line: " .. C("playerHp"))
+CircletDB.playerHpText = "percent"; UNITS.player.hp = 1000; Advance(3)
+
+-- Transitions. Readable: a hit leaves a trail (and a big one flashes), the fill glides
+-- down, the trail drains after it; a heal glows in.
+local function FX(key)
+  local f = Ring(key); local v = f and f.vit; if not v then return "none" end
+  local function n(lines) local a, b = Lit(lines); return a end
+  return string.format("fill %d, trail %d, glow %d", n(f.fill), n(v.h.trail), n(v.h.glow))
+end
+CircletDB.playerHpShow = "always"; UNITS.player.hp = 1000; Advance(1)
+UNITS.player.hp = 500; Advance(0.1); P("hit 100% -> 50%, just after: " .. FX("playerHp"))
+-- The ease, as the XP ring's: fast at first, settling (fill segments every 0.1 s).
+local steps = {}
+for i = 1, 9 do Advance(0.1); local f = Ring("playerHp"); local fl = Lit(f.fill); local tr = Lit(f.vit.h.trail); steps[#steps + 1] = fl .. "+" .. tr end
+P("  easing down, fill+trail every 0.1 s: " .. table.concat(steps, " "))
+Advance(1.5); P("  2 s on: " .. FX("playerHp"))
+UNITS.player.hp = 800; Advance(0.15); P("healed to 80%: " .. FX("playerHp"))
+Advance(1.5); P("  settled: " .. FX("playerHp"))
+UNITS.player.hp = 750; Advance(0.1); P("small hit (5%): " .. FX("playerHp"))
+CircletDB.playerHpSmooth = false; UNITS.player.hp = 600; Advance(0.05); P("smooth off: jumps: " .. FX("playerHp"))
+CircletDB.playerHpSmooth = true; CircletDB.playerHpTrail = false; UNITS.player.hp = 400; Advance(0.1)
+P("trail off: " .. FX("playerHp")); CircletDB.playerHpTrail = true; Advance(2)
+-- Hidden (the segmented-style fallback here: this mock has no eased status bars): the band
+-- steps, and nothing flashes. (Eased bands: vitals_eased_test.py.)
+local ev = CircletCurveEvaluate
+SECRET = true; COMBAT = true; Advance(1)
+Fire("UNIT_HEALTH", "player"); Advance(0.1); P("hidden, a change: nothing flashes: " .. FX("playerHp"))
+Advance(0.5); P("  later: " .. FX("playerHp"))
+UNITS.player.hp = 200; Fire("UNIT_HEALTH", "player"); Advance(0.1); P("hidden hit 40% -> 20%, 0.1 s: " .. FX("playerHp"))
+Advance(0.2); P("  at 0.3 s: " .. FX("playerHp"))
+Advance(0.8); P("  1 s on, caught up: " .. FX("playerHp"))
+SECRET = false; COMBAT = false; UNITS.player.hp = 1000; CircletDB.playerHpShow = "combat"; Advance(3)
+
+-- Hide the game's frames.
+PlayerFrame = CreateFrame("Frame", "PlayerFrame"); TargetFrame = CreateFrame("Frame", "TargetFrame")
+CircletDB.playerHpHideDefault = true; Advance(0.3)
+P("player frame alpha " .. PlayerFrame:GetAlpha() .. ", target frame alpha " .. TargetFrame:GetAlpha())
+CircletDB.playerHpHideDefault = false; Advance(0.3); P("player frame back: " .. PlayerFrame:GetAlpha())
+''')
+print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -1,0 +1,45 @@
+you, not full: health 65 segs, power 18 segs | - / 90% / 25%
+you, full, out of combat: (hidden)
+you, full, in combat: health 72 segs, power 72 segs | - / 100% / 100%
+you, hidden (40%, 50%): health 29 segs (gated), power 36 segs (gated) | - / 40% (hidden) / 50% (hidden)
+you, hidden, value and percent: health 29 segs (gated), power 36 segs (gated) | - / 400  40% (hidden) / 50% (hidden)
+you, hidden, value: health 29 segs (gated), power 36 segs (gated) | - / <400> (hidden) / 50% (hidden)
+warrior, full health, no rage: (hidden)
+warrior, 35 rage: health 72 segs, power 20 segs | - / 100% / 35
+target, hostile, no power: health 18 segs, power 0 segs | Defias Bandit 18 / 25% / -
+  hostile color: 0.43 0.10 0.08
+target dead: health 5 segs, power 0 segs | Defias Bandit 18 / Dead / -
+target hidden (25%): health 18 segs (gated), power 0 segs (gated) | Defias Bandit 18 / 25% (hidden) / <0> (hidden)
+no target: (hidden)
+target, only in combat, out of combat: (hidden)
+target, only in combat, in combat: health 36 segs, power 36 segs | Kobold 5 / 50% / 50%
+target, power band off: health 36 segs, power 0 segs | Kobold 5 / 50% / -
+no percent functions, hidden: health 0 segs, power 0 segs | - / - / <1200> (hidden)
+edit, you: health 69 segs, power 65 segs | - / 95% / 90%
+edit, target: health 69 segs, power 65 segs | Defias Bandit 18 / 95% / 90%
+portrait off: none
+target portrait: target at 0.70
+redrawn while nothing changed: 0
+new target: redrawn 1 time(s)
+dimmer: target at 0.40
+your portrait: player at 0.70
+split, but text is percent: health 50 segs, power 72 segs | - / 65% / 100%
+value and percent, split: health 48 segs, power 72 segs | - / 650 // 65% / 100%
+split, hidden: health 47 segs (gated), power 72 segs (gated) | - / <650> (hidden) // 65% (hidden) / 100% (hidden)
+value and percent, one line: health 47 segs, power 72 segs | - / 650  |cffcccccc65%|r / 100%
+hit 100% -> 50%, just after: fill 66, trail 7, glow 0
+  easing down, fill+trail every 0.1 s: 58+15 52+21 47+26 43+28 41+24 39+19 37+14 37+8 37+2
+  2 s on: fill 36, trail 0, glow 0
+healed to 80%: fill 43, trail 0, glow 7
+  settled: fill 58, trail 0, glow 0
+small hit (5%): fill 57, trail 2, glow 0
+smooth off: jumps: fill 44, trail 15, glow 0
+trail off: fill 40, trail 0, glow 0
+hidden, a change: nothing flashes: fill 29, trail 0, glow 0
+  later: fill 29, trail 0, glow 0
+hidden hit 40% -> 20%, 0.1 s: fill 14, trail 0, glow 0
+  at 0.3 s: fill 14, trail 0, glow 0
+  1 s on, caught up: fill 14, trail 0, glow 0
+player frame alpha 0, target frame alpha 1
+player frame back: 1
+ERRORS: {}

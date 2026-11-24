@@ -107,6 +107,15 @@ local function RingStrata(mm)
     return STRATA_ABOVE[own] or "MEDIUM"
 end
 
+-- The XP ring's texts, top to bottom, for their size settings.
+ns.RegisterTextRoles("xp", {
+    { id = "Level", name = "Level", desc = "The top line: your level." },
+    { id = "Gain", name = "XP gained", desc = "The big text in the middle: the XP you just gained." },
+    { id = "Delta", name = "Gain as %", desc = "Under the gain, with Show gain as % on." },
+    { id = "Pct", name = "Fill %", desc = "How far through the level you are." },
+    { id = "State", name = "Rest state", desc = "The bottom line: rested, resting, or how long until fully rested." },
+})
+
 local function LayoutXPRing()
     local mm = MinimapFrame()
     local strata = RingStrata(mm)
@@ -124,11 +133,11 @@ local function LayoutXPRing()
         mm and db.xpSize or nil)
     if not inner then return end
     if mm then inner = 100 end -- text below the minimap: a fixed size
-    xpRing.gainText:SetFont(STANDARD_TEXT_FONT, math.max(10, math.floor(inner * 0.18)), "OUTLINE")
-    xpRing.deltaText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.10)), "OUTLINE")
-    xpRing.levelText:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * 0.12)), "OUTLINE")
-    xpRing.pctText:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * 0.13)), "OUTLINE")
-    xpRing.stateText:SetFont(STANDARD_TEXT_FONT, math.max(8, math.floor(inner * 0.11)), "OUTLINE")
+    xpRing.gainText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "Gain", inner * 0.18, 10), "OUTLINE")
+    xpRing.deltaText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "Delta", inner * 0.10, 8), "OUTLINE")
+    xpRing.levelText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "Level", inner * 0.12, 9), "OUTLINE")
+    xpRing.pctText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "Pct", inner * 0.13, 9), "OUTLINE")
+    xpRing.stateText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "State", inner * 0.11, 8), "OUTLINE")
 
     for _, fs in ipairs(XP_TEXTS) do
         fs:ClearAllPoints()

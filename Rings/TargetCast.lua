@@ -221,7 +221,8 @@ local function SizeNumbers(cd, geom)
     local fs = cd.GetCountdownFontString and cd:GetCountdownFontString()
     if fs and fs.SetFont then
         local inner = math.max(8, (geom.R - geom.T / 2) * 2)
-        fs:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * 0.25)), "OUTLINE")
+        -- The game's countdown numbers stand in for the main text: they follow its size.
+        fs:SetFont(STANDARD_TEXT_FONT, ns.FontSize("targetCast", "Value", inner * 0.25, 9), "OUTLINE")
     end
 end
 

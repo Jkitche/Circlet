@@ -50,6 +50,12 @@ local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch 
 local function CreateLiveRing(cfg)
     local key = cfg.key
     local function opt(name) return db[key .. name] end
+    -- Its texts, for their size settings (a ring that draws its own replaces these).
+    ns.RegisterTextRoles(key, cfg.textRoles or {
+        { id = "Title", name = "Title", desc = "The line above the middle: what the ring is showing." },
+        { id = "Value", name = "Main text", desc = "The big text in the middle: the time, count or amount." },
+        { id = "Label", name = "Bottom line", desc = "The line under the middle text." },
+    })
 
     -- Extra segments so a ring can be split into up to MAX_NOTCHES notches.
     local frame = ns.NewRingFrame(key, LINES)
@@ -278,9 +284,9 @@ local function CreateLiveRing(cfg)
         geom.notches = notches
         local inner = ns.UpdateGeometry(frame, key, size, notches)
         if not inner then return end
-        frame.value:SetFont(STANDARD_TEXT_FONT, math.max(9, math.floor(inner * (cfg.valueScale or 0.25))), "OUTLINE")
-        frame.title:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.12)), "OUTLINE")
-        frame.label:SetFont(STANDARD_TEXT_FONT, math.max(7, math.floor(inner * 0.115)), "OUTLINE")
+        frame.value:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Value", inner * (cfg.valueScale or 0.25), 9), "OUTLINE")
+        frame.title:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Title", inner * 0.12, 7), "OUTLINE")
+        frame.label:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Label", inner * 0.115, 7), "OUTLINE")
         frame.title:SetWidth(inner * 0.9)
         frame.title:SetWordWrap(false)
         frame.label:SetWidth(inner * 0.95)

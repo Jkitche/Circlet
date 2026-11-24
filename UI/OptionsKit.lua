@@ -100,6 +100,8 @@ local function ResetRing(key)
             db[k] = ns.Copy(value)
         end
     end
+    -- Text sizes (not in DEFAULTS: unset is 100%).
+    for _, r in ipairs(ns.TextRoles(key) or {}) do db[key .. r.id .. "Size"] = nil end
     -- Per-ring overrides inside a group (pin1X, totem2Size, ...).
     for k in pairs(CircletDB) do
         if type(k) == "string" and k:match("^" .. key .. "%d+%u") then CircletDB[k] = nil end
@@ -216,6 +218,18 @@ local function RingTab(order, name, header, intro, args)
     local key = args.size and args.size._key
     if key then
         args.size._key = nil
+        -- Text sizes: a slider for each of the ring's texts (Rings/Base/RingFrame.lua).
+        local roles = ns.TextRoles(key)
+        if roles and #roles > 0 and not args.text then
+            local box = {}
+            for i, r in ipairs(roles) do
+                local k = key .. r.id .. "Size"
+                box[r.id] = Range(i, k, r.name .. " (%)", 50, 200, 5,
+                    r.desc .. " As a percentage of its usual size, which follows the ring's.",
+                    { get = function() return tonumber(db[k]) or 100 end })
+            end
+            args.text = Box((args.size.order or 4) + 0.3, "Text sizes", box)
+        end
         local box = args.general or args.size
         local def = ns.FindRing(key) or {}
         local gameBar = def.gameBar

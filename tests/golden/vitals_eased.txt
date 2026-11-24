@@ -1,0 +1,16 @@
+ring rot 180 cw hp 90%: 24 pieces, set at once, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 1.5 deg from radial
+ring rot 180 cw hp 61%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.3% of the band, edge 2.1 deg from radial
+ring rot 180 cw hp 27%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 0.3 deg from radial
+ring rot 0 cw hp 90%: 24 pieces, set at once, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 1.5 deg from radial
+ring rot 0 cw hp 61%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.3% of the band, edge 2.1 deg from radial
+ring rot 0 cw hp 27%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 0.3 deg from radial
+ring rot 180 ccw hp 90%: 24 pieces, set at once, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 1.5 deg from radial
+ring rot 180 ccw hp 61%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.3% of the band, edge 2.1 deg from radial
+ring rot 180 ccw hp 27%: 24 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 0.3 deg from radial
+arc rot 180 cw hp 90%: 18 pieces, set at once, edge pinned to the bar: True, masks 3, off by 0.1% of the band, edge 4.5 deg from radial
+arc rot 180 cw hp 61%: 18 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 7.2 deg from radial
+arc rot 180 cw hp 27%: 18 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.1% of the band, edge 5.4 deg from radial
+ring rot 33 cw hp 90%: 25 pieces, set at once, edge pinned to the bar: True, masks 3, off by 0.3% of the band, edge 4.5 deg from radial
+ring rot 33 cw hp 61%: 25 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.3% of the band, edge 5.1 deg from radial
+ring rot 33 cw hp 27%: 25 pieces, eased, edge pinned to the bar: True, masks 3, off by 0.2% of the band, edge 2.7 deg from radial
+ERRORS: {}

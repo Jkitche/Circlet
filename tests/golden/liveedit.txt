@@ -1,4 +1,4 @@
-rings found: 37
+rings found: 39
 quest editing t=0.5
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -37,6 +37,8 @@ quest editing t=0.5
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 quest editing t=4
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves
@@ -75,6 +77,8 @@ quest editing t=4
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 quest t=8
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -113,6 +117,8 @@ quest t=8
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 quest+skill
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -151,6 +157,8 @@ quest+skill
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 skill cycled
   #1 shown=false a=0.00 strata=LOW mouse=nil | 
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Raptor Thieves
@@ -189,6 +197,8 @@ skill cycled
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 all four
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,237 XP / +22.0% / 62.0% / Rested 25%
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Sunscale Screecher slain / +1 / 10 / 10 / Complete!
@@ -227,6 +237,8 @@ all four
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 xp gain during edit (should keep sample)
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +1,240 XP / +22.0% / 62.0% / Normal
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -265,6 +277,8 @@ xp gain during edit (should keep sample)
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 xpX, xpFromTop: 540 310
 after right-click: 0 40
 after /circ edit (all off)
@@ -305,6 +319,8 @@ after /circ edit (all off)
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 t+4 after edit off (xp queued gain should play)
   #1 shown=true a=0.67 strata=LOW mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
   #2 shown=false a=0.00 strata=LOW mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -343,6 +359,8 @@ t+4 after edit off (xp queued gain should play)
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 settled
   #1 shown=false a=0.00 strata=LOW mouse=false | Level 16 / +200 XP / +20.0% / 50.0% / Normal
   #2 shown=false a=0.00 strata=LOW mouse=false | Raptor Thieves / Done! / 3 / 3 / Ready to turn in
@@ -381,6 +399,8 @@ settled
   #35 shown=false a=0.00 strata=LOW mouse=nil | 
   #36 shown=false a=0.00 strata=LOW mouse=nil | 
   #37 shown=false a=0.00 strata=LOW mouse=nil | 
+  #38 shown=false a=0.00 strata=LOW mouse=nil | 
+  #39 shown=false a=0.00 strata=LOW mouse=nil | 
 all on again
   #1 shown=true a=1.00 strata=TOOLTIP mouse=true | Level 16 / +739 XP / +13.1% / 53.1% / Rested 25%
   #2 shown=true a=1.00 strata=TOOLTIP mouse=true | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -419,6 +439,8 @@ all on again
   #35 shown=true a=1.00 strata=TOOLTIP mouse=true | 1:50
   #36 shown=true a=1.00 strata=TOOLTIP mouse=true | Soulstone / 29m / Thrall
   #37 shown=true a=1.00 strata=TOOLTIP mouse=true | Rockbiter / 4:46
+  #38 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90%
+  #39 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90%
 after Esc
   #1 shown=true a=0.67 strata=LOW mouse=false | Level 16 / 58.0% / Normal
   #2 shown=true a=0.50 strata=LOW mouse=false | Screecher Feather / +1 / 4 / 8 / Feathers for Grek
@@ -457,5 +479,7 @@ after Esc
   #35 shown=true a=0.60 strata=LOW mouse=false | 1:50
   #36 shown=true a=1.00 strata=LOW mouse=false | Soulstone / 29m / Thrall
   #37 shown=true a=1.00 strata=LOW mouse=false | Rockbiter / 4:46
+  #38 shown=true a=1.00 strata=LOW mouse=false | 95% / 90%
+  #39 shown=true a=1.00 strata=LOW mouse=false | 95% / 90%
 ERRORS: {}
-UNDEF: ['ALL_FS', 'ALL_LINES', 'AcceptResurrect', 'BackdropTemplateMixin', 'C_AddOns', 'C_Item', 'C_Spell', 'C_UnitAuras', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'CreateColor', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetAddOnMetadata', 'GetInventoryItemID', 'GetItemCount', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestTimers', 'GetSpellInfo', 'GetText', 'GetWeaponEnchantInfo', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'ITEM_QUALITY_COLORS', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'RetrieveCorpse', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TargetFrameSpellBar', 'TotemFrame', 'UnitAttackSpeed', 'UnitBuff', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']
+UNDEF: ['ALL_FS', 'ALL_LINES', 'AcceptResurrect', 'BackdropTemplateMixin', 'C_AddOns', 'C_Item', 'C_Spell', 'C_UnitAuras', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'CreateColor', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetAddOnMetadata', 'GetInventoryItemID', 'GetItemCount', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestTimers', 'GetSpellInfo', 'GetText', 'GetWeaponEnchantInfo', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'ITEM_QUALITY_COLORS', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'RetrieveCorpse', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TargetFrame', 'TargetFrameSpellBar', 'TotemFrame', 'UnitAttackSpeed', 'UnitBuff', 'UnitHealthPercent', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']
