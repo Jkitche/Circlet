@@ -20,6 +20,11 @@ skinned already: cracks skull veil
 next wolf, alive: skin alpha 0.5
 rock elemental corpse: cracks skin skinGlow skull veil Interface\Icons\Trade_Mining
 skinnable off: cracks skull veil
+quest wolf: quest questGlow text 3/10
+objective done: quest questGlow text 10/10
+plain mob: (none) text -
+game says related: quest questGlow text -
+quest target off: (none)
 you (rogue, energy), no tick seen: (none)
 energy tick: tick tickFlash tickHalo
   0.7s on: tick tickHalo

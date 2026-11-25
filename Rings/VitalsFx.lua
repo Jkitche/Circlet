@@ -28,6 +28,8 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Skin       (target)   a pelt badge at the top right when the target can be skinned (or
 --                         gathered: herbs, ore, parts), from the corpse's tooltip; kinds of
 --                         creature seen skinnable before get a faint one while alive
+--   Quest      (target)   a yellow ! at the bottom right when the target is part of one of
+--                         your active quests, with the objective's progress (3/10) under it
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
 -- hidden: thresholds (20%, 30%, full) are checked by running the hidden percentage through
@@ -52,6 +54,7 @@ local ON = {
     Heal = { playerHp = true, targetHp = true }, Jolt = { playerHp = true, targetHp = true },
     Avoid = { playerHp = true, targetHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
     FullMana = { playerHp = true }, Elite = { targetHp = true, totHp = true }, Skin = { targetHp = true },
+    Quest = { targetHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -587,6 +590,89 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
 end
 ns.VitalsFxSkinKinds = SKIN_KINDS -- tests
 
+-- Quest target. The game's C_QuestLog.UnitIsRelatedToActiveQuest (what its nameplates use)
+-- says whether the unit is part of one of your active quests; the unit's tooltip has the
+-- quest's own lines (title, then objectives like "Young Wolf slain: 3/10"), which give the
+-- progress, and do as the answer where that function isn't there. Read once a second, and
+-- again when your quest log changes.
+local QUEST_ICON = "Interface\\GossipFrame\\AvailableQuestIcon"
+local LINE_OBJ = (Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.QuestObjective) or 8
+local LINE_TITLE = (Enum and Enum.TooltipDataLineType and Enum.TooltipDataLineType.QuestTitle) or 17
+
+-- From the tooltip: whether it has quest lines, and the first unfinished objective's x/y.
+local function QuestFromTooltip(unit)
+    local get = C_TooltipInfo and C_TooltipInfo.GetUnit
+    local data = get and SafeCall(get, unit)
+    if type(data) ~= "table" or type(data.lines) ~= "table" then return false end
+    local any, progress, done
+    for _, line in ipairs(data.lines) do
+        local kind = Clean(line.type)
+        if kind == LINE_OBJ or kind == LINE_TITLE then
+            any = true
+            local text = Clean(line.leftText)
+            if kind == LINE_OBJ and type(text) == "string" then
+                local have, need = text:match("(%d+)%s*/%s*(%d+)")
+                have, need = tonumber(have), tonumber(need)
+                if have and need then
+                    if have < need then progress = progress or (have .. "/" .. need)
+                    else done = done or (have .. "/" .. need) end
+                end
+            end
+        end
+    end
+    return any, progress or done
+end
+
+local questSeen = {} -- unit -> { guid, at, on, progress }
+local function QuestState(unit, now)
+    local guid = Clean(SafeCall(UnitGUID, unit))
+    local q = questSeen[unit]
+    if not q or q.guid ~= guid then q = { guid = guid, at = -math.huge }; questSeen[unit] = q end
+    if now - q.at >= 1 then
+        q.at = now
+        local tipOn, progress = QuestFromTooltip(unit)
+        local api = C_QuestLog and C_QuestLog.UnitIsRelatedToActiveQuest
+        local apiOn = api and Clean(SafeCall(api, unit))
+        q.on = (apiOn == true) or tipOn
+        q.progress = progress
+    end
+    return q.on, q.progress
+end
+ns.Listen({ "QUEST_LOG_UPDATE", "UNIT_QUEST_LOG_CHANGED", "QUEST_WATCH_UPDATE" }, function()
+    for _, q in pairs(questSeen) do q.at = -math.huge end
+end)
+
+local function DrawQuest(key, fx, st, frame, geom, d, now)
+    local on, progress
+    if st.unit then on, progress = QuestState(st.unit, now) else on, progress = true, "3/10" end -- previews
+    if not on then return end
+    local x, y = Polar(315, geom.R)
+    local icon = Tex(fx, "quest", QUEST_ICON, "OVERLAY", 3)
+    At(icon, frame, x, y + d * 0.1, d * 1.1)
+    icon:SetAlpha(1)
+    local glow = Tex(fx, "questGlow", SOFT, "OVERLAY", 2, true)
+    At(glow, frame, x, y + d * 0.1, d * 2)
+    glow:SetVertexColor(1, 0.85, 0.2)
+    glow:SetAlpha(0.35 + 0.2 * math.sin(now * 2.5))
+    if progress then
+        local fs = fx.questText
+        if not fs then
+            fs = fx.root:CreateFontString(nil, "OVERLAY")
+            fs:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
+            fx.questText = fs
+        end
+        local px = math.max(8, math.floor(d * 0.55 + 0.5))
+        if fs.px ~= px then fs.px = px; fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
+        fs:SetText(progress)
+        fs:SetTextColor(1, 0.85, 0.2)
+        fs:ClearAllPoints()
+        fs:SetPoint("TOP", icon, "BOTTOM", 0, 1)
+        fs:Show()
+        fx.questTextUsed = true
+    end
+end
+ns.VitalsFxQuest = QuestFromTooltip -- tests
+
 ---------------------------------------------------------------------------
 -- Each frame
 ---------------------------------------------------------------------------
@@ -612,6 +698,9 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
     if On(key, "Skin") then DrawSkin(key, fx, st, frame, geom, d, now) end
+    fx.questTextUsed = false
+    if On(key, "Quest") then DrawQuest(key, fx, st, frame, geom, d, now) end
+    if fx.questText and not fx.questTextUsed then fx.questText:Hide() end
     if On(key, "Flare") then DrawFlare(key, fx, st, frame, geom, d, now) end
     DrawJolt(key, fx, st, frame, geom, now) -- always called: it puts the ring back after a jolt
     -- Anything not drawn this frame goes.

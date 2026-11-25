@@ -1532,7 +1532,7 @@ end
 
 -- The effects (Rings/VitalsFx.lua): name, label, what it does, by the ring it's on.
 local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
-                   "EnergyTick", "Rage", "FullMana", "Elite", "Skin" }
+                   "EnergyTick", "Rage", "FullMana", "Elite", "Skin", "Quest" }
 local FX_TEXT = {
     Combo = { "Combo points", "Five pips over the ring for your combo points, popping as they light and pulsing gold at five (rogues and druids)." },
     Mark = { "Raid marker", "The unit's raid marker (skull, cross, star...) at the top left of the ring." },
@@ -1548,6 +1548,7 @@ local FX_TEXT = {
     Rage = { "Rage embers", "Embers fly off the rage band as rage comes in." },
     FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
     Elite = { "Elite glint", "A glint circles the ring of elite targets (silver for rares)." },
+    Quest = { "Quest target", "A yellow ! at the bottom right when your target is part of one of your active quests, with the objective's progress (3/10) under it when the game shows it." },
     Skin = { "Skinnable", "A pelt badge at the top right when your target's corpse can be skinned (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. Creatures seen skinnable before get a faint badge while alive or not yet looted." },
 }
 

@@ -105,6 +105,9 @@ end
 RegionMethods.ClearAllPoints = function(s) s._anchor = nil end
 RegionMethods.GetNumPoints = function(s) return s._anchor and 1 or 0 end
 RegionMethods.GetPoint = function(s) local a = s._anchor if a then return a[1], a[2], a[3], a[4], a[5] end end
+-- Unit tooltips: plain unless a test sets their lines (TIP_LINES).
+TIP_LINES = nil
+C_TooltipInfo.GetUnit = function(u) return TIP_LINES and { lines = TIP_LINES } or { lines = {} } end
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 function Ring(key) for _, f in ipairs(allFrames) do if f.sqKey == key and f._shown and f._alpha > 0 then return f end end end
 
@@ -168,23 +171,33 @@ P("  moved mid-jolt: ends where its own layout puts it: " .. Spot(tf))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("target dead: " .. Fx("targetHp"))
 UNITS.target.dead = false; UNITS.target.hp = 800; Advance(0.3)
 -- Skinnable: only a looted corpse's tooltip says so; the kind of creature is remembered.
-TIP_LINES = nil
-C_TooltipInfo = C_TooltipInfo or {}
-C_TooltipInfo.GetUnit = function(u) return TIP_LINES and { lines = TIP_LINES } or { lines = {} } end
-UNITS.target.guid = "Creature-0-1-2-3-4-1131-000ABC"
+UNITS.target.guid = "Creature-0-1-2-3-1131-000ABC"
 Advance(0.3); P("wolf, nothing learned: " .. Fx("targetHp"))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("wolf corpse, loot left: " .. Fx("targetHp"))
 TIP_LINES = { { leftText = "Young Wolf" }, { leftText = "Skinnable", leftColor = { r = 0.25, g = 0.75, b = 0.25 } } }
 Advance(0.6); P("looted, skinnable (green): " .. Fx("targetHp") .. " glow " .. string.format("%.2f,%.2f,%.2f", unpack(Ring("targetHp").vit.fx.t.skinGlow._vc or {0,0,0})))
 TIP_LINES = { { leftText = "Young Wolf" } }; Advance(0.6); P("skinned already: " .. Fx("targetHp"))
-UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = "Creature-0-1-2-3-4-1131-000DEF"; Advance(0.3)
+UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = "Creature-0-1-2-3-1131-000DEF"; Advance(0.3)
 local sk = Ring("targetHp").vit.fx.t.skin
 P("next wolf, alive: " .. Fx("targetHp") .. " alpha " .. tostring(sk._alpha))
 TIP_LINES = { { leftText = "Requires Mining", leftColor = { r = 1, g = 0.5, b = 0.25 } } }
-UNITS.target.guid = "Creature-0-1-2-3-4-2725-000111"; UNITS.target.dead = true; Advance(0.6)
+UNITS.target.guid = "Creature-0-1-2-3-2725-000111"; UNITS.target.dead = true; Advance(0.6)
 P("rock elemental corpse: " .. Fx("targetHp") .. " " .. tostring(Ring("targetHp").vit.fx.t.skin.skinFile))
 CircletDB.targetHpFxSkin = false; Advance(0.6); P("skinnable off: " .. Fx("targetHp")); CircletDB.targetHpFxSkin = true
 TIP_LINES = nil; UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = nil; Advance(0.3)
+-- Quest target: the tooltip's quest lines (title, objectives) or the game's own check.
+local function QT() local fs = Ring("targetHp").vit.fx.questText return (fs and fs._shown ~= false and fs._text) or "-" end
+UNITS.target.guid = "Creature-0-1-2-3-299-0000AA"
+TIP_LINES = { { leftText = "Young Wolf" }, { leftText = "Wolves Across the Border", type = 17 }, { leftText = " - Young Wolf slain: 3/10", type = 8 } }
+Advance(1.1); P("quest wolf: " .. Fx("targetHp") .. " text " .. QT())
+TIP_LINES = { { leftText = "Young Wolf" }, { leftText = "Wolves Across the Border", type = 17 }, { leftText = " - Young Wolf slain: 10/10", type = 8 } }
+Fire("QUEST_LOG_UPDATE"); Advance(0.1); P("objective done: " .. Fx("targetHp") .. " text " .. QT())
+TIP_LINES = { { leftText = "Kobold Miner" } }; UNITS.target.guid = "Creature-0-1-2-3-40-0000BB"
+Advance(1.1); P("plain mob: " .. Fx("targetHp") .. " text " .. QT())
+C_QuestLog = C_QuestLog or {}; C_QuestLog.UnitIsRelatedToActiveQuest = function(u) return u == "target" end
+Fire("QUEST_LOG_UPDATE"); Advance(0.1); P("game says related: " .. Fx("targetHp") .. " text " .. QT())
+CircletDB.targetHpFxQuest = false; Advance(0.3); P("quest target off: " .. Fx("targetHp")); CircletDB.targetHpFxQuest = true
+C_QuestLog.UnitIsRelatedToActiveQuest = nil; TIP_LINES = nil; UNITS.target.guid = nil; Fire("QUEST_LOG_UPDATE"); Advance(0.3)
 -- Your ring.
 P("you (rogue, energy), no tick seen: " .. Fx("playerHp"))
 Fire("UNIT_POWER_FREQUENT", "player", "ENERGY"); Advance(0.1); P("energy tick: " .. Fx("playerHp")); Advance(0.6)
