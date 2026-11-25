@@ -48,7 +48,7 @@
       (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. The game only
       says so once a corpse is looted, so kinds of creature seen skinnable before are remembered
       and get a faint badge while alive or not yet looted; a skinned corpse drops it.
-    - *Quest target* (target): a yellow ! at the bottom right when the target is part of one of
+    - *Quest target* (target): a yellow ! at the bottom left when the target is part of one of
       your active quests, with the objective's progress (3/10) under it when the game shows it.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.

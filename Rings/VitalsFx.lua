@@ -28,7 +28,7 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Skin       (target)   a pelt badge at the top right when the target can be skinned (or
 --                         gathered: herbs, ore, parts), from the corpse's tooltip; kinds of
 --                         creature seen skinnable before get a faint one while alive
---   Quest      (target)   a yellow ! at the bottom right when the target is part of one of
+--   Quest      (target)   a yellow ! at the bottom left when the target is part of one of
 --                         your active quests, with the objective's progress (3/10) under it
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
@@ -646,7 +646,7 @@ local function DrawQuest(key, fx, st, frame, geom, d, now)
     local on, progress
     if st.unit then on, progress = QuestState(st.unit, now) else on, progress = true, "3/10" end -- previews
     if not on then return end
-    local x, y = Polar(315, geom.R)
+    local x, y = Polar(225, geom.R) -- bottom left (the target's level badge is bottom right)
     local icon = Tex(fx, "quest", QUEST_ICON, "OVERLAY", 3)
     At(icon, frame, x, y + d * 0.1, d * 1.1)
     icon:SetAlpha(1)

@@ -1548,7 +1548,7 @@ local FX_TEXT = {
     Rage = { "Rage embers", "Embers fly off the rage band as rage comes in." },
     FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
     Elite = { "Elite glint", "A glint circles the ring of elite targets (silver for rares)." },
-    Quest = { "Quest target", "A yellow ! at the bottom right when your target is part of one of your active quests, with the objective's progress (3/10) under it when the game shows it." },
+    Quest = { "Quest target", "A yellow ! at the bottom left when your target is part of one of your active quests, with the objective's progress (3/10) under it when the game shows it." },
     Skin = { "Skinnable", "A pelt badge at the top right when your target's corpse can be skinned (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. Creatures seen skinnable before get a faint badge while alive or not yet looted." },
 }
 
