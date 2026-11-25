@@ -4,7 +4,6 @@ target, nothing going on: (none)
 skull, targeting you: aggroGlow mark@[8]
 hidden skull: mark@<8>
 hidden circle: mark@<2>
-elite: glint x2 glintS x2
 target at 15%: execute
   hidden, 15%: execute<1>
   hidden, 50%: execute<0>

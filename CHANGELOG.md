@@ -43,7 +43,6 @@
       time abilities to it.
     - *Rage embers* (yours): embers fly off the rage band as rage comes in.
     - *Full mana shine* (yours): a soft shine on the mana band while it's full.
-    - *Elite glint* (target, target of target): a glint circles elite rings (silver for rares).
     - *Skinnable* (target): a pelt badge at the top right when the target's corpse can be skinned
       (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. The game only
       says so once a corpse is looted, so kinds of creature seen skinnable before are remembered

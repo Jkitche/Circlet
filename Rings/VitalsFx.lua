@@ -24,7 +24,6 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   EnergyTick (yours)    a spark running round the energy band, once per energy tick
 --   Rage       (yours)    embers flying off the rage band as rage comes in
 --   FullMana   (yours)    a soft shine on the mana band while it's full
---   Elite      (target, target of target) a glint circling elite rings (silver for rares)
 --   Skin       (target)   a pelt badge at the top right when the target can be skinned (or
 --                         gathered: herbs, ore, parts), from the corpse's tooltip; kinds of
 --                         creature seen skinnable before get a faint one while alive
@@ -53,7 +52,7 @@ local ON = {
     Death = { playerHp = true, targetHp = true, totHp = true }, Flare = { playerHp = true },
     Heal = { playerHp = true, targetHp = true }, Jolt = { playerHp = true, targetHp = true },
     Avoid = { playerHp = true, targetHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
-    FullMana = { playerHp = true }, Elite = { targetHp = true, totHp = true }, Skin = { targetHp = true },
+    FullMana = { playerHp = true }, Skin = { targetHp = true },
     Quest = { targetHp = true },
 }
 ns.VITALS_FX = ON
@@ -474,25 +473,6 @@ local function DrawFullMana(key, fx, st, frame, g2, now)
     DrawThreshold(fx, "fullMana", frame, g2.R, gate, { 0.55, 0.75, 1 }, 0.35 + 0.25 * math.sin(now * 1.5))
 end
 
-local GLINT = { elite = { 1, 0.82, 0.35 }, worldboss = { 1, 0.82, 0.35 }, rareelite = { 0.85, 0.9, 1 }, rare = { 0.85, 0.9, 1 } }
-local function DrawElite(key, fx, st, frame, geom, now)
-    local class = st.unit and Clean(SafeCall(UnitClassification, st.unit)) or (not st.unit and "elite")
-    local c = GLINT[class or ""]
-    if not c then return end
-    for i = 1, 2 do
-        local deg = 90 - (now * 40 + (i - 1) * 180) % 360
-        local x, y = Polar(deg, geom.R)
-        local glow = Tex(fx, "glint" .. i, SOFT, "OVERLAY", 5, true)
-        At(glow, frame, x, y, geom.T * 2.6)
-        glow:SetVertexColor(c[1], c[2], c[3])
-        glow:SetAlpha(0.7)
-        local star = Tex(fx, "glintS" .. i, STAR, "OVERLAY", 6, true)
-        At(star, frame, x, y, geom.T * 2)
-        star:SetVertexColor(c[1], c[2], c[3])
-        if star.SetRotation then star:SetRotation(now * 2) end
-    end
-end
-
 -- Skinnable. The game doesn't tell addons whether a creature can be skinned; the only word is
 -- the "Skinnable" line on a looted corpse's tooltip (or "Requires Herbalism / Mining /
 -- Engineering"), colored by how hard it is for you. So a dead target's tooltip is read (twice
@@ -689,7 +669,6 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
         if On(key, "LowHealth") then DrawLowHealth(key, fx, st, frame, geom, d, now) end
         if On(key, "Heal") then DrawHeal(key, fx, st, frame, geom, d, now) end
         if On(key, "Avoid") then DrawAvoid(key, fx, st, frame, geom, d, now) end
-        if On(key, "Elite") then DrawElite(key, fx, st, frame, geom, now) end
         if v.g2 and v.g2.R and st.power then
             if On(key, "EnergyTick") then DrawEnergyTick(key, fx, st, frame, v.g2, now) end
             if On(key, "Rage") then DrawRage(key, fx, st, frame, v.g2, now) end

@@ -150,7 +150,6 @@ MARKS.target = nil; UNITS.target.onMe = false
 MARKS.target = { secret = true, v = 8 }; Advance(0.3); P("hidden skull: " .. Fx("targetHp"))
 MARKS.target = { secret = true, v = 2 }; Advance(0.3); P("hidden circle: " .. Fx("targetHp"))
 MARKS.target = nil
-CLASSIF.target = "elite"; Advance(0.3); P("elite: " .. Fx("targetHp")); CLASSIF.target = nil
 UNITS.target.hp = 150; Advance(0.3); P("target at 15%: " .. Fx("targetHp"))
 SECRET = true; Advance(0.3); P("  hidden, 15%: " .. Fx("targetHp"))
 UNITS.target.hp = 500; Advance(0.3); P("  hidden, 50%: " .. Fx("targetHp")); SECRET = false
