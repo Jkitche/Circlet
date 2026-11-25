@@ -268,6 +268,16 @@ UNITS.target.level = 2; Advance(0.3); P("  low level foe: " .. TC(tv.lvl.text))
 UNITS.target.friend = true; Advance(0.3); P("  friendly: " .. TC(tv.lvl.text)); UNITS.target.friend = nil; UNITS.target.level = 5
 CircletDB.targetHpLevel = false; Advance(0.3)
 P("  off: disc " .. tostring(tv.lvl.fill:IsShown()) .. ", name " .. tostring(tv.name._text)); CircletDB.targetHpLevel = true
+-- Elite marker: wings on the level badge, gold for elites and bosses, silver for rares.
+UnitClassification = function(u) return UNITS[u] and UNITS[u].class or "normal" end
+local function VC(t) return t._vc and string.format("%.2f,%.2f,%.2f", t._vc[1], t._vc[2], t._vc[3]) or "-" end
+local function Elite() return string.format("wings %s %s %s, rim %s", tostring(tv.lvl.wingL:IsShown()), tostring(tv.lvl.wingR:IsShown()),
+  tv.lvl.wingL:IsShown() and VC(tv.lvl.wingL) or "", VC(tv.lvl.rim)) end
+Advance(0.3); P("elite: normal mob: " .. Elite())
+for _, c in ipairs({ "elite", "rare", "rareelite", "worldboss" }) do UNITS.target.class = c; Advance(0.3); P("elite: " .. c .. ": " .. Elite()) end
+CircletDB.targetHpElite = false; Advance(0.3); P("elite: setting off (worldboss): " .. Elite()); CircletDB.targetHpElite = true
+CircletDB.targetHpLevel = false; Advance(0.3); P("elite: level badge off: " .. Elite()); CircletDB.targetHpLevel = true
+UNITS.target.class = nil; Advance(0.3)
 CircletDB.playerHpShow = "combat"; Advance(2)
 
 -- Target of target: a small ring for who your target is after; no events, so it keeps checking.

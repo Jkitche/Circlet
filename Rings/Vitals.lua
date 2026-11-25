@@ -513,6 +513,9 @@ end
 
 ---------------------------------------------------------------- drawing: the inner band and text
 local DISC = "Interface\\CharacterFrame\\TempPortraitAlphaMask" -- a soft-edged white disc
+-- The elite marker's wing (the left one; the right is it flipped): Textures/EliteWing.tga,
+-- made by tools/make_wing_texture.py. Light grey, tinted gold or silver.
+local WING = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\EliteWing"
 
 local function Parts(frame)
     if frame.vit then return frame.vit end
@@ -573,6 +576,13 @@ local function Parts(frame)
     v.lvl.text:SetShadowOffset(1, -1)
     v.lvl.text:SetJustifyH("CENTER")
     v.lvl.text:SetPoint("CENTER", v.lvl.fill, "CENTER", 0.5, 0)
+    -- Elite marker: dragon wings spreading from the badge, like the game's target frame.
+    v.lvl.wingL = bf:CreateTexture(nil, "BACKGROUND", nil, -2)
+    v.lvl.wingL:SetTexture(WING)
+    v.lvl.wingR = bf:CreateTexture(nil, "BACKGROUND", nil, -2)
+    v.lvl.wingR:SetTexture(WING)
+    v.lvl.wingR:SetTexCoord(1, 0, 0, 1) -- flipped
+    v.lvl.wingL:Hide(); v.lvl.wingR:Hide()
     v.cmb = Badge()
     v.cmb.fill:SetVertexColor(0.32, 0.05, 0.04, 1)
     v.cmb.icon = bf:CreateTexture(nil, "OVERLAY")
@@ -591,6 +601,7 @@ local function PlaceBadge(bd, R, deg, d)
         bd.k = k
         local a = math.rad(deg)
         local x, y = R * math.cos(a), R * math.sin(a)
+        bd.x, bd.y, bd.d = x, y, d
         bd.edge:ClearAllPoints(); bd.edge:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.edge:SetSize(d, d)
         local inset = 3
         if bd.rim then
@@ -607,6 +618,7 @@ end
 local function HideBadge(bd)
     bd.edge:Hide(); bd.fill:Hide()
     if bd.rim then bd.rim:Hide() end
+    if bd.wingL then bd.wingL:Hide(); bd.wingR:Hide() end
     if bd.text then bd.text:SetText("") end
     if bd.icon then bd.icon:Hide() end
 end
@@ -614,6 +626,39 @@ end
 -- Where each ring's level badge sits (degrees, 0 = right, counter-clockwise): bottom left on
 -- yours, bottom right on the target's (the side away from yours).
 local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315 }
+
+-- The elite marker (<key>Elite) on the level badge, as the game's target frame shows it:
+-- gold dragon wings for elites and world bosses, silver ones (and a silver rim) for rares
+-- and rare elites. Previews show a gold one.
+local ELITE = { elite = "gold", worldboss = "gold", rareelite = "silver", rare = "silver" }
+local WING_COLORS = { gold = { 1, 0.80, 0.32 }, silver = { 0.85, 0.88, 0.95 } }
+local RIM_COLORS = { gold = { 0.85, 0.66, 0.28 }, silver = { 0.78, 0.80, 0.86 } }
+
+local function DrawElite(key, bd, st)
+    local kind
+    if db[key .. "Elite"] then
+        if st.unit then
+            kind = ELITE[Clean(SafeCall(UnitClassification, st.unit)) or ""]
+        elseif key ~= "playerHp" then
+            kind = "gold" -- the preview's sample
+        end
+    end
+    local rim = RIM_COLORS[kind or "gold"]
+    bd.rim:SetVertexColor(rim[1], rim[2], rim[3], 1)
+    if not kind or not bd.x then bd.wingL:Hide(); bd.wingR:Hide() return end
+    local d, c = bd.d, WING_COLORS[kind]
+    local w = d * 1.05
+    -- Each wing's root (its inner bottom corner) tucked behind the disc's upper side.
+    bd.wingL:ClearAllPoints()
+    bd.wingL:SetPoint("BOTTOMRIGHT", bd.parent, "CENTER", bd.x - d * 0.18, bd.y - d * 0.02)
+    bd.wingR:ClearAllPoints()
+    bd.wingR:SetPoint("BOTTOMLEFT", bd.parent, "CENTER", bd.x + d * 0.18, bd.y - d * 0.02)
+    for _, t in ipairs({ bd.wingL, bd.wingR }) do
+        t:SetSize(w, w)
+        t:SetVertexColor(c[1], c[2], c[3], 1)
+        t:Show()
+    end
+end
 
 -- The level badge (<key>Level): the unit's level on a disc at the bottom of the ring;
 -- others' levels in the game's difficulty colors, "??" for ones too high to tell.
@@ -646,6 +691,7 @@ local function DrawLevel(key, v, st, geom, d)
     end
     v.lvl.text:SetTextColor(r, g, b)
     v.lvl.text:SetText(level > 0 and tostring(level) or "??")
+    DrawElite(key, v.lvl, st)
 end
 
 -- The in-combat badge (<key>Combat, your ring): crossed swords at the top right while you're
@@ -1303,6 +1349,7 @@ local function Register(spec)
         [key .. "NameTextSize"]   = 100,
         [key .. "LevelTextSize"]  = 100,
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
+        [key .. "Elite"]     = (spec.level and key ~= "playerHp") and true or nil, -- wings on it for elites
         [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
         [key .. "Portrait"]  = false,      -- the unit's portrait filling the middle
         [key .. "PortraitAlpha"] = 70,
@@ -1353,6 +1400,13 @@ local function Register(spec)
                                 "The level on a small disc at the bottom " .. (key == "playerHp" and "left" or "right") .. " of the ring"
                                 .. (key == "playerHp" and "." or ", in the game's difficulty colors (\"??\" when "
                                 .. "it's too high to tell). The name then leaves its level off.")),
+                            elite = key ~= "playerHp" and spec.level and (function()
+                                local t = Toggle(7.4, key .. "Elite", "Elite indicator",
+                                    "Dragon wings on the level badge, like the game's target frame: gold for elites and "
+                                    .. "world bosses, silver for rares.")
+                                t.disabled = function() return not db[key .. "Level"] end
+                                return t
+                            end)() or nil,
                             combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
                                 "Crossed swords on a small disc at the top right of the ring while you're in combat. "
                                 .. "Edit mode and previews show it so you can see where it sits.") or nil,
