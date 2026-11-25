@@ -8,6 +8,7 @@ lua.execute(open('mock.lua').read())
 lua.execute('''
 local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; if n then _G[n] = f end return f end
 RegionMethods.SetAttribute = function(s, k, v) s["_attr_" .. k] = v end
+RegionMethods.SetPassThroughButtons = function(s, ...) local t = { ... } s._pass = #t > 0 and table.concat(t, "+") or "none" end
 DRIVERS = {}
 RegisterStateDriver = function(f, what, cond) DRIVERS[f] = cond end
 UnregisterStateDriver = function(f, what) DRIVERS[f] = nil end
@@ -247,6 +248,14 @@ COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(0.3); P("  after combat: d
 CircletDB.targetHpMenu = true; Advance(0.3)
 CircletDB.playerHpShow = "always"; Advance(1)
 P("your menu: unit " .. tostring(CircletPlayerHpMenu and CircletPlayerHpMenu._attr_unit) .. ", shown " .. tostring(CircletPlayerHpMenu and CircletPlayerHpMenu:IsShown()))
+local pm = CircletPlayerHpMenu
+local function Clicks(b) return string.format("left %s, right %s, passes %s", tostring(b["_attr_*type1"]), tostring(b["_attr_*type2"]), tostring(b._pass)) end
+P("  your ring clicks: " .. Clicks(pm))
+P("  target ring clicks: " .. Clicks(mb))
+CircletDB.playerHpClickTarget = false; Advance(0.3); P("  click to target off: " .. Clicks(pm))
+CircletDB.playerHpClickTarget = true; CircletDB.playerHpMenu = false; Advance(0.3); P("  menu off, click on: " .. Clicks(pm) .. ", shown " .. tostring(pm:IsShown()))
+CircletDB.playerHpClickTarget = false; Advance(0.3); P("  both off: shown " .. tostring(pm:IsShown()))
+CircletDB.playerHpClickTarget = true; CircletDB.playerHpMenu = true; Advance(0.3)
 CircletDB.playerHpShow = "combat"; Advance(3); UNITS.player.power = UNITS.player.pmax; UNITS.player.hp = UNITS.player.max; Advance(3); P("  ring hidden (full, out of combat): ring " .. tostring(Ring("playerHp") ~= nil) .. ", menu shown " .. tostring(CircletPlayerHpMenu:IsShown()))
 P("defaults: menus " .. tostring(CircletDB.playerHpMenu) .. "/" .. tostring(CircletDB.targetHpMenu) .. "/" .. tostring(CircletDB.totHpMenu))
 

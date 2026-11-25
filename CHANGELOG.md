@@ -21,6 +21,8 @@
     critical and crushing hits count.
   - **Right-click menu**: right-click a ring for the game's own menu for that unit, as on its
     frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to the world.
+  - **Click to target yourself** (your ring): left-click your ring to target yourself, as on
+    your player frame. On by default; turn it off to let left clicks go through to the world.
   - **Level badge**: the level on a gold-rimmed disc, at the bottom left of your ring and the
     bottom right of the target's (on by default for both). Enemies' levels are coloured the way
     the game's target frame and nameplates colour them; friendly units' are always yellow.

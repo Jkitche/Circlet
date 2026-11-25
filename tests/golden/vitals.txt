@@ -58,6 +58,11 @@ target menu: true, unit target, right-click togglemenu, shown true
   turned off in combat: driver still true (waits)
   after combat: driver nil, shown false
 your menu: unit player, shown true
+  your ring clicks: left target, right togglemenu, passes none
+  target ring clicks: left nil, right togglemenu, passes LeftButton
+  click to target off: left nil, right togglemenu, passes LeftButton
+  menu off, click on: left target, right nil, passes RightButton, shown true
+  both off: shown false
   ring hidden (full, out of combat): ring false, menu shown false
 defaults: menus true/true/true
 level badge: 42, disc true, combat badge false

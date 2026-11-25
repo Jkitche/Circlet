@@ -1195,7 +1195,9 @@ local totRing = MakeRing("totHp", "targettarget")
 -- fade and slide freely): out of combat each button follows its ring where it actually is (auto-
 -- arrange included) and shows exactly while the ring does; in combat the game shows and hides it
 -- itself (a state driver: while the unit exists), where it was when combat started. Left clicks
--- pass through to the world; in edit mode the buttons step aside so the rings can be dragged.
+-- pass through to the world, except on your own ring with <key>ClickTarget on, where a left
+-- click targets you (type1 = target, as on the player frame); in edit mode the buttons step
+-- aside so the rings can be dragged.
 local MENU_RINGS = {
     { key = "playerHp", unit = "player", ring = playerRing, name = "CircletPlayerHpMenu" },
     { key = "targetHp", unit = "target", ring = targetRing, name = "CircletTargetHpMenu" },
@@ -1208,11 +1210,7 @@ local function MenuButton(m)
     local ok, b = pcall(CreateFrame, "Button", m.name, UIParent, "SecureUnitButtonTemplate")
     if not ok or not b then menuDebug[m.key] = "couldn't make the button: " .. tostring(b) return nil end
     b:SetAttribute("unit", m.unit)
-    b:SetAttribute("*type1", nil)
-    b:SetAttribute("*type2", "togglemenu")
-    b:SetAttribute("type2", "togglemenu")
     b:RegisterForClicks("AnyUp")
-    if b.SetPassThroughButtons then pcall(b.SetPassThroughButtons, b, "LeftButton") end
     b:SetFrameStrata(ns.RING_STRATA)
     b:SetFrameLevel(50)
     b:EnableMouse(true)
@@ -1222,7 +1220,26 @@ local function MenuButton(m)
 end
 
 local function Wants(m)
-    return db[m.key .. "Enabled"] and db[m.key .. "Menu"] and not m.ring.IsEditing()
+    return db[m.key .. "Enabled"] and (db[m.key .. "Menu"] or db[m.key .. "ClickTarget"]) and not m.ring.IsEditing()
+end
+
+-- What its clicks do (out of combat only): right = the menu, left = target the unit; a click
+-- that does neither passes through to the world.
+local function SetClicks(m, b)
+    local menu = db[m.key .. "Menu"] and true or false
+    local click = db[m.key .. "ClickTarget"] and true or false
+    local k = tostring(menu) .. tostring(click)
+    if m.clicks == k then return end
+    m.clicks = k
+    local menuType = menu and "togglemenu" or nil
+    local targetType = click and "target" or nil
+    b:SetAttribute("*type2", menuType); b:SetAttribute("type2", menuType)
+    b:SetAttribute("*type1", targetType); b:SetAttribute("type1", targetType)
+    if b.SetPassThroughButtons then
+        if menu and click then pcall(b.SetPassThroughButtons, b)
+        elseif click then pcall(b.SetPassThroughButtons, b, "RightButton")
+        else pcall(b.SetPassThroughButtons, b, "LeftButton") end
+    end
 end
 
 -- Where the ring is: its real center if it has one, else its saved spot.
@@ -1259,6 +1276,7 @@ local function SyncMenus()
             local f = m.ring.frame
             local up = want and f:IsVisible() and f:GetAlpha() > 0.05
             if up then
+                SetClicks(m, b)
                 PlaceMenu(m, b)
                 if not b:IsShown() then b:Show() end
             elseif b:IsShown() then
@@ -1274,6 +1292,7 @@ local function HandOver()
     for _, m in ipairs(MENU_RINGS) do
         local b = m.button
         if b and Wants(m) then
+            SetClicks(m, b)
             PlaceMenu(m, b)
             if RegisterStateDriver then
                 pcall(RegisterStateDriver, b, "visibility", "[@" .. m.unit .. ",exists] show; hide")
@@ -1303,10 +1322,10 @@ ns.RegisterCommand({ "menudebug" }, function()
         else
             local x, y = b:GetCenter()
             local rx, ry = m.ring.frame:GetCenter()
-            ns.Print(string.format("%s: shown %s, mouse %s, over %s, at %s,%s (ring at %s,%s), size %d, unit %s, type2 %s, protected %s",
+            ns.Print(string.format("%s: shown %s, mouse %s, over %s, at %s,%s (ring at %s,%s), size %d, unit %s, type2 %s, type1 %s, protected %s",
                 m.key, tostring(b:IsVisible()), tostring(b:IsMouseEnabled()), tostring(b:IsMouseOver()),
                 x and math.floor(x) or "?", y and math.floor(y) or "?", rx and math.floor(rx) or "?", ry and math.floor(ry) or "?",
-                b:GetWidth() or 0, tostring(b:GetAttribute("unit")), tostring(b:GetAttribute("*type2")),
+                b:GetWidth() or 0, tostring(b:GetAttribute("unit")), tostring(b:GetAttribute("*type2")), tostring(b:GetAttribute("*type1")),
                 tostring(b:IsProtected())))
         end
     end
@@ -1514,6 +1533,7 @@ local function Register(spec)
         [key .. "Trail"]     = true,
         [key .. "BigHit"]    = spec.bigHit and true or false,
         [key .. "Menu"]      = true,       -- right-click menu
+        [key .. "ClickTarget"] = (key == "playerHp") and true or nil, -- your ring: left-click targets you
         [key .. "BigHitSize"] = 15,
         [key .. "HealthTextSize"] = 100,   -- text sizes, % of the usual size for the ring
         [key .. "PowerTextSize"]  = 100,
@@ -1587,6 +1607,9 @@ local function Register(spec)
                             combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
                                 "Crossed swords on a small disc at the top right of the ring while you're in combat. "
                                 .. "Edit mode and previews show it so you can see where it sits.") or nil,
+                            clickTarget = key == "playerHp" and Toggle(8.4, key .. "ClickTarget", "Click to target yourself",
+                                "Left-click your ring to target yourself, as on your player frame. Off: left clicks "
+                                .. "go through to the world. In combat it stays where the ring was when the fight started.") or nil,
                             menu = Toggle(8.5, key .. "Menu", "Right-click menu",
                                 "Right-click the ring for the game's own menu for " .. spec.menuWho .. ", as on its "
                                 .. "frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to "
