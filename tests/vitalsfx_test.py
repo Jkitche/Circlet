@@ -139,6 +139,11 @@ CP = 3; Advance(0.3); P("3 combo points: " .. Fx("targetHp"))
 CP = 5; Advance(0.3); P("5 combo points: " .. Fx("targetHp")); CP = 0
 MARKS.target = 8; UNITS.target.onMe = true; Advance(0.3); P("skull, targeting you: " .. Fx("targetHp"))
 MARKS.target = nil; UNITS.target.onMe = false
+-- WoW Forever hides the marker (a secret, even out of combat): all eight icons, each gated
+-- by its own curve, so only the hidden index's shows.
+MARKS.target = { secret = true, v = 8 }; Advance(0.3); P("hidden skull: " .. Fx("targetHp"))
+MARKS.target = { secret = true, v = 2 }; Advance(0.3); P("hidden circle: " .. Fx("targetHp"))
+MARKS.target = nil
 CLASSIF.target = "elite"; Advance(0.3); P("elite: " .. Fx("targetHp")); CLASSIF.target = nil
 UNITS.target.hp = 150; Advance(0.3); P("target at 15%: " .. Fx("targetHp"))
 SECRET = true; Advance(0.3); P("  hidden, 15%: " .. Fx("targetHp"))

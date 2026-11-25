@@ -202,12 +202,45 @@ local function DrawCombo(key, fx, st, frame, geom, d, now)
     end
 end
 
+-- The raid marker. This client hides it from addons (a secret, even out of combat), so it
+-- can't be read to pick the icon. Instead all eight icons sit in the same spot, each with a
+-- step curve that's 1 only at its own index: the hidden index runs through each curve and the
+-- hidden 0 or 1 goes straight into that icon's alpha, so only the right one shows, without
+-- Circlet ever knowing which (as the rings fill with hidden health). Readable: just the one.
+local markCurves = {}
+local function MarkCurve(i)
+    if markCurves[i] then return markCurves[i] end
+    local cv = C_CurveUtil.CreateCurve()
+    if Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then pcall(cv.SetType, cv, Enum.LuaCurveType.Step) end
+    cv:AddPoint(0, 0)
+    cv:AddPoint(i - 0.5, 1)
+    cv:AddPoint(i + 0.5, 0)
+    markCurves[i] = cv
+    return cv
+end
+
 local function DrawMark(key, fx, st, frame, geom, d)
-    local idx = st.unit and CleanNumber(SafeCall(GetRaidTargetIndex, st.unit)) or (not st.unit and 8)
+    local raw
+    if st.unit then raw = SafeCall(GetRaidTargetIndex, st.unit) else raw = 8 end -- previews: a skull
+    local x, y = Polar(135, geom.R)
+    if IsSecret(raw) then
+        if not (C_CurveUtil and C_CurveUtil.CreateCurve) then return end
+        for i = 1, 8 do
+            local t = Tex(fx, "mark" .. i, MARKS:format(i), "OVERLAY", 2)
+            local ok, a = pcall(function() return MarkCurve(i):Evaluate(raw) end)
+            if ok and pcall(t.SetAlpha, t, a) then
+                At(t, frame, x, y, d * 1.25)
+            else
+                t:Hide()
+            end
+        end
+        return
+    end
+    local idx = CleanNumber(raw)
     if not idx or idx < 1 or idx > 8 then return end
     local t = Tex(fx, "mark", MARKS:format(idx), "OVERLAY", 2)
     if fx.markIdx ~= idx then fx.markIdx = idx; t:SetTexture(MARKS:format(idx)) end
-    local x, y = Polar(135, geom.R)
+    t:SetAlpha(1)
     At(t, frame, x, y, d * 1.25)
 end
 
