@@ -49,6 +49,12 @@ C_CurveUtil = { CreateCurve = function()
     return y end
   return c end }
 Enum = { LuaCurveType = { Step = 1 } }
+-- As in the game, a masked texture refuses tex coords.
+RegionMethods.SetMask = function(s, m) s._mask = m end
+local realTC = RegionMethods.SetTexCoord
+RegionMethods.SetTexCoord = function(s, ...)
+  if s._mask then error("Texture:SetTexCoord(): Cannot set tex coords when texture has mask.") end
+  return realTC(s, ...) end
 -- SetSpriteSheetCell takes a hidden cell from addon code (as the game's docs say).
 RegionMethods.SetSpriteSheetCell = function(s, cell, rows, cols)
   s._cell = issecretvalue(cell) and ("<" .. tostring(cell.v) .. ">") or ("[" .. tostring(cell) .. "]") end

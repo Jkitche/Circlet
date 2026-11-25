@@ -552,8 +552,13 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
     if icon.skinFile ~= k.icon then
         icon.skinFile = k.icon
         icon:SetTexture(k.icon)
-        if not icon.masked then icon.masked = true; pcall(icon.SetMask, icon, DISC) end
-        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        -- Crop the icon's border, then mask it round: the game won't set tex coords on a
+        -- texture once it has a mask (the mask stays on through later SetTexture calls).
+        if not icon.masked then
+            icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            icon.masked = true
+            pcall(icon.SetMask, icon, DISC)
+        end
     end
     At(icon, frame, x, y, d * 1.1)
     if sure then
