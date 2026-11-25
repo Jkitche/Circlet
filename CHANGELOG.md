@@ -24,6 +24,11 @@
   - **Level badge**: the level on a gold-rimmed disc, at the bottom left of your ring and the
     bottom right of the target's (on by default for both). Enemies' levels are coloured the way
     the game's target frame and nameplates colour them; friendly units' are always yellow.
+  - **Damage and healing numbers** (your ring and the target's): each hit and heal the unit takes
+    floats up off the top of the ring and fades: damage (red on yours, white on the target's),
+    crits bigger and gold with a pop, heals green with a +, and misses as words (Dodge, Parry,
+    Block...). In combat the game hides the amounts from addons, so they're handed to the game to
+    draw as they are. On by default; sized in the Text sizes box.
   - **Elite indicator** (target and target of target): the game's own target-frame dragon round
     the level badge: the gold dragon for elites and world bosses, the silver one for rare elites,
     and the silver frame for rares. The badge takes its colors from the dragon (its gold or

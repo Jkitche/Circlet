@@ -900,6 +900,114 @@ local function PowerText(key, p, fs)
     else fs:SetText("") end
 end
 
+---------------------------------------------------------------------------
+-- Damage and healing numbers (<key>Float): what the unit takes, floating up off the ring
+---------------------------------------------------------------------------
+-- Each hit or heal the unit takes (UNIT_COMBAT) pops up at the top of the ring and floats up
+-- and away, fading: damage (red on yours, white on others, crits bigger and gold with a pop),
+-- heals green with a +, and misses as words (Dodge, Parry, Block...). In combat the amount is
+-- hidden from addons, so it's handed to the font string as it is (the game draws it; it can't
+-- be formatted or added up); readable amounts are shortened (12.3k).
+local FLOAT_TIME, FLOAT_MAX = 1.5, 8
+local MISS_WORDS = { MISS = "Miss", DODGE = "Dodge", PARRY = "Parry", BLOCK = "Block", ABSORB = "Absorb",
+                     RESIST = "Resist", IMMUNE = "Immune", DEFLECT = "Deflect", EVADE = "Evade", REFLECT = "Reflect" }
+local floats = {} -- ring key -> { { kind, amount, crit, word, at, drift } ... }, oldest first
+
+local function AddFloat(key, action, flag, amount)
+    if not db[key .. "Float"] then return end
+    local f
+    if action == "WOUND" then
+        f = { kind = "dmg", amount = amount, crit = (flag == "CRITICAL" or flag == "CRUSHING") }
+    elseif action == "HEAL" then
+        f = { kind = "heal", amount = amount, crit = flag == "CRITICAL" }
+    elseif MISS_WORDS[action] then
+        f = { kind = "miss", word = MISS_WORDS[action] }
+    else
+        return
+    end
+    local list = floats[key] or {}
+    floats[key] = list
+    -- Side to side by turns, a little at random, so a burst of hits doesn't stack up.
+    list.n = (list.n or 0) + 1
+    f.at, f.drift = GetTime(), ((list.n % 3) - 1) * 0.55 + (math.random() - 0.5) * 0.3
+    table.insert(list, f)
+    while #list > FLOAT_MAX do table.remove(list, 1) end
+end
+
+local function Short(n)
+    n = math.floor(math.abs(n) + 0.5)
+    if n >= 1e6 then return string.format("%.1fm", n / 1e6) end
+    if n >= 1e4 then return string.format("%.1fk", n / 1e3) end
+    return tostring(n)
+end
+
+-- Puts an amount on a font string with a prefix ("+" for heals), hidden or not.
+local function SetAmount(fs, prefix, amount)
+    if amount == nil then fs:SetText(prefix) return end
+    if ns.IsSecret(amount) then
+        if not pcall(fs.SetFormattedText, fs, prefix .. "%s", amount) then
+            if not pcall(fs.SetText, fs, amount) then fs:SetText(prefix ~= "" and prefix or "Hit") end
+        end
+        return
+    end
+    local n = tonumber(amount)
+    fs:SetText(prefix .. (n and Short(n) or tostring(amount)))
+end
+
+local function DrawFloats(key, v, frame, geom, now)
+    local list = floats[key]
+    local pool = v.floats
+    if not pool then
+        pool = {}
+        v.floats = pool
+        v.ff = CreateFrame("Frame", nil, frame)
+        v.ff:SetAllPoints(frame)
+        v.ff:SetFrameLevel(frame:GetFrameLevel() + 7)
+    end
+    local used = 0
+    if list and db[key .. "Float"] then
+        local i = 1
+        while i <= #list do
+            if now - list[i].at >= FLOAT_TIME then table.remove(list, i) else i = i + 1 end
+        end
+        local size = math.max(9, geom.R * 0.3) * (tonumber(db[key .. "FloatTextSize"]) or 100) / 100
+        for _, f in ipairs(list) do
+            used = used + 1
+            local fs = pool[used]
+            if not fs then
+                fs = v.ff:CreateFontString(nil, "OVERLAY")
+                fs:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
+                fs:SetShadowOffset(1, -1)
+                pool[used] = fs
+            end
+            local t = (now - f.at) / FLOAT_TIME
+            -- A crit pops in big and settles; everything rises, drifts aside and fades.
+            local scale = f.crit and (1.25 + 0.5 * math.max(0, 1 - t / 0.12)) or 1
+            local px = math.floor(size * scale * (f.kind == "miss" and 0.8 or 1) + 0.5)
+            if fs.px ~= px then fs.px = px; fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
+            local ease = 1 - (1 - t) ^ 2
+            fs:ClearAllPoints()
+            fs:SetPoint("CENTER", frame, "CENTER", f.drift * geom.R * 0.6 * ease,
+                geom.R + geom.T + size * 0.2 + ease * geom.R * 0.9)
+            if f.kind == "heal" then
+                fs:SetTextColor(0.35, 1, 0.35)
+                SetAmount(fs, "+", f.amount)
+            elseif f.kind == "miss" then
+                fs:SetTextColor(0.8, 0.8, 0.85)
+                fs:SetText(f.word)
+            else
+                if f.crit then fs:SetTextColor(1, 0.8, 0.2)
+                elseif key == "playerHp" then fs:SetTextColor(1, 0.3, 0.25)
+                else fs:SetTextColor(1, 1, 1) end
+                SetAmount(fs, "", f.amount)
+            end
+            fs:SetAlpha(t < 0.6 and 1 or math.max(0, 1 - (t - 0.6) / 0.4))
+            fs:Show()
+        end
+    end
+    for i = used + 1, #pool do pool[i]:Hide() end
+end
+
 local function DrawVitals(key, st, frame, geom)
     local v = Parts(frame)
     if not st or not geom or geom.R <= 0 then
@@ -909,6 +1017,7 @@ local function DrawVitals(key, st, frame, geom)
         v.hp:SetText(""); v.hp2:SetText(""); v.pw:SetText(""); v.name:SetText("")
         v.portrait:Hide()
         HideBadge(v.lvl); HideBadge(v.cmb)
+        if v.floats then for _, fs in ipairs(v.floats) do fs:Hide() end end
         return
     end
     local b = ns.BorderWidthOf(key)
@@ -916,6 +1025,7 @@ local function DrawVitals(key, st, frame, geom)
     local now = GetTime()
     Effects(key, v.h, st.hpTrack, geom, frame, st.color, now, HEALTH_TRAIL)
     BigHitFlash(key, v.h, geom, frame, now)
+    DrawFloats(key, v, frame, geom, now)
     if st.easedOn then
         DrawEased(v.eh, frame, geom, st.color, st.eased, st.hpChanged, easeNow[key .. ":hp"])
         easeNow[key .. ":hp"] = nil
@@ -1066,6 +1176,7 @@ local function MakeRing(key, unit)
             { id = "HealthText", name = "Health", desc = "The health in the middle, and its percentage line." },
             { id = "PowerText", name = "Power", desc = "The mana, rage or energy under the health." },
             { id = "LevelText", name = "Level", desc = "The level on its badge at the bottom left." },
+            { id = "FloatText", name = "Damage & healing", desc = "The numbers floating up off the ring." },
         },
         decorate = function(st, frame, geom) DrawVitals(key, st, frame, geom) end,
     })
@@ -1220,10 +1331,11 @@ end)
 -- A new target: its bands start from its own values, not slide over from the last one's.
 -- Critical and crushing hits taken (UNIT_COMBAT: the kind of hit can be read, its size can't):
 -- with hidden values, the big hits.
-ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag)
+ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag, amount)
     local key = UNIT_KEY[unit]
     if not key then return end
     action, flag = Clean(action), Clean(flag)
+    AddFloat(key, action, flag, amount)
     if action == "WOUND" and (flag == "CRITICAL" or flag == "CRUSHING") then
         local tr = tracks[key .. ":hp"]
         if not tr or tr.hidden then bigHitAt[key] = GetTime() end -- readable: sized by the loss
@@ -1231,6 +1343,7 @@ ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag)
 end)
 
 local function FreshStart(key)
+    floats[key] = nil -- the last target's numbers go with it
     ResetTrack(key .. ":hp"); ResetTrack(key .. ":pw")
     easeNow[key .. ":hp"], easeNow[key .. ":pw"] = true, true
     portraitDirty[key] = true
@@ -1406,6 +1519,8 @@ local function Register(spec)
         [key .. "PowerTextSize"]  = 100,
         [key .. "NameTextSize"]   = 100,
         [key .. "LevelTextSize"]  = 100,
+        [key .. "FloatTextSize"]  = 100,
+        [key .. "Float"]     = spec.float and true or nil, -- damage and healing numbers floating off it
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
         [key .. "Elite"]     = (spec.level and key ~= "playerHp") and true or nil, -- wings on it for elites
         [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
@@ -1465,6 +1580,10 @@ local function Register(spec)
                                 t.disabled = function() return not db[key .. "Level"] end
                                 return t
                             end)() or nil,
+                            float = spec.float and Toggle(7.5, key .. "Float", "Damage and healing numbers",
+                                "Each hit and heal " .. (key == "playerHp" and "you take" or "your target takes")
+                                .. " floats up off the top of the ring: damage, crits bigger and gold, heals in green, "
+                                .. "and misses as words (Dodge, Parry, Block...).") or nil,
                             combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
                                 "Crossed swords on a small disc at the top right of the ring while you're in combat. "
                                 .. "Edit mode and previews show it so you can see where it sits.") or nil,
@@ -1517,7 +1636,7 @@ end
 
 Register({
     key = "playerHp", ring = playerRing, title = "Health", order = 12.9, pageOrder = 1.5,
-    show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, menuWho = "yourself",
+    show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, float = true, menuWho = "yourself",
     preview = ns.PreviewPlayerHpRing, slash = { "health", "hp" }, help = "preview your health and power ring",
     toggleName = "Health ring", toggleDesc = "Your health, with your mana, rage or energy inside it.",
     gameBar = "the game's player frame",
@@ -1534,7 +1653,7 @@ Register({
 
 Register({
     key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 1.6,
-    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, menuWho = "your target",
+    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, float = true, menuWho = "your target",
     preview = ns.PreviewTargetHpRing, slash = { "targethealth", "thp" }, help = "preview the target health ring",
     toggleName = "Target health ring", toggleDesc = "Your target's health and power, with its name.",
     gameBar = "the game's target frame",

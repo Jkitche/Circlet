@@ -286,6 +286,33 @@ tv.lvl.dragonFile = nil
 UNITS.target.class = "elite"; Advance(0.3); P("elite: no dragon art, elite: " .. Elite())
 UNITS.target.class = "rare"; tv.lvl.dragonFile = nil; Advance(0.3); P("elite: no dragon art, rare: " .. Elite())
 RegionMethods.SetTexture = realSet; tv.lvl.dragonFile = nil
+-- Damage and healing numbers floating off the target ring.
+issecretvalue = issecretvalue or function() return false end
+local realSecret = issecretvalue
+issecretvalue = function(x) return x == "SECRET" or realSecret(x) end
+RegionMethods.SetFormattedText = function(s, fmt, ...) s._text = string.format(fmt, tostring((...))) .. " (drawn)" end
+local function Floats(v)
+  local t = {}
+  for _, fs in ipairs(v.floats or {}) do
+    if fs._shown ~= false and fs._text then
+      table.insert(t, string.format("%s[%s %dpx a%.1f]", tostring(fs._text), fs._tc and string.format("%.1f,%.1f,%.1f", fs._tc[1], fs._tc[2], fs._tc[3]) or "-", fs.px or 0, fs._alpha or 1))
+    end
+  end
+  return #t > 0 and table.concat(t, " ") or "(none)"
+end
+Fire("UNIT_COMBAT", "target", "WOUND", "", 123, 1)
+Fire("UNIT_COMBAT", "target", "WOUND", "CRITICAL", 456, 1)
+Fire("UNIT_COMBAT", "target", "HEAL", "", 15000, 2)
+Fire("UNIT_COMBAT", "target", "DODGE", "", 0, 1)
+Advance(0.05); P("floats: hit, crit, heal, dodge: " .. Floats(tv))
+Fire("UNIT_COMBAT", "target", "WOUND", "", "SECRET", 1); Advance(0.05); P("floats: hidden amount: " .. Floats(tv))
+Advance(1.2); P("floats: fading: " .. Floats(tv))
+Advance(0.5); P("floats: gone: " .. Floats(tv))
+Fire("UNIT_COMBAT", "player", "WOUND", "", 77, 1); Fire("UNIT_COMBAT", "player", "HEAL", "CRITICAL", 300, 2)
+Advance(0.05); P("floats on your ring: " .. Floats(pv))
+CircletDB.targetHpFloat = false; Fire("UNIT_COMBAT", "target", "WOUND", "", 99, 1); Advance(0.05); P("floats: off: " .. Floats(tv)); CircletDB.targetHpFloat = true
+Fire("UNIT_COMBAT", "target", "WOUND", "", 55, 1); Advance(0.05); Fire("PLAYER_TARGET_CHANGED"); Advance(0.05); P("floats: new target clears them: " .. Floats(tv))
+Advance(2); issecretvalue = realSecret
 UNITS.target.class = nil; Advance(0.3)
 CircletDB.playerHpShow = "combat"; Advance(2)
 

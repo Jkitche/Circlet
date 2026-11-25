@@ -77,8 +77,15 @@ elite: setting off (worldboss): dragon none, wings false, rim 0.85,0.66,0.28
 elite: level badge off: dragon none, wings false, rim 0.85,0.66,0.28
 elite: no dragon art, elite: dragon none, wings true, rim 0.96,0.72,0.22
 elite: no dragon art, rare: dragon none, wings false, rim 0.80,0.83,0.88
-target of target: health 22 segs, power 36 segs | Jaina 20 / 30% / 50%
-  its health changed (no event): health 51 segs, power 36 segs | Jaina 20 / 70% / 50%
+floats: hit, crit, heal, dodge: 123[1.0,1.0,1.0 15px a1.0] 456[1.0,0.8,0.2 24px a1.0] +15.0k[0.3,1.0,0.3 15px a1.0] Dodge[0.8,0.8,0.8 12px a1.0]
+floats: hidden amount: 123[1.0,1.0,1.0 15px a1.0] 456[1.0,0.8,0.2 23px a1.0] +15.0k[0.3,1.0,0.3 15px a1.0] Dodge[0.8,0.8,0.8 12px a1.0] SECRET (drawn)[1.0,1.0,1.0 15px a1.0]
+floats: fading: 123[1.0,1.0,1.0 15px a0.4] 456[1.0,0.8,0.2 18px a0.4] +15.0k[0.3,1.0,0.3 15px a0.4] Dodge[0.8,0.8,0.8 12px a0.4] SECRET (drawn)[1.0,1.0,1.0 15px a0.4]
+floats: gone: (none)
+floats on your ring: 77[1.0,0.3,0.2 15px a1.0] +300[0.3,1.0,0.3 24px a1.0]
+floats: off: (none)
+floats: new target clears them: (none)
+target of target: health 22 segs, power 36 segs | - / 30% / 50%
+  its health changed (no event): health 51 segs, power 36 segs | - / 70% / 50%
   target has no target: (hidden)
 target of target frame hidden: alpha 0
 player frame alpha 0, target frame alpha 1
