@@ -4,7 +4,6 @@ game tints them:
   Textures/GlowRing.tga   a soft halo band, its peak at 0.70 of the half-width (so drawn
                           2R/0.70 across it sits on a ring of radius R)
   Textures/Cracks.tga     cracks across a band at the same radius (death)
-  Textures/AggroEye.tga   a narrow, glaring eye (aggro)
   Textures/Shield.tga     a heater shield with a highlight (block)
 
     python tools/make_vitals_fx.py
@@ -82,27 +81,6 @@ def cracks():
     return white(img, S)
 
 
-def eye():
-    S = 64
-    B = S * SS
-    img = Image.new('L', (B, B), 0)
-    d = ImageDraw.Draw(img)
-    c = B / 2
-    # Almond outline: two arcs.
-    top = [(c + math.cos(t) * B * 0.44, c - math.sin(t) * B * 0.22 + B * 0.02) for t in np.linspace(0, math.pi, 40)]
-    bot = [(c + math.cos(t) * B * 0.44, c + math.sin(t) * B * 0.2 + B * 0.02) for t in np.linspace(math.pi, 2 * math.pi, 40)]
-    d.polygon(top + bot, fill=110)
-    d.line(top + [top[0]], fill=255, width=int(SS * 2.5))
-    d.line(bot, fill=255, width=int(SS * 2))
-    # A slit pupil in a bright iris.
-    d.ellipse((c - B * 0.15, c - B * 0.15 + B * 0.02, c + B * 0.15, c + B * 0.15 + B * 0.02), fill=235)
-    d.ellipse((c - B * 0.04, c - B * 0.13 + B * 0.02, c + B * 0.04, c + B * 0.13 + B * 0.02), fill=0)
-    # Angry brow strokes.
-    d.line([(c - B * 0.34, c - B * 0.42), (c - B * 0.07, c - B * 0.30)], fill=255, width=int(SS * 3))
-    d.line([(c + B * 0.34, c - B * 0.42), (c + B * 0.07, c - B * 0.30)], fill=255, width=int(SS * 3))
-    return white(img.filter(ImageFilter.GaussianBlur(SS * 0.4)), S)
-
-
 def shield():
     S = 64
     B = S * SS
@@ -129,5 +107,4 @@ def shield():
 os.makedirs(out_dir, exist_ok=True)
 tga(glow_ring(), os.path.join(out_dir, 'GlowRing.tga'))
 tga(cracks(), os.path.join(out_dir, 'Cracks.tga'))
-tga(eye(), os.path.join(out_dir, 'AggroEye.tga'))
 tga(shield(), os.path.join(out_dir, 'Shield.tga'))

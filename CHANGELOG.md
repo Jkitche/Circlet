@@ -30,8 +30,7 @@
     - *Combo points* (target): five pips over the ring that pop as they light and pulse gold at
       five, for rogues and druids.
     - *Raid marker* (all three rings): the skull, cross, star... at the top left of the ring.
-    - *Aggro warning* (target): a red glare round the ring and a glaring eye while it's
-      targeting you.
+    - *Aggro warning* (target): a red glare round the ring while it's targeting you.
     - *Execute range* (target): the ring throbs red-orange below 20% health.
     - *Low health heartbeat* (yours): a red lub-dub below 30% health.
     - *Death*: the ring cracks and darkens with a skull over it; your ghost glows pale with

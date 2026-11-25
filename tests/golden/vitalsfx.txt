@@ -1,7 +1,7 @@
 target, nothing going on: (none)
 3 combo points: cpE x5 cpG x3 cpP x5
 5 combo points: cpE x5 cpG x5 cpP x5
-skull, targeting you: aggroEye aggroGlow mark
+skull, targeting you: aggroGlow mark
 elite: glint x2 glintS x2
 target at 15%: execute
   hidden, 15%: execute<1>

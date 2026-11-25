@@ -11,8 +11,7 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Combo      (target)   five pips over the ring for your combo points, popping as they
 --                         light, the lot pulsing gold at five (rogues and druids)
 --   Mark       (all)      the unit's raid marker (skull, cross, star...) at its top left
---   Aggro      (target)   a red glare round the ring and a glaring eye at its top right
---                         while the target is targeting you
+--   Aggro      (target)   a red glare round the ring while the target is targeting you
 --   Execute    (target)   the ring throbs red-orange below 20% health
 --   LowHealth  (yours)    a red heartbeat (lub-dub) below 30% health
 --   Death      (all)      dead: the ring cracks and darkens, a skull over it; your ghost: a
@@ -225,11 +224,6 @@ local function DrawAggro(key, fx, st, frame, geom, d, now)
     GlowOn(glow, frame, geom.R + geom.T * 0.3)
     glow:SetVertexColor(1, 0.12, 0.08)
     glow:SetAlpha(0.6 * pulse)
-    local eye = Tex(fx, "aggroEye", TEX .. "AggroEye", "OVERLAY", 3)
-    local x, y = Polar(45, geom.R + geom.T * 0.2)
-    At(eye, frame, x, y, d * 1.35 * (0.95 + 0.1 * pulse))
-    eye:SetVertexColor(1, 0.25, 0.2)
-    eye:SetAlpha(0.8 + 0.2 * pulse)
 end
 
 -- A glow gated by a hidden or readable threshold, pulsing on its own frame.
