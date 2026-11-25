@@ -13,6 +13,13 @@ block, dodge, parry: blades shield whoosh x3
 crit jolt: before CENTER 230.0,-525.0, during moved true, after CENTER 230.0,-525.0 (back: true)
   moved mid-jolt: ends where its own layout puts it: CENTER 230.0,-525.0
 target dead: cracks skull veil
+wolf, nothing learned: (none)
+wolf corpse, loot left: cracks skull veil
+looted, skinnable (green): cracks skin skinGlow skull veil glow 0.25,0.75,0.25
+skinned already: cracks skull veil
+next wolf, alive: skin alpha 0.5
+rock elemental corpse: cracks skin skinGlow skull veil Interface\Icons\Trade_Mining
+skinnable off: cracks skull veil
 you (rogue, energy), no tick seen: (none)
 energy tick: tick tickFlash tickHalo
   0.7s on: tick tickHalo

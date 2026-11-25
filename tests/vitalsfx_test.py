@@ -167,6 +167,24 @@ local p, rel, rp = tf:GetPoint(1); tf:SetPoint(p, rel, rp, 123, -45); Advance(0.
 P("  moved mid-jolt: ends where its own layout puts it: " .. Spot(tf))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("target dead: " .. Fx("targetHp"))
 UNITS.target.dead = false; UNITS.target.hp = 800; Advance(0.3)
+-- Skinnable: only a looted corpse's tooltip says so; the kind of creature is remembered.
+TIP_LINES = nil
+C_TooltipInfo = C_TooltipInfo or {}
+C_TooltipInfo.GetUnit = function(u) return TIP_LINES and { lines = TIP_LINES } or { lines = {} } end
+UNITS.target.guid = "Creature-0-1-2-3-4-1131-000ABC"
+Advance(0.3); P("wolf, nothing learned: " .. Fx("targetHp"))
+UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("wolf corpse, loot left: " .. Fx("targetHp"))
+TIP_LINES = { { leftText = "Young Wolf" }, { leftText = "Skinnable", leftColor = { r = 0.25, g = 0.75, b = 0.25 } } }
+Advance(0.6); P("looted, skinnable (green): " .. Fx("targetHp") .. " glow " .. string.format("%.2f,%.2f,%.2f", unpack(Ring("targetHp").vit.fx.t.skinGlow._vc or {0,0,0})))
+TIP_LINES = { { leftText = "Young Wolf" } }; Advance(0.6); P("skinned already: " .. Fx("targetHp"))
+UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = "Creature-0-1-2-3-4-1131-000DEF"; Advance(0.3)
+local sk = Ring("targetHp").vit.fx.t.skin
+P("next wolf, alive: " .. Fx("targetHp") .. " alpha " .. tostring(sk._alpha))
+TIP_LINES = { { leftText = "Requires Mining", leftColor = { r = 1, g = 0.5, b = 0.25 } } }
+UNITS.target.guid = "Creature-0-1-2-3-4-2725-000111"; UNITS.target.dead = true; Advance(0.6)
+P("rock elemental corpse: " .. Fx("targetHp") .. " " .. tostring(Ring("targetHp").vit.fx.t.skin.skinFile))
+CircletDB.targetHpFxSkin = false; Advance(0.6); P("skinnable off: " .. Fx("targetHp")); CircletDB.targetHpFxSkin = true
+TIP_LINES = nil; UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = nil; Advance(0.3)
 -- Your ring.
 P("you (rogue, energy), no tick seen: " .. Fx("playerHp"))
 Fire("UNIT_POWER_FREQUENT", "player", "ENERGY"); Advance(0.1); P("energy tick: " .. Fx("playerHp")); Advance(0.6)

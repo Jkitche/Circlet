@@ -44,6 +44,10 @@
     - *Rage embers* (yours): embers fly off the rage band as rage comes in.
     - *Full mana shine* (yours): a soft shine on the mana band while it's full.
     - *Elite glint* (target, target of target): a glint circles elite rings (silver for rares).
+    - *Skinnable* (target): a pelt badge at the top right when the target's corpse can be skinned
+      (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. The game only
+      says so once a corpse is looted, so kinds of creature seen skinnable before are remembered
+      and get a faint badge while alive or not yet looted; a skinned corpse drops it.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.
   - **Damage and healing numbers** (your ring and the target's): each hit and heal the unit takes

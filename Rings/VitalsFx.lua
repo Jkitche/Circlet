@@ -25,6 +25,9 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Rage       (yours)    embers flying off the rage band as rage comes in
 --   FullMana   (yours)    a soft shine on the mana band while it's full
 --   Elite      (target, target of target) a glint circling elite rings (silver for rares)
+--   Skin       (target)   a pelt badge at the top right when the target can be skinned (or
+--                         gathered: herbs, ore, parts), from the corpse's tooltip; kinds of
+--                         creature seen skinnable before get a faint one while alive
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
 -- hidden: thresholds (20%, 30%, full) are checked by running the hidden percentage through
@@ -48,7 +51,7 @@ local ON = {
     Death = { playerHp = true, targetHp = true, totHp = true }, Flare = { playerHp = true },
     Heal = { playerHp = true, targetHp = true }, Jolt = { playerHp = true, targetHp = true },
     Avoid = { playerHp = true, targetHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
-    FullMana = { playerHp = true }, Elite = { targetHp = true, totHp = true },
+    FullMana = { playerHp = true }, Elite = { targetHp = true, totHp = true }, Skin = { targetHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -487,6 +490,103 @@ local function DrawElite(key, fx, st, frame, geom, now)
     end
 end
 
+-- Skinnable. The game doesn't tell addons whether a creature can be skinned; the only word is
+-- the "Skinnable" line on a looted corpse's tooltip (or "Requires Herbalism / Mining /
+-- Engineering"), colored by how hard it is for you. So a dead target's tooltip is read (twice
+-- a second while it's dead), and each kind of creature (by its NPC id) seen skinnable is
+-- remembered (skinKnown), so the next live one, or a corpse not looted yet, gets a faint badge.
+local SKIN_KINDS = {
+    { kind = "leather", text = UNIT_SKINNABLE_LEATHER or "Skinnable", icon = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01" },
+    { kind = "herb", text = UNIT_SKINNABLE_HERB or "Requires Herbalism", icon = "Interface\\Icons\\INV_Misc_Flower_02" },
+    { kind = "rock", text = UNIT_SKINNABLE_ROCK or "Requires Mining", icon = "Interface\\Icons\\Trade_Mining" },
+    { kind = "bolts", text = UNIT_SKINNABLE_BOLTS or "Requires Engineering", icon = "Interface\\Icons\\Trade_Engineering" },
+}
+local SKIN_BY = {}
+for _, k in ipairs(SKIN_KINDS) do SKIN_BY[k.kind] = k end
+
+local function NpcId(unit)
+    local guid = Clean(SafeCall(UnitGUID, unit))
+    if type(guid) ~= "string" then return nil end
+    return tonumber(guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)") or guid:match("^Vehicle%-%d+%-%d+%-%d+%-%d+%-(%d+)")), guid
+end
+
+-- The corpse's tooltip line: kind and its color, or nil.
+local function SkinFromTooltip(unit)
+    local get = C_TooltipInfo and C_TooltipInfo.GetUnit
+    local data = get and SafeCall(get, unit)
+    if type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+    for _, line in ipairs(data.lines) do
+        local text = Clean(line.leftText)
+        if type(text) == "string" then
+            for _, k in ipairs(SKIN_KINDS) do
+                if text == k.text then
+                    local c = line.leftColor
+                    local r, g, b = c and Clean(c.r), c and Clean(c.g), c and Clean(c.b)
+                    if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then r, g, b = 1, 0.82, 0 end
+                    return k.kind, { r, g, b }
+                end
+            end
+        end
+    end
+end
+
+-- A corpse that said so and no longer does has been skinned: no badge on it after that.
+local skinSeen = {} -- unit -> { guid, dead, at, kind, color, done }
+local function SkinState(unit, dead, now)
+    local id, guid = NpcId(unit)
+    local s = skinSeen[unit]
+    if not s or s.guid ~= guid or s.dead ~= dead then
+        s = { guid = guid, dead = dead, at = -math.huge }
+        skinSeen[unit] = s
+    end
+    if dead and now - s.at >= 0.5 then
+        s.at = now
+        local was = s.kind
+        s.kind, s.color = SkinFromTooltip(unit)
+        if was and not s.kind then s.done = true end
+        if s.kind and id then
+            db.skinKnown = db.skinKnown or {}
+            db.skinKnown[id] = s.kind
+        end
+    end
+    if s.kind then return s.kind, s.color, true end
+    if s.done then return nil end
+    local known = id and db.skinKnown and db.skinKnown[id]
+    if known then return known, nil, false end
+end
+
+local function DrawSkin(key, fx, st, frame, geom, d, now)
+    local kind, color, sure
+    if st.unit then
+        kind, color, sure = SkinState(st.unit, st.dead and true or false, now)
+    else
+        kind, color, sure = "leather", { 1, 0.82, 0 }, true -- previews
+    end
+    local k = kind and SKIN_BY[kind]
+    if not k then return end
+    local x, y = Polar(45, geom.R)
+    local icon = Tex(fx, "skin", k.icon, "OVERLAY", 3)
+    if icon.skinFile ~= k.icon then
+        icon.skinFile = k.icon
+        icon:SetTexture(k.icon)
+        if not icon.masked then icon.masked = true; pcall(icon.SetMask, icon, DISC) end
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    end
+    At(icon, frame, x, y, d * 1.1)
+    if sure then
+        icon:SetAlpha(1)
+        icon:SetDesaturated(false)
+        local glow = Tex(fx, "skinGlow", SOFT, "OVERLAY", 2, true)
+        At(glow, frame, x, y, d * 2.2)
+        glow:SetVertexColor(color[1], color[2], color[3])
+        glow:SetAlpha(0.55 + 0.3 * math.sin(now * 3))
+    else
+        icon:SetAlpha(0.5)
+        icon:SetDesaturated(true)
+    end
+end
+ns.VitalsFxSkinKinds = SKIN_KINDS -- tests
+
 ---------------------------------------------------------------------------
 -- Each frame
 ---------------------------------------------------------------------------
@@ -511,6 +611,7 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
         end
     end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
+    if On(key, "Skin") then DrawSkin(key, fx, st, frame, geom, d, now) end
     if On(key, "Flare") then DrawFlare(key, fx, st, frame, geom, d, now) end
     DrawJolt(key, fx, st, frame, geom, now) -- always called: it puts the ring back after a jolt
     -- Anything not drawn this frame goes.
