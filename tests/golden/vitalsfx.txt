@@ -1,0 +1,29 @@
+just targeted (ring not drawn yet): (none)
+lock-on, once the ring shows: reticle
+target, nothing going on: (none)
+3 combo points: cpE x5 cpG x3 cpP x5
+5 combo points: cpE x5 cpG x5 cpP x5
+skull, targeting you: aggroEye aggroGlow mark
+elite: glint x2 glintS x2
+target at 15%: execute
+  hidden, 15%: execute<1>
+  hidden, 50%: execute<0>
+heal on target: heal x8
+block, dodge, parry: blades shield whoosh x3
+crit jolt: 7 nudges, first 0.7,-1.9
+target dead: cracks skull veil
+you (rogue, energy), no tick seen: (none)
+energy tick: tick tickFlash tickHalo
+  0.7s on: tick tickHalo
+  energy spent by a cast isn't a tick: true
+combat starts: flare tick tickHalo
+you at 20%: low tick tickHalo
+  hidden: low<1> tick tickHalo
+rage gain: ember x4
+full mana: fullMana
+  hidden: fullMana<1> low<0>
+half mana: (none)
+your ghost: ghost wisp x6
+raid marker off: (none)
+jolt off: 0 nudges
+ERRORS: {}

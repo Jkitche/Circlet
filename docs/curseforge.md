@@ -11,6 +11,9 @@ around the minimap. Most rings come with an animation of their own.
 
 - **Hearthstone ring**: a swirling portal of arcane motes and racing comets while you cast home,
   collapsing into a flash when it goes off.
+- **Health & power**: your health and power, your target's and its target's, with combo points,
+  raid markers, an aggro warning, execute range, a low-health heartbeat, energy ticks, damage
+  and healing numbers, and the elite dragon.
 - **Swing timer** and **shot timer** rings: your next melee swing, Auto Shot, wand shot or throw,
   with how the last swing went and a warning to hold still through Auto Shot's aim.
 - **Crafting animations** for every WoW Forever profession, worked out from the trade skill

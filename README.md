@@ -88,6 +88,9 @@ then fade away, or stay up as a permanent display.
   went (hit, crit, glancing, dodged, parried...).
 - **Shot timer**: time to your next Auto Shot, wand shot or throw, with Auto Shot's aim (hold
   still!) marked.
+- **Health & power**: your health and power, your target's and its target's, with combo points,
+  raid markers, an aggro warning, execute range, a low-health heartbeat, energy ticks, damage
+  and healing numbers, and the elite dragon.
 - **Target casts**: what your target is casting or channeling, who's casting it, and whether
   you can interrupt it; red with the lost part flashing when it's interrupted.
 - **Finish burst**: when a gather, craft or interaction finishes, the icon swells and throws

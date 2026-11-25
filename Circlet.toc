@@ -66,6 +66,7 @@ Rings\QuestPins.lua
 Rings\Totems.lua
 Rings\Soulstone.lua
 Rings\Imbue.lua
+Rings\VitalsFx.lua
 Rings\Vitals.lua
 
 Features\PanelSkin.lua

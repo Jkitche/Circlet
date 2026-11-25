@@ -77,6 +77,9 @@ local function Gate(pct)
     end
 end
 
+-- For Rings/VitalsFx.lua: the percent scale and whether curves work here.
+ns.VitalsCurves = { Scale = function() return percentScale end, Work = CurvesWork, Readable = Readable }
+
 -- The hidden percentage (0..100) for text, through the game's own scaling curve if it has one.
 local function HiddenPercent100(pct)
     local scale = CurveConstants and CurveConstants.ScaleTo100
@@ -1018,6 +1021,7 @@ local function DrawVitals(key, st, frame, geom)
         v.portrait:Hide()
         HideBadge(v.lvl); HideBadge(v.cmb)
         if v.floats then for _, fs in ipairs(v.floats) do fs:Hide() end end
+        if ns.HideVitalsFx then ns.HideVitalsFx(v, frame) end
         return
     end
     local b = ns.BorderWidthOf(key)
@@ -1113,6 +1117,7 @@ local function DrawVitals(key, st, frame, geom)
     local d = math.floor(math.max(14, geom.T * 1.7, geom.R * 0.36) + 0.5)
     DrawLevel(key, v, st, geom, d)
     DrawCombat(key, v, st, geom, d, now)
+    if ns.DrawVitalsFx then ns.DrawVitalsFx(key, v, st, frame, geom, d, now) end
     if st.name ~= nil then
         v.name:SetTextColor(1, 0.82, 0.25)
         if st.level and not db[key .. "Level"] then Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level) else Put(v.name, nil, st.name) end
@@ -1519,6 +1524,27 @@ local function Colors()
     }
 end
 
+-- The effects (Rings/VitalsFx.lua): name, label, what it does, by the ring it's on.
+local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
+                   "EnergyTick", "Rage", "FullMana", "LockOn", "Elite" }
+local FX_TEXT = {
+    Combo = { "Combo points", "Five pips over the ring for your combo points, popping as they light and pulsing gold at five (rogues and druids)." },
+    Mark = { "Raid marker", "The unit's raid marker (skull, cross, star...) at the top left of the ring." },
+    Aggro = { "Aggro warning", "A red glare round the ring and a glaring eye while your target is targeting you." },
+    Execute = { "Execute range", "The ring throbs red-orange while your target is below 20% health." },
+    LowHealth = { "Low health heartbeat", "A red heartbeat round your ring while you're below 30% health." },
+    Death = { "Death", "Dead: the ring cracks and darkens with a skull over it. Your ghost: a pale glow with wisps drifting up." },
+    Flare = { "Combat start", "A gold ring bursts outward from yours as combat starts." },
+    Heal = { "Heal shimmer", "Green sparkles race up both sides of the ring when a heal lands." },
+    Jolt = { "Jolt on crits", "The ring jolts when a critical or crushing hit lands." },
+    Avoid = { "Block, dodge, parry", "A shield on a block, a whoosh round the ring on a dodge, crossed blades on a parry." },
+    EnergyTick = { "Energy tick", "A spark runs round the energy band once per energy tick (every two seconds), so you can time abilities to it." },
+    Rage = { "Rage embers", "Embers fly off the rage band as rage comes in." },
+    FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
+    LockOn = { "Lock-on", "A targeting reticle snaps onto the ring when you pick a new target." },
+    Elite = { "Elite glint", "A glint circles the ring of elite targets (silver for rares)." },
+}
+
 local function Register(spec)
     local key = spec.key
     local defaults = {
@@ -1533,6 +1559,7 @@ local function Register(spec)
         [key .. "Trail"]     = true,
         [key .. "BigHit"]    = spec.bigHit and true or false,
         [key .. "Menu"]      = true,       -- right-click menu
+        -- (and <key>Fx<Name> for each effect it has: added below)
         [key .. "ClickTarget"] = (key == "playerHp") and true or nil, -- your ring: left-click targets you
         [key .. "BigHitSize"] = 15,
         [key .. "HealthTextSize"] = 100,   -- text sizes, % of the usual size for the ring
@@ -1558,6 +1585,11 @@ local function Register(spec)
         [key .. "Border"]    = 2,
         [key .. "Colors"]    = Colors(),
     }
+    -- Its effects, all on.
+    local fxOn = ns.VITALS_FX or {}
+    for _, name in ipairs(FX_ORDER) do
+        if fxOn[name] and fxOn[name][key] then defaults[key .. "Fx" .. name] = true end
+    end
     ns.RegisterRing({
         key = key, name = spec.title, order = spec.order, since = "1.5.0",
         ring = spec.ring, alwaysInCombat = true,
@@ -1635,6 +1667,16 @@ local function Register(spec)
                                 .. "band; health you gain glows softly as it fills in. Power does the same. Only when "
                                 .. "the values can be read (the game must say how much changed)."),
                         }),
+                        effects = (function()
+                            local args, n = {}, 0
+                            for i, name in ipairs(FX_ORDER) do
+                                if fxOn[name] and fxOn[name][key] then
+                                    n = n + 1
+                                    args["fx" .. name] = Toggle(i, key .. "Fx" .. name, FX_TEXT[name][1], FX_TEXT[name][2])
+                                end
+                            end
+                            return n > 0 and Box(2.7, "Effects", args) or nil
+                        end)(),
                         colors = Box(3, "Colors", {
                             mode = Select(0.5, key .. "ColorMode", "Health band color", COLOR_MODES, COLOR_ORDER,
                                 "Health color: the color below. Class / reaction: players in their class color, "

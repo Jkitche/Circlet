@@ -26,6 +26,28 @@
   - **Level badge**: the level on a gold-rimmed disc, at the bottom left of your ring and the
     bottom right of the target's (on by default for both). Enemies' levels are coloured the way
     the game's target frame and nameplates colour them; friendly units' are always yellow.
+  - **Effects** (each with its own switch in the ring's new Effects box, all on):
+    - *Combo points* (target): five pips over the ring that pop as they light and pulse gold at
+      five, for rogues and druids.
+    - *Raid marker* (all three rings): the skull, cross, star... at the top left of the ring.
+    - *Aggro warning* (target): a red glare round the ring and a glaring eye while it's
+      targeting you.
+    - *Execute range* (target): the ring throbs red-orange below 20% health.
+    - *Low health heartbeat* (yours): a red lub-dub below 30% health.
+    - *Death*: the ring cracks and darkens with a skull over it; your ghost glows pale with
+      wisps drifting up.
+    - *Combat start* (yours): a gold ring bursts outward as combat starts.
+    - *Heal shimmer*: green sparkles race up both sides when a heal lands.
+    - *Jolt on crits*: the ring jolts on a critical or crushing hit.
+    - *Block, dodge, parry*: a shield, a whoosh round the ring, crossed blades.
+    - *Energy tick* (yours): a spark runs round the energy band once per energy tick, so you can
+      time abilities to it.
+    - *Rage embers* (yours): embers fly off the rage band as rage comes in.
+    - *Full mana shine* (yours): a soft shine on the mana band while it's full.
+    - *Lock-on* (target): a targeting reticle snaps onto the ring on a new target.
+    - *Elite glint* (target, target of target): a glint circles elite rings (silver for rares).
+    Health and mana thresholds work in combat too: the hidden percentage runs through a step
+    curve straight into the effect's opacity, as the rings fill.
   - **Damage and healing numbers** (your ring and the target's): each hit and heal the unit takes
     floats up off the top of the ring and fades: damage (red on yours, white on the target's),
     crits bigger and gold with a pop, heals green with a +, and misses as words (Dodge, Parry,
