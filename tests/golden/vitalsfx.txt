@@ -8,7 +8,8 @@ target at 15%: execute
   hidden, 50%: execute<0>
 heal on target: heal x8
 block, dodge, parry: blades shield whoosh x3
-crit jolt: 7 nudges, first 0.7,-1.9
+crit jolt: before CENTER 230.0,-525.0, during moved true, after CENTER 230.0,-525.0 (back: true)
+  moved mid-jolt: ends where its own layout puts it: CENTER 230.0,-525.0
 target dead: cracks skull veil
 you (rogue, energy), no tick seen: (none)
 energy tick: tick tickFlash tickHalo
@@ -23,5 +24,5 @@ full mana: fullMana
 half mana: (none)
 your ghost: ghost wisp x6
 raid marker off: (none)
-jolt off: 0 nudges
+jolt off: moved false
 ERRORS: {}

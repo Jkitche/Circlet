@@ -322,18 +322,32 @@ local function DrawHeal(key, fx, st, frame, geom, d, now)
     end
 end
 
--- Jolt: the ring frame's points nudged for a quarter second (where the client allows it).
+-- Jolt: the ring nudged about for a quarter second. Its one anchor's offset is read, shaken
+-- round, and put back exactly (never zeroed: that offset is where the ring lives). If the
+-- ring is laid out again mid-jolt, its new spot becomes the one to shake round and restore.
+local function Restore(fx, frame)
+    local j = fx.jolt
+    fx.jolt = nil
+    if not j then return end
+    local p, rel, rp, x, y = frame:GetPoint(1)
+    if p and x == j.sx and y == j.sy then -- still where we put it: back to its own spot
+        frame:SetPoint(p, rel, rp, j.bx, j.by)
+    end
+end
+
 local function DrawJolt(key, fx, st, frame, geom, now)
     local s = Since(key, "jolt")
-    if s < 0.25 and frame.AdjustPointsOffset and frame.ClearPointsOffset then
-        local amp = geom.T * 0.45 * (1 - s / 0.25)
-        pcall(frame.ClearPointsOffset, frame)
-        pcall(frame.AdjustPointsOffset, frame, math.sin(s * 90) * amp, math.cos(s * 70) * amp * 0.6)
-        fx.jolting = true
-    elseif fx.jolting then
-        fx.jolting = nil
-        pcall(frame.ClearPointsOffset, frame)
+    if s >= 0.25 or frame:GetNumPoints() ~= 1 then return Restore(fx, frame) end
+    local p, rel, rp, x, y = frame:GetPoint(1)
+    if not (p and type(x) == "number" and type(y) == "number") then return Restore(fx, frame) end
+    local j = fx.jolt
+    if not j or x ~= j.sx or y ~= j.sy then -- starting, or moved by its layout: shake round here
+        j = { bx = x, by = y }
+        fx.jolt = j
     end
+    local amp = geom.T * 0.45 * (1 - s / 0.25)
+    j.sx, j.sy = j.bx + math.sin(s * 90) * amp, j.by + math.cos(s * 70) * amp * 0.6
+    frame:SetPoint(p, rel, rp, j.sx, j.sy)
 end
 
 local function DrawAvoid(key, fx, st, frame, geom, d, now)
@@ -509,7 +523,7 @@ function ns.HideVitalsFx(v, frame)
     local fx = v.fx
     if not fx then return end
     fx.root:Hide()
-    if fx.jolting then fx.jolting = nil; pcall(frame.ClearPointsOffset, frame) end
+    Restore(fx, frame)
 end
 
 -- Jolt only when the setting is on (DrawJolt runs regardless, to undo one).

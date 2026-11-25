@@ -93,9 +93,16 @@ UnitCanAttack = function(_, u) return UNITS[u] ~= nil and not UNITS[u].friend en
 UnitIsUnit = function(a, b) if a == "targettarget" and b == "player" then return UNITS.target and UNITS.target.onMe or false end return a == b end
 UnitClassification = function(u) return CLASSIF[u] or "normal" end
 UnitIsGhost = function(u) return UNITS[u] and UNITS[u].ghost or false end
-JOLT = {}
-RegionMethods.AdjustPointsOffset = function(s, x, y) JOLT[#JOLT + 1] = string.format("%.1f,%.1f", x, y) end
-RegionMethods.ClearPointsOffset = function(s) end
+-- Anchors as the game keeps them, so a jolt can be checked to put the ring back.
+local setPoint = RegionMethods.SetPoint
+RegionMethods.SetPoint = function(s, p, rel, rp, x, y)
+  setPoint(s, p, rel, rp, x, y)
+  if type(rp) == "number" then x, y, rp = rp, x, nil end
+  s._anchor = { p, rel, rp or p, x or 0, y or 0 }
+end
+RegionMethods.ClearAllPoints = function(s) s._anchor = nil end
+RegionMethods.GetNumPoints = function(s) return s._anchor and 1 or 0 end
+RegionMethods.GetPoint = function(s) local a = s._anchor if a then return a[1], a[2], a[3], a[4], a[5] end end
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
 function Ring(key) for _, f in ipairs(allFrames) do if f.sqKey == key and f._shown and f._alpha > 0 then return f end end end
 
@@ -139,8 +146,17 @@ UNITS.target.hp = 500; Advance(0.3); P("  hidden, 50%: " .. Fx("targetHp")); SEC
 Fire("UNIT_COMBAT", "target", "HEAL", "", 50, 2); Advance(0.2); P("heal on target: " .. Fx("targetHp")); Advance(1)
 Fire("UNIT_COMBAT", "target", "BLOCK", "", 0, 1); Fire("UNIT_COMBAT", "target", "DODGE", "", 0, 1); Fire("UNIT_COMBAT", "target", "PARRY", "", 0, 1)
 Advance(0.1); P("block, dodge, parry: " .. Fx("targetHp")); Advance(1)
-JOLT = {}; Fire("UNIT_COMBAT", "target", "WOUND", "CRITICAL", 300, 1); Advance(0.3)
-P("crit jolt: " .. #JOLT .. " nudges, first " .. tostring(JOLT[1]))
+local function Spot(f) local a = f._anchor return a and string.format("%s %.1f,%.1f", a[1], a[4], a[5]) or "none" end
+local tf = Ring("targetHp")
+local before = Spot(tf)
+Fire("UNIT_COMBAT", "target", "WOUND", "CRITICAL", 300, 1); Advance(0.08)
+local during = Spot(tf)
+Advance(0.4)
+P("crit jolt: before " .. before .. ", during moved " .. tostring(during ~= before) .. ", after " .. Spot(tf) .. " (back: " .. tostring(Spot(tf) == before) .. ")")
+-- Laid out again mid-jolt (moved in edit mode, auto-arrange): it settles at the new spot.
+Fire("UNIT_COMBAT", "target", "WOUND", "CRUSHING", 300, 1); Advance(0.08)
+local p, rel, rp = tf:GetPoint(1); tf:SetPoint(p, rel, rp, 123, -45); Advance(0.4)
+P("  moved mid-jolt: ends where its own layout puts it: " .. Spot(tf))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("target dead: " .. Fx("targetHp"))
 UNITS.target.dead = false; UNITS.target.hp = 800; Advance(0.3)
 -- Your ring.
@@ -166,6 +182,8 @@ UNITS.player.dead, UNITS.player.ghost, UNITS.player.hp = false, false, 900; Adva
 -- Settings: each off.
 CircletDB.targetHpFxMark = false; MARKS.target = 2; Advance(0.3); P("raid marker off: " .. Fx("targetHp")); MARKS.target = nil
 CircletDB.targetHpFxMark = true
-CircletDB.targetHpFxJolt = false; JOLT = {}; Fire("UNIT_COMBAT", "target", "WOUND", "CRUSHING", 300, 1); Advance(0.3); P("jolt off: " .. #JOLT .. " nudges")
+local tf2 = Ring("targetHp"); local b2 = Spot(tf2)
+CircletDB.targetHpFxJolt = false; Fire("UNIT_COMBAT", "target", "WOUND", "CRUSHING", 300, 1); Advance(0.08)
+P("jolt off: moved " .. tostring(Spot(tf2) ~= b2))
 ''')
 print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
