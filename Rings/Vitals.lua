@@ -576,7 +576,10 @@ local function Parts(frame)
     v.lvl.text:SetShadowOffset(1, -1)
     v.lvl.text:SetJustifyH("CENTER")
     v.lvl.text:SetPoint("CENTER", v.lvl.fill, "CENTER", 0.5, 0)
-    -- Elite marker: dragon wings spreading from the badge, like the game's target frame.
+    -- Elite marker: the game's own target-frame dragon behind the badge (or, if this client
+    -- lacks that art, our wings).
+    v.lvl.dragon = bf:CreateTexture(nil, "BACKGROUND", nil, -3)
+    v.lvl.dragon:Hide()
     v.lvl.wingL = bf:CreateTexture(nil, "BACKGROUND", nil, -2)
     v.lvl.wingL:SetTexture(WING)
     v.lvl.wingR = bf:CreateTexture(nil, "BACKGROUND", nil, -2)
@@ -619,6 +622,7 @@ local function HideBadge(bd)
     bd.edge:Hide(); bd.fill:Hide()
     if bd.rim then bd.rim:Hide() end
     if bd.wingL then bd.wingL:Hide(); bd.wingR:Hide() end
+    if bd.dragon then bd.dragon:Hide() end
     if bd.text then bd.text:SetText("") end
     if bd.icon then bd.icon:Hide() end
 end
@@ -627,25 +631,64 @@ end
 -- yours, bottom right on the target's (the side away from yours).
 local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315 }
 
--- The elite marker (<key>Elite) on the level badge, as the game's target frame shows it:
--- gold dragon wings for elites and world bosses, silver ones (and a silver rim) for rares
--- and rare elites. Previews show a gold one.
+-- The elite marker (<key>Elite) on the level badge: the game's own target-frame dragon
+-- round it, the art TargetFrame uses for that classification: the gold dragon for elites
+-- and world bosses, the silver one for rare elites, and the silver frame (no wings) for
+-- rares. Previews show the gold one.
+--
+-- The art is TargetFrame's whole frame (256x128, drawn a pixel a texel); we cut out the
+-- dragon round its portrait. From TargetFrame.xml: the 64 px portrait sits at TOPRIGHT
+-- -24,-16 of the 232x100 frame, and the frame art at CENTER +18.5,-4, 230x99, texcoords
+-- 0.1015625..1 x 0.0078125..0.78125. So the portrait's center is texel (182.5, 44.5). We
+-- draw texels 142..256 x 0..100 (the dragon, not the bars to its left), scaled so the
+-- portrait is the badge, its center on the badge's.
 local ELITE = { elite = "gold", worldboss = "gold", rareelite = "silver", rare = "silver" }
+local DRAGON_ART = {
+    elite = "Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
+    worldboss = "Interface\\TargetingFrame\\UI-TargetingFrame-Elite",
+    rareelite = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare-Elite",
+    rare = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
+}
+local ART_W, ART_H = 256, 128
+local PU, PV, PD = 182.5, 44.5, 64          -- the portrait's center and size, in texels
+local U0, U1, V0, V1 = 142, 256, 0, 100     -- the piece we draw
 local WING_COLORS = { gold = { 1, 0.80, 0.32 }, silver = { 0.85, 0.88, 0.95 } }
 local RIM_COLORS = { gold = { 0.85, 0.66, 0.28 }, silver = { 0.78, 0.80, 0.86 } }
 
+-- The game's dragon round the badge; false if this client hasn't the art.
+local function DrawDragon(bd, class)
+    local t = bd.dragon
+    local file = DRAGON_ART[class]
+    if bd.dragonFile ~= file then
+        bd.dragonFile = file
+        bd.dragonOK = t:SetTexture(file) ~= false
+        t:SetTexCoord(U0 / ART_W, U1 / ART_W, V0 / ART_H, V1 / ART_H)
+    end
+    if not bd.dragonOK then t:Hide() return false end
+    local k = bd.d / PD
+    t:ClearAllPoints()
+    t:SetPoint("TOPLEFT", bd.parent, "CENTER", bd.x - (PU - U0) * k, bd.y + (PV - V0) * k)
+    t:SetSize((U1 - U0) * k, (V1 - V0) * k)
+    t:Show()
+    return true
+end
+
 local function DrawElite(key, bd, st)
-    local kind
+    local class
     if db[key .. "Elite"] then
         if st.unit then
-            kind = ELITE[Clean(SafeCall(UnitClassification, st.unit)) or ""]
+            class = Clean(SafeCall(UnitClassification, st.unit))
         elseif key ~= "playerHp" then
-            kind = "gold" -- the preview's sample
+            class = "elite" -- the preview's sample
         end
     end
+    local kind = ELITE[class or ""]
     local rim = RIM_COLORS[kind or "gold"]
     bd.rim:SetVertexColor(rim[1], rim[2], rim[3], 1)
-    if not kind or not bd.x then bd.wingL:Hide(); bd.wingR:Hide() return end
+    if not kind or not bd.x then bd.dragon:Hide(); bd.wingL:Hide(); bd.wingR:Hide() return end
+    if DrawDragon(bd, class) then bd.wingL:Hide(); bd.wingR:Hide() return end
+    -- No dragon art on this client: our wings (rares, like the game, get none).
+    if class == "rare" then bd.wingL:Hide(); bd.wingR:Hide() return end
     local d, c = bd.d, WING_COLORS[kind]
     local w = d * 1.05
     -- Each wing's root (its inner bottom corner) tucked behind the disc's upper side.
@@ -1402,8 +1445,8 @@ local function Register(spec)
                                 .. "it's too high to tell). The name then leaves its level off.")),
                             elite = key ~= "playerHp" and spec.level and (function()
                                 local t = Toggle(7.4, key .. "Elite", "Elite indicator",
-                                    "Dragon wings on the level badge, like the game's target frame: gold for elites and "
-                                    .. "world bosses, silver for rares.")
+                                    "The game's target-frame dragon round the level badge: gold for elites and world "
+                                    .. "bosses, silver for rare elites, and the silver frame for rares.")
                                 t.disabled = function() return not db[key .. "Level"] end
                                 return t
                             end)() or nil,

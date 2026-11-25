@@ -24,9 +24,10 @@
   - **Level badge**: the level on a gold-rimmed disc, at the bottom left of your ring and the
     bottom right of the target's (on by default for both). Enemies' levels are coloured the way
     the game's target frame and nameplates colour them; friendly units' are always yellow.
-  - **Elite indicator** (target and target of target): dragon wings spreading from the level
-    badge, like the game's target frame: gold for elites and world bosses, silver (with a silver
-    rim) for rares and rare elites. On by default; off in the ring's General box.
+  - **Elite indicator** (target and target of target): the game's own target-frame dragon round
+    the level badge: the gold dragon for elites and world bosses, the silver one for rare elites,
+    and the silver frame for rares (with a silver rim on the badge). On by default; off in the
+    ring's General box.
   - **In-combat indicator** (your ring): crossed swords at the top right while you're in combat.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.

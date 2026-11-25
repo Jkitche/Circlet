@@ -68,13 +68,15 @@ target: level badge on by default: 5 in 1.00,0.10,0.10, name Kobold
   low level foe: 0.25,0.75,0.25
   friendly: 1.00,0.82,0.00
   off: disc false, name Kobold 5
-elite: normal mob: wings false false , rim 0.85,0.66,0.28
-elite: elite: wings true true 1.00,0.80,0.32, rim 0.85,0.66,0.28
-elite: rare: wings true true 0.85,0.88,0.95, rim 0.78,0.80,0.86
-elite: rareelite: wings true true 0.85,0.88,0.95, rim 0.78,0.80,0.86
-elite: worldboss: wings true true 1.00,0.80,0.32, rim 0.85,0.66,0.28
-elite: setting off (worldboss): wings false false , rim 0.85,0.66,0.28
-elite: level badge off: wings false false , rim 0.85,0.66,0.28
+elite: normal mob: dragon none, wings false, rim 0.85,0.66,0.28
+elite: elite: dragon Elite, wings false, rim 0.85,0.66,0.28
+elite: rare: dragon Rare, wings false, rim 0.78,0.80,0.86
+elite: rareelite: dragon Rare-Elite, wings false, rim 0.78,0.80,0.86
+elite: worldboss: dragon Elite, wings false, rim 0.85,0.66,0.28
+elite: setting off (worldboss): dragon none, wings false, rim 0.85,0.66,0.28
+elite: level badge off: dragon none, wings false, rim 0.85,0.66,0.28
+elite: no dragon art, elite: dragon none, wings true, rim 0.85,0.66,0.28
+elite: no dragon art, rare: dragon none, wings false, rim 0.78,0.80,0.86
 target of target: health 22 segs, power 36 segs | Jaina 20 / 30% / 50%
   its health changed (no event): health 51 segs, power 36 segs | Jaina 20 / 70% / 50%
   target has no target: (hidden)

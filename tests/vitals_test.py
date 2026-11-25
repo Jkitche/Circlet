@@ -271,12 +271,21 @@ P("  off: disc " .. tostring(tv.lvl.fill:IsShown()) .. ", name " .. tostring(tv.
 -- Elite marker: wings on the level badge, gold for elites and bosses, silver for rares.
 UnitClassification = function(u) return UNITS[u] and UNITS[u].class or "normal" end
 local function VC(t) return t._vc and string.format("%.2f,%.2f,%.2f", t._vc[1], t._vc[2], t._vc[3]) or "-" end
-local function Elite() return string.format("wings %s %s %s, rim %s", tostring(tv.lvl.wingL:IsShown()), tostring(tv.lvl.wingR:IsShown()),
-  tv.lvl.wingL:IsShown() and VC(tv.lvl.wingL) or "", VC(tv.lvl.rim)) end
+local function Elite()
+  local dr = tv.lvl.dragon
+  local art = dr:IsShown() and (tostring(dr._texpath):match("UI%-TargetingFrame%-(.+)$") or "?") or "none"
+  return string.format("dragon %s, wings %s, rim %s", art, tostring(tv.lvl.wingL:IsShown()), VC(tv.lvl.rim)) end
 Advance(0.3); P("elite: normal mob: " .. Elite())
 for _, c in ipairs({ "elite", "rare", "rareelite", "worldboss" }) do UNITS.target.class = c; Advance(0.3); P("elite: " .. c .. ": " .. Elite()) end
 CircletDB.targetHpElite = false; Advance(0.3); P("elite: setting off (worldboss): " .. Elite()); CircletDB.targetHpElite = true
 CircletDB.targetHpLevel = false; Advance(0.3); P("elite: level badge off: " .. Elite()); CircletDB.targetHpLevel = true
+-- A client without the dragon art: our wings instead (and none for plain rares, like the game).
+local realSet = RegionMethods.SetTexture
+RegionMethods.SetTexture = function(s, t) if type(t) == "string" and t:find("UI%-TargetingFrame") then s._texpath = nil return false end return realSet(s, t) end
+tv.lvl.dragonFile = nil
+UNITS.target.class = "elite"; Advance(0.3); P("elite: no dragon art, elite: " .. Elite())
+UNITS.target.class = "rare"; tv.lvl.dragonFile = nil; Advance(0.3); P("elite: no dragon art, rare: " .. Elite())
+RegionMethods.SetTexture = realSet; tv.lvl.dragonFile = nil
 UNITS.target.class = nil; Advance(0.3)
 CircletDB.playerHpShow = "combat"; Advance(2)
 
