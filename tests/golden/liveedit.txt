@@ -450,7 +450,7 @@ all on again
   #36 shown=true a=1.00 strata=TOOLTIP mouse=true | Soulstone / 29m / Thrall
   #37 shown=true a=1.00 strata=TOOLTIP mouse=true | Rockbiter / 4:46
   #38 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90%
-  #39 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90%
+  #39 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90% / Defias Bandit
   #40 shown=true a=1.00 strata=TOOLTIP mouse=true | 95% / 90%
 after Esc
   #1 shown=true a=0.67 strata=LOW mouse=false | Level 16 / 58.0% / Normal
@@ -491,7 +491,7 @@ after Esc
   #36 shown=true a=1.00 strata=LOW mouse=false | Soulstone / 29m / Thrall
   #37 shown=true a=1.00 strata=LOW mouse=false | Rockbiter / 4:46
   #38 shown=true a=1.00 strata=LOW mouse=false | 95% / 90%
-  #39 shown=true a=1.00 strata=LOW mouse=false | 95% / 90%
+  #39 shown=true a=1.00 strata=LOW mouse=false | 95% / 90% / Defias Bandit
   #40 shown=true a=1.00 strata=LOW mouse=false | 95% / 90%
 ERRORS: {}
-UNDEF: ['ALL_FS', 'ALL_LINES', 'AcceptResurrect', 'BackdropTemplateMixin', 'C_AddOns', 'C_Item', 'C_Spell', 'C_UnitAuras', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'CreateColor', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetAddOnMetadata', 'GetInventoryItemID', 'GetItemCount', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestTimers', 'GetSpellInfo', 'GetText', 'GetWeaponEnchantInfo', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'ITEM_QUALITY_COLORS', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'RetrieveCorpse', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TargetFrame', 'TargetFrameSpellBar', 'TargetFrameToT', 'TotemFrame', 'UnitAttackSpeed', 'UnitBuff', 'UnitHealthPercent', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']
+UNDEF: ['ALL_FS', 'ALL_LINES', 'AcceptResurrect', 'BackdropTemplateMixin', 'C_AddOns', 'C_Item', 'C_Spell', 'C_UnitAuras', 'CastingBarFrame', 'CircletDB', 'CircletProfiles', 'CreateColor', 'DEFAULT_CHAT_FRAME', 'DONE', 'ERR_ZONE_EXPLORED', 'ERR_ZONE_EXPLORED_XP', 'FACTION_ALLIANCE', 'FACTION_HORDE', 'FACTION_STANDING_LABEL5', 'FACTION_STANDING_LABEL6', 'GetAddOnMetadata', 'GetCreatureDifficultyColor', 'GetInventoryItemID', 'GetItemCount', 'GetMirrorTimerInfo', 'GetPetExperience', 'GetQuestDifficultyColor', 'GetQuestTimers', 'GetSpellInfo', 'GetText', 'GetWeaponEnchantInfo', 'INVSLOT_AMMO', 'INVSLOT_RANGED', 'ITEM_QUALITY_COLORS', 'LOOT_ITEM_SELF', 'LOOT_ITEM_SELF_MULTIPLE', 'LibStub', 'MIRRORTIMER_NUMTIMERS', 'MainMenuExpBar', 'MainStatusTrackingBarContainer', 'Menu', 'MirrorTimer1', 'MirrorTimer2', 'MirrorTimer3', 'MirrorTimerContainer', 'PlayerCastingBarFrame', 'PlayerFrame', 'PlayerRestIcon', 'PlayerRestLoop', 'QuestTimerFrame', 'REST', 'ReputationWatchBar', 'RetrieveCorpse', 'SECONDARY_SKILLS', 'SecondaryStatusTrackingBarContainer', 'TRADE_SKILLS', 'TargetFrame', 'TargetFrameSpellBar', 'TargetFrameToT', 'TotemFrame', 'UnitAttackSpeed', 'UnitBuff', 'UnitHealthPercent', 'UnitOnTaxi', 'hooksecurefunc', 'issecretvalue']

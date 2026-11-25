@@ -21,8 +21,9 @@
     critical and crushing hits count.
   - **Right-click menu**: right-click a ring for the game's own menu for that unit, as on its
     frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to the world.
-  - **Level badge**: the level on a gold-rimmed disc at the bottom left of the ring (on by default
-    for yours; on the others in the game's difficulty colours).
+  - **Level badge**: the level on a gold-rimmed disc, at the bottom left of your ring and the
+    bottom right of the target's (on by default for both). Enemies' levels are coloured the way
+    the game's target frame and nameplates colour them; friendly units' are always yellow.
   - **In-combat indicator** (your ring): crossed swords at the top right while you're in combat.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.

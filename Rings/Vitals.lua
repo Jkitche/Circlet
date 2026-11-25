@@ -611,7 +611,11 @@ local function HideBadge(bd)
     if bd.icon then bd.icon:Hide() end
 end
 
--- The level badge (<key>Level): the unit's level on a disc at the bottom left of the ring;
+-- Where each ring's level badge sits (degrees, 0 = right, counter-clockwise): bottom left on
+-- yours, bottom right on the target's (the side away from yours).
+local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315 }
+
+-- The level badge (<key>Level): the unit's level on a disc at the bottom of the ring;
 -- others' levels in the game's difficulty colors, "??" for ones too high to tell.
 local function DrawLevel(key, v, st, geom, d)
     if not db[key .. "Level"] then HideBadge(v.lvl) return end
@@ -620,7 +624,7 @@ local function DrawLevel(key, v, st, geom, d)
     if not st.unit and key ~= "playerHp" then level = st.level or 18 end
     if not level then HideBadge(v.lvl) return end
     d = math.floor(d * 1.4 + 0.5) -- bigger than the combat badge: it carries text
-    PlaceBadge(v.lvl, geom.R, 225, d)
+    PlaceBadge(v.lvl, geom.R, LEVEL_ANGLE[key] or 225, d)
     local fk = d .. ":" .. ((tonumber(db[key .. "LevelTextSize"]) or 100))
     if v.lvl.fk ~= fk then
         v.lvl.fk = fk
@@ -628,8 +632,16 @@ local function DrawLevel(key, v, st, geom, d)
         v.lvl.text:SetFont(STANDARD_TEXT_FONT, size, "OUTLINE")
     end
     local r, g, b = 1, 0.82, 0.25
-    if key ~= "playerHp" and st.unit and GetQuestDifficultyColor then
-        local ok, c = pcall(GetQuestDifficultyColor, level > 0 and level or 999)
+    -- Colored the way the game's target frame and nameplates color it: the creature difficulty
+    -- colors (the quest ones call anything within a few levels yellow), by its effective level.
+    -- Friendly units: plain yellow (difficulty only matters for what you can fight).
+    local Difficulty = GetCreatureDifficultyColor or GetQuestDifficultyColor
+    local friend = st.unit and Clean(SafeCall(UnitIsFriend, "player", st.unit))
+    if friend then
+        r, g, b = 1, 0.82, 0
+    elseif key ~= "playerHp" and st.unit and Difficulty then
+        local eff = UnitEffectiveLevel and CleanNumber(SafeCall(UnitEffectiveLevel, st.unit)) or level
+        local ok, c = pcall(Difficulty, (eff and eff > 0) and eff or 999)
         if ok and type(c) == "table" and c.r then r, g, b = c.r, c.g, c.b end
     end
     v.lvl.text:SetTextColor(r, g, b)
@@ -1338,7 +1350,7 @@ local function Register(spec)
                             name = Toggle(7, key .. "Name", spec.nameLabel, spec.nameDesc),
                             portrait = Toggle(8, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
                             level = Toggle(7.3, key .. "Level", "Level badge",
-                                "The level on a small disc at the bottom left of the ring"
+                                "The level on a small disc at the bottom " .. (key == "playerHp" and "left" or "right") .. " of the ring"
                                 .. (key == "playerHp" and "." or ", in the game's difficulty colors (\"??\" when "
                                 .. "it's too high to tell). The name then leaves its level off.")),
                             combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
@@ -1410,7 +1422,7 @@ Register({
 
 Register({
     key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 1.6,
-    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, menuWho = "your target",
+    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, menuWho = "your target",
     preview = ns.PreviewTargetHpRing, slash = { "targethealth", "thp" }, help = "preview the target health ring",
     toggleName = "Target health ring", toggleDesc = "Your target's health and power, with its name.",
     gameBar = "the game's target frame",

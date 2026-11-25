@@ -6,17 +6,17 @@ you, hidden, value and percent: health 29 segs (gated), power 36 segs (gated) | 
 you, hidden, value: health 29 segs (gated), power 36 segs (gated) | - / <400> (hidden) / 50% (hidden)
 warrior, full health, no rage: (hidden)
 warrior, 35 rage: health 72 segs, power 20 segs | - / 100% / 35
-target, hostile, no power: health 18 segs, power 0 segs | Defias Bandit 18 / 25% / -
+target, hostile, no power: health 18 segs, power 0 segs | Defias Bandit / 25% / -
   hostile color: 0.43 0.10 0.08
-target dead: health 5 segs, power 0 segs | Defias Bandit 18 / Dead / -
-target hidden (25%): health 18 segs (gated), power 0 segs (gated) | Defias Bandit 18 / 25% (hidden) / <0> (hidden)
+target dead: health 5 segs, power 0 segs | Defias Bandit / Dead / -
+target hidden (25%): health 18 segs (gated), power 0 segs (gated) | Defias Bandit / 25% (hidden) / <0> (hidden)
 no target: (hidden)
 target, only in combat, out of combat: (hidden)
-target, only in combat, in combat: health 36 segs, power 36 segs | Kobold 5 / 50% / 50%
-target, power band off: health 36 segs, power 0 segs | Kobold 5 / 50% / -
+target, only in combat, in combat: health 36 segs, power 36 segs | Kobold / 50% / 50%
+target, power band off: health 36 segs, power 0 segs | Kobold / 50% / -
 no percent functions, hidden: health 0 segs, power 0 segs | - / - / <1200> (hidden)
 edit, you: health 69 segs, power 65 segs | - / 95% / 90%
-edit, target: health 69 segs, power 65 segs | Defias Bandit 18 / 95% / 90%
+edit, target: health 69 segs, power 65 segs | Defias Bandit / 95% / 90%
 portrait off: none
 target portrait: target at 0.70
 redrawn while nothing changed: 0
@@ -64,8 +64,10 @@ level badge: 42, disc true, combat badge false
   in combat: combat badge true
   option off: combat badge false
   level off: disc false
-target: level badge off by default: disc false, name Kobold 5
-  on: 5, name Kobold
+target: level badge on by default: 5 in 1.00,0.10,0.10, name Kobold
+  low level foe: 0.25,0.75,0.25
+  friendly: 1.00,0.82,0.00
+  off: disc false, name Kobold 5
 target of target: health 22 segs, power 36 segs | Jaina 20 / 30% / 50%
   its health changed (no event): health 51 segs, power 36 segs | Jaina 20 / 70% / 50%
   target has no target: (hidden)

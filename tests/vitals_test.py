@@ -258,9 +258,16 @@ COMBAT = true; Advance(0.3); P("  in combat: combat badge " .. tostring(pv.cmb.i
 CircletDB.playerHpCombatIcon = false; COMBAT = true; Advance(0.3); P("  option off: combat badge " .. tostring(pv.cmb.icon:IsShown())); COMBAT = false; CircletDB.playerHpCombatIcon = true
 CircletDB.playerHpLevel = false; Advance(0.3); P("  level off: disc " .. tostring(pv.lvl.fill:IsShown())); CircletDB.playerHpLevel = true
 local tv = Ring("targetHp").vit
-P("target: level badge off by default: disc " .. tostring(tv.lvl.fill:IsShown()) .. ", name " .. tostring(tv.name._text))
-CircletDB.targetHpLevel = true; Advance(0.3)
-P("  on: " .. tostring(tv.lvl.text._text) .. ", name " .. tostring(tv.name._text)); CircletDB.targetHpLevel = false
+-- The target's: bottom right, on by default; creature difficulty colors, yellow for friends.
+UnitIsFriend = function(_, u) return UNITS[u] and UNITS[u].friend or false end
+GetCreatureDifficultyColor = function(l) if l <= 3 then return { r = 0.25, g = 0.75, b = 0.25 } end return { r = 1, g = 0.1, b = 0.1 } end
+local function TC(fs) return fs._tc and string.format("%.2f,%.2f,%.2f", fs._tc[1], fs._tc[2], fs._tc[3]) or "-" end
+Advance(0.3)
+P("target: level badge on by default: " .. tostring(tv.lvl.text._text) .. " in " .. TC(tv.lvl.text) .. ", name " .. tostring(tv.name._text))
+UNITS.target.level = 2; Advance(0.3); P("  low level foe: " .. TC(tv.lvl.text))
+UNITS.target.friend = true; Advance(0.3); P("  friendly: " .. TC(tv.lvl.text)); UNITS.target.friend = nil; UNITS.target.level = 5
+CircletDB.targetHpLevel = false; Advance(0.3)
+P("  off: disc " .. tostring(tv.lvl.fill:IsShown()) .. ", name " .. tostring(tv.name._text)); CircletDB.targetHpLevel = true
 CircletDB.playerHpShow = "combat"; Advance(2)
 
 -- Target of target: a small ring for who your target is after; no events, so it keeps checking.

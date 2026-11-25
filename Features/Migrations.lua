@@ -77,6 +77,9 @@ local MIGRATIONS = {
     -- 0.58.1: "Hide text when idle" is on by default.
     { flag = "xpHideTextDefaultOn", run = function(db) db.xpHideText = nil end },
 
+    -- 1.5.0: the target ring's level badge is on by default.
+    { flag = "targetHpLevelDefaultOn", run = function(db) db.targetHpLevel = nil end },
+
     -- Quest rings start just left of where the quest list sits on the right edge (depends
     -- on the screen, so it isn't a fixed default).
     { flag = nil, run = function(db)
