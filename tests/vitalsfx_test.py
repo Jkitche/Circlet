@@ -41,15 +41,17 @@ C_CurveUtil = { CreateCurve = function()
   local c = { pts = {} }
   function c:SetType() end
   function c:AddPoint(x, y) table.insert(self.pts, { x, y }) end
-  -- Evaluate takes a stored hidden value too (handing back a hidden result), as the lagging
-  -- trail hopes the game allows.
+  -- As in the game, Evaluate refuses a hidden value from addon code ("Secret values are only
+  -- allowed during untainted execution for this argument").
   function c:Evaluate(x)
-    local hid = issecretvalue(x); if hid then x = x.v end
+    if issecretvalue(x) then error("bad argument #2 to 'Evaluate' (Secret values are only allowed during untainted execution for this argument.)") end
     local y = 0 for _, p in ipairs(self.pts) do if x >= p[1] then y = p[2] end end
-    if hid then return { secret = true, v = y } end
     return y end
   return c end }
 Enum = { LuaCurveType = { Step = 1 } }
+-- SetSpriteSheetCell takes a hidden cell from addon code (as the game's docs say).
+RegionMethods.SetSpriteSheetCell = function(s, cell, rows, cols)
+  s._cell = issecretvalue(cell) and ("<" .. tostring(cell.v) .. ">") or ("[" .. tostring(cell) .. "]") end
 CurveConstants = { ScaleTo100 = { Evaluate = function(_, x) return x * 100 end } }
 local function Pct(cur, max, curve)
   local p = max > 0 and cur / max or 0
@@ -118,8 +120,9 @@ function Fx(key)
       local parent = t:GetParent()
       local hiddenParent = parent and parent ~= fx.root and parent._shown == false
       if not hiddenParent then
-        if issecretvalue(a) then table.insert(out, name .. "<" .. tostring(a.v) .. ">")
-        elseif (a or 1) > 0.01 then table.insert(out, name) end
+        local nm = t._cell and (name .. "@" .. t._cell) or name
+        if issecretvalue(a) then table.insert(out, nm .. "<" .. tostring(a.v) .. ">")
+        elseif (a or 1) > 0.01 then table.insert(out, nm) end
       end
     end
   end
@@ -139,8 +142,8 @@ CP = 3; Advance(0.3); P("3 combo points: " .. Fx("targetHp"))
 CP = 5; Advance(0.3); P("5 combo points: " .. Fx("targetHp")); CP = 0
 MARKS.target = 8; UNITS.target.onMe = true; Advance(0.3); P("skull, targeting you: " .. Fx("targetHp"))
 MARKS.target = nil; UNITS.target.onMe = false
--- WoW Forever hides the marker (a secret, even out of combat): all eight icons, each gated
--- by its own curve, so only the hidden index's shows.
+-- WoW Forever hides the marker (a secret, even out of combat): the hidden index goes
+-- straight to the icon sheet's cell, as Blizzard's target frame does.
 MARKS.target = { secret = true, v = 8 }; Advance(0.3); P("hidden skull: " .. Fx("targetHp"))
 MARKS.target = { secret = true, v = 2 }; Advance(0.3); P("hidden circle: " .. Fx("targetHp"))
 MARKS.target = nil
