@@ -653,7 +653,23 @@ local ART_W, ART_H = 256, 128
 local PU, PV, PD = 182.5, 44.5, 64          -- the portrait's center and size, in texels
 local U0, U1, V0, V1 = 142, 256, 0, 100     -- the piece we draw
 local WING_COLORS = { gold = { 1, 0.80, 0.32 }, silver = { 0.85, 0.88, 0.95 } }
-local RIM_COLORS = { gold = { 0.85, 0.66, 0.28 }, silver = { 0.78, 0.80, 0.86 } }
+-- The badge's colors (rim, outline, inside): plain, or, with a dragon round it, taken from
+-- the dragon's own art (its gold or steel, and the dark of its shading) so the two read as
+-- one piece rather than a black-edged disc sat on the dragon.
+local BADGE_LOOK = {
+    plain  = { rim = { 0.85, 0.66, 0.28 }, edge = { 0, 0, 0, 0.9 },          fill = { 0.11, 0.08, 0.10 } },
+    gold   = { rim = { 0.96, 0.72, 0.22 }, edge = { 0.24, 0.13, 0.03, 0.85 }, fill = { 0.17, 0.10, 0.04 } },
+    silver = { rim = { 0.80, 0.83, 0.88 }, edge = { 0.13, 0.13, 0.16, 0.85 }, fill = { 0.11, 0.11, 0.14 } },
+}
+
+local function BadgeLook(bd, look)
+    if bd.look == look then return end
+    bd.look = look
+    local c = BADGE_LOOK[look]
+    bd.rim:SetVertexColor(c.rim[1], c.rim[2], c.rim[3], 1)
+    bd.edge:SetVertexColor(c.edge[1], c.edge[2], c.edge[3], c.edge[4])
+    bd.fill:SetVertexColor(c.fill[1], c.fill[2], c.fill[3], 1)
+end
 
 -- The game's dragon round the badge; false if this client hasn't the art.
 local function DrawDragon(bd, class)
@@ -683,8 +699,7 @@ local function DrawElite(key, bd, st)
         end
     end
     local kind = ELITE[class or ""]
-    local rim = RIM_COLORS[kind or "gold"]
-    bd.rim:SetVertexColor(rim[1], rim[2], rim[3], 1)
+    BadgeLook(bd, kind or "plain")
     if not kind or not bd.x then bd.dragon:Hide(); bd.wingL:Hide(); bd.wingR:Hide() return end
     if DrawDragon(bd, class) then bd.wingL:Hide(); bd.wingR:Hide() return end
     -- No dragon art on this client: our wings (rares, like the game, get none).

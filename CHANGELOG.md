@@ -26,8 +26,9 @@
     the game's target frame and nameplates colour them; friendly units' are always yellow.
   - **Elite indicator** (target and target of target): the game's own target-frame dragon round
     the level badge: the gold dragon for elites and world bosses, the silver one for rare elites,
-    and the silver frame for rares (with a silver rim on the badge). On by default; off in the
-    ring's General box.
+    and the silver frame for rares. The badge takes its colors from the dragon (its gold or
+    steel rim, and the dark of its shading for the outline and inside) so the two blend into
+    one piece. On by default; off in the ring's General box.
   - **In-combat indicator** (your ring): crossed swords at the top right while you're in combat.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.
