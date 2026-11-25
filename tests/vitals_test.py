@@ -319,6 +319,17 @@ Advance(1.2); P("floats: fading: " .. Floats(tv))
 Advance(0.5); P("floats: gone: " .. Floats(tv))
 Fire("UNIT_COMBAT", "player", "WOUND", "", 77, 1); Fire("UNIT_COMBAT", "player", "HEAL", "CRITICAL", 300, 2)
 Advance(0.05); P("floats on your ring: " .. Floats(pv))
+-- Direction: where they start and which way they go (relative to the ring's center).
+-- Only the axis it floats along (the sideways drift is a little random).
+local function Where(v, dir) local fs = v.floats and v.floats[1]; if not (fs and fs._pt) then return "-" end
+  return (dir == "up" or dir == "down") and string.format("y=%.0f", fs._pt[4]) or string.format("x=%.0f", fs._pt[3]) end
+Advance(2)
+for _, dir in ipairs({ "up", "down", "left", "right" }) do
+  CircletDB.targetHpFloatDir = dir
+  Fire("UNIT_COMBAT", "target", "WOUND", "", 10, 1); Advance(0.05); local a = Where(tv, dir); Advance(0.6)
+  P("floats " .. dir .. ": " .. a .. " -> " .. Where(tv, dir)); Advance(1.5)
+end
+CircletDB.targetHpFloatDir = "up"
 CircletDB.targetHpFloat = false; Fire("UNIT_COMBAT", "target", "WOUND", "", 99, 1); Advance(0.05); P("floats: off: " .. Floats(tv)); CircletDB.targetHpFloat = true
 Fire("UNIT_COMBAT", "target", "WOUND", "", 55, 1); Advance(0.05); Fire("PLAYER_TARGET_CHANGED"); Advance(0.05); P("floats: new target clears them: " .. Floats(tv))
 Advance(2); issecretvalue = realSecret

@@ -912,6 +912,7 @@ end
 -- hidden from addons, so it's handed to the font string as it is (the game draws it; it can't
 -- be formatted or added up); readable amounts are shortened (12.3k).
 local FLOAT_TIME, FLOAT_MAX = 1.5, 8
+local FLOAT_DIRS = { up = { 0, 1 }, down = { 0, -1 }, left = { -1, 0 }, right = { 1, 0 } }
 local MISS_WORDS = { MISS = "Miss", DODGE = "Dodge", PARRY = "Parry", BLOCK = "Block", ABSORB = "Absorb",
                      RESIST = "Resist", IMMUNE = "Immune", DEFLECT = "Deflect", EVADE = "Evade", REFLECT = "Reflect" }
 local floats = {} -- ring key -> { { kind, amount, crit, word, at, drift } ... }, oldest first
@@ -989,9 +990,14 @@ local function DrawFloats(key, v, frame, geom, now)
             local px = math.floor(size * scale * (f.kind == "miss" and 0.8 or 1) + 0.5)
             if fs.px ~= px then fs.px = px; fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
             local ease = 1 - (1 - t) ^ 2
+            -- <key>FloatDir: which side they start on and float out from (up, down, left, right);
+            -- the drift aside runs across that.
+            local dx, dy = FLOAT_DIRS[db[key .. "FloatDir"]] and FLOAT_DIRS[db[key .. "FloatDir"]][1] or 0,
+                FLOAT_DIRS[db[key .. "FloatDir"]] and FLOAT_DIRS[db[key .. "FloatDir"]][2] or 1
+            local out = geom.R + geom.T + size * (dx ~= 0 and 1.2 or 0.2) + ease * geom.R * 0.9
+            local side = f.drift * geom.R * 0.6 * ease
             fs:ClearAllPoints()
-            fs:SetPoint("CENTER", frame, "CENTER", f.drift * geom.R * 0.6 * ease,
-                geom.R + geom.T + size * 0.2 + ease * geom.R * 0.9)
+            fs:SetPoint("CENTER", frame, "CENTER", dx * out + dy * side, dy * out + dx * side)
             if f.kind == "heal" then
                 fs:SetTextColor(0.35, 1, 0.35)
                 SetAmount(fs, "+", f.amount)
@@ -1567,6 +1573,7 @@ local function Register(spec)
         [key .. "LevelTextSize"]  = 100,
         [key .. "FloatTextSize"]  = 100,
         [key .. "Float"]     = spec.float and true or nil, -- damage and healing numbers floating off it
+        [key .. "FloatDir"]  = spec.float and "up" or nil, -- which way they float: up, down, left, right
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
         [key .. "Elite"]     = (spec.level and key ~= "playerHp") and true or nil, -- wings on it for elites
         [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
@@ -1631,10 +1638,6 @@ local function Register(spec)
                                 t.disabled = function() return not db[key .. "Level"] end
                                 return t
                             end)() or nil,
-                            float = spec.float and Toggle(7.5, key .. "Float", "Damage and healing numbers",
-                                "Each hit and heal " .. (key == "playerHp" and "you take" or "your target takes")
-                                .. " floats up off the top of the ring: damage, crits bigger and gold, heals in green, "
-                                .. "and misses as words (Dodge, Parry, Block...).") or nil,
                             combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
                                 "Crossed swords on a small disc at the top right of the ring while you're in combat. "
                                 .. "Edit mode and previews show it so you can see where it sits.") or nil,
@@ -1668,6 +1671,17 @@ local function Register(spec)
                         }),
                         effects = (function()
                             local args, n = {}, 0
+                            if spec.float then
+                                n = n + 1
+                                args.float = Toggle(0.1, key .. "Float", "Damage and healing numbers",
+                                    "Each hit and heal " .. (key == "playerHp" and "you take" or "your target takes")
+                                    .. " floats off the ring: damage, crits bigger and gold, heals in green, and misses "
+                                    .. "as words (Dodge, Parry, Block...).")
+                                args.floatDir = Select(0.2, key .. "FloatDir", "Direction",
+                                    { up = "Up", down = "Down", left = "Left", right = "Right" }, { "up", "down", "left", "right" },
+                                    "Which side of the ring the numbers start on and float away from.")
+                                args.floatDir.disabled = function() return not db[key .. "Float"] end
+                            end
                             for i, name in ipairs(FX_ORDER) do
                                 if fxOn[name] and fxOn[name][key] then
                                     n = n + 1

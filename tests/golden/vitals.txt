@@ -87,6 +87,10 @@ floats: hidden amount: 123[1.0,1.0,1.0 15px a1.0] 456[1.0,0.8,0.2 23px a1.0] +15
 floats: fading: 123[1.0,1.0,1.0 15px a0.4] 456[1.0,0.8,0.2 18px a0.4] +15.0k[0.3,1.0,0.3 15px a0.4] Dodge[0.8,0.8,0.8 12px a0.4] SECRET (drawn)[1.0,1.0,1.0 15px a0.4]
 floats: gone: (none)
 floats on your ring: 77[1.0,0.3,0.2 15px a1.0] +300[0.3,1.0,0.3 24px a1.0]
+floats up: y=66 -> y=93
+floats down: y=-66 -> y=-93
+floats left: x=-81 -> x=-108
+floats right: x=81 -> x=108
 floats: off: (none)
 floats: new target clears them: (none)
 target of target: health 22 segs, power 36 segs | - / 30% / 50%

@@ -50,7 +50,9 @@
     floats up off the top of the ring and fades: damage (red on yours, white on the target's),
     crits bigger and gold with a pop, heals green with a +, and misses as words (Dodge, Parry,
     Block...). In combat the game hides the amounts from addons, so they're handed to the game to
-    draw as they are. On by default; sized in the Text sizes box.
+    draw as they are. On by default; turned on or off at the top of the ring's Effects box, with a
+    Direction dropdown (up, down, left or right) for which side they float off; sized in the Text
+    sizes box.
   - **Elite indicator** (target and target of target): the game's own target-frame dragon round
     the level badge: the gold dragon for elites and world bosses, the silver one for rare elites,
     and the silver frame for rares. The badge takes its colors from the dragon (its gold or
