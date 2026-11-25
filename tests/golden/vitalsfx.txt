@@ -1,5 +1,3 @@
-just targeted (ring not drawn yet): (none)
-lock-on, once the ring shows: reticle
 target, nothing going on: (none)
 3 combo points: cpE x5 cpG x3 cpP x5
 5 combo points: cpE x5 cpG x5 cpP x5

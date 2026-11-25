@@ -25,7 +25,6 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   EnergyTick (yours)    a spark running round the energy band, once per energy tick
 --   Rage       (yours)    embers flying off the rage band as rage comes in
 --   FullMana   (yours)    a soft shine on the mana band while it's full
---   LockOn     (target)   a targeting reticle snapping onto the ring on a new target
 --   Elite      (target, target of target) a glint circling elite rings (silver for rares)
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
@@ -51,14 +50,14 @@ local ON = {
     Death = { playerHp = true, targetHp = true, totHp = true }, Flare = { playerHp = true },
     Heal = { playerHp = true, targetHp = true }, Jolt = { playerHp = true, targetHp = true },
     Avoid = { playerHp = true, targetHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
-    FullMana = { playerHp = true }, LockOn = { targetHp = true }, Elite = { targetHp = true, totHp = true },
+    FullMana = { playerHp = true }, Elite = { targetHp = true, totHp = true },
 }
 ns.VITALS_FX = ON
 
 local function On(key, name) return ON[name][key] and db[key .. "Fx" .. name] end
 
 -- Event times, by ring key.
-local hits = {}   -- key -> { heal = t, jolt = t, block = t, dodge = t, parry = t, lock = t, flare = t }
+local hits = {}   -- key -> { heal = t, jolt = t, block = t, dodge = t, parry = t, flare = t }
 local function Mark(key, what) hits[key] = hits[key] or {}; hits[key][what] = GetTime() end
 local function Since(key, what) local h = hits[key] return h and h[what] and GetTime() - h[what] or math.huge end
 ns.VitalsFxMark = Mark -- tests and previews
@@ -450,25 +449,6 @@ local function DrawFullMana(key, fx, st, frame, g2, now)
     DrawThreshold(fx, "fullMana", frame, g2.R, gate, { 0.55, 0.75, 1 }, 0.35 + 0.25 * math.sin(now * 1.5))
 end
 
-local function DrawLockOn(key, fx, st, frame, geom, now)
-    -- Timed from the first frame the ring is drawn after the new target (it may fade in a
-    -- moment after the target changes).
-    local h = hits[key]
-    local mark = h and h.lock
-    if not mark or GetTime() - mark > 3 then return end
-    if fx.lockMark ~= mark then fx.lockMark, fx.lockStart = mark, now end
-    local s = now - fx.lockStart
-    if s > 0.6 then return end
-    local t = Tex(fx, "reticle", TEX .. "Reticle", "OVERLAY", 6, true)
-    local u = math.min(1, s / 0.3)
-    local e = 1 - (1 - u) ^ 3
-    local size = 2 * (geom.R + geom.T) * (1.7 - 0.6 * e)
-    At(t, frame, 0, 0, size)
-    if t.SetRotation then t:SetRotation(math.rad(45 * (1 - e))) end
-    t:SetVertexColor(1, 0.85, 0.3)
-    t:SetAlpha(s < 0.3 and 1 or 1 - (s - 0.3) / 0.3)
-end
-
 local GLINT = { elite = { 1, 0.82, 0.35 }, worldboss = { 1, 0.82, 0.35 }, rareelite = { 0.85, 0.9, 1 }, rare = { 0.85, 0.9, 1 } }
 local function DrawElite(key, fx, st, frame, geom, now)
     local class = st.unit and Clean(SafeCall(UnitClassification, st.unit)) or (not st.unit and "elite")
@@ -513,7 +493,6 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
     if On(key, "Flare") then DrawFlare(key, fx, st, frame, geom, d, now) end
-    if On(key, "LockOn") then DrawLockOn(key, fx, st, frame, geom, now) end
     DrawJolt(key, fx, st, frame, geom, now) -- always called: it puts the ring back after a jolt
     -- Anything not drawn this frame goes.
     for name, t in pairs(fx.t) do
@@ -554,9 +533,6 @@ ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag)
 end)
 
 ns.Listen({ "PLAYER_REGEN_DISABLED" }, function() Mark("playerHp", "flare") end)
-ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
-    if Clean(SafeCall(UnitExists, "target")) then Mark("targetHp", "lock") end
-end)
 
 ns.Listen({ "UNIT_SPELLCAST_SUCCEEDED:player" }, function() lastCastAt = GetTime() end)
 ns.Listen({ "UNIT_POWER_FREQUENT:player" }, function(_, _, token)

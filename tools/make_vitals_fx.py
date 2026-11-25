@@ -4,7 +4,6 @@ game tints them:
   Textures/GlowRing.tga   a soft halo band, its peak at 0.70 of the half-width (so drawn
                           2R/0.70 across it sits on a ring of radius R)
   Textures/Cracks.tga     cracks across a band at the same radius (death)
-  Textures/Reticle.tga    four corner brackets and ticks (lock-on)
   Textures/AggroEye.tga   a narrow, glaring eye (aggro)
   Textures/Shield.tga     a heater shield with a highlight (block)
 
@@ -83,26 +82,6 @@ def cracks():
     return white(img, S)
 
 
-def reticle():
-    S = 128
-    B = S * SS
-    img = Image.new('L', (B, B), 0)
-    d = ImageDraw.Draw(img)
-    m, L, w = B * 0.06, B * 0.22, int(SS * 3)
-    for sx, sy in ((0, 0), (1, 0), (0, 1), (1, 1)):
-        x0 = m if sx == 0 else B - m
-        y0 = m if sy == 0 else B - m
-        dx = 1 if sx == 0 else -1
-        dy = 1 if sy == 0 else -1
-        d.line([(x0, y0 + dy * L), (x0, y0), (x0 + dx * L, y0)], fill=255, width=w, joint='curve')
-    # Ticks at the middles of the sides.
-    t = B * 0.07
-    for (x, y, ex, ey) in ((B / 2, m * 0.6, B / 2, m * 0.6 + t), (B / 2, B - m * 0.6, B / 2, B - m * 0.6 - t),
-                           (m * 0.6, B / 2, m * 0.6 + t, B / 2), (B - m * 0.6, B / 2, B - m * 0.6 - t, B / 2)):
-        d.line([(x, y), (ex, ey)], fill=255, width=int(SS * 2))
-    return white(img.filter(ImageFilter.GaussianBlur(SS * 0.4)), S)
-
-
 def eye():
     S = 64
     B = S * SS
@@ -150,6 +129,5 @@ def shield():
 os.makedirs(out_dir, exist_ok=True)
 tga(glow_ring(), os.path.join(out_dir, 'GlowRing.tga'))
 tga(cracks(), os.path.join(out_dir, 'Cracks.tga'))
-tga(reticle(), os.path.join(out_dir, 'Reticle.tga'))
 tga(eye(), os.path.join(out_dir, 'AggroEye.tga'))
 tga(shield(), os.path.join(out_dir, 'Shield.tga'))

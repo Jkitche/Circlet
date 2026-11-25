@@ -1526,7 +1526,7 @@ end
 
 -- The effects (Rings/VitalsFx.lua): name, label, what it does, by the ring it's on.
 local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
-                   "EnergyTick", "Rage", "FullMana", "LockOn", "Elite" }
+                   "EnergyTick", "Rage", "FullMana", "Elite" }
 local FX_TEXT = {
     Combo = { "Combo points", "Five pips over the ring for your combo points, popping as they light and pulsing gold at five (rogues and druids)." },
     Mark = { "Raid marker", "The unit's raid marker (skull, cross, star...) at the top left of the ring." },
@@ -1541,7 +1541,6 @@ local FX_TEXT = {
     EnergyTick = { "Energy tick", "A spark runs round the energy band once per energy tick (every two seconds), so you can time abilities to it." },
     Rage = { "Rage embers", "Embers fly off the rage band as rage comes in." },
     FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
-    LockOn = { "Lock-on", "A targeting reticle snaps onto the ring when you pick a new target." },
     Elite = { "Elite glint", "A glint circles the ring of elite targets (silver for rares)." },
 }
 

@@ -127,8 +127,6 @@ end
 CircletDB.playerHpShow = "always"; CircletDB.targetHpShow = "always"
 UNITS.target = { hp = 800, max = 1000, power = 0, pmax = 0, ptype = 1, token = "RAGE", name = "Defias Thug", level = 18, reaction = 2 }
 Fire("PLAYER_TARGET_CHANGED"); Advance(0.1)
-P("just targeted (ring not drawn yet): " .. Fx("targetHp"))
-Advance(0.35); P("lock-on, once the ring shows: " .. Fx("targetHp"))
 Advance(1); P("target, nothing going on: " .. Fx("targetHp"))
 CP = 3; Advance(0.3); P("3 combo points: " .. Fx("targetHp"))
 CP = 5; Advance(0.3); P("5 combo points: " .. Fx("targetHp")); CP = 0

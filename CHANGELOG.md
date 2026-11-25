@@ -44,7 +44,6 @@
       time abilities to it.
     - *Rage embers* (yours): embers fly off the rage band as rage comes in.
     - *Full mana shine* (yours): a soft shine on the mana band while it's full.
-    - *Lock-on* (target): a targeting reticle snaps onto the ring on a new target.
     - *Elite glint* (target, target of target): a glint circles elite rings (silver for rares).
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.
