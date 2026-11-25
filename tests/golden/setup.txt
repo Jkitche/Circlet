@@ -12,7 +12,6 @@
   [x] Reputation ring  <Show>
   [x] Profession ring  <Show>
   [x] Weapon skill ring  <Show>
-  [x] Pet ring  <Show>
   == Combat
   [x] Health ring  <Show>
   [x] Target health ring  <Show>
@@ -23,6 +22,8 @@
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
+  == Class
+  [x] Pet ring  <Show>
         | == Group
         | [x] Loot roll ring  <Show>
         | [x] Ready check ring  <Show>
@@ -54,7 +55,6 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Reputation ring  <Show>
   [x] Profession ring  <Show>
   [x] Weapon skill ring  <Show>
-  [ ] Pet ring  <Show>
   == Combat
   [x] Health ring  <Show>
   [x] Target health ring  <Show>
@@ -65,6 +65,8 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
+  == Class
+  [ ] Pet ring  <Show>
         | == Group
         | [x] Loot roll ring  <Hide>
         | [x] Ready check ring  <Show>
@@ -203,7 +205,6 @@ next login, open: false
   [x] Reputation ring  <Show>
   [x] Profession ring  <Show>
   [x] Weapon skill ring  <Show>
-  [x] Pet ring  <Show>
   == Combat
   [x] Health ring  <Show>
   [x] Target health ring  <Show>
@@ -214,6 +215,8 @@ next login, open: false
   [x] Target cast ring  <Show>
   [x] Mana regen ring  <Show>
   [x] Ammo ring  <Show>
+  == Class
+  [x] Pet ring  <Show>
         | == Group
         | [ ] Loot roll ring  <Show>
         | [x] Ready check ring  <Show>

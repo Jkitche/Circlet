@@ -18,19 +18,21 @@ local APP = "Circlet"
 -- The same groups as the welcome setup's ring list (Features/Setup.lua).
 local FOLDERS = {
     progress = { order = 2, name = "Progress",
-        text = "Rings that pop up and fill as you gain XP, advance quests, raise skills and reputation, "
-            .. "and level your pet." },
+        text = "Rings that pop up and fill as you gain XP, advance quests, and raise skills and reputation." },
     combat = { order = 3, name = "Combat & casting",
-        text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
-            .. "on mana, your ammo, and (for shamans) totems and weapon imbues." },
-    group = { order = 4, name = "Group",
-        text = "Rings for playing with others: loot rolls, ready checks and (for warlocks) your soulstone." },
-    travel = { order = 5, name = "Travel & survival",
+        text = "Rings for your health and your target's, your casts and your target's, your melee swings "
+            .. "and shots, the five-second rule on mana, and your ammo." },
+    class = { order = 4, name = "Class",
+        text = "Rings for one class's own tools: shaman totems and weapon imbues, the warlock's soulstone "
+            .. "and the hunter's pet. Only your class's show." },
+    group = { order = 5, name = "Group",
+        text = "Rings for playing with others: loot rolls and ready checks." },
+    travel = { order = 6, name = "Travel & survival",
         text = "Rings for getting around and staying alive: flights, your Hearthstone, timed quests, "
             .. "corpse runs and breath." },
-    professions = { order = 6, name = "Professions",
+    professions = { order = 7, name = "Professions",
         text = "Rings for crafting batches and gathering: mining, herbalism, skinning and fishing." },
-    comfort = { order = 7, name = "Rest & utility",
+    comfort = { order = 8, name = "Rest & utility",
         text = "Rings for downtime: eating and drinking, resting at a campfire, the clock and timers." },
 }
 

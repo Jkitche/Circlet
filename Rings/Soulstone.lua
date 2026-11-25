@@ -266,7 +266,7 @@ ns.RegisterRing({
             ready = { r = 0.75, g = 0.60, b = 1.00 },
         },
     },
-    page = { folder = "group", order = 3, build = function(O)
+    page = { folder = "class", order = 3, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             return RingTab(12.3, "Soulstone", "Soulstone Ring",

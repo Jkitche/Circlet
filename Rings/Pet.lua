@@ -140,7 +140,7 @@ ns.RegisterRing({
             level = { r = 1.00, g = 0.82, b = 0.00 },
         },
     },
-    page = { folder = "progress", order = 6, build = function(O)
+    page = { folder = "class", order = 4, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(6, "Pet", "Pet Ring",

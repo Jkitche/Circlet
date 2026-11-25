@@ -69,11 +69,14 @@
     after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug` and `/circ masktest` report what this client lets the rings see and do (for
     bug reports).
+- **Class section in the options.** The rings for one class's own tools have a folder of their
+  own: totems and weapon imbues (shamans), the soulstone (warlocks) and the pet (hunters). Only
+  your class's show; the folder's hidden for classes with none.
 - **Text sizes for every ring** (Look & position > Text sizes). Every piece of text on every ring
   has its own size, 50% to 200% of its usual size (which still follows the ring's): the title,
   main text and bottom line on most rings, the name, gain, gain %, progress and bottom line on the
   pop-up rings, and so on. At 100% everything is exactly as before.
-- **Weapon imbue ring** (new, shamans; Combat & casting > Weapon imbue). While your main hand
+- **Weapon imbue ring** (new, shamans; Class > Weapon imbue). While your main hand
   has a weapon imbue, the ring drains over it with the imbue's name and the time left, turning
   red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own animation:
   Rockbiter sends shaded stones orbiting the ring with grit falling away, Flametongue turns the
@@ -82,7 +85,7 @@
   drifting down, and Windfury whips streaks of wind round the ring in gusts. Particles move at
   their own speeds, some each way round. The imbue is read off the weapon's tooltip first, so
   the right animation shows even for ranks Circlet doesn't list.
-- **Soulstone ring** (new, warlocks; Group > Soulstone). When you put a soulstone on someone,
+- **Soulstone ring** (new, warlocks; Class > Soulstone). When you put a soulstone on someone,
   the ring drains over its 30 minutes with their name and the time left, turning red in the
   last five, then says Expired, or Used if it's gone early. Out of combat it checks the stone is
   still on them and takes the time from the buff. It survives a reload or logging out, and out

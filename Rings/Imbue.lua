@@ -495,7 +495,7 @@ ns.RegisterRing({
             warn  = { r = 1.00, g = 0.30, b = 0.25 },
         },
     },
-    page = { folder = "combat", order = 3.6, build = function(O)
+    page = { folder = "class", order = 2, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             return RingTab(13.55, "Weapon imbue", "Weapon Imbue Ring",
