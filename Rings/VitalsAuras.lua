@@ -253,9 +253,10 @@ end
 
 -- How many auras of a kind the unit has, without reading any of them: the game's list of
 -- their ids, else its list of slots (both plain, even in combat), else (out of combat) by
--- walking them. If none of those answer, the last count it had: never "assume full", which
--- would open an empty debuff row and push the buffs out for nothing.
-local lastCount = {}
+-- walking them. If none of those answer (your target's in combat, on some clients), all the
+-- spots stay open: each shows an aura only if there is one, so nothing's missed, though the
+-- arc can't be centred on how many there really are. Your own auras can be counted, so your
+-- buffs only move out a row when you have debuffs.
 local function SlotCount(ok, _token, ...)
     if not ok then return nil end
     return select("#", ...)
@@ -287,10 +288,7 @@ local function Count(unit, filter, max)
 end
 
 local function CountOf(unit, filter, max)
-    local key = unit .. ":" .. filter
-    local n = Count(unit, filter, max)
-    if n then lastCount[key] = n else n = lastCount[key] or 0 end
-    return math.min(max, n)
+    return math.min(max, Count(unit, filter, max) or max)
 end
 
 local function HideSpots(A)

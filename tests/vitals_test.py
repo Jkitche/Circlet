@@ -431,7 +431,7 @@ C_UnitAuras.GetAuraSlots = function(u, f, max) local l = AURAS[u] and AURAS[u][f
   return nil, unpack(l) end
 Advance(1); P("  counted by slots: " .. Rows())
 AURAS.target.HARMFUL = { 11 }; Advance(1); P("  a debuff, by slots: " .. Rows())
-C_UnitAuras.GetAuraSlots = nil; Advance(1); P("  neither, in combat (last count): " .. Rows())
+AURAS.target.HARMFUL = {}; C_UnitAuras.GetAuraSlots = nil; Advance(1); P("  neither, in combat (all spots open): " .. Rows())
 local byIndex = C_UnitAuras.GetAuraDataByIndex
 C_UnitAuras.GetAuraDataByIndex = function(u, i, f) local l = AURAS[u] and AURAS[u][f:find("HARMFUL") and "HARMFUL" or "HELPFUL"] or {}
   return l[i] and { auraInstanceID = l[i] } or nil end
