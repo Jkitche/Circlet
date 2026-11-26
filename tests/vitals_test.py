@@ -435,7 +435,14 @@ C_UnitAuras.GetAuraSlots = function(u, f, max) local l = AURAS[u] and AURAS[u][f
   return nil, unpack(l) end
 Advance(1); P("  counted by slots: " .. Rows())
 AURAS.target.HARMFUL = { 11 }; Advance(1); P("  a debuff, by slots: " .. Rows())
-AURAS.target.HARMFUL = {}; C_UnitAuras.GetAuraSlots = nil; Advance(1); P("  neither, in combat (all spots open): " .. Rows())
+C_UnitAuras.GetAuraSlots = nil; Advance(1); P("  neither, in combat, had a debuff: " .. Rows())
+-- No debuffs when the count was last had: buffs stay put, the debuff spots open outside them.
+COMBAT = false; C_UnitAuras.GetUnitAuraInstanceIDs = ids; AURAS.target.HARMFUL = {}; Advance(1)
+C_UnitAuras.GetUnitAuraInstanceIDs = nil; COMBAT = true; Advance(1)
+local function DebuffR() local x, y = AV.spots.debuffs[1].win._pt[3], AV.spots.debuffs[1].win._pt[4]; return math.sqrt(x * x + y * y) end
+P("  neither, in combat, had none: " .. Rows() .. string.format(", debuff spots %.0f px further out", DebuffR() - BuffR()))
+local b1 = AV.spots.buffs[1].win._pt[3]
+P("  buff row centred as before (first buff x " .. string.format("%.0f", b1) .. "), spots open: " .. Shown("buffs"))
 local byIndex = C_UnitAuras.GetAuraDataByIndex
 C_UnitAuras.GetAuraDataByIndex = function(u, i, f) local l = AURAS[u] and AURAS[u][f:find("HARMFUL") and "HARMFUL" or "HELPFUL"] or {}
   return l[i] and { auraInstanceID = l[i] } or nil end

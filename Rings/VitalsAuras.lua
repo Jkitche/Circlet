@@ -253,10 +253,9 @@ end
 
 -- How many auras of a kind the unit has, without reading any of them: the game's list of
 -- their ids, else its list of slots (both plain, even in combat), else (out of combat) by
--- walking them. If none of those answer (your target's in combat, on some clients), all the
--- spots stay open: each shows an aura only if there is one, so nothing's missed, though the
--- arc can't be centred on how many there really are. Your own auras can be counted, so your
--- buffs only move out a row when you have debuffs.
+-- walking them. If none of those answer (in combat, on some clients), DrawLive keeps the
+-- layout from the last count and leaves every spot open (each shows an aura only if there
+-- is one), so nothing's missed.
 local function SlotCount(ok, _token, ...)
     if not ok then return nil end
     return select("#", ...)
@@ -289,10 +288,11 @@ local function Count(unit, filter, max)
 end
 
 local countSrc = {} -- unit:filter -> how it was last counted (for /circ auradebug)
+-- The count, or nil if it can't be had.
 local function CountOf(unit, filter, max)
     local n, src = Count(unit, filter, max)
     countSrc[unit .. ":" .. filter] = src .. (n and (" " .. n) or "")
-    return math.min(max, n or max)
+    return n and math.min(max, n) or nil
 end
 
 local function HideSpots(A)
@@ -313,12 +313,14 @@ local function Arc(key, A, frame, geom, d, set, rows, s)
     for _, row in ipairs(rows) do
         local step = (s + set.gap) / r
         local fit = math.max(1, math.floor(MAX_SWEEP / step) + 1)
-        local shown = math.min(row.n, fit)
+        -- Centred on n; a row that can't be counted keeps more spots open past the end (open).
+        local centredOn = math.min(row.n, fit)
+        local shown = math.min(row.open or row.n, fit)
         for i = 1, row.slots do
             if i > shown then
                 row.hide(i)
             else
-                local a = center + (i - 1 - (shown - 1) / 2) * step
+                local a = center + (i - 1 - (centredOn - 1) / 2) * step
                 row.place(i, a, r, s)
             end
         end
@@ -387,28 +389,40 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
     end
     -- In combat the game's buttons keep the size they were set to; so do the windows.
     s = A.s or s
-    local rows = {}
+    -- Each kind's row. A kind that can't be counted (in combat the game may not say, even for
+    -- your own auras) keeps the layout from when it last could: centred on that count, with
+    -- every spot open past it in case more land. And if it was empty then, its row goes
+    -- outside the others rather than inside, so nothing already showing gets pushed out
+    -- for what may be no auras at all.
+    A.known = A.known or {}
+    local rows, late = {}, {}
     for _, kind in ipairs(KINDS) do
         local list = A.spots[kind]
         if (set.show == "both" or set.show == kind) and list[1] and not list[1].broken then
             local n = CountOf(unit, FILTER[kind] .. set.mine, set.max)
             local slots = 0
             for k in pairs(list) do if k > slots then slots = k end end
-            if n > 0 then
-                rows[#rows + 1] = { n = n, slots = slots,
-                    hide = function(i) if list[i] then list[i].win:Hide() end end,
-                    place = function(i, a, r, sz)
-                        local spot = list[i]
-                        if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, a, r, sz, A.dt)
-                        elseif spot then spot.win:Hide() end
-                    end }
+            local row = { slots = slots,
+                hide = function(i) if list[i] then list[i].win:Hide() end end,
+                place = function(i, a, r, sz)
+                    local spot = list[i]
+                    if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, a, r, sz, A.dt)
+                    elseif spot then spot.win:Hide() end
+                end }
+            if n then
+                A.known[kind] = n
+                if n > 0 then row.n = n; rows[#rows + 1] = row
+                else for _, spot in pairs(list) do spot.win:Hide() end end
             else
-                for _, spot in pairs(list) do spot.win:Hide() end
+                local was = A.known[kind] or 0
+                row.n, row.open = math.max(1, was), set.max
+                if was > 0 then rows[#rows + 1] = row else late[#late + 1] = row end
             end
         else
             for _, spot in pairs(list) do spot.win:Hide() end
         end
     end
+    for _, row in ipairs(late) do rows[#rows + 1] = row end
     Arc(key, A, frame, geom, d, set, rows, s)
 end
 
@@ -442,6 +456,13 @@ end
 function ns.VitalsAurasDirty(key)
     for _, f in pairs(ns.vitalsAuraHolders or {}) do f.sampleRows = nil; f.sig = nil end
 end
+-- A new target starts with nothing remembered about its rows.
+ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
+    for _, A in ipairs(ns.vitalsAuraHolders or {}) do
+        if A.key == "targetHp" then A.known = {} end
+    end
+end)
+
 -- (A change asked for in combat is applied on the first frame after it ends: DrawLive.)
 
 -- /circ auradebug: what the buff and debuff arcs are doing, for each ring (for bug reports).

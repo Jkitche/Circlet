@@ -135,7 +135,9 @@ buffs easing out a row as a debuff lands: +5 +13 +17 +19 +19 px
 no debuffs, in combat: buffs on row 1 (0 debuff spot(s))
   counted by slots: buffs on row 1 (0 debuff spot(s))
   a debuff, by slots: buffs on row 2 (1 debuff spot(s))
-  neither, in combat (all spots open): buffs on row 2 (8 debuff spot(s))
+  neither, in combat, had a debuff: buffs on row 2 (8 debuff spot(s))
+  neither, in combat, had none: buffs on row 1 (8 debuff spot(s)), debuff spots 19 px further out
+  buff row centred as before (first buff x -9), spots open: 8
   neither, out of combat (walked): buffs on row 1 (0 debuff spot(s))
 player frame alpha 0, target frame alpha 1
 player frame back: 1
