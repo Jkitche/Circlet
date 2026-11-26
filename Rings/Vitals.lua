@@ -635,7 +635,8 @@ end
 
 -- Where each ring's level badge sits (degrees, 0 = right, counter-clockwise): bottom left on
 -- yours, bottom right on the target's (the side away from yours).
-local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315, petHp = 225 }
+-- Where the badges sit: each ring's choice (Rings/VitalsFx.lua, ns.VitalsBadges).
+local Badges = ns.VitalsBadges
 
 -- The elite marker (<key>Elite) on the level badge: the game's own target-frame dragon
 -- round it, the art TargetFrame uses for that classification: the gold dragon for elites
@@ -733,7 +734,7 @@ local function DrawLevel(key, v, st, geom, d)
     if not st.unit and key ~= "playerHp" then level = st.level or 18 end
     if not level then HideBadge(v.lvl) return end
     d = math.floor(d * 1.4 + 0.5) -- bigger than the combat badge: it carries text
-    PlaceBadge(v.lvl, geom.R, LEVEL_ANGLE[key] or 225, d)
+    PlaceBadge(v.lvl, geom.R, Badges.Angle(key, "Level"), d)
     local fk = d .. ":" .. ((tonumber(db[key .. "LevelTextSize"]) or 100))
     if v.lvl.fk ~= fk then
         v.lvl.fk = fk
@@ -764,7 +765,7 @@ local function DrawCombat(key, v, st, geom, d, now)
     local on = db[key .. "CombatIcon"]
     if on and st.unit then on = Clean(SafeCall(UnitAffectingCombat, st.unit)) and true or false end
     if not on then HideBadge(v.cmb) return end
-    PlaceBadge(v.cmb, geom.R, 45, d)
+    PlaceBadge(v.cmb, geom.R, Badges.Angle(key, "Combat"), d)
     v.cmb.icon:SetSize(d * 0.8, d * 0.8)
     v.cmb.icon:Show()
     local a = 0.8 + 0.2 * math.sin(now * 4)
@@ -1675,6 +1676,10 @@ local function Register(spec)
         [key .. "Border"]    = 2,
         [key .. "Colors"]    = Colors(),
     }
+    -- Its badges where they've always been.
+    for badge, b in pairs(Badges.badges) do
+        if b[key] then defaults[key .. "Pos" .. badge] = b[key] end
+    end
     -- Its effects, all on.
     local fxOn = ns.VITALS_FX or {}
     for _, name in ipairs(FX_ORDER) do
@@ -1712,7 +1717,7 @@ local function Register(spec)
                             name = Toggle(7, key .. "Name", spec.nameLabel, spec.nameDesc),
                             portrait = Toggle(8, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
                             level = Toggle(7.3, key .. "Level", "Level badge",
-                                "The level on a small disc at the bottom " .. ((LEVEL_ANGLE[key] or 225) == 225 and "left" or "right") .. " of the ring"
+                                "The level on a small disc on the ring (where: Badge positions)"
                                 .. ((key == "playerHp" or key == "petHp") and "." or ", in the game's difficulty colors (\"??\" when "
                                 .. "it's too high to tell). The name then leaves its level off.")),
                             elite = key ~= "playerHp" and key ~= "petHp" and spec.level and (function()
@@ -1773,6 +1778,32 @@ local function Register(spec)
                                 end
                             end
                             return n > 0 and Box(2.7, "Effects", args) or nil
+                        end)(),
+                        positions = (function()
+                            -- Where each badge sits: one of eight spots; a taken spot swaps.
+                            local args, n = {}, 0
+                            for i, badge in ipairs(Badges.order) do
+                                local b = Badges.badges[badge]
+                                local has = b[key] and ((badge == "Level" and spec.level) or (badge == "Combat" and spec.combat)
+                                    or (fxOn[badge] and fxOn[badge][key]))
+                                if has then
+                                    n = n + 1
+                                    local o = Select(i, key .. "Pos" .. badge, b[1], Badges.spotNames, Badges.spotOrder,
+                                        b[2] .. " Picking a spot another badge has swaps the two.")
+                                    o.get = function() return Badges.Spot(key, badge) end
+                                    o.set = function(_, spot) Badges.Set(key, badge, spot) end
+                                    args["pos" .. badge] = o
+                                end
+                            end
+                            if n == 0 then return nil end
+                            args.reset = { type = "execute", order = 50, name = "Default positions", width = 1.2,
+                                desc = "Put every badge back where it started.",
+                                func = function()
+                                    for badge, b in pairs(Badges.badges) do
+                                        if b[key] then db[key .. "Pos" .. badge] = b[key] end
+                                    end
+                                end }
+                            return Box(2.75, "Badge positions", args)
                         end)(),
                         auras = spec.auras ~= nil and (function()
                             local function Off() return not db[key .. "Auras"] end

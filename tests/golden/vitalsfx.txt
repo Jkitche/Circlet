@@ -42,6 +42,11 @@ looted: cracks skull veil
 no form: (none)
 cat form: stance stanceBack Interface\Icons\Ability_Druid_CatForm
 stance off: (none)
+defaults: target mark topleft(135), skin topright(45), quest bottomleft(225), level bottomright(315), loot right(0); you: level bottomleft(225), combat topright(45), stance bottomright(315)
+stance moved to the left: 35,-35 -> -49,0 (left(180))
+stance onto the combat icon's spot: stance topright(45), combat left(180)
+target level onto the mark's spot: level topleft(135), mark bottomright(315)
+back to defaults: you stance bottomright(315), combat topright(45)
 you (rogue, energy), no tick seen: (none)
 energy tick: tick tickFlash tickHalo
   0.7s on: tick tickHalo

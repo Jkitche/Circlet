@@ -65,6 +65,53 @@ ns.VITALS_FX = ON
 
 local function On(key, name) return ON[name][key] and db[key .. "Fx" .. name] end
 
+-- Badge positions: where each badge sits on its ring, one of eight spots round it, chosen per
+-- ring in its options (<key>Pos<Badge>; the defaults are where they've always been). Two badges
+-- never share a spot: picking a taken one swaps them (ns.SetBadgeSpot). The top is also where
+-- combo points and the death skull go, and the aura arc sits on whichever side it's set to.
+local BADGE_SPOTS = { top = 90, topright = 45, right = 0, bottomright = 315,
+                      bottom = 270, bottomleft = 225, left = 180, topleft = 135 }
+local BADGE_SPOT_ORDER = { "topleft", "top", "topright", "right", "bottomright", "bottom", "bottomleft", "left" }
+local BADGE_SPOT_NAMES = { topleft = "Top left", top = "Top", topright = "Top right", right = "Right",
+                           bottomright = "Bottom right", bottom = "Bottom", bottomleft = "Bottom left", left = "Left" }
+-- Each badge: its label, what it is, and its default spot on each ring that has it.
+local BADGES = {
+    Level = { "Level badge", "The level disc (with the elite dragon on it for elites).",
+              playerHp = "bottomleft", targetHp = "bottomright", totHp = "bottomright", petHp = "bottomleft" },
+    Combat = { "In-combat indicator", "The crossed swords while you're in combat.", playerHp = "topright" },
+    Mark = { "Raid marker", "The raid target icon (skull, cross...).",
+             playerHp = "topleft", targetHp = "topleft", totHp = "topleft", petHp = "topleft" },
+    Stance = { "Stance or form", "Your stance, form, aura or stealth.", playerHp = "bottomright" },
+    Skin = { "Skinnable", "The skinning (or herb, ore, parts) badge.", targetHp = "topright" },
+    Quest = { "Quest target", "The quest ! and its progress.", targetHp = "bottomleft" },
+    Loot = { "Lootable", "The coin on a corpse with loot for you.", targetHp = "right" },
+}
+local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Loot" }
+
+-- The spot a badge is at on a ring, and its angle (degrees, 0 = right, counter-clockwise).
+local function BadgeSpot(key, badge)
+    local b = BADGES[badge]
+    local spot = db[key .. "Pos" .. badge]
+    if not BADGE_SPOTS[spot] then spot = b and b[key] or "topleft" end
+    return spot
+end
+local function BadgeAngle(key, badge) return BADGE_SPOTS[BadgeSpot(key, badge)] end
+
+-- Moves a badge; whichever was at that spot takes its old one.
+local function SetBadgeSpot(key, badge, spot)
+    if not BADGE_SPOTS[spot] then return end
+    local old = BadgeSpot(key, badge)
+    for other, b in pairs(BADGES) do
+        if other ~= badge and b[key] and BadgeSpot(key, other) == spot then
+            db[key .. "Pos" .. other] = old
+        end
+    end
+    db[key .. "Pos" .. badge] = spot
+end
+
+ns.VitalsBadges = { spots = BADGE_SPOTS, spotOrder = BADGE_SPOT_ORDER, spotNames = BADGE_SPOT_NAMES,
+                    badges = BADGES, order = BADGE_ORDER, Spot = BadgeSpot, Angle = BadgeAngle, Set = SetBadgeSpot }
+
 -- Event times, by ring key.
 local hits = {}   -- key -> { heal = t, jolt = t, block = t, dodge = t, parry = t, flare = t }
 local function Mark(key, what) hits[key] = hits[key] or {}; hits[key][what] = GetTime() end
@@ -228,7 +275,7 @@ local function DrawMark(key, fx, st, frame, geom, d)
     end
     local t = Tex(fx, "mark", MARK_SHEET, "OVERLAY", 2)
     if not (t.SetSpriteSheetCell and pcall(t.SetSpriteSheetCell, t, raw, 4, 4)) then t:Hide() return end
-    local x, y = Polar(135, geom.R)
+    local x, y = Polar(BadgeAngle(key, "Mark"), geom.R)
     t:SetAlpha(1)
     At(t, frame, x, y, d * 1.25)
 end
@@ -612,7 +659,7 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
     end
     local k = kind and SKIN_BY[kind]
     if not k then return end
-    local x, y = Polar(45, geom.R)
+    local x, y = Polar(BadgeAngle(key, "Skin"), geom.R)
     -- The cursor, if the client has it (SetTexture says so).
     local cur = k.cursor and Tex(fx, "skinCursor", nil, "OVERLAY", 3)
     if cur then
@@ -716,7 +763,7 @@ local function DrawQuest(key, fx, st, frame, geom, d, now)
     local on, progress
     if st.unit then on, progress = QuestState(st.unit, now) else on, progress = true, "3/10" end -- previews
     if not on then return end
-    local x, y = Polar(225, geom.R) -- bottom left (the target's level badge is bottom right)
+    local x, y = Polar(BadgeAngle(key, "Quest"), geom.R)
     local icon = Tex(fx, "quest", QUEST_ICON, "OVERLAY", 3)
     At(icon, frame, x, y + d * 0.1, d * 1.1)
     icon:SetAlpha(1)
@@ -833,7 +880,7 @@ local function DrawLoot(key, fx, st, frame, geom, d, now)
     end
     if not has then return end
     local coin = RoundIcon(fx, "loot", "Interface\\Icons\\INV_Misc_Coin_01")
-    local x, y = Polar(0, geom.R)
+    local x, y = Polar(BadgeAngle(key, "Loot"), geom.R)
     At(coin, frame, x, y, d * 1.05)
     coin:SetAlpha(1)
     local halo = Tex(fx, "lootGlow", SOFT, "OVERLAY", 2, true)
@@ -864,7 +911,7 @@ local function DrawStance(key, fx, st, frame, geom, d, now)
         icon = "Interface\\Icons\\Ability_Warrior_OffensiveStance"
     end
     if not icon or IsSecret(icon) then return end
-    local x, y = Polar(315, geom.R)
+    local x, y = Polar(BadgeAngle(key, "Stance"), geom.R)
     local back = Tex(fx, "stanceBack", DISC, "OVERLAY", 2)
     At(back, frame, x, y, d * 1.25)
     back:SetVertexColor(0, 0, 0)

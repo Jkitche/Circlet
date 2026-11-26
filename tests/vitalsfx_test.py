@@ -256,6 +256,24 @@ Advance(0.3); P("no form: " .. Fx("playerHp"))
 FORM = 2; Advance(0.3); P("cat form: " .. Fx("playerHp") .. " " .. tostring(Ring("playerHp").vit.fx.t.stance.iconFile))
 CircletDB.playerHpFxStance = false; Advance(0.3); P("stance off: " .. Fx("playerHp")); CircletDB.playerHpFxStance = true
 FORM = 0; Advance(0.3)
+-- Badge positions: each badge at its chosen spot; a taken spot swaps.
+local B = NS.VitalsBadges
+local function Where(key, b) return B.Spot(key, b) .. "(" .. B.Angle(key, b) .. ")" end
+P("defaults: target mark " .. Where("targetHp", "Mark") .. ", skin " .. Where("targetHp", "Skin") .. ", quest " .. Where("targetHp", "Quest")
+  .. ", level " .. Where("targetHp", "Level") .. ", loot " .. Where("targetHp", "Loot") .. "; you: level " .. Where("playerHp", "Level")
+  .. ", combat " .. Where("playerHp", "Combat") .. ", stance " .. Where("playerHp", "Stance"))
+FORM = 2; Advance(0.3)
+local function At(key, name) local t = Ring(key).vit.fx.t[name]; return t and t._pt and string.format("%.0f,%.0f", t._pt.x, t._pt.y) or "-" end
+local before = At("playerHp", "stance")
+B.Set("playerHp", "Stance", "left"); Advance(0.3)
+P("stance moved to the left: " .. before .. " -> " .. At("playerHp", "stance") .. " (" .. Where("playerHp", "Stance") .. ")")
+B.Set("playerHp", "Stance", "topright"); Advance(0.3)
+P("stance onto the combat icon's spot: stance " .. Where("playerHp", "Stance") .. ", combat " .. Where("playerHp", "Combat"))
+B.Set("targetHp", "Level", "topleft")
+P("target level onto the mark's spot: level " .. Where("targetHp", "Level") .. ", mark " .. Where("targetHp", "Mark"))
+for badge, b in pairs(B.badges) do for k, spot in pairs(b) do if type(k) == "string" and k:find("Hp$") then CircletDB[k .. "Pos" .. badge] = spot end end end
+FORM = 0; Advance(0.3)
+P("back to defaults: you stance " .. Where("playerHp", "Stance") .. ", combat " .. Where("playerHp", "Combat"))
 -- Your ring.
 P("you (rogue, energy), no tick seen: " .. Fx("playerHp"))
 Fire("UNIT_POWER_FREQUENT", "player", "ENERGY"); Advance(0.1); P("energy tick: " .. Fx("playerHp")); Advance(0.6)
