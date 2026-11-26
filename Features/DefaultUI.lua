@@ -14,7 +14,7 @@ local db = ns.db
 --   totem   the totem timers under your portrait
 --   targetCast  the cast bar under the target frame
 --   swing / shot  WoW Forever's own swing timer bars (melee / ranged)
---   playerHp / targetHp / totHp  the player / target / target of target frames (health & power rings)
+--   playerHp / targetHp / totHp / petHp  the player / target / target of target / pet frames (health & power rings)
 -- They're faded out (alpha 0, mouse off) rather than hidden, so the game's own layout and
 -- show/hide logic carry on untouched; turning the option off brings them straight back.
 -- Frame names cover both the modern and the classic interface; whichever exist are used.
@@ -107,6 +107,7 @@ local function UpdateOthers()
     Suppress(G("PlayerFrame"), db.playerHpHideDefault and true or false)
     Suppress(G("TargetFrame"), db.targetHpHideDefault and true or false)
     Suppress(G("TargetFrameToT"), db.totHpHideDefault and true or false)
+    Suppress(G("PetFrame"), db.petHpHideDefault and true or false)
 end
 
 -- WoW Forever's own swing timer bars (its showSwingTimer option). Their frames aren't

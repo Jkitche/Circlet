@@ -26,7 +26,7 @@ local db, Print, SafeCall, DEFAULTS = ns.db, ns.Print, ns.SafeCall, ns.DEFAULTS
 local GROUPS = {
     { name = "Progress", keys = { "xp", "quest", "pin", "rep", "skill", "weapon" } },
     { name = "Combat", keys = { "playerHp", "targetHp", "totHp", "cast", "swing", "shot", "targetCast", "regen", "ammo" } },
-    { name = "Class", keys = { "totem", "imbue", "soulstone", "pet" } },
+    { name = "Class", keys = { "totem", "imbue", "soulstone", "pet", "petHp" } },
     { name = "Group", keys = { "loot", "ready" } },
     { name = "Travel and survival", keys = { "flight", "hearth", "timed", "corpse", "breath" } },
     { name = "Professions", keys = { "craft", "gather", "fish" } },

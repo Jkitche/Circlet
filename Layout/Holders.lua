@@ -25,10 +25,14 @@ local inCombat = false
 local holderFader = CreateFrame("Frame")
 holderFader:Hide()
 
+-- A ring can also be dimmed for a while by what it shows (ns.SetRingDim: the target ring while
+-- the target's out of range), on top of its opacity; it eases there like any fade.
+local dim = {}
+
 local function TargetAlpha(key)
     local def = ns.FindRing and ns.FindRing(key)
     if inCombat and db[key .. "Combat"] == false and not (def and def.alwaysInCombat) then return 0 end
-    return math.max(0, math.min(100, db[key .. "Opacity"] or 100)) / 100
+    return math.max(0, math.min(100, db[key .. "Opacity"] or 100)) / 100 * (dim[key] or 1)
 end
 
 local function ApplyOpacity(key)
@@ -69,4 +73,10 @@ end)
 -- Shared with the files loaded after this one.
 ns.RingHolder = RingHolder
 ns.ApplyOpacity = ApplyOpacity
+ns.SetRingDim = function(key, mult)
+    mult = mult or 1
+    if (dim[key] or 1) == mult then return end
+    dim[key] = mult ~= 1 and mult or nil
+    ApplyOpacity(key)
+end
 ns.ApplyAllOpacity = function() for key in pairs(ringHolders) do ApplyOpacity(key) end end

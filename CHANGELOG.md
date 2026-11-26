@@ -52,6 +52,13 @@
       yet looted; a skinned corpse drops it.
     - *Quest target* (target): a yellow ! at the bottom left when the target is part of one of
       your active quests, with the objective's progress (3/10) under it when the game shows it.
+    - *Out of range* (target): the ring dims while your target is out of range of your class's
+      main attacks (a hunter's Auto Shot or Raptor Strike, a mage's Fireball or Frostbolt...).
+    - *Tagged by others* (target): a mob someone else tagged first goes grey, whatever the color
+      mode, and so does its portrait.
+    - *Lootable* (target): gold glints run round the ring, with a coin at the right, while your
+      dead target still has loot for you.
+    - *Stance or form* (you): your stance, form, aura or stealth as a badge at the bottom right.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.
   - **Damage and healing numbers** (your ring and the target's): each hit and heal the unit takes
@@ -80,6 +87,10 @@
     after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings
     see and do (for bug reports).
+- **Pet health ring** (new, hunters and warlocks; Class > Pet health). A small ring for your
+  pet's health and power, with its name and level, the right-click pet menu, its portrait as
+  the center if you like, and the health rings' effects (raid marker, death, heals, big hits,
+  dodges). Can hide the game's pet frame.
 - **Class section in the options.** The rings for one class's own tools have a folder of their
   own: totems and weapon imbues (shamans), the soulstone (warlocks) and the pet (hunters). Only
   your class's show; the folder's hidden for classes with none.

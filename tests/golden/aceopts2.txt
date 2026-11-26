@@ -1,6 +1,6 @@
 registered: true
 validate: true nil
-counts: color=100 execute=182 range=464 select=122 toggle=339
+counts: color=105 execute=187 range=481 select=129 toggle=364
 general (General)
 progress (Progress)
   xp (XP)
@@ -24,6 +24,7 @@ class (Class)
   imbue (Weapon imbue) [hidden]
   soulstone (Soulstone) [hidden]
   pet (Pet)
+  petHp (Pet health)
 group (Group)
   loot (Loot rolls)
   ready (Ready checks)

@@ -221,6 +221,41 @@ C_QuestLog = C_QuestLog or {}; C_QuestLog.UnitIsRelatedToActiveQuest = function(
 Fire("QUEST_LOG_UPDATE"); Advance(0.1); P("game says related: " .. Fx("targetHp") .. " text " .. QT())
 CircletDB.targetHpFxQuest = false; Advance(0.3); P("quest target off: " .. Fx("targetHp")); CircletDB.targetHpFxQuest = true
 C_QuestLog.UnitIsRelatedToActiveQuest = nil; TIP_LINES = nil; UNITS.target.guid = nil; Fire("QUEST_LOG_UPDATE"); Advance(0.3)
+-- Out of range: the ring dims (its own fade) while none of your main attacks reach.
+local function HolderA() return string.format("%.2f", NS.RingHolder("targetHp"):GetAlpha()) end
+INRANGE = { [1752] = true, [2098] = true }
+C_Spell = C_Spell or {}
+C_Spell.IsSpellInRange = function(id, u) return INRANGE[id] end
+C_SpellBook = C_SpellBook or {}; C_SpellBook.IsSpellKnown = function(id) return id == 1752 or id == 2098 end
+Advance(1); P("in range: ring at " .. HolderA())
+INRANGE = { [1752] = false, [2098] = false }; Advance(0.1); local mid = HolderA(); Advance(1)
+P("out of range: ring at " .. mid .. " -> " .. HolderA())
+INRANGE = { [1752] = false, [2098] = true }; Advance(1); P("one spell reaches: ring at " .. HolderA())
+INRANGE = { [1752] = false, [2098] = false }; Advance(1)
+CircletDB.targetHpFxRange = false; Advance(1); P("out of range, effect off: ring at " .. HolderA())
+CircletDB.targetHpFxRange = true; INRANGE = {}; Advance(1); P("can't be checked (friendly): ring at " .. HolderA())
+-- Tagged by someone else: grey, whatever the color mode.
+local function HealthRGB() local f = Ring("targetHp"); local c = f and f.vit and f.vit.lastColor
+  return c and string.format("%.2f,%.2f,%.2f", c.r, c.g, c.b) or "?" end
+TAPPED = false; UnitIsTapDenied = function(u) return u == "target" and TAPPED end
+CircletDB.targetHpColorMode = "health"; Advance(0.3); P("not tagged: health " .. HealthRGB())
+TAPPED = true; Advance(0.3); P("tagged by someone else: health " .. HealthRGB())
+CircletDB.targetHpFxTapped = false; Advance(0.3); P("tagged, effect off: health " .. HealthRGB())
+CircletDB.targetHpFxTapped = true; TAPPED = false; CircletDB.targetHpColorMode = "class"; Advance(0.3)
+-- Lootable: glints round a corpse with loot for you.
+LOOT = false; CanLootUnit = function(g) return LOOT, LOOT end
+UNITS.target.guid = "Creature-0-1-2-3-299-0000AA"
+UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("corpse, no loot: " .. Fx("targetHp"))
+LOOT = true; Advance(0.6); P("corpse with loot: " .. Fx("targetHp"))
+LOOT = false; Advance(0.6); P("looted: " .. Fx("targetHp"))
+UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = nil; Advance(0.3)
+-- Stance or form: a badge at the bottom right of your ring.
+FORM = 0; GetShapeshiftForm = function() return FORM end
+GetShapeshiftFormInfo = function(i) return "Interface\\\\Icons\\\\Ability_Druid_CatForm", true, true, 768 end
+Advance(0.3); P("no form: " .. Fx("playerHp"))
+FORM = 2; Advance(0.3); P("cat form: " .. Fx("playerHp") .. " " .. tostring(Ring("playerHp").vit.fx.t.stance.iconFile))
+CircletDB.playerHpFxStance = false; Advance(0.3); P("stance off: " .. Fx("playerHp")); CircletDB.playerHpFxStance = true
+FORM = 0; Advance(0.3)
 -- Your ring.
 P("you (rogue, energy), no tick seen: " .. Fx("playerHp"))
 Fire("UNIT_POWER_FREQUENT", "player", "ENERGY"); Advance(0.1); P("energy tick: " .. Fx("playerHp")); Advance(0.6)

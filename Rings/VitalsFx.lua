@@ -27,6 +27,11 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Skin       (target)   a pelt badge at the top right when the target can be skinned (or
 --                         gathered: herbs, ore, parts), from the corpse's tooltip; kinds of
 --                         creature seen skinnable before get a faint one while alive
+--   Range      (target)   the ring dims while the target's out of range of your main attacks
+--   Tapped     (target)   a mob someone else tagged (no XP or loot for you) goes grey, whatever the
+--                         color mode, its portrait too
+--   Loot       (target)   gold glints round a corpse that still has loot for you, a coin at the right
+--   Stance     (you)      your stance, form, aura or stealth as a badge at the bottom right
 --   Quest      (target)   a yellow ! at the bottom left when the target is part of one of
 --                         your active quests, with the objective's progress (3/10) under it
 --
@@ -47,13 +52,14 @@ local SKULL = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull"
 local SWORDS = "Interface\\CharacterFrame\\UI-StateIcon"
 
 local ON = {
-    Combo = { targetHp = true }, Mark = { playerHp = true, targetHp = true, totHp = true },
+    Combo = { targetHp = true }, Mark = { playerHp = true, targetHp = true, totHp = true, petHp = true },
     Aggro = { targetHp = true }, Execute = { targetHp = true }, LowHealth = { playerHp = true },
-    Death = { playerHp = true, targetHp = true, totHp = true }, Flare = { playerHp = true },
-    Heal = { playerHp = true, targetHp = true }, Jolt = { playerHp = true, targetHp = true },
-    Avoid = { playerHp = true, targetHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
+    Death = { playerHp = true, targetHp = true, totHp = true, petHp = true }, Flare = { playerHp = true },
+    Heal = { playerHp = true, targetHp = true, petHp = true }, Jolt = { playerHp = true, targetHp = true, petHp = true },
+    Avoid = { playerHp = true, targetHp = true, petHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
     FullMana = { playerHp = true }, Skin = { targetHp = true },
-    Quest = { targetHp = true },
+    Quest = { targetHp = true }, Range = { targetHp = true }, Tapped = { targetHp = true },
+    Loot = { targetHp = true }, Stance = { playerHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -737,6 +743,137 @@ local function DrawQuest(key, fx, st, frame, geom, d, now)
 end
 ns.VitalsFxQuest = QuestFromTooltip -- tests
 
+-- A round icon: cropped first, then masked (the game won't crop a masked texture).
+local function RoundIcon(fx, name, file, layer, sub)
+    local t = Tex(fx, name, file, layer or "OVERLAY", sub or 3)
+    if t.iconFile ~= file then
+        t.iconFile = file
+        t:SetTexture(file)
+        if not t.masked then
+            t:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+            t.masked = true
+            pcall(t.SetMask, t, DISC)
+        end
+    end
+    return t
+end
+
+-- Range: whether your class's main attacks reach the target (C_Spell.IsSpellInRange, which the
+-- game doesn't hide), checked five times a second. In range if any of them reach (a hunter's
+-- Auto Shot or Raptor Strike, so the dead zone between doesn't count as out); out if none do;
+-- left alone if none can be checked (a friendly target, a class with none known yet). The dim
+-- is the ring's own fade (ns.SetRingDim), so it eases and goes with its opacity setting.
+local RANGE_SPELLS = {
+    MAGE = { 133, 116, 5143 },            -- Fireball, Frostbolt, Arcane Missiles
+    WARLOCK = { 686, 172 },               -- Shadow Bolt, Corruption
+    PRIEST = { 585, 589, 8092 },          -- Smite, Shadow Word: Pain, Mind Blast
+    DRUID = { 5176, 8921 },               -- Wrath, Moonfire
+    SHAMAN = { 403, 8042 },               -- Lightning Bolt, Earth Shock
+    HUNTER = { 75, 3044, 2973 },          -- Auto Shot, Arcane Shot, Raptor Strike
+    ROGUE = { 1752, 2098 },               -- Sinister Strike, Eviscerate
+    WARRIOR = { 78, 772 },                -- Heroic Strike, Rend
+    PALADIN = { 20271, 35395 },           -- Judgement, Crusader Strike
+    DEATHKNIGHT = { 45477, 49998 },       -- Icy Touch, Death Strike
+}
+local function Knows(id)
+    local f = (C_SpellBook and C_SpellBook.IsSpellKnown) or IsPlayerSpell or IsSpellKnown
+    return f and Clean(SafeCall(f, id)) and true or false
+end
+local function InRange(id, unit)
+    if C_Spell and C_Spell.IsSpellInRange then
+        local v = Clean(SafeCall(C_Spell.IsSpellInRange, id, unit))
+        if v == nil or IsSecret(v) then return nil end
+        return v == true or v == 1
+    end
+    if IsSpellInRange and GetSpellInfo then
+        local name = Clean(SafeCall(GetSpellInfo, id))
+        local v = name and Clean(SafeCall(IsSpellInRange, name, unit))
+        if v == nil or IsSecret(v) then return nil end
+        return v == 1 or v == true
+    end
+end
+local rangeAt, rangeOut = -math.huge, nil
+local function DrawRange(key, fx, st, frame, geom, d, now)
+    local out = false
+    if st.unit and not st.dead and Clean(SafeCall(UnitCanAttack, "player", st.unit)) then
+        if now - rangeAt >= 0.2 then
+            rangeAt = now
+            local _, class = UnitClass("player")
+            local any, reach = false, false
+            for _, id in ipairs(RANGE_SPELLS[Clean(class) or ""] or {}) do
+                if Knows(id) then
+                    local v = InRange(id, st.unit)
+                    if v ~= nil then any = true; if v then reach = true break end end
+                end
+            end
+            rangeOut = any and not reach
+        end
+        out = rangeOut and true or false
+    end
+    if ns.SetRingDim then ns.SetRingDim(key, out and 0.4 or 1) end
+end
+ns.VitalsRangeSpells = RANGE_SPELLS -- tests
+ns.Listen({ "PLAYER_TARGET_CHANGED", "SPELLS_CHANGED" }, function() rangeAt = -math.huge end)
+
+-- Loot: gold glints running round a corpse that still has loot for you (CanLootUnit), and a
+-- coin at the right. Checked twice a second.
+local lootAt, lootHas, lootGuid = -math.huge, false, nil
+local function DrawLoot(key, fx, st, frame, geom, d, now)
+    local has
+    if not st.unit then
+        has = false -- previews: nothing (they're alive)
+    elseif st.dead then
+        local guid = Clean(SafeCall(UnitGUID, st.unit))
+        if guid ~= lootGuid or now - lootAt >= 0.5 then
+            lootGuid, lootAt = guid, now
+            local h = guid and CanLootUnit and Clean(SafeCall(CanLootUnit, guid))
+            lootHas = h == true
+        end
+        has = lootHas
+    end
+    if not has then return end
+    local coin = RoundIcon(fx, "loot", "Interface\\Icons\\INV_Misc_Coin_01")
+    local x, y = Polar(0, geom.R)
+    At(coin, frame, x, y, d * 1.05)
+    coin:SetAlpha(1)
+    local halo = Tex(fx, "lootGlow", SOFT, "OVERLAY", 2, true)
+    At(halo, frame, x, y, d * 2)
+    halo:SetVertexColor(1, 0.8, 0.25)
+    halo:SetAlpha(0.4 + 0.25 * math.sin(now * 3))
+    for i = 1, 3 do
+        local g = Tex(fx, "lootGlint" .. i, SOFT, "OVERLAY", 4, true)
+        local deg = (now * 70 + i * 120) % 360
+        local gx, gy = Polar(deg, geom.R)
+        local tw = 0.5 + 0.5 * math.sin(now * 6 + i * 2)
+        At(g, frame, gx, gy, geom.T * (1.2 + tw))
+        g:SetVertexColor(1, 0.85, 0.35)
+        g:SetAlpha(0.35 + 0.5 * tw)
+    end
+end
+
+-- Stance: your stance, form, aura or stealth (the game's stance bar: GetShapeshiftForm) as a
+-- round badge at the bottom right of your ring. Previews show Battle Stance.
+local function DrawStance(key, fx, st, frame, geom, d, now)
+    local icon
+    if st.unit then
+        local idx = CleanNumber(SafeCall(GetShapeshiftForm))
+        if idx and idx > 0 and GetShapeshiftFormInfo then
+            icon = Clean(SafeCall(GetShapeshiftFormInfo, idx))
+        end
+    else
+        icon = "Interface\\Icons\\Ability_Warrior_OffensiveStance"
+    end
+    if not icon or IsSecret(icon) then return end
+    local x, y = Polar(315, geom.R)
+    local back = Tex(fx, "stanceBack", DISC, "OVERLAY", 2)
+    At(back, frame, x, y, d * 1.25)
+    back:SetVertexColor(0, 0, 0)
+    back:SetAlpha(0.85)
+    local t = RoundIcon(fx, "stance", icon)
+    At(t, frame, x, y, d * 1.05)
+    t:SetAlpha(1)
+end
+
 ---------------------------------------------------------------------------
 -- Each frame
 ---------------------------------------------------------------------------
@@ -760,6 +897,10 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
         end
     end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
+    if On(key, "Range") then DrawRange(key, fx, st, frame, geom, d, now)
+    elseif ns.SetRingDim then ns.SetRingDim(key, 1) end
+    if On(key, "Loot") then DrawLoot(key, fx, st, frame, geom, d, now) end
+    if On(key, "Stance") then DrawStance(key, fx, st, frame, geom, d, now) end
     if On(key, "Skin") then DrawSkin(key, fx, st, frame, geom, d, now) end
     fx.questTextUsed = false
     if On(key, "Quest") then DrawQuest(key, fx, st, frame, geom, d, now) end

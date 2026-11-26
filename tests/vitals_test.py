@@ -164,6 +164,14 @@ Fire("PLAYER_TARGET_CHANGED"); Advance(0.2); P("new target: redrawn " .. (PORTRA
 CircletDB.targetHpPortraitAlpha = 40; Advance(0.2); P("dimmer: " .. Portrait("targetHp"))
 CircletDB.playerHpPortrait = true; CircletDB.playerHpShow = "always"; Advance(0.5); P("your portrait: " .. Portrait("playerHp"))
 CircletDB.playerHpShow = "combat"
+-- Your pet's ring: there while it's out, its portrait in the middle when asked for.
+UNITS.pet = { hp = 300, max = 400, power = 80, pmax = 100, ptype = 2, token = "FOCUS", name = "Wolf", level = 18, reaction = 5 }
+Fire("UNIT_PET", "player"); Advance(0.5)
+local pr = Ring("petHp")
+P("pet ring: " .. (pr and ((pr.vit and pr.vit.texts and "shown") or "shown") or "hidden") .. ", portrait " .. Portrait("petHp"))
+CircletDB.petHpPortrait = true; Fire("UNIT_PORTRAIT_UPDATE", "pet"); Advance(0.5); P("pet portrait: " .. Portrait("petHp"))
+UNITS.pet = nil; Fire("UNIT_PET", "player"); Advance(1.5); P("pet dismissed: " .. (Ring("petHp") and "shown" or "hidden"))
+CircletDB.petHpPortrait = false
 CircletDB.targetHpPortrait = false; CircletDB.playerHpPortrait = false
 UNITS.target = nil; Advance(2)
 

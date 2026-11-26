@@ -23,8 +23,11 @@ redrawn while nothing changed: 0
 new target: redrawn 1 time(s)
 dimmer: target at 0.40
 your portrait: player at 0.70
-split, but text is percent: health 50 segs, power 72 segs | - / 65% / 100%
-value and percent, split: health 48 segs, power 72 segs | - / 650 // 65% / 100%
+pet ring: shown, portrait none
+pet portrait: pet at 0.70
+pet dismissed: hidden
+split, but text is percent: health 48 segs, power 72 segs | - / 65% / 100%
+value and percent, split: health 47 segs, power 72 segs | - / 650 // 65% / 100%
 split, hidden: health 47 segs (gated), power 72 segs (gated) | - / <650> (hidden) // 65% (hidden) / 100% (hidden)
 value and percent, one line: health 47 segs, power 72 segs | - / 650  |cffcccccc65%|r / 100%
 hit 100% -> 50%, just after: fill 66, trail 7, glow 0

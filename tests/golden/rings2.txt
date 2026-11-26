@@ -31,20 +31,27 @@ after the hold: (hidden)
 Show in combat off: (hidden)
 pet gain:
    Wolf / +400 / 4,600 / 9,800 / Level 23 @x=0
+   100% / 100% / Wolf @x=0
 pet level:
    Wolf / +5,500 / 300 / 10,600 / Now level 24! @x=0
+   100% / 100% / Wolf @x=0
 pet gain, hidden mid-fight:
    100% / 100% @x=0
+   100% / 100% / Wolf @x=0
 fight over:
    Wolf / +600 / 900 / 10,600 / Level 24 @x=0
+   100% / 100% / Wolf @x=0
 overlap (pet should be pushed):
    Mining / +3 / 115 / 150 / Profession @x=0
    Wolf / +850 / 5,050 / 9,800 / Level 23 @x=113
+   100% / 100% / Wolf @x=0
 pet alone (home):
    Wolf / +761 / 4,961 / 9,800 / Level 23 @x=0
+   100% / 100% / Wolf @x=0
 arrange off:
    Mining / +3 / 115 / 150 / Profession @x=0
    Wolf / +850 / 5,050 / 9,800 / Level 23 @x=0
+   100% / 100% / Wolf @x=0
 segmented quest ring visible lines: 189
 thin thickness ok
 edit all:
@@ -85,4 +92,5 @@ edit all:
    95% / 90% @x=0
    95% / 90% / Defias Bandit @x=0
    95% / 90% @x=0
+   95% / 90% / Wolf @x=0
 ERRORS: {}

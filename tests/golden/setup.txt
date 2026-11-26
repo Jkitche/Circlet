@@ -24,6 +24,7 @@
   [x] Ammo ring  <Show>
   == Class
   [x] Pet ring  <Show>
+  [x] Pet health ring  <Show>
         | == Group
         | [x] Loot roll ring  <Show>
         | [x] Ready check ring  <Show>
@@ -67,6 +68,7 @@ clicked clock on, pet off, Show loot -> editing: loot clock=true pet=false
   [x] Ammo ring  <Show>
   == Class
   [ ] Pet ring  <Show>
+  [x] Pet health ring  <Show>
         | == Group
         | [x] Loot roll ring  <Hide>
         | [x] Ready check ring  <Show>
@@ -99,6 +101,7 @@ next -> editing: ''
   [ ] Hide the game's player frame
   [ ] Hide the game's target frame
   [ ] Hide the game's target of target frame
+  [ ] Hide the game's pet frame
   [ ] Hide the game's cast bar while gathering
   [ ] Hide the game's cast bar
   [ ] Hide the game's swing timer bars
@@ -124,7 +127,7 @@ hide XP bar: true
   footer: [Skip setup] [Back] [Next]
 segmented + larger: xp segmented 168, cast segmented 120, pin segmented
 back to keep: xp smooth 140, cast smooth 100, pin segmented
-show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,totHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
+show all -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,totHp,petHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 back -> step 2, editing: ''
 --- step 4
   Welcome to Circlet
@@ -136,15 +139,16 @@ back -> step 2, editing: ''
   (You can come back any time: /circ setup, or Setup on the options window's General tab. Each ring's own page has many more options.)
   footer: [Skip setup] [Back] [Finish]
 finished: open=false setupDone=true seen loot=true
-arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,totHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
+arrange -> editing: rep,quest,xp,skill,weapon,ammo,flight,timed,corpse,breath,food,camp,hearth,clock,timer,craft,playerHp,targetHp,totHp,petHp,gather,fish,cast,swing,shot,targetCast,loot,ready,regen,pin
 after /circ edit: editing ''
 after a reload, open: false
 /circ setup, open: true
 --- /circ new (all seen: the newest release anyway)
   New in Circlet 1.5.0
-  3 new things
+  4 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Health ring  <Show>
+  [x] Pet health ring  <Show>
   [x] Target health ring  <Show>
   [x] Target of target ring  <Show>
   footer: [Full setup] [Done]
@@ -154,9 +158,10 @@ ERRORS: {}
 existing player, 3s after login: open=true setupDone=true
 --- new in
   New in Circlet 1.5.0
-  28 new things
+  29 new things
   (Added since you last played. Tick what you want; Show puts it on screen.)
   [x] Health ring  <Show>
+  [x] Pet health ring  <Show>
   [x] Target health ring  <Show>
   [x] Target of target ring  <Show>
   [x] Hearthstone ring  <Show>
@@ -217,6 +222,7 @@ next login, open: false
   [x] Ammo ring  <Show>
   == Class
   [x] Pet ring  <Show>
+  [x] Pet health ring  <Show>
         | == Group
         | [ ] Loot roll ring  <Show>
         | [x] Ready check ring  <Show>

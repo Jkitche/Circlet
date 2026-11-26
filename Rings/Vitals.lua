@@ -6,7 +6,8 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.Cre
 local NewRingLayer, DrawArc, TRACK = ns.NewRingLayer, ns.DrawArc, ns.TRACK
 
 ---------------------------------------------------------------------------
--- Health & power rings (playerHp: you; targetHp: your target; totHp: its target, smaller)
+-- Health & power rings (playerHp: you; targetHp: your target; totHp: its target, smaller;
+-- petHp: your pet, smaller, for hunters and warlocks)
 ---------------------------------------------------------------------------
 -- The outer band is health, the thinner band inside it power (mana, rage, energy, focus),
 -- with the health (and power) as text in the middle and, optionally, the unit's name.
@@ -103,6 +104,8 @@ local REACTION = {
 }
 local function HealthColor(key, unit)
     local c = db[key .. "Colors"]
+    -- Tagged by someone else (the Tapped effect): grey, whatever the color mode.
+    if db[key .. "FxTapped"] and Clean(SafeCall(UnitIsTapDenied, unit)) then return REACTION.tapped end
     if db[key .. "ColorMode"] ~= "class" then return c.health end
     if Clean(SafeCall(UnitIsPlayer, unit)) then
         local _, class = SafeCall(UnitClass, unit)
@@ -410,7 +413,7 @@ local easeNow = {}
 
 -- When the game says a value changed (it doesn't say how).
 local changes = {} -- "playerHp:hp" -> GetTime() the game last said that value changed
-local UNIT_KEY = { player = "playerHp", target = "targetHp" }
+local UNIT_KEY = { player = "playerHp", target = "targetHp", pet = "petHp" }
 -- Units the game sends no health / power / portrait events for.
 local NO_EVENTS = { targettarget = true }
 
@@ -632,7 +635,7 @@ end
 
 -- Where each ring's level badge sits (degrees, 0 = right, counter-clockwise): bottom left on
 -- yours, bottom right on the target's (the side away from yours).
-local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315 }
+local LEVEL_ANGLE = { playerHp = 225, targetHp = 315, totHp = 315, petHp = 225 }
 
 -- The elite marker (<key>Elite) on the level badge: the game's own target-frame dragon
 -- round it, the art TargetFrame uses for that classification: the gold dragon for elites
@@ -785,6 +788,9 @@ local function DrawPortrait(key, v, unit, room)
         pcall(SetPortraitTexture, v.portrait, unit)
     end
     v.portrait:SetAlpha((tonumber(db[key .. "PortraitAlpha"]) or 70) / 100)
+    -- Grey for a mob someone else tagged (the Tapped effect).
+    local grey = db[key .. "FxTapped"] and unit ~= "player" and Clean(SafeCall(UnitIsTapDenied, unit)) and true or false
+    if v.portrait.grey ~= grey then v.portrait.grey = grey; pcall(v.portrait.SetDesaturated, v.portrait, grey) end
     v.portrait:Show()
 end
 
@@ -1034,6 +1040,7 @@ local function DrawVitals(key, st, frame, geom)
     local b = ns.BorderWidthOf(key)
     local inner = geom.R - geom.T / 2 - b
     local now = GetTime()
+    v.lastColor = st.color -- (tests)
     Effects(key, v.h, st.hpTrack, geom, frame, st.color, now, HEALTH_TRAIL)
     BigHitFlash(key, v.h, geom, frame, now)
     DrawFloats(key, v, frame, geom, now)
@@ -1135,7 +1142,7 @@ local function DrawVitals(key, st, frame, geom)
 end
 
 ---------------------------------------------------------------- the rings
-local SAMPLE_NAMES = { playerHp = nil, targetHp = "Defias Bandit" }
+local SAMPLE_NAMES = { playerHp = nil, targetHp = "Defias Bandit", petHp = "Wolf" }
 
 -- Edit mode / previews: health and mana drifting up and down, a target that's a warrior now
 -- and then (rage).
@@ -1166,7 +1173,7 @@ local function Sample(key, t)
     end
     if db[key .. "Name"] then
         st.name = SAMPLE_NAMES[key] or Clean(SafeCall(UnitName, "player")) or "You"
-        if key == "targetHp" then st.level = 18 elseif key == "totHp" then st.level = 20 end
+        if key == "targetHp" then st.level = 18 elseif key == "totHp" then st.level = 20 elseif key == "petHp" then st.level = 19 end
     end
     return st
 end
@@ -1190,7 +1197,7 @@ local function MakeRing(key, unit)
             { id = "PowerText", name = "Power", desc = "The mana, rage or energy under the health." },
             { id = "LevelText", name = "Level", desc = "The level on its badge at the bottom left." },
             { id = "FloatText", name = "Damage & healing", desc = "The numbers floating up off the ring." },
-            key ~= "totHp" and { id = "AuraText", name = "Buff stacks", desc = "The stack counts on the buff and debuff icons." } or nil,
+            key ~= "totHp" and key ~= "petHp" and { id = "AuraText", name = "Buff stacks", desc = "The stack counts on the buff and debuff icons." } or nil,
         },
         decorate = function(st, frame, geom) DrawVitals(key, st, frame, geom) end,
     })
@@ -1200,6 +1207,7 @@ end
 local playerRing = MakeRing("playerHp", "player")
 local targetRing = MakeRing("targetHp", "target")
 local totRing = MakeRing("totHp", "targettarget")
+local petRing = MakeRing("petHp", "pet")
 
 ---------------------------------------------------------------- right-click menus
 -- The game's own unit menu on right-click, the way unit frames do it: a secure unit button
@@ -1216,6 +1224,7 @@ local MENU_RINGS = {
     { key = "playerHp", unit = "player", ring = playerRing, name = "CircletPlayerHpMenu" },
     { key = "targetHp", unit = "target", ring = targetRing, name = "CircletTargetHpMenu" },
     { key = "totHp", unit = "targettarget", ring = totRing, name = "CircletTotHpMenu" },
+    { key = "petHp", unit = "pet", ring = petRing, name = "CircletPetHpMenu" },
 }
 local menuDebug = {}
 
@@ -1387,18 +1396,24 @@ end)
 ns.Listen({ "UNIT_TARGET" }, function(_, unit)
     if unit == "target" then FreshStart("totHp") end
 end)
+-- A pet summoned, dismissed or swapped: its ring starts afresh.
+ns.Listen({ "UNIT_PET" }, function(_, unit)
+    if unit == "player" then FreshStart("petHp") end
+end)
 
 ns.Listen({ "PLAYER_TARGET_CHANGED", "UNIT_PORTRAIT_UPDATE", "PLAYER_ENTERING_WORLD" }, function(event, unit)
     if event == "UNIT_PORTRAIT_UPDATE" then
-        if unit == "player" then portraitDirty.playerHp = true elseif unit == "target" then portraitDirty.targetHp = true end
+        if unit == "player" then portraitDirty.playerHp = true elseif unit == "target" then portraitDirty.targetHp = true
+        elseif unit == "pet" then portraitDirty.petHp = true end
     else
         portraitDirty.targetHp = true
-        if event == "PLAYER_ENTERING_WORLD" then portraitDirty.playerHp = true end
+        if event == "PLAYER_ENTERING_WORLD" then portraitDirty.playerHp = true; portraitDirty.petHp = true end
     end
 end)
 
 ns.PreviewPlayerHpRing = function() playerRing.Preview(12) end
 ns.PreviewTotHpRing = function() totRing.Preview(12) end
+ns.PreviewPetHpRing = function() petRing.Preview(12) end
 
 -- /circ masktest: how this client applies masks (which way SetRotation turns them, what the
 -- corner texture coordinates do), as white squares masked by Textures/HalfPlane, each labelled
@@ -1469,7 +1484,7 @@ ns.RegisterCommand({ "hpdebug" }, function()
                   hasHealthPercent = type(UnitHealthPercent) == "function", hasCurves = CurvesWork() and true or false,
                   hasScaleTo100 = (CurveConstants and CurveConstants.ScaleTo100) and true or false,
                   issecretvalue = issecretvalue ~= nil, percentScale = percentScale }
-    for unit, key in pairs({ player = "playerHp", target = "targetHp", targettarget = "totHp" }) do
+    for unit, key in pairs({ player = "playerHp", target = "targetHp", targettarget = "totHp", pet = "petHp" }) do
         if Clean(SafeCall(UnitExists, unit)) then
             local tr = tracks[key .. ":hp"] or {}
             local u = {
@@ -1585,7 +1600,7 @@ end
 
 -- The effects (Rings/VitalsFx.lua): name, label, what it does, by the ring it's on.
 local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
-                   "EnergyTick", "Rage", "FullMana", "Skin", "Quest" }
+                   "EnergyTick", "Rage", "FullMana", "Skin", "Quest", "Range", "Tapped", "Loot", "Stance" }
 local FX_TEXT = {
     Combo = { "Combo points", "Five pips over the ring for your combo points, popping as they light and pulsing gold at five (rogues and druids)." },
     Mark = { "Raid marker", "The unit's raid marker (skull, cross, star...) at the top left of the ring." },
@@ -1600,6 +1615,10 @@ local FX_TEXT = {
     EnergyTick = { "Energy tick", "A spark runs round the energy band once per energy tick (every two seconds), so you can time abilities to it." },
     Rage = { "Rage embers", "Embers fly off the rage band as rage comes in." },
     FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
+    Range = { "Out of range", "The ring dims while your target is out of range of your class's main attacks (for a hunter, Auto Shot or Raptor Strike)." },
+    Tapped = { "Tagged by others", "A mob someone else tagged first (no XP or loot for you) goes grey, whatever the color mode, and so does its portrait." },
+    Loot = { "Lootable", "Gold glints run round the ring, with a coin at the right, while your dead target still has loot for you." },
+    Stance = { "Stance or form", "Your stance, form, aura or stealth as a small badge at the bottom right of your ring." },
     Quest = { "Quest target", "A yellow ! at the bottom left when your target is part of one of your active quests, with the objective's progress (3/10) under it when the game shows it." },
     Skin = { "Skinnable", "A pelt badge at the top right when your target's corpse can be skinned (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. Creatures seen skinnable before get a faint badge while alive or not yet looted." },
 }
@@ -1640,7 +1659,7 @@ local function Register(spec)
         [key .. "AuraTime"]  = spec.auras ~= nil and true or nil,
         [key .. "AuraTextSize"] = spec.auras ~= nil and 100 or nil,
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
-        [key .. "Elite"]     = (spec.level and key ~= "playerHp") and true or nil, -- wings on it for elites
+        [key .. "Elite"]     = (spec.level and key ~= "playerHp" and key ~= "petHp") and true or nil, -- wings on it for elites
         [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
         [key .. "Portrait"]  = false,      -- the unit's portrait filling the middle
         [key .. "PortraitAlpha"] = 70,
@@ -1662,13 +1681,13 @@ local function Register(spec)
         if fxOn[name] and fxOn[name][key] then defaults[key .. "Fx" .. name] = true end
     end
     ns.RegisterRing({
-        key = key, name = spec.title, order = spec.order, since = "1.5.0",
+        key = key, name = spec.title, order = spec.order, since = spec.since or "1.5.0", class = spec.class,
         ring = spec.ring, alwaysInCombat = true,
         preview = spec.preview, slash = spec.slash, help = spec.help,
         toggle = { spec.toggleName, spec.toggleDesc },
         gameBar = spec.gameBar,
         defaults = defaults,
-        page = { folder = "combat", order = spec.pageOrder, build = function(O)
+        page = { folder = spec.folder or "combat", order = spec.pageOrder, build = function(O)
                 local Toggle, Range, Select, Color, Box = O.Toggle, O.Range, O.Select, O.Color, O.Box
                 local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
                 local tab = RingTab(spec.pageOrder, spec.pageName, spec.header, spec.intro,
@@ -1693,10 +1712,10 @@ local function Register(spec)
                             name = Toggle(7, key .. "Name", spec.nameLabel, spec.nameDesc),
                             portrait = Toggle(8, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
                             level = Toggle(7.3, key .. "Level", "Level badge",
-                                "The level on a small disc at the bottom " .. (key == "playerHp" and "left" or "right") .. " of the ring"
-                                .. (key == "playerHp" and "." or ", in the game's difficulty colors (\"??\" when "
+                                "The level on a small disc at the bottom " .. ((LEVEL_ANGLE[key] or 225) == 225 and "left" or "right") .. " of the ring"
+                                .. ((key == "playerHp" or key == "petHp") and "." or ", in the game's difficulty colors (\"??\" when "
                                 .. "it's too high to tell). The name then leaves its level off.")),
-                            elite = key ~= "playerHp" and spec.level and (function()
+                            elite = key ~= "playerHp" and key ~= "petHp" and spec.level and (function()
                                 local t = Toggle(7.4, key .. "Elite", "Elite indicator",
                                     "The game's target-frame dragon round the level badge: gold for elites and world "
                                     .. "bosses, silver for rare elites, and the silver frame for rares.")
@@ -1862,4 +1881,22 @@ Register({
     portraitLabel = "Use its portrait as center frame",
     portraitDesc = "Its portrait fills the middle of the ring, behind the numbers. In edit mode and previews your "
         .. "own portrait stands in.",
+})
+
+Register({
+    key = "petHp", ring = petRing, title = "Pet health", order = 12.98, pageOrder = 5, folder = "class",
+    class = { HUNTER = true, WARLOCK = true }, since = "1.5.0",
+    show = "always", name = true, colorMode = "health", x = -360, fromTop = 490, size = 70, thickness = 8,
+    level = true, float = true, menuWho = "your pet",
+    preview = ns.PreviewPetHpRing, slash = { "pethp", "pethealth" }, help = "preview the pet health ring",
+    toggleName = "Pet health ring", toggleDesc = "A small ring for your pet's health and power.",
+    gameBar = "the game's pet frame",
+    pageName = "Pet health", header = "Pet Health Ring", what = "pet health ring",
+    intro = "A smaller ring beside yours for your pet: its health round the ring and its focus, energy or mana "
+        .. "in a thinner band inside it, with its name. Hidden when you have no pet out.",
+    showDesc = "Whenever your pet is out; when you're in combat or it isn't at full health; or only in combat.",
+    nameLabel = "Show name and level", nameDesc = "Your pet's name, and its level, above the health.",
+    portraitLabel = "Use pet portrait as center frame",
+    portraitDesc = "Your pet's portrait fills the middle of the ring, behind the numbers, and changes when you "
+        .. "summon another. In edit mode and previews your own portrait stands in.",
 })
