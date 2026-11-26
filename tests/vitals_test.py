@@ -346,6 +346,31 @@ UNITS.target = nil; Advance(2)
 TargetFrameToT = CreateFrame("Frame", "TargetFrameToT"); CircletDB.totHpHideDefault = true; Advance(0.3)
 P("target of target frame hidden: alpha " .. TargetFrameToT:GetAlpha()); CircletDB.totHpHideDefault = false; Advance(0.3)
 
+-- Buffs and debuffs in an arc round the target ring: debuffs on the inner row, buffs outside.
+AURAS = { target = { HARMFUL = { { icon = 136118, applications = 3, dispelName = "Magic", duration = 10, expirationTime = GetTime() + 6, auraInstanceID = 11 } },
+                     HELPFUL = { { icon = 135987, duration = 0, expirationTime = 0, auraInstanceID = 12 }, { icon = 136085, auraInstanceID = 13 } } } }
+local mockAuras = C_UnitAuras
+C_UnitAuras = { GetAuraDataByIndex = function(u, i, f)
+  local kind = f:find("HARMFUL") and "HARMFUL" or "HELPFUL"
+  if f:find("PLAYER") then return nil end -- none of these are yours
+  local l = AURAS[u] and AURAS[u][kind]; return l and l[i] or nil end }
+DebuffTypeColor = { Magic = { r = 0.2, g = 0.6, b = 1 } }
+UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 2 }
+CircletDB.targetHpShow = "always"; Fire("PLAYER_TARGET_CHANGED"); Advance(1.2)
+local AV = Ring("targetHp").vit.auras
+local function Auras()
+  local t, rows = {}, AV.rows and #AV.rows or 0
+  for _, b in ipairs(AV.icons) do if b._shown then t[#t + 1] = "[" .. tostring(b.count._text) .. "]" end end
+  return #t .. " shown in " .. rows .. " row(s) " .. table.concat(t, "")
+end
+P("target auras: " .. Auras())
+CircletDB.targetHpAuraShow = "debuffs"; Advance(1.2); P("  debuffs only: " .. Auras())
+CircletDB.targetHpAuraShow = "both"; CircletDB.targetHpAuraMine = true; Advance(1.2); P("  only yours: " .. Auras())
+CircletDB.targetHpAuraMine = false; CircletDB.targetHpAuras = false; Advance(0.3); P("  off: " .. Auras())
+CircletDB.targetHpAuras = true; Advance(1.2)
+P("aura defaults: you " .. tostring(CircletDB.playerHpAuras) .. ", target " .. tostring(CircletDB.targetHpAuras) .. ", direction " .. tostring(CircletDB.targetHpAuraDir))
+C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
+
 -- Hide the game's frames.
 PlayerFrame = CreateFrame("Frame", "PlayerFrame"); TargetFrame = CreateFrame("Frame", "TargetFrame")
 CircletDB.playerHpHideDefault = true; Advance(0.3)

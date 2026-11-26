@@ -1028,6 +1028,7 @@ local function DrawVitals(key, st, frame, geom)
         HideBadge(v.lvl); HideBadge(v.cmb)
         if v.floats then for _, fs in ipairs(v.floats) do fs:Hide() end end
         if ns.HideVitalsFx then ns.HideVitalsFx(v, frame) end
+        if ns.HideVitalsAuras then ns.HideVitalsAuras(v) end
         return
     end
     local b = ns.BorderWidthOf(key)
@@ -1124,6 +1125,7 @@ local function DrawVitals(key, st, frame, geom)
     DrawLevel(key, v, st, geom, d)
     DrawCombat(key, v, st, geom, d, now)
     if ns.DrawVitalsFx then ns.DrawVitalsFx(key, v, st, frame, geom, d, now) end
+    if ns.DrawVitalsAuras then ns.DrawVitalsAuras(key, v, st, frame, geom, d) end
     if st.name ~= nil then
         v.name:SetTextColor(1, 0.82, 0.25)
         if st.level and not db[key .. "Level"] then Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level) else Put(v.name, nil, st.name) end
@@ -1188,6 +1190,7 @@ local function MakeRing(key, unit)
             { id = "PowerText", name = "Power", desc = "The mana, rage or energy under the health." },
             { id = "LevelText", name = "Level", desc = "The level on its badge at the bottom left." },
             { id = "FloatText", name = "Damage & healing", desc = "The numbers floating up off the ring." },
+            key ~= "totHp" and { id = "AuraText", name = "Buff stacks", desc = "The stack counts on the buff and debuff icons." } or nil,
         },
         decorate = function(st, frame, geom) DrawVitals(key, st, frame, geom) end,
     })
@@ -1625,6 +1628,15 @@ local function Register(spec)
         [key .. "FloatTextSize"]  = 100,
         [key .. "Float"]     = spec.float and true or nil, -- damage and healing numbers floating off it
         [key .. "FloatDir"]  = spec.float and "up" or nil, -- which way they float: up, down, left, right
+        -- Buffs and debuffs in an arc round the ring (Rings/VitalsAuras.lua).
+        [key .. "Auras"]     = spec.auras ~= nil and spec.auras or nil,
+        [key .. "AuraDir"]   = spec.auras ~= nil and "down" or nil,
+        [key .. "AuraShow"]  = spec.auras ~= nil and "both" or nil,
+        [key .. "AuraMine"]  = spec.auras ~= nil and false or nil,
+        [key .. "AuraMax"]   = spec.auras ~= nil and 8 or nil,
+        [key .. "AuraSize"]  = spec.auras ~= nil and 100 or nil,
+        [key .. "AuraTime"]  = spec.auras ~= nil and true or nil,
+        [key .. "AuraTextSize"] = spec.auras ~= nil and 100 or nil,
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
         [key .. "Elite"]     = (spec.level and key ~= "playerHp") and true or nil, -- wings on it for elites
         [key .. "CombatIcon"] = spec.combat and true or nil,  -- in-combat badge (your ring)
@@ -1741,6 +1753,36 @@ local function Register(spec)
                             end
                             return n > 0 and Box(2.7, "Effects", args) or nil
                         end)(),
+                        auras = spec.auras ~= nil and (function()
+                            local function Off() return not db[key .. "Auras"] end
+                            local whose = key == "playerHp" and "your" or "your target's"
+                            local args = {
+                                on = Toggle(1, key .. "Auras", "Buffs and debuffs",
+                                    "An arc of " .. whose .. " buffs and debuffs round the ring, with the time left as "
+                                    .. "a sweep and stack counts: debuffs on the inner row (bordered in their type's "
+                                    .. "color), buffs outside them."),
+                                dir = Select(2, key .. "AuraDir", "Direction",
+                                    { up = "Up", down = "Down", left = "Left", right = "Right" }, { "up", "down", "left", "right" },
+                                    "Which side of the ring the arc sits on."),
+                                show = Select(3, key .. "AuraShow", "Show",
+                                    { both = "Buffs and debuffs", buffs = "Buffs only", debuffs = "Debuffs only" },
+                                    { "both", "buffs", "debuffs" }, "Which kinds to show."),
+                                mine = Toggle(4, key .. "AuraMine", "Only yours",
+                                    "Only the buffs and debuffs you cast (and your pet's)."),
+                                time = Toggle(5, key .. "AuraTime", "Time left as numbers",
+                                    "The game's countdown numbers on the icons, as well as the sweep. These follow the "
+                                    .. "game's own setting for cooldown numbers."),
+                                max = Range(6, key .. "AuraMax", "Most of each kind", 1, 16, 1,
+                                    "How many buffs, and how many debuffs, at most. Only as many as fit round half the "
+                                    .. "ring show."),
+                                size = Range(7, key .. "AuraSize", "Icon size (%)", 50, 200, 5,
+                                    "The icons' size, as a % of the usual size for the ring."),
+                            }
+                            for name, a in pairs(args) do
+                                if name ~= "on" then a.disabled = Off end
+                            end
+                            return Box(2.75, "Buffs & debuffs", args)
+                        end)() or nil,
                         colors = Box(3, "Colors", {
                             mode = Select(0.5, key .. "ColorMode", "Health band color", COLOR_MODES, COLOR_ORDER,
                                 "Health color: the color below. Class / reaction: players in their class color, "
@@ -1765,7 +1807,7 @@ end
 
 Register({
     key = "playerHp", ring = playerRing, title = "Health", order = 12.9, pageOrder = 1.5,
-    show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, float = true, menuWho = "yourself",
+    show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, float = true, auras = false, menuWho = "yourself",
     preview = ns.PreviewPlayerHpRing, slash = { "health", "hp" }, help = "preview your health and power ring",
     toggleName = "Health ring", toggleDesc = "Your health, with your mana, rage or energy inside it.",
     gameBar = "the game's player frame",
@@ -1782,7 +1824,7 @@ Register({
 
 Register({
     key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 1.6,
-    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, float = true, menuWho = "your target",
+    show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, float = true, auras = true, menuWho = "your target",
     preview = ns.PreviewTargetHpRing, slash = { "targethealth", "thp" }, help = "preview the target health ring",
     toggleName = "Target health ring", toggleDesc = "Your target's health and power, with its name.",
     gameBar = "the game's target frame",

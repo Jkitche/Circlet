@@ -97,6 +97,11 @@ target of target: health 22 segs, power 36 segs | - / 30% / 50%
   its health changed (no event): health 51 segs, power 36 segs | - / 70% / 50%
   target has no target: (hidden)
 target of target frame hidden: alpha 0
+target auras: 3 shown in 2 row(s) [3][][]
+  debuffs only: 1 shown in 1 row(s) [3]
+  only yours: 0 shown in 0 row(s) 
+  off: 0 shown in 0 row(s) 
+aura defaults: you nil, target true, direction down
 player frame alpha 0, target frame alpha 1
 player frame back: 1
 ERRORS: {}
