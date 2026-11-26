@@ -18,8 +18,8 @@ local db, SafeCall = ns.db, ns.SafeCall
 -- A container only lays its buttons out in a straight row, and in combat addons can't move
 -- them. So each spot on the arc is its own container showing the first k auras in a row,
 -- inside a small window of ours that clips all but the k-th: spot k shows aura k, and the
--- windows (ours, free to move) sit on the arc. How many auras there are, for centring the arc,
--- comes from C_UnitAuras.GetUnitAuraInstanceIDs, a plain list of ids.
+-- windows (ours, free to move) sit on the arc. How many auras there are (for centring the arc,
+-- and whether there's a debuff row at all) comes from plain lists of their ids or slots.
 --
 -- Containers are set up and dressed out of combat (their buttons are the game's while auras
 -- are hidden); a change asked for in combat waits for it to end. Previews and edit mode with
@@ -251,13 +251,46 @@ local function SetUpSpot(spot, set, s)
     spot.win:SetSize(s, s)
 end
 
--- How many auras of a kind the unit has (a plain list of ids, even in combat).
+-- How many auras of a kind the unit has, without reading any of them: the game's list of
+-- their ids, else its list of slots (both plain, even in combat), else (out of combat) by
+-- walking them. If none of those answer, the last count it had: never "assume full", which
+-- would open an empty debuff row and push the buffs out for nothing.
+local lastCount = {}
+local function SlotCount(ok, _token, ...)
+    if not ok then return nil end
+    return select("#", ...)
+end
+
+local function Count(unit, filter, max)
+    local ids = C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs
+    if ids then
+        local t = SafeCall(ids, unit, filter, max)
+        if type(t) == "table" then return #t end
+    end
+    local slots = C_UnitAuras and C_UnitAuras.GetAuraSlots
+    if slots then
+        local n = SlotCount(pcall(slots, unit, filter, max))
+        if n then return n end
+    end
+    if not InCombat() then
+        local get = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+        if get then
+            local n = 0
+            for i = 1, max do
+                local a = SafeCall(get, unit, i, filter)
+                if not ns.IsSecret(a) and a == nil then break end
+                n = n + 1
+            end
+            return n
+        end
+    end
+end
+
 local function CountOf(unit, filter, max)
-    local get = C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs
-    if not get then return max end
-    local ids = SafeCall(get, unit, filter, max)
-    if type(ids) ~= "table" then return max end
-    return math.min(max, #ids)
+    local key = unit .. ":" .. filter
+    local n = Count(unit, filter, max)
+    if n then lastCount[key] = n else n = lastCount[key] or 0 end
+    return math.min(max, n)
 end
 
 local function HideSpots(A)

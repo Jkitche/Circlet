@@ -423,6 +423,21 @@ AURAS.target.HARMFUL = { 11 }; COMBAT = true
 local t = {} for _, dt in ipairs({ 0.05, 0.1, 0.15, 0.3, 1 }) do Advance(dt); t[#t + 1] = string.format("%.0f", BuffR() - r0) end
 P("buffs easing out a row as a debuff lands: +" .. table.concat(t, " +") .. " px")
 COMBAT = false; Advance(0.5)
+-- The buffs only move out when there are debuffs, however the count is had.
+local function Rows() return string.format("buffs on row %d (%d debuff spot(s))", BuffR() > r0 + 5 and 2 or 1, Shown("debuffs")) end
+AURAS.target.HARMFUL = {}; COMBAT = true; Advance(1); P("no debuffs, in combat: " .. Rows())
+local ids = C_UnitAuras.GetUnitAuraInstanceIDs; C_UnitAuras.GetUnitAuraInstanceIDs = nil
+C_UnitAuras.GetAuraSlots = function(u, f, max) local l = AURAS[u] and AURAS[u][f:find("HARMFUL") and "HARMFUL" or "HELPFUL"] or {}
+  return nil, unpack(l) end
+Advance(1); P("  counted by slots: " .. Rows())
+AURAS.target.HARMFUL = { 11 }; Advance(1); P("  a debuff, by slots: " .. Rows())
+C_UnitAuras.GetAuraSlots = nil; Advance(1); P("  neither, in combat (last count): " .. Rows())
+local byIndex = C_UnitAuras.GetAuraDataByIndex
+C_UnitAuras.GetAuraDataByIndex = function(u, i, f) local l = AURAS[u] and AURAS[u][f:find("HARMFUL") and "HARMFUL" or "HELPFUL"] or {}
+  return l[i] and { auraInstanceID = l[i] } or nil end
+AURAS.target.HARMFUL = {}; COMBAT = false; Advance(1); P("  neither, out of combat (walked): " .. Rows())
+C_UnitAuras.GetAuraDataByIndex = byIndex
+C_UnitAuras.GetUnitAuraInstanceIDs = ids; AURAS.target.HARMFUL = { 11 }; Advance(1)
 CreateFrame = realCF; C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
 
 -- Hide the game's frames.
