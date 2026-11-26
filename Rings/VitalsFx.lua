@@ -236,16 +236,27 @@ local function DrawAggro(key, fx, st, frame, geom, d, now)
     end
     if not on then return end
     local pulse = 0.55 + 0.45 * math.abs(math.sin(now * 3))
-    local glow = Tex(fx, "aggroGlow", GLOW, "BACKGROUND", 1, true)
+    local glow = Tex(fx, "aggroHalo", GLOW, "BACKGROUND", -8, true, frame)
     GlowOn(glow, frame, geom.R + geom.T * 0.3)
     glow:SetVertexColor(1, 0.12, 0.08)
-    glow:SetAlpha(0.6 * pulse)
+    glow:SetAlpha(0.5 * pulse)
 end
 
--- A glow gated by a hidden or readable threshold, pulsing on its own frame.
+-- A glow gated by a hidden or readable threshold, pulsing. These halos sit under the ring
+-- (on a frame of their own a level below the ring's), so they glow round the band without
+-- washing it out. The gate goes in the texture's alpha (it may be hidden) and nothing else
+-- touches that; the pulse goes in the frame's alpha. (Putting the pulse in the texture's
+-- vertex color instead showed the glow whatever the gate said.)
 local function DrawThreshold(fx, name, frame, r, gate, color, alpha)
-    local f = Sub(fx, name)
-    local t = Tex(fx, name, GLOW, "BACKGROUND", 2, true, f)
+    local f = fx.frames[name]
+    if not f then
+        f = CreateFrame("Frame", nil, frame)
+        f:SetAllPoints(frame)
+        fx.frames[name] = f
+    end
+    local level = math.max(0, frame:GetFrameLevel() - 1)
+    if f:GetFrameLevel() ~= level then f:SetFrameLevel(level) end
+    local t = Tex(fx, name .. "Halo", GLOW, "BACKGROUND", 0, true, f)
     if not Gate(t, gate) then f:Hide() return end
     GlowOn(t, frame, r)
     t:SetVertexColor(color[1], color[2], color[3])
@@ -256,7 +267,7 @@ end
 local function DrawExecute(key, fx, st, frame, geom, d, now)
     local gate = HealthUnder(st, 0.20) -- may be hidden: not tested here, only passed on
     local pulse = 0.5 + 0.5 * math.abs(math.sin(now * 5))
-    DrawThreshold(fx, "execute", frame, geom.R, gate, { 1, 0.35, 0.08 }, 0.35 + 0.65 * pulse)
+    DrawThreshold(fx, "execute", frame, geom.R + geom.T * 0.3, gate, { 1, 0.35, 0.08 }, 0.3 + 0.5 * pulse)
 end
 
 local function DrawLowHealth(key, fx, st, frame, geom, d, now)
@@ -265,7 +276,7 @@ local function DrawLowHealth(key, fx, st, frame, geom, d, now)
     local ph = now % 1
     local beat = math.max(math.exp(-((ph - 0.0) / 0.07) ^ 2), 0.6 * math.exp(-((ph - 0.22) / 0.07) ^ 2),
         math.exp(-((ph - 1.0) / 0.07) ^ 2))
-    DrawThreshold(fx, "low", frame, geom.R, gate, { 1, 0.08, 0.05 }, 0.25 + 0.75 * beat)
+    DrawThreshold(fx, "low", frame, geom.R + geom.T * 0.3, gate, { 1, 0.08, 0.05 }, 0.25 + 0.6 * beat)
 end
 
 local function DrawDeath(key, fx, st, frame, geom, d, now)
@@ -478,14 +489,62 @@ end
 -- Engineering"), colored by how hard it is for you. So a dead target's tooltip is read (twice
 -- a second while it's dead), and each kind of creature (by its NPC id) seen skinnable is
 -- remembered (skinKnown), so the next live one, or a corpse not looted yet, gets a faint badge.
+-- Each kind shows the cursor the game gives you over such a corpse (the knife, the herb, the
+-- pick), cropped to leave out the pointer arrow in its top-left corner; the icon is the
+-- fallback if this client has no such cursor file.
+local CURSOR_CROP = 0.3 -- the arrow's share of the cursor image, from its top-left corner
 local SKIN_KINDS = {
-    { kind = "leather", text = UNIT_SKINNABLE_LEATHER or "Skinnable", icon = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01" },
-    { kind = "herb", text = UNIT_SKINNABLE_HERB or "Requires Herbalism", icon = "Interface\\Icons\\INV_Misc_Flower_02" },
-    { kind = "rock", text = UNIT_SKINNABLE_ROCK or "Requires Mining", icon = "Interface\\Icons\\Trade_Mining" },
+    { kind = "leather", text = UNIT_SKINNABLE_LEATHER or "Skinnable", icon = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
+      cursor = "Interface\\Cursor\\Skin" },
+    { kind = "herb", text = UNIT_SKINNABLE_HERB or "Requires Herbalism", icon = "Interface\\Icons\\INV_Misc_Flower_02",
+      cursor = "Interface\\Cursor\\GatherHerbs" },
+    { kind = "rock", text = UNIT_SKINNABLE_ROCK or "Requires Mining", icon = "Interface\\Icons\\Trade_Mining",
+      cursor = "Interface\\Cursor\\Mine" },
     { kind = "bolts", text = UNIT_SKINNABLE_BOLTS or "Requires Engineering", icon = "Interface\\Icons\\Trade_Engineering" },
 }
 local SKIN_BY = {}
 for _, k in ipairs(SKIN_KINDS) do SKIN_BY[k.kind] = k end
+
+-- Whether you can gather it yourself: you need the profession (Skinning 393, Herbalism 182,
+-- Mining 186, Engineering 202; looked up by ID, else by name in your skills list, as Forever
+-- may number them its own way), and the corpse's tooltip line turns red when it's beyond your
+-- skill. If the client won't say what skills you have, it counts as yes.
+local SKILL_OF = { leather = { 393, "Skinning" }, herb = { 182, "Herbalism" }, rock = { 186, "Mining" },
+                   bolts = { 202, "Engineering" } }
+local skillCache, skillAt = {}, -math.huge
+local function HasSkill(kind, now)
+    if now - skillAt > 2 then skillCache, skillAt = {}, now end
+    if skillCache[kind] ~= nil then return skillCache[kind] end
+    local s, has = SKILL_OF[kind], nil
+    local api = C_SkillInfo
+    if s and api then
+        if api.GetSkillLineInfoByID then
+            local ok, info = pcall(api.GetSkillLineInfoByID, s[1])
+            if ok and type(info) == "table" then
+                local rank = Clean(info.rank)
+                if type(rank) == "number" and rank > 0 then has = true end
+            end
+        end
+        if not has and api.GetNumSkillLines and api.GetSkillLineInfo then
+            has = false
+            for i = 1, (CleanNumber(SafeCall(api.GetNumSkillLines)) or 0) do
+                local info = SafeCall(api.GetSkillLineInfo, i)
+                if type(info) == "table" and Clean(info.name) == s[2] and not info.isHeader then
+                    local rank = Clean(info.rank)
+                    has = type(rank) ~= "number" or rank > 0
+                    break
+                end
+            end
+        end
+    end
+    if has == nil then has = true end
+    skillCache[kind] = has
+    return has
+end
+
+local function TooHard(color)
+    return color and color[1] > 0.9 and color[2] < 0.35 and color[3] < 0.35
+end
 
 local function NpcId(unit)
     local guid = Clean(SafeCall(UnitGUID, unit))
@@ -548,8 +607,20 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
     local k = kind and SKIN_BY[kind]
     if not k then return end
     local x, y = Polar(45, geom.R)
-    local icon = Tex(fx, "skin", k.icon, "OVERLAY", 3)
-    if icon.skinFile ~= k.icon then
+    -- The cursor, if the client has it (SetTexture says so).
+    local cur = k.cursor and Tex(fx, "skinCursor", nil, "OVERLAY", 3)
+    if cur then
+        if cur.skinFile ~= k.cursor then
+            cur.skinFile = k.cursor
+            cur.skinOk = cur:SetTexture(k.cursor) ~= false
+            cur:SetTexCoord(CURSOR_CROP, 1, CURSOR_CROP, 1) -- leave out the arrow
+        end
+        if not cur.skinOk then cur.used = false cur = nil end
+    end
+    local icon = not cur and Tex(fx, "skin", k.icon, "OVERLAY", 3)
+    if cur then
+        icon = cur
+    elseif icon.skinFile ~= k.icon then
         icon.skinFile = k.icon
         icon:SetTexture(k.icon)
         -- Crop the icon's border, then mask it round: the game won't set tex coords on a
@@ -560,8 +631,15 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
             pcall(icon.SetMask, icon, DISC)
         end
     end
-    At(icon, frame, x, y, d * 1.1)
-    if sure then
+    At(icon, frame, x, y, d * (cur and 1.35 or 1.1))
+    -- Not one you can gather yourself: grey, no glow.
+    local can = not st.unit or (HasSkill(kind, now) and not TooHard(color))
+    if not can then
+        icon:SetAlpha(sure and 0.85 or 0.45)
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.6, 0.6, 0.6)
+    elseif sure then
+        icon:SetVertexColor(1, 1, 1)
         icon:SetAlpha(1)
         icon:SetDesaturated(false)
         local glow = Tex(fx, "skinGlow", SOFT, "OVERLAY", 2, true)
@@ -569,6 +647,7 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
         glow:SetVertexColor(color[1], color[2], color[3])
         glow:SetAlpha(0.55 + 0.3 * math.sin(now * 3))
     else
+        icon:SetVertexColor(1, 1, 1)
         icon:SetAlpha(0.5)
         icon:SetDesaturated(true)
     end
@@ -702,6 +781,8 @@ function ns.HideVitalsFx(v, frame)
     local fx = v.fx
     if not fx then return end
     fx.root:Hide()
+    -- The halos live under the ring (on the ring frame or frames of their own), not on fx.root.
+    for _, t in pairs(fx.t) do if t:GetParent() ~= fx.root then t:Hide() end end
     Restore(fx, frame)
 end
 

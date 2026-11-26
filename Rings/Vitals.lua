@@ -1510,6 +1510,56 @@ ns.RegisterCommand({ "hpdebug" }, function()
 end, "what the health rings can see (for bug reports)")
 ns.PreviewTargetHpRing = function() targetRing.Preview(12) end
 
+-- /circ curvetest: shows on screen (hidden values can be shown, just not read) what your
+-- health percentage comes out as raw, through the game's 0-100 curve, and through Circlet's
+-- own step curves both ways round, so it's plain which way this client runs them.
+ns.RegisterCommand({ "curvetest" }, function()
+    local f = ns.curveTestFrame
+    if not f then
+        f = CreateFrame("Frame", nil, UIParent)
+        f:SetSize(420, 170)
+        f:SetPoint("CENTER", 0, 120)
+        f:SetFrameStrata("DIALOG")
+        local bg = f:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints()
+        bg:SetColorTexture(0, 0, 0, 0.8)
+        f.lines = {}
+        for i = 1, 7 do
+            local fs = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            fs:SetPoint("TOPLEFT", 12, -10 - (i - 1) * 21)
+            fs:SetJustifyH("LEFT")
+            f.lines[i] = fs
+        end
+        ns.curveTestFrame = f
+    end
+    local function Step(points)
+        local cv = C_CurveUtil.CreateCurve()
+        if Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then pcall(cv.SetType, cv, Enum.LuaCurveType.Step) end
+        for _, p in ipairs(points) do cv:AddPoint(p[1], p[2]) end
+        return cv
+    end
+    local tests = {
+        { "raw (no curve)", function() return UnitHealthPercent("player") end },
+        { "game 0-100 curve", function() return UnitHealthPercent("player", false, CurveConstants.ScaleTo100) end },
+        { "up: 0 then 1 from 0.3", function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 0.3, 1 } })) end },
+        { "down: 1 then 0 from 0.3", function() return UnitHealthPercent("player", false, Step({ { 0, 1 }, { 0.3, 0 } })) end },
+        { "up, 0-100: from 30", function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 30, 1 } })) end },
+        { "curve as 2nd arg, down", function() return UnitHealthPercent("player", Step({ { 0, 1 }, { 0.3, 0 } })) end },
+    }
+    f.lines[1]:SetText("Circlet curve test (full health: you'd expect up = 1, down = 0)")
+    for i, t in ipairs(tests) do
+        local ok, v = pcall(t[2])
+        local fs = f.lines[i + 1]
+        if not ok then
+            fs:SetText(t[1] .. ": error " .. tostring(v):sub(1, 60))
+        elseif not pcall(fs.SetFormattedText, fs, "%s: %s", t[1], v) then
+            fs:SetText(t[1] .. ": (can't show)")
+        end
+    end
+    f:Show()
+    C_Timer.After(30, function() f:Hide() end)
+end, "show how this client runs health curves (for bug reports)")
+
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------

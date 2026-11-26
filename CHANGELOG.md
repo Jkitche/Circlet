@@ -33,6 +33,7 @@
     - *Aggro warning* (target): a red glare round the ring while it's targeting you.
     - *Execute range* (target): the ring throbs red-orange below 20% health.
     - *Low health heartbeat* (yours): a red lub-dub below 30% health.
+    These glows sit beneath the ring and halo round it, so the health band stays readable.
     - *Death*: the ring cracks and darkens with a skull over it; your ghost glows pale with
       wisps drifting up.
     - *Combat start* (yours): a gold ring bursts outward as combat starts.
@@ -43,10 +44,12 @@
       time abilities to it.
     - *Rage embers* (yours): embers fly off the rage band as rage comes in.
     - *Full mana shine* (yours): a soft shine on the mana band while it's full.
-    - *Skinnable* (target): a pelt badge at the top right when the target's corpse can be skinned
-      (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. The game only
-      says so once a corpse is looted, so kinds of creature seen skinnable before are remembered
-      and get a faint badge while alive or not yet looted; a skinned corpse drops it.
+    - *Skinnable* (target): the game's skinning cursor (or its herb or mining one) at the top
+      right when the target's corpse can be skinned (or herbs, ore or parts gathered), glowing in
+      the tooltip's difficulty color, and greyed out when you can't gather it yourself (no such
+      profession, or beyond your skill). The game only says so once a corpse is looted, so kinds
+      of creature seen skinnable before are remembered and get a faint badge while alive or not
+      yet looted; a skinned corpse drops it.
     - *Quest target* (target): a yellow ! at the bottom left when the target is part of one of
       your active quests, with the objective's progress (3/10) under it when the game shows it.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
@@ -66,8 +69,8 @@
   - **In-combat indicator** (your ring): crossed swords at the top right while you're in combat.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.
-  - `/circ hpdebug` and `/circ masktest` report what this client lets the rings see and do (for
-    bug reports).
+  - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings
+    see and do (for bug reports).
 - **Class section in the options.** The rings for one class's own tools have a folder of their
   own: totems and weapon imbues (shamans), the soulstone (warlocks) and the pet (hunters). Only
   your class's show; the folder's hidden for classes with none.

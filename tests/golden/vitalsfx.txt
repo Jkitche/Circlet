@@ -1,12 +1,12 @@
 target, nothing going on: (none)
 3 combo points: cpE x5 cpG x3 cpP x5
 5 combo points: cpE x5 cpG x5 cpP x5
-skull, targeting you: aggroGlow mark@[8]
+skull, targeting you: aggroHalo mark@[8]
 hidden skull: mark@<8>
 hidden circle: mark@<2>
-target at 15%: execute
-  hidden, 15%: execute<1>
-  hidden, 50%: execute<0>
+target at 15%: executeHalo
+  hidden, 15%: executeHalo<1>
+  hidden, 50%: executeHalo<0>
 heal on target: heal x8
 block, dodge, parry: blades shield whoosh x3
 crit jolt: before CENTER 230.0,-525.0, during moved true, after CENTER 230.0,-525.0 (back: true)
@@ -14,10 +14,14 @@ crit jolt: before CENTER 230.0,-525.0, during moved true, after CENTER 230.0,-52
 target dead: cracks skull veil
 wolf, nothing learned: (none)
 wolf corpse, loot left: cracks skull veil
-looted, skinnable (green): cracks skin skinGlow skull veil glow 0.25,0.75,0.25
+looted, skinnable (green): cracks skinCursor skinGlow skull veil glow 0.25,0.75,0.25
 skinned already: cracks skull veil
-next wolf, alive: skin alpha 0.5
-rock elemental corpse: cracks skin skinGlow skull veil Interface\Icons\Trade_Mining
+next wolf, alive: skinCursor alpha 0.5, Interface\Cursor\Skin
+rock elemental corpse: cracks skinCursor skinGlow skull veil Interface\Cursor\Mine
+  no cursor file: cracks skin skinGlow skull veil Interface\Icons\Trade_Mining
+no Mining: grey true, glow false | cracks skinCursor skull veil
+with Mining: grey false, glow true | cracks skinCursor skinGlow skull veil
+  red line (beyond your skill): grey true, glow false | cracks skinCursor skull veil
 skinnable off: cracks skull veil
 quest wolf: quest questGlow text 3/10
 objective done: quest questGlow text 10/10
@@ -29,11 +33,12 @@ energy tick: tick tickFlash tickHalo
   0.7s on: tick tickHalo
   energy spent by a cast isn't a tick: true
 combat starts: flare tick tickHalo
-you at 20%: low tick tickHalo
-  hidden: low<1> tick tickHalo
+you at 20%: lowHalo tick tickHalo
+  hidden: lowHalo<1> tick tickHalo
+  halo: vertex alpha set false
 rage gain: ember x4
-full mana: fullMana
-  hidden: fullMana<1> low<0>
+full mana: fullManaHalo
+  hidden: fullManaHalo<1> lowHalo<0>
 half mana: (none)
 your ghost: ghost wisp x6
 raid marker off: (none)

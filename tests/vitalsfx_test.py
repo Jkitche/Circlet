@@ -176,6 +176,8 @@ P("  moved mid-jolt: ends where its own layout puts it: " .. Spot(tf))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("target dead: " .. Fx("targetHp"))
 UNITS.target.dead = false; UNITS.target.hp = 800; Advance(0.3)
 -- Skinnable: only a looted corpse's tooltip says so; the kind of creature is remembered.
+-- (No skills list at first: counts as being able to gather it; checked further down.)
+local mockSkills = C_SkillInfo; C_SkillInfo = nil
 UNITS.target.guid = "Creature-0-1-2-3-1131-000ABC"
 Advance(0.3); P("wolf, nothing learned: " .. Fx("targetHp"))
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("wolf corpse, loot left: " .. Fx("targetHp"))
@@ -183,11 +185,27 @@ TIP_LINES = { { leftText = "Young Wolf" }, { leftText = "Skinnable", leftColor =
 Advance(0.6); P("looted, skinnable (green): " .. Fx("targetHp") .. " glow " .. string.format("%.2f,%.2f,%.2f", unpack(Ring("targetHp").vit.fx.t.skinGlow._vc or {0,0,0})))
 TIP_LINES = { { leftText = "Young Wolf" } }; Advance(0.6); P("skinned already: " .. Fx("targetHp"))
 UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = "Creature-0-1-2-3-1131-000DEF"; Advance(0.3)
-local sk = Ring("targetHp").vit.fx.t.skin
-P("next wolf, alive: " .. Fx("targetHp") .. " alpha " .. tostring(sk._alpha))
+local sk = Ring("targetHp").vit.fx.t.skinCursor
+P("next wolf, alive: " .. Fx("targetHp") .. " alpha " .. tostring(sk._alpha) .. ", " .. tostring(sk.skinFile))
 TIP_LINES = { { leftText = "Requires Mining", leftColor = { r = 1, g = 0.5, b = 0.25 } } }
 UNITS.target.guid = "Creature-0-1-2-3-2725-000111"; UNITS.target.dead = true; Advance(0.6)
-P("rock elemental corpse: " .. Fx("targetHp") .. " " .. tostring(Ring("targetHp").vit.fx.t.skin.skinFile))
+P("rock elemental corpse: " .. Fx("targetHp") .. " " .. tostring(Ring("targetHp").vit.fx.t.skinCursor.skinFile))
+-- No such cursor file in this client: the icon instead.
+local fx = Ring("targetHp").vit.fx; fx.t.skinCursor.skinFile = nil
+local setTex = fx.t.skinCursor.SetTexture; fx.t.skinCursor.SetTexture = function(t, f) return false end
+Advance(0.6); P("  no cursor file: " .. Fx("targetHp") .. " " .. tostring(fx.t.skin and fx.t.skin.skinFile))
+fx.t.skinCursor.SetTexture = setTex; fx.t.skinCursor.skinFile = nil
+-- Can you gather it yourself? Needs the profession, and a line not in red (beyond your skill).
+SKILLS = {}
+C_SkillInfo = { GetSkillLineInfoByID = function(id) return SKILLS[id] and { rank = SKILLS[id] } or nil end,
+                GetNumSkillLines = function() return 0 end, GetSkillLineInfo = function() return nil end }
+local function Grey() local r = Ring("targetHp"); if not r then return "(ring hidden)" end local t = r.vit.fx.t; return tostring(t.skinCursor and t.skinCursor._desat or false) .. ", glow " .. tostring(t.skinGlow ~= nil and t.skinGlow._shown ~= false and t.skinGlow.used == true) .. " | " .. Fx("targetHp") end
+RegionMethods.SetDesaturated = function(s, v) s._desat = v end
+Advance(2.1); P("no Mining: grey " .. Grey())
+SKILLS[186] = 120; Advance(2.1); P("with Mining: grey " .. Grey())
+TIP_LINES = { { leftText = "Requires Mining", leftColor = { r = 1, g = 0.13, b = 0.13 } } }; Advance(0.6)
+P("  red line (beyond your skill): grey " .. Grey())
+C_SkillInfo = mockSkills
 CircletDB.targetHpFxSkin = false; Advance(0.6); P("skinnable off: " .. Fx("targetHp")); CircletDB.targetHpFxSkin = true
 TIP_LINES = nil; UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = nil; Advance(0.3)
 -- Quest target: the tooltip's quest lines (title, objectives) or the game's own check.
@@ -212,7 +230,18 @@ Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c1", 1752); Fire("UNIT_POWER_FREQUEN
 local _, tick2 = NS.VitalsFxState(); P("  energy spent by a cast isn't a tick: " .. tostring(tick == tick2))
 Fire("PLAYER_REGEN_DISABLED"); COMBAT = true; Advance(0.1); P("combat starts: " .. Fx("playerHp")); Advance(1)
 UNITS.player.hp = 200; Advance(0.1); P("you at 20%: " .. Fx("playerHp"))
-SECRET = true; Advance(0.1); P("  hidden: " .. Fx("playerHp")); SECRET = false; UNITS.player.hp = 900; Advance(0.1)
+SECRET = true; Advance(0.1); P("  hidden: " .. Fx("playerHp"))
+-- The gate is the halo's only alpha: no vertex-color alpha on it (in game that showed the glow
+-- whatever the gate said); the pulse is on its own frame.
+do
+  local vc = RegionMethods.SetVertexColor
+  local halo = Ring("playerHp").vit.fx.t.lowHalo
+  local four = false
+  halo.SetVertexColor = function(s, r, g, b, a) if a ~= nil then four = true end return vc(s, r, g, b) end
+  Advance(0.1); halo.SetVertexColor = nil
+  P("  halo: vertex alpha set " .. tostring(four))
+end
+SECRET = false; UNITS.player.hp = 900; Advance(0.1)
 COMBAT = false; Fire("PLAYER_REGEN_ENABLED")
 -- A warrior's rage; a mage's full mana.
 UNITS.player.token, UNITS.player.ptype, UNITS.player.power = "RAGE", 1, 30

@@ -92,6 +92,7 @@ chat:   /circ timer <time> [label] - start a countdown ring: 5m, 1:30, 90, 1h20m
 chat:   /circ ring <name> - pin a quest to its own ring (or right-click it in the quest log); /circ ring clear
 chat:   /circ masktest  - show how this client applies masks (for bug reports)
 chat:   /circ hpdebug   - what the health rings can see (for bug reports)
+chat:   /circ curvetest - show how this client runs health curves (for bug reports)
 chat:   /circ discover  - preview the discovered area animation
 chat:   /circ hello     - preview the welcome animation
 chat:   /circ summary   - this session's summary
