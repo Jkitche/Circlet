@@ -398,7 +398,7 @@ COMBAT = true; CircletDB.targetHpAuraSize = 150; Advance(0.3)
 P("  bigger, in combat: " .. Spot("debuffs", 1))
 COMBAT = false; Advance(0.3); P("  after combat: " .. Spot("debuffs", 1))
 CircletDB.targetHpAuraSize = 100; Advance(0.3)
-AURAS.target.HELPFUL = { 12, 13, 14, 15 }; Advance(0.1); P("  four buffs: " .. Auras())
+AURAS.target.HELPFUL = { 12, 13, 14, 15 }; Advance(1); P("  four buffs: " .. Auras())
 AURAS.target.HELPFUL = { 12, 13 }; Advance(0.1)
 P("aura defaults: you " .. tostring(CircletDB.playerHpAuras) .. ", target " .. tostring(CircletDB.targetHpAuras) .. ", direction " .. tostring(CircletDB.targetHpAuraDir))
 -- Spacing: between neighbouring spots (centre to centre, along the arc) and between rows.
@@ -410,11 +410,19 @@ local function Spacing()
   return string.format("icons %.0f apart (size %d), rows %.0f apart", math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2), b1._w, rad(b1) - rad(d1))
 end
 P("aura spacing, default: " .. Spacing())
-CircletDB.targetHpAuraGap = 10; CircletDB.targetHpAuraRowGap = 20; Advance(0.1)
+CircletDB.targetHpAuraGap = 10; CircletDB.targetHpAuraRowGap = 20; Advance(1)
 P("aura spacing, 10 / 20: " .. Spacing())
-CircletDB.targetHpAuraGap = 0; CircletDB.targetHpAuraRowGap = 0; Advance(0.1)
+CircletDB.targetHpAuraGap = 0; CircletDB.targetHpAuraRowGap = 0; Advance(1)
 P("aura spacing, 0 / 0: " .. Spacing())
-CircletDB.targetHpAuraGap = 2; CircletDB.targetHpAuraRowGap = 2; Advance(0.1)
+CircletDB.targetHpAuraGap = 2; CircletDB.targetHpAuraRowGap = 2; Advance(1)
+-- Easing: with no debuffs the buffs sit on the inner row; when one lands (as combat starts)
+-- they slide out to the outer row rather than jumping.
+local function BuffR() local x, y = AV.spots.buffs[1].win._pt[3], AV.spots.buffs[1].win._pt[4]; return math.sqrt(x * x + y * y) end
+AURAS.target.HARMFUL = {}; Advance(1); local r0 = BuffR()
+AURAS.target.HARMFUL = { 11 }; COMBAT = true
+local t = {} for _, dt in ipairs({ 0.05, 0.1, 0.15, 0.3, 1 }) do Advance(dt); t[#t + 1] = string.format("%.0f", BuffR() - r0) end
+P("buffs easing out a row as a debuff lands: +" .. table.concat(t, " +") .. " px")
+COMBAT = false; Advance(0.5)
 CreateFrame = realCF; C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
 
 -- Hide the game's frames.

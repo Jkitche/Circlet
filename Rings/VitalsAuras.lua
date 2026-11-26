@@ -26,6 +26,7 @@ local db, SafeCall = ns.db, ns.SafeCall
 -- nothing to show use a few stand-in icons of our own.
 
 local DIR_ANGLE = { up = 90, down = 270, left = 180, right = 0 }
+local EASE_RATE = 9 -- how fast a spot slides to a new place (higher is quicker; ~0.3s to settle)
 local MAX_SWEEP = math.rad(170) -- an arc never wraps further than this round the ring
 local LIVE_UNIT = { playerHp = "player", targetHp = "target" }
 local KINDS = { "debuffs", "buffs" }
@@ -283,7 +284,7 @@ local function Arc(key, A, frame, geom, d, set, rows, s)
                 row.hide(i)
             else
                 local a = center + (i - 1 - (shown - 1) / 2) * step
-                row.place(i, r * math.cos(a), r * math.sin(a), s)
+                row.place(i, a, r, s)
             end
         end
         r = r + s + set.rowGap
@@ -291,15 +292,34 @@ local function Arc(key, A, frame, geom, d, set, rows, s)
     return s
 end
 
-local function PlaceAt(f, frame, x, y, s)
-    local k = string.format("%.1f:%.1f:%d", x, y, s)
-    if f.atKey ~= k then
-        f.atKey = k
+-- Puts a spot at angle a, radius r round the ring's centre. When its place changes (a row
+-- opening inside it as combat starts, the arc re-centring as auras come and go) it slides
+-- there round the ring, easing in, rather than jumping. One just appearing starts in place.
+local function PlaceAt(f, frame, a, r, s, dt)
+    if not f:IsShown() or not f.ea then
+        f.ea, f.er = a, r
+    else
+        local k = 1 - math.exp(-(dt or 0) * EASE_RATE)
+        f.ea = f.ea + (a - f.ea) * k
+        f.er = f.er + (r - f.er) * k
+        if math.abs(a - f.ea) < 0.0005 and math.abs(r - f.er) < 0.05 then f.ea, f.er = a, r end
+    end
+    local x, y = f.er * math.cos(f.ea), f.er * math.sin(f.ea)
+    local key = string.format("%.1f:%.1f:%d", x, y, s)
+    if f.atKey ~= key then
+        f.atKey = key
         f:ClearAllPoints()
         f:SetPoint("CENTER", frame, "CENTER", x, y)
         f:SetSize(s, s)
     end
     f:Show()
+end
+
+local function Step(A)
+    local now = GetTime()
+    local dt = A.drawnAt and math.min(0.25, now - A.drawnAt) or 0
+    A.drawnAt = now
+    return dt
 end
 
 local function DrawSamples(key, A, frame, geom, d, set)
@@ -308,9 +328,9 @@ local function DrawSamples(key, A, frame, geom, d, set)
     for _, list in ipairs(A.sampleRows) do
         rows[#rows + 1] = { n = #list, slots = #list,
             hide = function(i) list[i]:Hide() end,
-            place = function(i, x, y, s)
+            place = function(i, a, r, s)
                 local b = list[i]
-                PlaceAt(b, frame, x, y, s)
+                PlaceAt(b, frame, a, r, s, A.dt)
                 local px = math.max(6, math.floor(s * 0.5 * set.text + 0.5))
                 if b.px ~= px then b.px = px; b.count:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
             end }
@@ -342,9 +362,9 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
             if n > 0 then
                 rows[#rows + 1] = { n = n, slots = slots,
                     hide = function(i) if list[i] then list[i].win:Hide() end end,
-                    place = function(i, x, y, sz)
+                    place = function(i, a, r, sz)
                         local spot = list[i]
-                        if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, x, y, sz)
+                        if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, a, r, sz, A.dt)
                         elseif spot then spot.win:Hide() end
                     end }
             else
@@ -365,6 +385,7 @@ function ns.DrawVitalsAuras(key, v, st, frame, geom, d)
         return
     end
     A = Holder(v, frame)
+    A.dt = Step(A)
     local set = Settings(key)
     local unit = st.unit and LIVE_UNIT[key]
     if unit and not ns.vitalsAurasNoContainers then
