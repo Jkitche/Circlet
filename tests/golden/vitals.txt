@@ -102,6 +102,9 @@ target auras: 3 shown in 2 row(s) [3][][]
   only yours: 0 shown in 0 row(s) 
   off: 0 shown in 0 row(s) 
 aura defaults: you nil, target true, direction down
+aura spacing, default: icons 19 apart (size 17), rows 19 apart
+aura spacing, 10 / 20: icons 27 apart (size 17), rows 37 apart
+aura spacing, 0 / 0: icons 17 apart (size 17), rows 17 apart
 player frame alpha 0, target frame alpha 1
 player frame back: 1
 ERRORS: {}

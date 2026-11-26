@@ -70,7 +70,8 @@
   - **Buffs and debuffs** (your ring and the target's): an arc of icons just outside the ring,
     debuffs on the inner row (bordered in their type's color) and buffs outside them, with the
     time left as a sweep and stack counts. A Direction dropdown picks the side (up, down, left or
-    right); also buffs / debuffs only, only yours, countdown numbers, how many and how big. In
+    right); also buffs / debuffs only, only yours, countdown numbers, how many and how big, the
+    spacing between icons and the gap between the debuff and buff rows. In
     combat the game hides the details, so the icon, time and stacks are handed to the game to
     draw as they are. On by default for the target ring, off for yours.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is

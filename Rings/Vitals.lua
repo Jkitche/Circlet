@@ -1635,6 +1635,8 @@ local function Register(spec)
         [key .. "AuraMine"]  = spec.auras ~= nil and false or nil,
         [key .. "AuraMax"]   = spec.auras ~= nil and 8 or nil,
         [key .. "AuraSize"]  = spec.auras ~= nil and 100 or nil,
+        [key .. "AuraGap"]   = spec.auras ~= nil and 2 or nil,    -- px between icons in a row
+        [key .. "AuraRowGap"] = spec.auras ~= nil and 2 or nil,   -- px between the debuff and buff rows
         [key .. "AuraTime"]  = spec.auras ~= nil and true or nil,
         [key .. "AuraTextSize"] = spec.auras ~= nil and 100 or nil,
         [key .. "Level"]     = spec.level and true or false, -- level badge, bottom left
@@ -1777,6 +1779,10 @@ local function Register(spec)
                                     .. "ring show."),
                                 size = Range(7, key .. "AuraSize", "Icon size (%)", 50, 200, 5,
                                     "The icons' size, as a % of the usual size for the ring."),
+                                gap = Range(8, key .. "AuraGap", "Icon spacing", 0, 20, 1,
+                                    "Space between neighbouring icons, in pixels."),
+                                rowGap = Range(9, key .. "AuraRowGap", "Buff / debuff gap", 0, 40, 1,
+                                    "Space between the row of debuffs and the row of buffs, in pixels."),
                             }
                             for name, a in pairs(args) do
                                 if name ~= "on" then a.disabled = Off end

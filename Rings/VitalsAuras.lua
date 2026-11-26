@@ -7,7 +7,8 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 -- the same choice as the floating numbers), just outside the band and clear of the badges:
 -- debuffs on the inner row, buffs on a row outside it. <key>AuraShow picks both / buffs /
 -- debuffs, <key>AuraMine only the ones you cast, <key>AuraMax how many of each kind,
--- <key>AuraSize the icons' size (%), <key>AuraTime the game's countdown numbers on them.
+-- <key>AuraSize the icons' size (%), <key>AuraTime the game's countdown numbers on them,
+-- <key>AuraGap the px between icons in a row, <key>AuraRowGap the px between the two rows.
 --
 -- In combat the game hides most of an aura from addons (its icon, time and stacks can be
 -- secret). So nothing is read: the icon goes straight to the texture, the time to a cooldown
@@ -197,9 +198,11 @@ local function Place(key, A, frame, geom, d)
     local center = math.rad(DIR_ANGLE[db[key .. "AuraDir"]] or 270)
     -- Clear of the band and the badges sitting on it.
     local r = geom.R + math.max(geom.T / 2, (d or 0) / 2) + 3 + s / 2
+    local gap = math.max(0, tonumber(db[key .. "AuraGap"]) or 2)
+    local rowGap = math.max(0, tonumber(db[key .. "AuraRowGap"]) or 2)
     local fontSize = math.max(6, math.floor(s * 0.5 * ((tonumber(db[key .. "AuraTextSize"]) or 100) / 100) + 0.5))
     for _, row in ipairs(A.rows or {}) do
-        local step = (s + 2) / r
+        local step = (s + gap) / r
         local fit = math.max(1, math.floor(MAX_SWEEP / step) + 1)
         local n = #row
         for i, b in ipairs(row) do
@@ -222,7 +225,7 @@ local function Place(key, A, frame, geom, d)
                 b:Show()
             end
         end
-        r = r + s + 2
+        r = r + s + rowGap
     end
 end
 

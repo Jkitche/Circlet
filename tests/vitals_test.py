@@ -369,6 +369,22 @@ CircletDB.targetHpAuraShow = "both"; CircletDB.targetHpAuraMine = true; Advance(
 CircletDB.targetHpAuraMine = false; CircletDB.targetHpAuras = false; Advance(0.3); P("  off: " .. Auras())
 CircletDB.targetHpAuras = true; Advance(1.2)
 P("aura defaults: you " .. tostring(CircletDB.playerHpAuras) .. ", target " .. tostring(CircletDB.targetHpAuras) .. ", direction " .. tostring(CircletDB.targetHpAuraDir))
+-- Spacing: the gap between neighbouring icons (edge to edge, along the arc) and between rows.
+local function Spacing()
+  local row1, row2 = AV.rows[1], AV.rows[2]
+  local function xy(b) return b._pt[3], b._pt[4] end
+  local function dist(a, b) local ax, ay = xy(a); local bx, by = xy(b); return math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2) end
+  local s = row1[1]._w or 0
+  local function rad(b) local x, y = xy(b); return math.sqrt(x * x + y * y) end
+  local pair = (#row1 >= 2 and row1) or row2
+  return string.format("icons %.0f apart (size %d), rows %.0f apart", dist(pair[1], pair[2]), s, rad(row2[1]) - rad(row1[1]))
+end
+P("aura spacing, default: " .. Spacing())
+CircletDB.targetHpAuraGap = 10; CircletDB.targetHpAuraRowGap = 20; Advance(0.1)
+P("aura spacing, 10 / 20: " .. Spacing())
+CircletDB.targetHpAuraGap = 0; CircletDB.targetHpAuraRowGap = 0; Advance(0.1)
+P("aura spacing, 0 / 0: " .. Spacing())
+CircletDB.targetHpAuraGap = 2; CircletDB.targetHpAuraRowGap = 2; Advance(0.1)
 C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
 
 -- Hide the game's frames.
