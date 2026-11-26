@@ -90,6 +90,7 @@ chat:   /circ rested    - preview the rested XP gained ring
 chat:   /circ complete  - preview the objective-complete animation
 chat:   /circ timer <time> [label] - start a countdown ring: 5m, 1:30, 90, 1h20m, with a label after; +2m adds time; stop
 chat:   /circ ring <name> - pin a quest to its own ring (or right-click it in the quest log); /circ ring clear
+chat:   /circ auradebug - what the buff and debuff arcs are doing (for bug reports)
 chat:   /circ masktest  - show how this client applies masks (for bug reports)
 chat:   /circ hpdebug   - what the health rings can see (for bug reports)
 chat:   /circ curvetest - show how this client runs health curves (for bug reports)
