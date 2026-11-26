@@ -14,7 +14,7 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 --   Aggro      (target)   a red glare round the ring while the target is targeting you
 --   Execute    (target)   the ring throbs red-orange below 20% health
 --   LowHealth  (yours)    a red heartbeat (lub-dub) below 30% health
---   Death      (all)      dead: the ring cracks and darkens, a skull over it; your ghost: a
+--   Death      (all)      dead: the ring cracks and darkens, a faded skull in its middle; your ghost: a
 --                         pale glow with wisps drifting up
 --   Flare      (yours)    a gold ring bursting outward as combat starts
 --   Heal       (yours, target) green sparkles racing up both sides when a heal lands
@@ -68,7 +68,7 @@ local function On(key, name) return ON[name][key] and db[key .. "Fx" .. name] en
 -- Badge positions: where each badge sits on its ring, one of eight spots round it, chosen per
 -- ring in its options (<key>Pos<Badge>; the defaults are where they've always been). Two badges
 -- never share a spot: picking a taken one swaps them (ns.SetBadgeSpot). The top is also where
--- combo points and the death skull go, and the aura arc sits on whichever side it's set to.
+-- combo points go, and the aura arc sits on whichever side it's set to.
 local BADGE_SPOTS = { top = 90, topright = 45, right = 0, bottomright = 315,
                       bottom = 270, bottomleft = 225, left = 180, topleft = 135 }
 local BADGE_SPOT_ORDER = { "topleft", "top", "topright", "right", "bottomright", "bottom", "bottomleft", "left" }
@@ -359,10 +359,13 @@ local function DrawDeath(key, fx, st, frame, geom, d, now)
     GlowOn(cracks, frame, geom.R)
     cracks:SetVertexColor(0.08, 0.06, 0.06)
     cracks:SetAlpha(a)
-    local skull = Tex(fx, "skull", SKULL, "OVERLAY", 3)
-    local x, y = Polar(90, geom.R + geom.T)
-    At(skull, frame, x, y, d * 1.2 * (1 + 0.4 * (1 - a)))
-    skull:SetAlpha(a)
+    -- A big faded skull filling the middle: over the portrait, under the "Dead" text (on the
+    -- ring frame's background layer, a level above the portrait), settling in as it fades up.
+    local skull = Tex(fx, "skull", SKULL, "BACKGROUND", 3, false, frame)
+    local size = math.max(d, (geom.R - geom.T) * 1.55)
+    At(skull, frame, 0, 0, size * (1 + 0.25 * (1 - a)))
+    skull:SetVertexColor(0.9, 0.88, 0.85)
+    skull:SetAlpha(0.38 * a)
 end
 
 local function DrawFlare(key, fx, st, frame, geom, d, now)

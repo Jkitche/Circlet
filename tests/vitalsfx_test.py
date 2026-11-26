@@ -248,6 +248,9 @@ UNITS.target.guid = "Creature-0-1-2-3-299-0000AA"
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("corpse, no loot: " .. Fx("targetHp"))
 LOOT = true; Advance(0.6); P("corpse with loot: " .. Fx("targetHp"))
 LOOT = false; Advance(0.6); P("looted: " .. Fx("targetHp"))
+do local sk = Ring("targetHp").vit.fx.t.skull
+  P(string.format("dead skull: at %.0f,%.0f, %spx across, alpha %s",
+    sk._pt.x, sk._pt.y, tostring(sk._w), tostring(sk._alpha))) end
 UNITS.target.dead = false; UNITS.target.hp = 800; UNITS.target.guid = nil; Advance(0.3)
 -- Stance or form: a badge at the bottom right of your ring.
 FORM = 0; GetShapeshiftForm = function() return FORM end

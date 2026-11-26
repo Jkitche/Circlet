@@ -39,6 +39,7 @@ tagged, effect off: health 0.25,0.85,0.30
 corpse, no loot: cracks skull veil
 corpse with loot: cracks loot lootGlint x3 lootGlow skull veil
 looted: cracks skull veil
+dead skull: at 0,0, 57.35px across, alpha 0.38
 no form: (none)
 cat form: stance stanceBack Interface\Icons\Ability_Druid_CatForm
 stance off: (none)

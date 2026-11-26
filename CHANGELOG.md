@@ -34,7 +34,7 @@
     - *Execute range* (target): the ring throbs red-orange below 20% health.
     - *Low health heartbeat* (yours): a red lub-dub below 30% health.
     These glows sit beneath the ring and halo round it, so the health band stays readable.
-    - *Death*: the ring cracks and darkens with a skull over it; your ghost glows pale with
+    - *Death*: the ring cracks and darkens with a faded skull filling its middle; your ghost glows pale with
       wisps drifting up.
     - *Combat start* (yours): a gold ring bursts outward as combat starts.
     - *Heal shimmer*: green sparkles race up both sides when a heal lands.
