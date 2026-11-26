@@ -400,6 +400,10 @@ COMBAT = false; Advance(0.3); P("  after combat: " .. Spot("debuffs", 1))
 CircletDB.targetHpAuraSize = 100; Advance(0.3)
 AURAS.target.HELPFUL = { 12, 13, 14, 15 }; Advance(1); P("  four buffs: " .. Auras())
 AURAS.target.HELPFUL = { 12, 13 }; Advance(0.1)
+local dbgLines = {}; local realPrint = print; print = function(...) dbgLines[#dbgLines + 1] = table.concat({ ... }, " ") end
+local okDbg, errDbg = pcall(SlashCmdList.CIRCLET, "auradebug"); print = realPrint
+P("auradebug runs: " .. tostring(okDbg) .. (okDbg and "" or (" " .. tostring(errDbg))))
+for _, l in ipairs(dbgLines) do P("  | " .. l) end
 P("aura defaults: you " .. tostring(CircletDB.playerHpAuras) .. ", target " .. tostring(CircletDB.targetHpAuras) .. ", direction " .. tostring(CircletDB.targetHpAuraDir))
 -- Spacing: between neighbouring spots (centre to centre, along the arc) and between rows.
 local function Spacing()

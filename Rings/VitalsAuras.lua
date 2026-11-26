@@ -266,12 +266,12 @@ local function Count(unit, filter, max)
     local ids = C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs
     if ids then
         local t = SafeCall(ids, unit, filter, max)
-        if type(t) == "table" then return #t end
+        if type(t) == "table" then return #t, "ids" end
     end
     local slots = C_UnitAuras and C_UnitAuras.GetAuraSlots
     if slots then
         local n = SlotCount(pcall(slots, unit, filter, max))
-        if n then return n end
+        if n then return n, "slots" end
     end
     if not InCombat() then
         local get = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
@@ -282,13 +282,17 @@ local function Count(unit, filter, max)
                 if not ns.IsSecret(a) and a == nil then break end
                 n = n + 1
             end
-            return n
+            return n, "walked"
         end
     end
+    return nil, "unknown"
 end
 
+local countSrc = {} -- unit:filter -> how it was last counted (for /circ auradebug)
 local function CountOf(unit, filter, max)
-    return math.min(max, Count(unit, filter, max) or max)
+    local n, src = Count(unit, filter, max)
+    countSrc[unit .. ":" .. filter] = src .. (n and (" " .. n) or "")
+    return math.min(max, n or max)
 end
 
 local function HideSpots(A)
@@ -416,6 +420,7 @@ function ns.DrawVitalsAuras(key, v, st, frame, geom, d)
         return
     end
     A = Holder(v, frame)
+    A.key, A.unit = key, st.unit
     A.dt = Step(A)
     local set = Settings(key)
     local unit = st.unit and LIVE_UNIT[key]
@@ -438,3 +443,45 @@ function ns.VitalsAurasDirty(key)
     for _, f in pairs(ns.vitalsAuraHolders or {}) do f.sampleRows = nil; f.sig = nil end
 end
 -- (A change asked for in combat is applied on the first frame after it ends: DrawLive.)
+
+-- /circ auradebug: what the buff and debuff arcs are doing, for each ring (for bug reports).
+local function Safe(f, method, ...)
+    local fn = f and f[method]
+    if type(fn) ~= "function" then return "n/a" end
+    local ok, v = pcall(fn, f, ...)
+    if not ok then return "denied" end
+    if ns.IsSecret(v) then return "hidden" end
+    return tostring(v)
+end
+ns.RegisterCommand({ "auradebug" }, function()
+    ns.Print("Aura arcs: in combat " .. tostring(InCombat() and true or false)
+        .. ", containers " .. tostring(pcall(CreateFrame, "AuraContainer", nil, UIParent, "CustomAuraContainerTemplate")))
+    for _, A in ipairs(ns.vitalsAuraHolders or {}) do
+        local set = A.key and Settings(A.key)
+        ns.Print(string.format("%s: unit %s, holder shown %s, set up %s, size %s, show %s, max %s",
+            tostring(A.key), tostring(A.unit), Safe(A.holder, "IsVisible"), tostring(A.sig ~= nil),
+            tostring(A.s), set and set.show or "?", set and set.max or "?"))
+        local unit = A.key and LIVE_UNIT[A.key]
+        for _, kind in ipairs(KINDS) do
+            local list, made, shown = A.spots[kind], 0, 0
+            for _, spot in pairs(list) do made = made + 1; if spot.win:IsShown() then shown = shown + 1 end end
+            local filt = FILTER[kind] .. (set and set.mine or "")
+            ns.Print(string.format("  %s: counted %s; spots made %d, shown %d", kind,
+                tostring(unit and countSrc[unit .. ":" .. filt] or "-"), made, shown))
+            for k = 1, math.min(3, made) do
+                local spot = list[k]
+                if spot then
+                    local c = spot.c
+                    local b = c and Safe(c, "GetAuraGroupFrame", "a", k)
+                    local btn = c and c.GetAuraGroupFrame and select(2, pcall(c.GetAuraGroupFrame, c, "a", k))
+                    ns.Print(string.format("    spot %d: window shown %s %sx%s, container %s unit %s, group %s broken %s, buttons %d (dressed %d), button %d shown %s alpha %s",
+                        k, tostring(spot.win:IsShown()), Safe(spot.win, "GetWidth"), Safe(spot.win, "GetHeight"),
+                        c and "yes" or "no", tostring(spot.unit), tostring(spot.group), tostring(spot.broken),
+                        #spot.buttons, (function() local n = 0 for _ in pairs(spot.parts) do n = n + 1 end return n end)(),
+                        k, type(btn) == "table" and Safe(btn, "IsShown") or tostring(b),
+                        type(btn) == "table" and Safe(btn, "GetAlpha") or "-"))
+                end
+            end
+        end
+    end
+end, "what the buff and debuff arcs are doing (for bug reports)")
