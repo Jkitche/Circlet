@@ -71,9 +71,10 @@
     debuffs on the inner row (bordered in their type's color) and buffs outside them, with the
     time left as a sweep and stack counts. A Direction dropdown picks the side (up, down, left or
     right); also buffs / debuffs only, only yours, countdown numbers, how many and how big, the
-    spacing between icons and the gap between the debuff and buff rows. In
-    combat the game hides the details, so the icon, time and stacks are handed to the game to
-    draw as they are. On by default for the target ring, off for yours.
+    spacing between icons and the gap between the debuff and buff rows. The
+    icons are the game's own aura containers, which it fills in itself, so they keep showing in
+    combat, when the game hides auras from addons (icon, sweep, stacks and the debuff-type
+    border all come from the game). On by default for the target ring, off for yours.
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings

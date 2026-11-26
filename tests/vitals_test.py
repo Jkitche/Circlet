@@ -347,37 +347,67 @@ TargetFrameToT = CreateFrame("Frame", "TargetFrameToT"); CircletDB.totHpHideDefa
 P("target of target frame hidden: alpha " .. TargetFrameToT:GetAlpha()); CircletDB.totHpHideDefault = false; Advance(0.3)
 
 -- Buffs and debuffs in an arc round the target ring: debuffs on the inner row, buffs outside.
-AURAS = { target = { HARMFUL = { { icon = 136118, applications = 3, dispelName = "Magic", duration = 10, expirationTime = GetTime() + 6, auraInstanceID = 11 } },
-                     HELPFUL = { { icon = 135987, duration = 0, expirationTime = 0, auraInstanceID = 12 }, { icon = 136085, auraInstanceID = 13 } } } }
+-- The icons are the game's aura containers (it fills them in, hidden or not); a fake one here
+-- records what Circlet asks of it and makes its buttons in a batch of 10, as the game does.
+AURAS = { target = { HARMFUL = { 11 }, HELPFUL = { 12, 13 } } }
 local mockAuras = C_UnitAuras
-C_UnitAuras = { GetAuraDataByIndex = function(u, i, f)
-  local kind = f:find("HARMFUL") and "HARMFUL" or "HELPFUL"
-  if f:find("PLAYER") then return nil end -- none of these are yours
-  local l = AURAS[u] and AURAS[u][kind]; return l and l[i] or nil end }
-DebuffTypeColor = { Magic = { r = 0.2, g = 0.6, b = 1 } }
+C_UnitAuras = { GetUnitAuraInstanceIDs = function(u, f, max)
+  if f:find("PLAYER") then return {} end -- none of these are yours
+  local l = AURAS[u] and AURAS[u][f:find("HARMFUL") and "HARMFUL" or "HELPFUL"] or {}
+  local out = {} for i = 1, math.min(#l, max or 99) do out[i] = l[i] end return out end,
+  GetAuraDataByIndex = function() error("read an aura (hidden in combat)") end }
+local realCF = CreateFrame
+CONTAINERS = {}
+CreateFrame = function(kind, name, parent, tmpl)
+  if kind ~= "AuraContainer" then return realCF(kind, name, parent, tmpl) end
+  local c = realCF("Frame", name, parent)
+  c.btns = {}
+  c.SetUnit = function(self, u) self.unit = u end
+  c.AddAuraGroup = function(self, key, filter, o)
+    self.filter, self.maxN, self.layout = filter, o.maxFrameCount, o.layout
+    for i = 1, 10 do local b = realCF("Frame", nil, self); self.btns[i] = b; o.initializeFrame(b) end
+    return true end
+  c.SetAuraGroupFilterString = function(self, k, f) self.filter = f end
+  c.SetAuraGroupLayout = function(self, k, l) self.layout = l end
+  CONTAINERS[#CONTAINERS + 1] = c
+  return c
+end
 UNITS.target = { hp = 600, max = 1200, power = 50, pmax = 100, ptype = 0, token = "MANA", name = "Kobold", level = 5, reaction = 2 }
 CircletDB.targetHpShow = "always"; Fire("PLAYER_TARGET_CHANGED"); Advance(1.2)
+-- (start the ring's arc afresh, so it's built from these)
+do local v = Ring("targetHp").vit; if v.auras then v.auras.holder:Hide(); v.auras = nil end end
+Advance(0.3)
 local AV = Ring("targetHp").vit.auras
-local function Auras()
-  local t, rows = {}, AV.rows and #AV.rows or 0
-  for _, b in ipairs(AV.icons) do if b._shown then t[#t + 1] = "[" .. tostring(b.count._text) .. "]" end end
-  return #t .. " shown in " .. rows .. " row(s) " .. table.concat(t, "")
+local function Shown(kind) local n = 0 for _, sp in pairs(AV.spots[kind]) do if sp.win._shown then n = n + 1 end end return n end
+local function Auras() return string.format("%d debuff spot(s), %d buff spot(s) shown", Shown("debuffs"), Shown("buffs")) end
+local function Spot(kind, k)
+  local sp = AV.spots[kind][k]; local c = sp.c; local dressed = 0 for _ in pairs(sp.parts) do dressed = dressed + 1 end
+  return string.format("%s %d: unit %s, filter %s, first %d, row from x=%d, window %dx%d clips %s, %d buttons dressed",
+    kind, k, tostring(c.unit), tostring(c.filter), c.maxN, c._pt[3], sp.win._w, sp.win._h, tostring(sp.win._clips ~= false), dressed)
 end
+RegionMethods.SetClipsChildren = function(self, on) self._clips = on end
 P("target auras: " .. Auras())
+P("  " .. Spot("debuffs", 1)); P("  " .. Spot("buffs", 2))
+P("  containers made: " .. #CONTAINERS .. " (8 spots of each kind)")
 CircletDB.targetHpAuraShow = "debuffs"; Advance(1.2); P("  debuffs only: " .. Auras())
-CircletDB.targetHpAuraShow = "both"; CircletDB.targetHpAuraMine = true; Advance(1.2); P("  only yours: " .. Auras())
+CircletDB.targetHpAuraShow = "both"; CircletDB.targetHpAuraMine = true; Advance(1.2); P("  only yours: " .. Auras() .. "; " .. Spot("buffs", 1))
 CircletDB.targetHpAuraMine = false; CircletDB.targetHpAuras = false; Advance(0.3); P("  off: " .. Auras())
 CircletDB.targetHpAuras = true; Advance(1.2)
+-- In combat nothing is re-set (the buttons are the game's); it waits for combat to end.
+COMBAT = true; CircletDB.targetHpAuraSize = 150; Advance(0.3)
+P("  bigger, in combat: " .. Spot("debuffs", 1))
+COMBAT = false; Advance(0.3); P("  after combat: " .. Spot("debuffs", 1))
+CircletDB.targetHpAuraSize = 100; Advance(0.3)
+AURAS.target.HELPFUL = { 12, 13, 14, 15 }; Advance(0.1); P("  four buffs: " .. Auras())
+AURAS.target.HELPFUL = { 12, 13 }; Advance(0.1)
 P("aura defaults: you " .. tostring(CircletDB.playerHpAuras) .. ", target " .. tostring(CircletDB.targetHpAuras) .. ", direction " .. tostring(CircletDB.targetHpAuraDir))
--- Spacing: the gap between neighbouring icons (edge to edge, along the arc) and between rows.
+-- Spacing: between neighbouring spots (centre to centre, along the arc) and between rows.
 local function Spacing()
-  local row1, row2 = AV.rows[1], AV.rows[2]
-  local function xy(b) return b._pt[3], b._pt[4] end
-  local function dist(a, b) local ax, ay = xy(a); local bx, by = xy(b); return math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2) end
-  local s = row1[1]._w or 0
-  local function rad(b) local x, y = xy(b); return math.sqrt(x * x + y * y) end
-  local pair = (#row1 >= 2 and row1) or row2
-  return string.format("icons %.0f apart (size %d), rows %.0f apart", dist(pair[1], pair[2]), s, rad(row2[1]) - rad(row1[1]))
+  local d1, d2, b1, b2 = AV.spots.debuffs[1].win, AV.spots.debuffs[2].win, AV.spots.buffs[1].win, AV.spots.buffs[2].win
+  local function xy(f) return f._pt[3], f._pt[4] end
+  local function rad(f) local x, y = xy(f); return math.sqrt(x * x + y * y) end
+  local ax, ay = xy(b1); local bx, by = xy(b2)
+  return string.format("icons %.0f apart (size %d), rows %.0f apart", math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2), b1._w, rad(b1) - rad(d1))
 end
 P("aura spacing, default: " .. Spacing())
 CircletDB.targetHpAuraGap = 10; CircletDB.targetHpAuraRowGap = 20; Advance(0.1)
@@ -385,7 +415,7 @@ P("aura spacing, 10 / 20: " .. Spacing())
 CircletDB.targetHpAuraGap = 0; CircletDB.targetHpAuraRowGap = 0; Advance(0.1)
 P("aura spacing, 0 / 0: " .. Spacing())
 CircletDB.targetHpAuraGap = 2; CircletDB.targetHpAuraRowGap = 2; Advance(0.1)
-C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
+CreateFrame = realCF; C_UnitAuras = mockAuras; UNITS.target = nil; Advance(1)
 
 -- Hide the game's frames.
 PlayerFrame = CreateFrame("Frame", "PlayerFrame"); TargetFrame = CreateFrame("Frame", "TargetFrame")

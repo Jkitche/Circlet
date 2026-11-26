@@ -1,7 +1,7 @@
 -- Circlet: buffs and debuffs in an arc round the health rings (yours and your target's).
 local ADDON_NAME, ns = ...
 
-local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean, ns.CleanNumber, ns.IsSecret
+local db, SafeCall = ns.db, ns.SafeCall
 
 -- <key>Auras on, the arc centred on one side of the ring (<key>AuraDir: up, down, left, right,
 -- the same choice as the floating numbers), just outside the band and clear of the badges:
@@ -10,13 +10,28 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 -- <key>AuraSize the icons' size (%), <key>AuraTime the game's countdown numbers on them,
 -- <key>AuraGap the px between icons in a row, <key>AuraRowGap the px between the two rows.
 --
--- In combat the game hides most of an aura from addons (its icon, time and stacks can be
--- secret). So nothing is read: the icon goes straight to the texture, the time to a cooldown
--- swipe through the game's own duration object, and the stacks to the game's display count.
--- Readable values (out of combat, older clients) are used the plain way.
+-- In combat the game hands addons each aura as one hidden value: not even its icon can be
+-- read off it. So the real icons are the game's own aura containers (CustomAuraContainer-
+-- Template): Circlet gives each button its icon texture, border, sweep and stack text, and the
+-- game fills them in from code that can see the aura. Nothing hidden passes through Circlet.
+--
+-- A container only lays its buttons out in a straight row, and in combat addons can't move
+-- them. So each spot on the arc is its own container showing the first k auras in a row,
+-- inside a small window of ours that clips all but the k-th: spot k shows aura k, and the
+-- windows (ours, free to move) sit on the arc. How many auras there are, for centring the arc,
+-- comes from C_UnitAuras.GetUnitAuraInstanceIDs, a plain list of ids.
+--
+-- Containers are set up and dressed out of combat (their buttons are the game's while auras
+-- are hidden); a change asked for in combat waits for it to end. Previews and edit mode with
+-- nothing to show use a few stand-in icons of our own.
 
 local DIR_ANGLE = { up = 90, down = 270, left = 180, right = 0 }
 local MAX_SWEEP = math.rad(170) -- an arc never wraps further than this round the ring
+local LIVE_UNIT = { playerHp = "player", targetHp = "target" }
+local KINDS = { "debuffs", "buffs" }
+local FILTER = { debuffs = "HARMFUL", buffs = "HELPFUL" }
+local INNER_GAP = 4 -- px between the buttons inside a container's row (all but one clipped)
+local STYLE_PRESERVE = 3 -- Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset
 
 -- Previews and edit mode: a few stand-ins.
 local SAMPLE = {
@@ -25,52 +40,49 @@ local SAMPLE = {
     buffs = { "Interface\\Icons\\Spell_Holy_WordFortitude", "Interface\\Icons\\Spell_Nature_Regeneration",
               "Interface\\Icons\\Spell_Holy_MagicalSentry", "Interface\\Icons\\Spell_Nature_Thorns" },
 }
+local SAMPLE_EDGE = { debuffs = { 0.80, 0.10, 0.10 }, buffs = { 0, 0, 0 } }
 
-local DEBUFF_RED = { 0.80, 0.10, 0.10 }
-local BUFF_EDGE = { 0, 0, 0 }
+local function InCombat() return InCombatLockdown and InCombatLockdown() end
 
-local dirty = { playerHp = true, targetHp = true }
-ns.Listen({ "UNIT_AURA" }, function(_, unit)
-    if unit == "player" then dirty.playerHp = true elseif unit == "target" then dirty.targetHp = true end
-end)
-ns.Listen({ "PLAYER_TARGET_CHANGED", "PLAYER_ENTERING_WORLD" }, function()
-    dirty.targetHp = true; dirty.playerHp = true
-end)
-
----------------------------------------------------------------- reading
--- Up to `max` auras of a kind on the unit (filter HELPFUL / HARMFUL, maybe |PLAYER).
-local function Read(unit, filter, max)
-    local out = {}
-    local api = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
-    for i = 1, 40 do
-        if #out >= max then break end
-        local a
-        if api then
-            a = SafeCall(api, unit, i, filter)
-            if type(a) ~= "table" then break end
-        else
-            local get = filter:find("HARMFUL") and UnitDebuff or UnitBuff
-            if not get then break end
-            local name, icon, count, dispel, duration, expires = SafeCall(get, unit, i, filter:find("PLAYER") and "PLAYER" or nil)
-            if name == nil then break end
-            a = { icon = icon, applications = count, dispelName = dispel, duration = duration, expirationTime = expires }
-        end
-        out[#out + 1] = a
-    end
-    return out
+local function NoMouse(f)
+    if f.EnableMouse then pcall(f.EnableMouse, f, false) end
+    if f.SetMouseClickEnabled then pcall(f.SetMouseClickEnabled, f, false) end
+    if f.SetMouseMotionEnabled then pcall(f.SetMouseMotionEnabled, f, false) end
 end
 
----------------------------------------------------------------- the icons
+local function Try(obj, method, ...)
+    local fn = obj and obj[method]
+    if type(fn) ~= "function" then return false end
+    return pcall(fn, obj, ...)
+end
+
+local function Settings(key)
+    local pct = (tonumber(db[key .. "AuraSize"]) or 100) / 100
+    return {
+        show = db[key .. "AuraShow"] or "both",
+        mine = db[key .. "AuraMine"] and "|PLAYER" or "",
+        max = math.max(1, math.floor(tonumber(db[key .. "AuraMax"]) or 8)),
+        pct = pct,
+        gap = math.max(0, tonumber(db[key .. "AuraGap"]) or 2),
+        rowGap = math.max(0, tonumber(db[key .. "AuraRowGap"]) or 2),
+        time = db[key .. "AuraTime"] and true or false,
+        text = (tonumber(db[key .. "AuraTextSize"]) or 100) / 100,
+    }
+end
+
 local function Holder(v, frame)
     if v.auras then return v.auras end
     local h = CreateFrame("Frame", nil, frame)
     h:SetAllPoints(frame)
     h:SetFrameLevel(frame:GetFrameLevel() + 7)
-    v.auras = { holder = h, icons = {} }
+    v.auras = { holder = h, icons = {}, spots = { debuffs = {}, buffs = {} } }
+    ns.vitalsAuraHolders = ns.vitalsAuraHolders or {}
+    table.insert(ns.vitalsAuraHolders, v.auras)
     return v.auras
 end
 
-local function Icon(A, i)
+---------------------------------------------------------------- stand-ins (previews)
+local function SampleIcon(A, i)
     local b = A.icons[i]
     if b then return b end
     local h = A.holder
@@ -78,7 +90,6 @@ local function Icon(A, i)
     b:SetFrameLevel(h:GetFrameLevel() + 1)
     b.edge = b:CreateTexture(nil, "BACKGROUND")
     b.edge:SetAllPoints(b)
-    b.edge:SetColorTexture(0, 0, 0, 1)
     b.icon = b:CreateTexture(nil, "ARTWORK")
     b.icon:SetPoint("TOPLEFT", 1, -1)
     b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -90,7 +101,6 @@ local function Icon(A, i)
         if cd.SetReverse then cd:SetReverse(true) end
         b.cd = cd
     end
-    -- Above the cooldown's swipe.
     b.top = CreateFrame("Frame", nil, b)
     b.top:SetAllPoints(b)
     b.top:SetFrameLevel(b:GetFrameLevel() + 3)
@@ -102,155 +112,277 @@ local function Icon(A, i)
     return b
 end
 
--- The time left, as a swipe: the game's own duration object when it has one (works with hidden
--- times), else the readable start and length; none if it doesn't run out.
-local function SetTime(b, unit, a)
-    local cd = b.cd
-    if not cd then return end
-    local id = a.auraInstanceID
-    local get = C_UnitAuras and C_UnitAuras.GetAuraDuration
-    if unit and id ~= nil and get then
-        local ok, dur = pcall(get, unit, id)
-        if ok and dur and pcall(cd.SetCooldownFromDurationObject, cd, dur) then cd:Show() return end
-    end
-    local d, e = CleanNumber(a.duration), CleanNumber(a.expirationTime)
-    if d and e and d > 0 then
-        cd:SetCooldown(e - d, d)
-        cd:Show()
-    else
-        if cd.Clear then cd:Clear() end
-        cd:Hide()
-    end
-end
-
--- The stack count, through the game's own display count when it has one (hidden-safe).
-local function SetCount(b, unit, a)
-    local fs = b.count
-    local get = C_UnitAuras and C_UnitAuras.GetAuraApplicationDisplayCount
-    if unit and a.auraInstanceID ~= nil and get then
-        local ok, txt = pcall(get, unit, a.auraInstanceID, 2, 99)
-        if ok and pcall(fs.SetText, fs, txt) then return end
-    end
-    local n = CleanNumber(a.applications)
-    fs:SetText((n and n > 1) and tostring(n) or "")
-end
-
-local function EdgeColor(a, debuff)
-    if not debuff then return BUFF_EDGE end
-    local kind = Clean(a.dispelName)
-    local c = type(kind) == "string" and DebuffTypeColor and DebuffTypeColor[kind]
-    if c then return { c.r, c.g, c.b } end
-    return DEBUFF_RED
-end
-
--- Fills the icons from the unit's auras (or the samples), in order: debuffs then buffs.
-local function Fill(key, A, unit)
-    local show = db[key .. "AuraShow"] or "both"
-    local max = math.floor(tonumber(db[key .. "AuraMax"]) or 8)
-    local mine = db[key .. "AuraMine"] and "|PLAYER" or ""
-    local lists = {}
-    if show ~= "buffs" then
-        lists.debuffs = unit and Read(unit, "HARMFUL" .. mine, max) or {}
-        if not unit then for i = 1, math.min(max, #SAMPLE.debuffs) do lists.debuffs[i] = { icon = SAMPLE.debuffs[i], sample = i } end end
-    end
-    if show ~= "debuffs" then
-        lists.buffs = unit and Read(unit, "HELPFUL" .. mine, max) or {}
-        if not unit then for i = 1, math.min(max, #SAMPLE.buffs) do lists.buffs[i] = { icon = SAMPLE.buffs[i], sample = i } end end
-    end
-    A.rows = {}
+-- The stand-ins, as rows of icons in order: debuffs then buffs.
+local function FillSamples(key, A, set)
     local n = 0
-    for _, kind in ipairs({ "debuffs", "buffs" }) do
-        local list = lists[kind]
-        if list and #list > 0 then
+    A.sampleRows = {}
+    for _, kind in ipairs(KINDS) do
+        if set.show == "both" or set.show == kind then
             local row = {}
-            for _, a in ipairs(list) do
+            for i = 1, math.min(set.max, #SAMPLE[kind]) do
                 n = n + 1
-                local b = Icon(A, n)
-                pcall(b.icon.SetTexture, b.icon, a.icon) -- may be hidden: passed on as it is
-                local c = EdgeColor(a, kind == "debuffs")
+                local b = SampleIcon(A, n)
+                b.icon:SetTexture(SAMPLE[kind][i])
+                local c = SAMPLE_EDGE[kind]
                 b.edge:SetColorTexture(c[1], c[2], c[3], 1)
-                if a.sample then
-                    if b.cd then b.cd:SetCooldown(GetTime() - a.sample * 4, 30 + a.sample * 10); b.cd:Show() end
-                    b.count:SetText(a.sample == 2 and "3" or "")
-                else
-                    SetTime(b, unit, a)
-                    SetCount(b, unit, a)
+                if b.cd then
+                    b.cd:SetCooldown(GetTime() - i * 4, 30 + i * 10); b.cd:Show()
+                    if b.cd.SetHideCountdownNumbers then b.cd:SetHideCountdownNumbers(not set.time) end
                 end
-                if b.cd and b.cd.SetHideCountdownNumbers then b.cd:SetHideCountdownNumbers(not db[key .. "AuraTime"]) end
+                b.count:SetText(i == 2 and "3" or "")
                 row[#row + 1] = b
             end
-            A.rows[#A.rows + 1] = row
+            if #row > 0 then A.sampleRows[#A.sampleRows + 1] = row end
         end
     end
     for i = n + 1, #A.icons do A.icons[i]:Hide() end
 end
 
----------------------------------------------------------------- drawing
-local function HideAll(A)
+local function HideSamples(A)
     for _, b in ipairs(A.icons) do b:Hide() end
-    A.rows = nil
+    A.sampleRows = nil
 end
 
--- Lays each row out along an arc centred on the chosen side, spreading out from the middle.
-local function Place(key, A, frame, geom, d)
-    local pct = (tonumber(db[key .. "AuraSize"]) or 100) / 100
-    local s = math.max(10, math.floor(geom.R * 0.34 * pct + 0.5))
+---------------------------------------------------------------- the game's containers
+-- Puts our icon, border, sweep and stack text on one of a container's buttons. Out of
+-- combat only (in it the button is the game's).
+local function Dress(spot, b, s, set)
+    local parts = spot.parts[b]
+    if not parts then
+        NoMouse(b)
+        Try(b, "SetHideTooltipInCombat", true)
+        parts = {}
+        parts.edge = b:CreateTexture(nil, "BACKGROUND")
+        parts.edge:SetAllPoints(b)
+        parts.icon = b:CreateTexture(nil, "ARTWORK")
+        parts.icon:SetPoint("TOPLEFT", 1, -1)
+        parts.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+        local ok, cd = pcall(CreateFrame, "Cooldown", nil, b, "CooldownFrameTemplate")
+        if ok and cd then
+            cd:SetAllPoints(parts.icon)
+            NoMouse(cd)
+            Try(cd, "SetDrawEdge", false)
+            Try(cd, "SetDrawBling", false)
+            Try(cd, "SetReverse", true)
+            parts.cd = cd
+        end
+        parts.top = CreateFrame("Frame", nil, b)
+        parts.top:SetAllPoints(b)
+        parts.top:SetFrameLevel(b:GetFrameLevel() + 3)
+        parts.count = parts.top:CreateFontString(nil, "OVERLAY")
+        parts.count:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 1, -1)
+        if spot.kind == "debuffs" then
+            -- The border, tinted by the game in the debuff's type color.
+            parts.edge:SetColorTexture(1, 1, 1, 1)
+            if not Try(b, "AddDispelTypeTexture", parts.edge,
+                    { style = STYLE_PRESERVE, showWhenHarmful = true, showWithoutDispelType = true }) then
+                parts.edge:SetColorTexture(0.8, 0.1, 0.1, 1)
+            end
+        else
+            parts.edge:SetColorTexture(0, 0, 0, 1)
+        end
+        Try(b, "SetIcon", parts.icon)
+        if parts.cd then Try(b, "SetDurationCooldown", parts.cd) end
+        Try(b, "SetApplicationCount", parts.count)
+        spot.parts[b] = parts
+    end
+    Try(b, "SetSize", s, s)
+    Try(parts.icon, "SetTexCoord", 0.08, 0.92, 0.08, 0.92)
+    if parts.cd then Try(parts.cd, "SetHideCountdownNumbers", not set.time) end
+    local px = math.max(6, math.floor(s * 0.5 * set.text + 0.5))
+    if parts.px ~= px then
+        parts.px = px
+        Try(parts.count, "SetFont", STANDARD_TEXT_FONT, px, "OUTLINE")
+    end
+end
+
+-- One spot on the arc: a clipping window of ours holding a container whose k-th button
+-- is the only one inside the window.
+local function Spot(A, kind, k, unit)
+    local spot = A.spots[kind][k]
+    if spot then return spot end
+    local win = CreateFrame("Frame", nil, A.holder)
+    win:SetFrameLevel(A.holder:GetFrameLevel() + 1)
+    if win.SetClipsChildren then win:SetClipsChildren(true) end
+    NoMouse(win)
+    spot = { win = win, kind = kind, k = k, parts = {}, buttons = {}, A = A }
+    local ok, c = pcall(CreateFrame, "AuraContainer", nil, win, "CustomAuraContainerTemplate")
+    if ok and c and type(c.AddAuraGroup) == "function" then
+        NoMouse(c)
+        Try(c, "SetUnit", unit)
+        spot.c = c
+        spot.unit = unit
+    else
+        spot.broken = true -- this client has no containers for addons
+    end
+    A.spots[kind][k] = spot
+    return spot
+end
+
+-- (Re)sets a spot's group from the settings. Out of combat only.
+local function SetUpSpot(spot, set, s)
+    local c = spot.c
+    if not c then return end
+    local filter = FILTER[spot.kind] .. set.mine
+    local layout = { elementWidth = s, elementHeight = s, elementSpacing = INNER_GAP }
+    if not spot.group then
+        local opts = {
+            maxFrameCount = spot.k,
+            layout = layout,
+            initializeFrame = function(b)
+                spot.buttons[#spot.buttons + 1] = b
+                -- One the game makes in combat is dressed when it ends.
+                if not InCombat() then pcall(Dress, spot, b, spot.s or s, spot.set or set) else spot.A.sig = nil end
+            end,
+        }
+        spot.s, spot.set = s, set
+        spot.group = Try(c, "AddAuraGroup", "a", filter, opts)
+        if not spot.group then spot.broken = true return end
+    else
+        Try(c, "SetAuraGroupFilterString", "a", filter)
+        Try(c, "SetAuraGroupLayout", "a", layout)
+    end
+    spot.s, spot.set = s, set
+    for _, b in ipairs(spot.buttons) do pcall(Dress, spot, b, s, set) end
+    -- Its row starts this far left of the window, so only button k is inside it.
+    c:ClearAllPoints()
+    c:SetPoint("TOPLEFT", spot.win, "TOPLEFT", -(spot.k - 1) * (s + INNER_GAP), 0)
+    spot.win:SetSize(s, s)
+end
+
+-- How many auras of a kind the unit has (a plain list of ids, even in combat).
+local function CountOf(unit, filter, max)
+    local get = C_UnitAuras and C_UnitAuras.GetUnitAuraInstanceIDs
+    if not get then return max end
+    local ids = SafeCall(get, unit, filter, max)
+    if type(ids) ~= "table" then return max end
+    return math.min(max, #ids)
+end
+
+local function HideSpots(A)
+    for _, kind in ipairs(KINDS) do
+        for _, spot in pairs(A.spots[kind]) do spot.win:Hide() end
+    end
+end
+
+---------------------------------------------------------------- drawing
+-- Rows of things to place: each { size, items = { show(i, x, y), ... } }.
+local function IconSize(geom, set) return math.max(10, math.floor(geom.R * 0.34 * set.pct + 0.5)) end
+
+local function Arc(key, A, frame, geom, d, set, rows, s)
+    s = s or IconSize(geom, set)
     local center = math.rad(DIR_ANGLE[db[key .. "AuraDir"]] or 270)
     -- Clear of the band and the badges sitting on it.
     local r = geom.R + math.max(geom.T / 2, (d or 0) / 2) + 3 + s / 2
-    local gap = math.max(0, tonumber(db[key .. "AuraGap"]) or 2)
-    local rowGap = math.max(0, tonumber(db[key .. "AuraRowGap"]) or 2)
-    local fontSize = math.max(6, math.floor(s * 0.5 * ((tonumber(db[key .. "AuraTextSize"]) or 100) / 100) + 0.5))
-    for _, row in ipairs(A.rows or {}) do
-        local step = (s + gap) / r
+    for _, row in ipairs(rows) do
+        local step = (s + set.gap) / r
         local fit = math.max(1, math.floor(MAX_SWEEP / step) + 1)
-        local n = #row
-        for i, b in ipairs(row) do
-            if i > fit then
-                b:Hide()
+        local shown = math.min(row.n, fit)
+        for i = 1, row.slots do
+            if i > shown then
+                row.hide(i)
             else
-                local shown = math.min(n, fit)
                 local a = center + (i - 1 - (shown - 1) / 2) * step
-                local k = string.format("%.1f:%.3f:%d", r, a, s)
-                if b.k ~= k then
-                    b.k = k
-                    b:ClearAllPoints()
-                    b:SetPoint("CENTER", frame, "CENTER", r * math.cos(a), r * math.sin(a))
-                    b:SetSize(s, s)
-                end
-                if b.fontSize ~= fontSize then
-                    b.fontSize = fontSize
-                    b.count:SetFont(STANDARD_TEXT_FONT, fontSize, "OUTLINE")
-                end
-                b:Show()
+                row.place(i, r * math.cos(a), r * math.sin(a), s)
             end
         end
-        r = r + s + rowGap
+        r = r + s + set.rowGap
     end
+    return s
+end
+
+local function PlaceAt(f, frame, x, y, s)
+    local k = string.format("%.1f:%.1f:%d", x, y, s)
+    if f.atKey ~= k then
+        f.atKey = k
+        f:ClearAllPoints()
+        f:SetPoint("CENTER", frame, "CENTER", x, y)
+        f:SetSize(s, s)
+    end
+    f:Show()
+end
+
+local function DrawSamples(key, A, frame, geom, d, set)
+    if not A.sampleRows or A.sampleKey ~= key then FillSamples(key, A, set); A.sampleKey = key end
+    local rows = {}
+    for _, list in ipairs(A.sampleRows) do
+        rows[#rows + 1] = { n = #list, slots = #list,
+            hide = function(i) list[i]:Hide() end,
+            place = function(i, x, y, s)
+                local b = list[i]
+                PlaceAt(b, frame, x, y, s)
+                local px = math.max(6, math.floor(s * 0.5 * set.text + 0.5))
+                if b.px ~= px then b.px = px; b.count:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
+            end }
+    end
+    Arc(key, A, frame, geom, d, set, rows)
+end
+
+local function DrawLive(key, A, frame, geom, d, set, unit)
+    local s = IconSize(geom, set)
+    local sig = table.concat({ unit, set.show, set.mine, set.max, s, tostring(set.time),
+        string.format("%.2f", set.text) }, "|")
+    if A.sig ~= sig and not InCombat() then
+        for _, kind in ipairs(KINDS) do
+            if set.show == "both" or set.show == kind then
+                for k = 1, set.max do SetUpSpot(Spot(A, kind, k, unit), set, s) end
+            end
+        end
+        A.sig, A.s = sig, s
+    end
+    -- In combat the game's buttons keep the size they were set to; so do the windows.
+    s = A.s or s
+    local rows = {}
+    for _, kind in ipairs(KINDS) do
+        local list = A.spots[kind]
+        if (set.show == "both" or set.show == kind) and list[1] and not list[1].broken then
+            local n = CountOf(unit, FILTER[kind] .. set.mine, set.max)
+            local slots = 0
+            for k in pairs(list) do if k > slots then slots = k end end
+            if n > 0 then
+                rows[#rows + 1] = { n = n, slots = slots,
+                    hide = function(i) if list[i] then list[i].win:Hide() end end,
+                    place = function(i, x, y, sz)
+                        local spot = list[i]
+                        if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, x, y, sz)
+                        elseif spot then spot.win:Hide() end
+                    end }
+            else
+                for _, spot in pairs(list) do spot.win:Hide() end
+            end
+        else
+            for _, spot in pairs(list) do spot.win:Hide() end
+        end
+    end
+    Arc(key, A, frame, geom, d, set, rows, s)
 end
 
 function ns.DrawVitalsAuras(key, v, st, frame, geom, d)
     if key ~= "playerHp" and key ~= "targetHp" then return end
     local A = v.auras
     if not db[key .. "Auras"] then
-        if A then HideAll(A) end
+        if A then HideSamples(A); HideSpots(A); A.holder:Hide() end
         return
     end
     A = Holder(v, frame)
-    local unit = st.unit
-    if dirty[key] or A.unit ~= unit or not A.rows or (A.fillAt and GetTime() - A.fillAt > 1) then
-        dirty[key] = false
-        A.unit = unit
-        A.fillAt = GetTime()
-        Fill(key, A, unit)
+    local set = Settings(key)
+    local unit = st.unit and LIVE_UNIT[key]
+    if unit and not ns.vitalsAurasNoContainers then
+        HideSamples(A)
+        DrawLive(key, A, frame, geom, d, set, unit)
+    else
+        HideSpots(A)
+        DrawSamples(key, A, frame, geom, d, set)
     end
-    Place(key, A, frame, geom, d)
     A.holder:Show()
 end
 
 function ns.HideVitalsAuras(v)
-    if v.auras then HideAll(v.auras) end
+    if v.auras then HideSamples(v.auras); HideSpots(v.auras); v.auras.holder:Hide() end
 end
 
--- Settings that change what's in the arc refill it.
-function ns.VitalsAurasDirty(key) dirty[key] = true end
+-- Settings that change what's in the arc: the stand-ins refill, the containers re-set.
+function ns.VitalsAurasDirty(key)
+    for _, f in pairs(ns.vitalsAuraHolders or {}) do f.sampleRows = nil; f.sig = nil end
+end
+-- (A change asked for in combat is applied on the first frame after it ends: DrawLive.)

@@ -97,10 +97,16 @@ target of target: health 22 segs, power 36 segs | - / 30% / 50%
   its health changed (no event): health 51 segs, power 36 segs | - / 70% / 50%
   target has no target: (hidden)
 target of target frame hidden: alpha 0
-target auras: 3 shown in 2 row(s) [3][][]
-  debuffs only: 1 shown in 1 row(s) [3]
-  only yours: 0 shown in 0 row(s) 
-  off: 0 shown in 0 row(s) 
+target auras: 1 debuff spot(s), 2 buff spot(s) shown
+  debuffs 1: unit target, filter HARMFUL, first 1, row from x=0, window 17x17 clips true, 10 buttons dressed
+  buffs 2: unit target, filter HELPFUL, first 2, row from x=-21, window 17x17 clips true, 10 buttons dressed
+  containers made: 16 (8 spots of each kind)
+  debuffs only: 1 debuff spot(s), 0 buff spot(s) shown
+  only yours: 0 debuff spot(s), 0 buff spot(s) shown; buffs 1: unit target, filter HELPFUL|PLAYER, first 1, row from x=0, window 17x17 clips true, 10 buttons dressed
+  off: 0 debuff spot(s), 0 buff spot(s) shown
+  bigger, in combat: debuffs 1: unit target, filter HARMFUL, first 1, row from x=0, window 17x17 clips true, 10 buttons dressed
+  after combat: debuffs 1: unit target, filter HARMFUL, first 1, row from x=0, window 25x25 clips true, 10 buttons dressed
+  four buffs: 1 debuff spot(s), 4 buff spot(s) shown
 aura defaults: you nil, target true, direction down
 aura spacing, default: icons 19 apart (size 17), rows 19 apart
 aura spacing, 10 / 20: icons 27 apart (size 17), rows 37 apart
