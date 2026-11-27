@@ -84,7 +84,12 @@ Features\SwingProbe.lua
 
 UI\Options\Kit.lua
 UI\IconGrid.lua
-UI\Options\Options.lua
+UI\Options\Pages.lua
+UI\Options\Model.lua
+UI\Options\Cells.lua
+UI\Options\Sidebar.lua
+UI\Options\Window.lua
+UI\Options\Frame.lua
 
 Core\Slash.lua
 Core\Events.lua

@@ -6,7 +6,7 @@ local ADDON_NAME, ns = ...
 ---------------------------------------------------------------------------
 -- Plain frames and textures, no templates: an on/off switch, a slider with a number box
 -- beside it, a dropdown, a color swatch, buttons, text boxes and a scrolling area with a
--- thin scrollbar. UI/Options/Options.lua lays them out.
+-- thin scrollbar. The options window (UI/Options/) lays them out.
 
 local W = {}
 
