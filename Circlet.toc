@@ -41,7 +41,10 @@ Rings\Progress\XP\Draw.lua
 Rings\Progress\XP\Play.lua
 Rings\Progress\XP\Register.lua
 Rings\Progress\Quest.lua
-Rings\Progress\Skills.lua
+Rings\Progress\Skills\Read.lua
+Rings\Progress\Skills\Fx.lua
+Rings\Progress\Skills\Ring.lua
+Rings\Progress\Skills\Register.lua
 Rings\Progress\Reputation.lua
 Rings\Combat\Ammo.lua
 Rings\Class\Hunter\Pet.lua
@@ -56,6 +59,7 @@ Rings\Comfort\Clock.lua
 Rings\Comfort\Timer.lua
 Rings\Combat\ManaRegen.lua
 Rings\Professions\CraftFx.lua
+Rings\Professions\CraftFxProfessions.lua
 Rings\Professions\Craft.lua
 Rings\Professions\GatherFx.lua
 Rings\Professions\Gather.lua

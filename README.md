@@ -187,7 +187,9 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
   `Health`, `Combat`, `Class/<Class>`, `Group`, `Travel`, `Professions`, `Comfort`. Each ring
   ends with `ns.RegisterRing{...}`: its defaults, edit mode hooks, preview and slash names,
   options page (`page.folder` picks its folder in the window), class filter and the game bar it
-  can hide. A big ring is a folder of its own, split by concern. A new ring gets
+  can hide. A big ring is a folder of its own, split by concern and ending in `Register.lua`:
+  `Progress/XP/`, `Progress/Skills/`, `Combat/TargetCast/`, and `Health/` (the health rings,
+  with their effects in `Health/Fx/`). A new ring gets
   `since = "x.y.z"` (its release) so players updating see it on the "New in" page;
   `Features/Setup/` also lists its group in the setup wizard (`GROUPS`) and new features that
   aren't rings (`NEW_FEATURES`).
@@ -199,6 +201,13 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
 - `UI/`: widgets, the window skin, the icon list, and the options window (`Options/`: the option
   builders in `Kit.lua`, then the pages, the window and its sidebar).
 - `Layout/`: each ring's holder frame, auto-arrange, dragging and edit mode.
+
+A folder split from one file shares what its files need through a private table on `ns`, made
+by its first file (`ns.OptionsUI`, `ns.HealthRings`, `ns.HealthFx`, `ns.XPRing`, `ns.SkillRings`,
+`ns.TargetCastRing`, `ns.SetupUI`, `ns.CraftFx`). Each file takes what it uses from the table
+once, at its top (`local Eval = UI.Eval`); a value that's reassigned after loading (the window,
+the current page, a timer) is always used through the table (`UI.current`), never copied into
+a local, or the copy would go stale.
 
 ## Tests
 
