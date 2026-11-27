@@ -4,7 +4,7 @@
 
 - **The edit mode bar** ("Circlet: editing ... ring") can be dragged anywhere and remembers where;
   right-click it to put it back.
-- **Health & power rings** (new; Combat & casting > Health & power, and Target health). Your
+- **Health & power rings** (new; Health rings > Health & power, and Target health). Your
   health round the ring with your mana, rage, energy or focus in a thinner band inside it, and the
   same for your target with its name and level (players in their class color, creatures red,
   yellow or green by how they feel about you). The health in the middle as a percentage, the
