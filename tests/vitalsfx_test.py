@@ -237,7 +237,20 @@ P("out of range: ring at " .. mid .. " -> " .. HolderA())
 INRANGE = { [1752] = false, [2098] = true }; Advance(1); P("one spell reaches: ring at " .. HolderA())
 INRANGE = { [1752] = false, [2098] = false }; Advance(1)
 CircletDB.targetHpFxRange = false; Advance(1); P("out of range, effect off: ring at " .. HolderA())
-CircletDB.targetHpFxRange = true; INRANGE = {}; Advance(1); P("can't be checked (friendly): ring at " .. HolderA())
+CircletDB.targetHpFxRange = true; INRANGE = {}; Advance(1); P("can't be checked: ring at " .. HolderA())
+-- A friendly target: your heals and buffs say (a priest here); none known, the follow distance.
+UnitCanAssist = function(_, u) return UNITS[u] ~= nil and UNITS[u].friend == true end
+UNITS.player.class = "PRIEST"; UNITS.target.friend = true; Fire("PLAYER_TARGET_CHANGED")
+C_SpellBook.IsSpellKnown = function(id) return id == 2061 or id == 2006 end
+INRANGE = { [2061] = true }; Advance(1); P("friend in heal range: ring at " .. HolderA())
+INRANGE = { [2061] = false }; Advance(1); P("friend out of heal range: ring at " .. HolderA())
+UNITS.target.dead = true; INRANGE = { [2006] = true }; Advance(1); P("dead friend, resurrect reaches: ring at " .. HolderA())
+UNITS.target.dead = false
+UNITS.player.class = "ROGUE"; C_SpellBook.IsSpellKnown = function(id) return id == 1752 or id == 2098 end
+NEAR = false; CheckInteractDistance = function(u, i) return i == 4 and NEAR end
+Advance(1); P("rogue, friend past 28 yards: ring at " .. HolderA())
+NEAR = true; Advance(1); P("rogue, friend within 28 yards: ring at " .. HolderA())
+UNITS.target.friend = nil; UNITS.player.class = "ROGUE"; CheckInteractDistance = nil; INRANGE = {}; Fire("PLAYER_TARGET_CHANGED"); Advance(1)
 -- Tagged by someone else: grey, whatever the color mode.
 local function HealthRGB() local f = Ring("targetHp"); local c = f and f.vit and f.vit.lastColor
   return c and string.format("%.2f,%.2f,%.2f", c.r, c.g, c.b) or "?" end

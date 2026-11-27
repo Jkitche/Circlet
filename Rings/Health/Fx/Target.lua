@@ -323,11 +323,14 @@ local function RoundIcon(fx, name, file, layer, sub)
     return t
 end
 
--- Range: whether your class's main attacks reach the target (C_Spell.IsSpellInRange, which the
--- game doesn't hide), checked five times a second. In range if any of them reach (a hunter's
--- Auto Shot or Raptor Strike, so the dead zone between doesn't count as out); out if none do;
--- left alone if none can be checked (a friendly target, a class with none known yet). The dim
--- is the ring's own fade (ns.SetRingDim), so it eases and goes with its opacity setting.
+-- Range: whether your spells reach the target (C_Spell.IsSpellInRange, which the game doesn't
+-- hide), checked five times a second: your class's main attacks for an enemy, its heals and
+-- buffs (and resurrects, for a dead one) for a friend. In range if any of them reach (a
+-- hunter's Auto Shot or Raptor Strike, so the dead zone between doesn't count as out); out if
+-- none do. A friend you have no spell for (rogues, warriors...) is checked by the game's follow
+-- distance (CheckInteractDistance, 28 yards; readable for friends, even in combat). Left alone
+-- if nothing can be checked, and never for yourself. The dim is the ring's own fade
+-- (ns.SetRingDim), so it eases and goes with its opacity setting.
 local RANGE_SPELLS = {
     MAGE = { 133, 116, 5143 }, -- Fireball, Frostbolt, Arcane Missiles
     WARLOCK = { 686, 172 }, -- Shadow Bolt, Corruption
@@ -339,6 +342,14 @@ local RANGE_SPELLS = {
     WARRIOR = { 78, 772 }, -- Heroic Strike, Rend
     PALADIN = { 20271, 35395 }, -- Judgement, Crusader Strike
     DEATHKNIGHT = { 45477, 49998 }, -- Icy Touch, Death Strike
+}
+local FRIEND_SPELLS = {
+    PRIEST = { 2050, 2061, 139, 17, 1243, 2006 }, -- Lesser Heal, Flash Heal, Renew, Shield, Fortitude, Resurrection
+    DRUID = { 5185, 774, 8936, 1126, 20484 }, -- Healing Touch, Rejuvenation, Regrowth, Mark of the Wild, Rebirth
+    SHAMAN = { 331, 8004, 1064, 2008 }, -- Healing Wave, Lesser Healing Wave, Chain Heal, Ancestral Spirit
+    PALADIN = { 635, 19750, 19740, 7328 }, -- Holy Light, Flash of Light, Blessing of Might, Redemption
+    MAGE = { 1459, 475 }, -- Arcane Intellect, Remove Lesser Curse
+    WARLOCK = { 5697 }, -- Unending Breath
 }
 local function Knows(id)
     local f = (C_SpellBook and C_SpellBook.IsSpellKnown) or IsPlayerSpell or IsSpellKnown
@@ -358,32 +369,47 @@ local function InRange(id, unit)
     end
 end
 local rangeAt, rangeOut = -math.huge, nil
+
+-- Whether any of these spells reach the unit: true, false, or nil if none could be checked.
+local function SpellsReach(list, unit)
+    local any = false
+    for _, id in ipairs(list or {}) do
+        if Knows(id) then
+            local v = InRange(id, unit)
+            if v ~= nil then
+                any = true
+                if v then return true end
+            end
+        end
+    end
+    if any then return false end
+end
+
 local function DrawRange(key, fx, st, frame, geom, d, now)
     local out = false
-    if st.unit and not st.dead and Clean(SafeCall(UnitCanAttack, "player", st.unit)) then
-        if now - rangeAt >= 0.2 then
-            rangeAt = now
-            local _, class = UnitClass("player")
-            local any, reach = false, false
-            for _, id in ipairs(RANGE_SPELLS[Clean(class) or ""] or {}) do
-                if Knows(id) then
-                    local v = InRange(id, st.unit)
-                    if v ~= nil then
-                        any = true
-                        if v then
-                            reach = true
-                            break
-                        end
-                    end
+    local unit = st.unit
+    if unit and not Clean(SafeCall(UnitIsUnit, unit, "player")) then
+        local enemy = Clean(SafeCall(UnitCanAttack, "player", unit))
+        local friend = not enemy and Clean(SafeCall(UnitCanAssist, "player", unit))
+        if (enemy and not st.dead) or friend then
+            if now - rangeAt >= 0.2 then
+                rangeAt = now
+                local _, class = UnitClass("player")
+                class = Clean(class) or ""
+                local reach = SpellsReach((enemy and RANGE_SPELLS or FRIEND_SPELLS)[class], unit)
+                if reach == nil and friend and CheckInteractDistance then
+                    local v = Clean(SafeCall(CheckInteractDistance, unit, 4))
+                    if v ~= nil and not IsSecret(v) then reach = v and true or false end
                 end
+                rangeOut = reach == false
             end
-            rangeOut = any and not reach
+            out = rangeOut and true or false
         end
-        out = rangeOut and true or false
     end
     if ns.SetRingDim then ns.SetRingDim(key, out and 0.4 or 1) end
 end
 ns.VitalsRangeSpells = RANGE_SPELLS -- tests
+ns.VitalsFriendSpells = FRIEND_SPELLS
 ns.Listen({ "PLAYER_TARGET_CHANGED", "SPELLS_CHANGED" }, function() rangeAt = -math.huge end)
 
 -- Loot: while a dead target still has loot for you (CanLootUnit, checked twice a second), the

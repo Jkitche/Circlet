@@ -80,7 +80,7 @@ local FX_TEXT = {
     FullMana = { "Full mana shine", "A soft shine on the mana band while it's full." },
     Range = {
         "Out of range",
-        "The ring dims while your target is out of range of your class's main attacks (for a hunter, Auto Shot or Raptor Strike).",
+        "The ring dims while your target is out of range: of your class's main attacks for an enemy (a hunter's Auto Shot or Raptor Strike), of your heals and buffs for a friend (or 28 yards, for classes with none).",
     },
     Tapped = {
         "Tagged by others",

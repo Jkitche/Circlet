@@ -55,8 +55,10 @@
       yet looted; a skinned corpse drops it.
     - *Quest target* (target): a yellow ! at the bottom left when the target is part of one of
       your active quests, with the objective's progress (3/10) under it when the game shows it.
-    - *Out of range* (target): the ring dims while your target is out of range of your class's
-      main attacks (a hunter's Auto Shot or Raptor Strike, a mage's Fireball or Frostbolt...).
+    - *Out of range* (target): the ring dims while your target is out of range: of your
+      class's main attacks for an enemy (a hunter's Auto Shot or Raptor Strike, a mage's
+      Fireball...), of your heals and buffs for a friend (resurrects for a dead one), or 28 yards
+      for classes with no spell for friends.
     - *Tagged by others* (target): a mob someone else tagged first goes grey, whatever the color
       mode, and so does its portrait.
     - *Lootable* (target): the whole ring sparkles gold, glints twinkling all over it, while

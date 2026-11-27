@@ -32,13 +32,18 @@ in range: ring at 1.00
 out of range: ring at 1.00 -> 0.40
 one spell reaches: ring at 1.00
 out of range, effect off: ring at 1.00
-can't be checked (friendly): ring at 1.00
+can't be checked: ring at 1.00
+friend in heal range: ring at 1.00
+friend out of heal range: ring at 0.40
+dead friend, resurrect reaches: ring at 1.00
+rogue, friend past 28 yards: ring at 0.40
+rogue, friend within 28 yards: ring at 1.00
 not tagged: health 0.25,0.85,0.30
 tagged by someone else: health 0.50,0.50,0.50
 tagged, effect off: health 0.25,0.85,0.30
 corpse, no loot: cracks skull veil
 corpse with loot: cracks lootGlint x12 lootGlow skull veil
-loot sparkles: 12 lit, reaching 56px out; lit over time 12/12/12
+loot sparkles: 12 lit, reaching 55px out; lit over time 11/11/12
 looted: cracks skull veil
 dead skull: at 0,0, 57.35px across, alpha 0.38
 no form: (none)
