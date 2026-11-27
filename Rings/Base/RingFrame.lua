@@ -46,7 +46,7 @@ end
 -- Every text on a ring can be sized: each ring's texts are registered as roles ({ id, name,
 -- desc }; ns.RegisterTextRoles), and <key><id>Size is that text's size as a % of its usual
 -- one (default 100; the usual size follows the ring's). A ring's options page gets a slider
--- per role (UI/OptionsKit.lua RingTab), and the sizes are part of its layout key, so a change
+-- per role (UI/Options/Kit.lua RingTab), and the sizes are part of its layout key, so a change
 -- shows at once. Grouped rings (totem1, pin2...) share their group's roles and sizes.
 local TEXT_ROLES = {}
 local function GroupOf(key) return key:match("^(%l+)%d+$") or key end

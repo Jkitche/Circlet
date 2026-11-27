@@ -349,7 +349,7 @@ frame:SetClampedToScreen(true)
 frame:Hide()
 table.insert(UISpecialFrames, "CircletSetupFrame") -- Esc closes it
 
--- Circlet's window look (Features/PanelSkin.lua): header band with the turning logo,
+-- Circlet's window look (UI/PanelSkin.lua): header band with the turning logo,
 -- gold border and accent line, a rule over the footer.
 local HEADER, FOOTER = 58, 44
 local GOLD = ns.SKIN_GOLD

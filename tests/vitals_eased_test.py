@@ -1,4 +1,4 @@
-# Health rings, hidden values eased by the game (Rings/Vitals.lua, eased bands): each piece of the
+# Health rings, hidden values eased by the game (Rings/Health/Vitals.lua, eased bands): each piece of the
 # band is a texture masked to the ring's shape, to its own slice (two half-planes through the
 # centre), and by a half-plane pinned to the end of an invisible status bar the game eases. This
 # takes what the ring sets up (as the mock records it), rasterizes it, and compares it with the

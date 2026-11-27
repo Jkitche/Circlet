@@ -5,7 +5,7 @@ lua.execute('''
 local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end
 ON_TAXI = false
 function UnitOnTaxi() return ON_TAXI end
--- The flight map, by slot. Node IDs come from the names (Data/FlightPaths.lua's FLIGHT_NODES):
+-- The flight map, by slot. Node IDs come from the names (Rings/Travel/FlightPaths.lua's FLIGHT_NODES):
 -- Stormwind 2, Ironforge 6, Sentinel Hill 4, Lakeshire 5. "Nowhere" isn't in the data.
 NODES = { { name = "Stormwind, Elwynn", type = "CURRENT" }, { name = "Ironforge, Dun Morogh", type = "REACHABLE" },
           { name = "Sentinel Hill, Westfall", type = "REACHABLE" }, { name = "Lakeshire, Redridge", type = "REACHABLE" },

@@ -12,7 +12,7 @@ local SafeCall = ns.SafeCall
 -- through the batch, including the current cast, and shows "3 / 10". It finishes
 -- with "Done!", or "Stopped" if the batch is interrupted.
 -- With craftFx on, each profession plays an animation of its own on the ring
--- (Rings/CraftFx.lua); the profession is the trade skill window the batch came from.
+-- (Rings/Professions/CraftFx.lua); the profession is the trade skill window the batch came from.
 
 local batch -- { total, done, name, spellID, castStart, castEnd, finished, stopped, endedAt, prof, madeAt }
 
@@ -79,7 +79,7 @@ local function State(name, done, total, castFrac, finished, stopped, icon, lost,
     return st
 end
 
--- The profession's animation (Rings/CraftFx.lua): start, last item made, end, finished.
+-- The profession's animation (Rings/Professions/CraftFx.lua): start, last item made, end, finished.
 local function WithFx(st, prof, start, madeAt, endAt, done)
     if st and db.craftFx and prof then
         st.craftFx, st.fxStart, st.fxMadeAt, st.fxEndAt, st.fxDone = prof, start, madeAt, endAt, done
@@ -184,7 +184,7 @@ ns.PreviewCraftRing = PreviewCraftRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "craft", name = "Crafting", order = 12,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = craftRing,
     preview = PreviewCraftRing, slash = { "craft", "crafting" }, help = "preview the crafting ring",
     toggle = { "Crafting ring", "Progress through a batch of crafts." },
@@ -194,7 +194,7 @@ ns.RegisterRing({
         craftEnabled   = true,
         craftSingle    = true,  -- also for one-off crafts (not just batches)
         craftIcon      = true,  -- the item's icon as a badge on the ring
-        craftFx        = true,  -- an animation for each profession (Rings/CraftFx.lua)
+        craftFx        = true,  -- an animation for each profession (Rings/Professions/CraftFx.lua)
         craftSize      = 110,
         craftThickness = 11,
         craftOpacity   = 100,

@@ -507,7 +507,7 @@ ns.PreviewWeaponRing = PreviewWeaponRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "skill", name = "Profession", order = 4,
-    -- The icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua).
+    -- The icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua).
     iconBg = { disabled = function() return db.skillIconStyle ~= "game" end,
                note = "With game icons only (drawn icons already sit behind the text)." },
     ring = skillRing,
@@ -585,7 +585,7 @@ ns.RegisterRing({
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "weapon", name = "Weapon skill", order = 5,
-    -- The icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua).
+    -- The icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua).
     iconBg = { disabled = function() return db.weaponIconStyle ~= "game" end,
                note = "With game icons only (drawn icons already sit behind the text)." },
     ring = weaponRing,

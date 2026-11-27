@@ -59,7 +59,7 @@ end
 -- The effects
 ---------------------------------------------------------------------------
 -- Worked out from the time alone, so edit mode's sample plays them too. The crafting
--- ring's state carries (Rings/Craft.lua):
+-- ring's state carries (Rings/Professions/Craft.lua):
 --   st.craftFx: the profession (only while craftFx is on); st.fxStart: when the batch
 --   started; st.fxMadeAt: when the last item was made (a pop at the end of the fill);
 --   st.fxEndAt: when the batch ended, if it has; st.fxDone: it finished (a closing burst

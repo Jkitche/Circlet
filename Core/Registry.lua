@@ -25,11 +25,11 @@ local DEFAULTS = ns.DEFAULTS
 --   toggle    { "Quest ring", "Fills when ...", onSet } for the General page's list of rings
 --   page      { folder = "progress" | "status" | "professions" | nil, order = n,
 --               build = function(O) return O.RingTab(...) end } for its options page
---             (O is the option builders, UI/OptionsKit.lua)
+--             (O is the option builders, UI/Options/Kit.lua)
 --   class     { HUNTER = true, ... }: only these classes see its page and toggle
 --   gameBar   "the game's XP bar": it can hide that (Features/DefaultUI.lua)
 --   since     "1.2.0": the release that added the ring. Players who had Circlet before see it
---             on the "New in" page once (Features/Setup.lua); rings without it are older.
+--             on the "New in" page once (Features/Setup/Setup.lua); rings without it are older.
 --   alwaysInCombat  true: the ring is never faded out in combat, and its page has no
 --             "Show in combat" option (rings that are mostly for combat, like target casts)
 --   onLoaded  function run once the saved settings are loaded

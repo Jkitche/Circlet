@@ -1,4 +1,4 @@
--- Circlet: effects on the health & power rings (Rings/Vitals.lua draws them each frame).
+-- Circlet: effects on the health & power rings (Rings/Health/Vitals.lua draws them each frame).
 local ADDON_NAME, ns = ...
 
 local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean, ns.CleanNumber, ns.IsSecret
@@ -38,7 +38,7 @@ local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean,
 -- What the game hides from addons in combat shapes some of them. Health and power can be
 -- hidden: thresholds (20%, 30%, full) are checked by running the hidden percentage through
 -- a step curve, whose hidden 0 or 1 goes straight into a texture's SetAlpha (the way the
--- rings fill; see Rings/Vitals.lua), with the pulse on its parent frame. The size of a rage
+-- rings fill; see Rings/Health/Vitals.lua), with the pulse on its parent frame. The size of a rage
 -- gain can't be read, so embers come with each gain, not by its size. Energy ticks every
 -- two seconds; with energy hidden, a tick is any energy change that isn't one of your casts.
 

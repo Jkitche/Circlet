@@ -338,7 +338,7 @@ ns.LootFxParts = function() return fx end -- for the tests
 ns.RegisterRing({
     key = "loot", name = "Loot roll", order = 14.7, since = "1.2.0",
     alwaysInCombat = true, -- rolls are short and come up in fights: never faded out
-    iconBg = true, -- "Icon as background": the dice fills the ring's middle (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- "Icon as background": the dice fills the ring's middle (Core/Settings.lua, UI/Options/Kit.lua)
     ring = lootRing,
     preview = PreviewLootRing, slash = { "loot", "roll" }, help = "preview the loot roll ring",
     toggle = { "Loot roll ring", "Counts down the time left to roll Need or Greed on an item." },

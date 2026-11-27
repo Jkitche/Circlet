@@ -181,19 +181,24 @@ Files load in `Circlet.toc` order and share everything through the addon's `ns` 
 - `Core/`: helpers (`Init.lua`), saved settings and the `db` table (`Settings.lua`), the ring
   registry (`Registry.lua`), the `/circ` command (`Slash.lua`) and startup (`Events.lua`).
 - `Draw/`: drawing rings (segments, arcs, track, border, styles, shapes, gradients) and glyphs.
-- `Layout/`: each ring's holder frame (opacity, hiding in combat), auto-arrange, dragging.
 - `Rings/Base/`: what every ring frame shares (`RingFrame.lua`) and the two ring builders:
   `ProgressRing.lua` (pops up when something changes) and `LiveRing.lua` (shows a live state).
-- `Rings/`: one file per ring. Each ends with `ns.RegisterRing{...}`: its defaults, edit mode
-  hooks, preview and slash names, options page, class filter and the game bar it can hide. A new
-  ring gets `since = "x.y.z"` (its release) so players updating see it on the "New in" page;
-  `Features/Setup.lua` also lists its group in the setup wizard (`GROUPS`) and new features that
+- `Rings/<Folder>/`: the rings, in the same folders as the options window's list: `Progress`,
+  `Health`, `Combat`, `Class/<Class>`, `Group`, `Travel`, `Professions`, `Comfort`. Each ring
+  ends with `ns.RegisterRing{...}`: its defaults, edit mode hooks, preview and slash names,
+  options page (`page.folder` picks its folder in the window), class filter and the game bar it
+  can hide. A big ring is a folder of its own, split by concern. A new ring gets
+  `since = "x.y.z"` (its release) so players updating see it on the "New in" page;
+  `Features/Setup/` also lists its group in the setup wizard (`GROUPS`) and new features that
   aren't rings (`NEW_FEATURES`).
   Edit mode, `/circ` and its help, the options window and the defaults are built from these, so
-  a new ring is one new file (plus its line in the TOC).
-- `Features/`: edit mode, profiles, one-time settings migrations, hiding the game's bars, the
-  welcome and discovery animations, the session summary.
-- `UI/`: option builders (`OptionsKit.lua`), the options window, the icon list.
+  a new ring is one new file (plus its line in the TOC). A ring for one class goes in
+  `Rings/Class/<Class>/` with `class = { <CLASS> = true }` and `page.folder = "class"`.
+- `Features/`: profiles, one-time settings migrations, hiding the game's bars, the welcome and
+  discovery animations, the session summary, and the setup wizard (`Setup/`).
+- `UI/`: widgets, the window skin, the icon list, and the options window (`Options/`: the option
+  builders in `Kit.lua`, then the pages, the window and its sidebar).
+- `Layout/`: each ring's holder frame, auto-arrange, dragging and edit mode.
 
 ## Tests
 

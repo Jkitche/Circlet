@@ -516,7 +516,7 @@ ns.PreviewFoodRing = function() foodRing.Preview(21) end
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "food", name = "Food & Drink", order = 11.5,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = foodRing,
     preview = ns.PreviewFoodRing, slash = { "food", "drink", "eat" }, help = "preview the food & drink ring",
     toggle = { "Food & Drink ring", "Eating and drinking: the food or drink buff filling up." },

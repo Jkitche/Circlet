@@ -15,7 +15,7 @@ local Toggle, Range, Execute, Box, Spacer, Intro = O.Toggle, O.Range, O.Execute,
 local APP = "Circlet"
 
 -- The folders in the list on the left, and what their pages say.
--- The same groups as the welcome setup's ring list (Features/Setup.lua).
+-- The same groups as the welcome setup's ring list (Features/Setup/Setup.lua).
 local FOLDERS = {
     progress = { order = 2, name = "Progress",
         text = "Rings that pop up and fill as you gain XP, advance quests, and raise skills and reputation." },
@@ -315,7 +315,7 @@ end
 -- two columns (label on the left of each cell, control on the right), and a footer with
 -- the page's buttons (Edit mode, Preview, Reset) and Close.
 -- The pages are the same option tables as before (AceConfig format, built by each ring's
--- page.build with UI/OptionsKit.lua), drawn with UI/Widgets.lua.
+-- page.build with UI/Options/Kit.lua), drawn with UI/Widgets.lua.
 
 local W = ns.W
 local A = W.ACCENT

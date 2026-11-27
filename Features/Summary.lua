@@ -67,7 +67,7 @@ panel:SetScript("OnDragStart", panel.StartMoving)
 panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
 panel:SetClampedToScreen(true)
 panel:Hide()
--- Circlet's window look (Features/PanelSkin.lua: header with the turning logo, gold border,
+-- Circlet's window look (UI/PanelSkin.lua: header with the turning logo, gold border,
 -- a rule over the footer), in the options window's colors and controls (UI/Widgets.lua).
 local HEADER, FOOTER = 52, 44
 local Wd = ns.W

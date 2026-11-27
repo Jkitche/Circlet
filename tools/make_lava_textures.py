@@ -1,4 +1,4 @@
-"""Writes the lava sprites for the weapon imbue ring's Flametongue animation (Rings/Imbue.lua):
+"""Writes the lava sprites for the weapon imbue ring's Flametongue animation (Rings/Class/Shaman/Imbue.lua):
 Textures/Lava1.tga .. Lava3.tga, irregular blobs of cooling lava on a transparent background:
 plates of dark crust with molten cracks glowing between them.
 

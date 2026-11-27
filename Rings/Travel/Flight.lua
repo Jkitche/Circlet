@@ -9,7 +9,7 @@ local FormatTime = ns.FormatTime
 ---------------------------------------------------------------------------
 -- Flight ring
 ---------------------------------------------------------------------------
--- Flight times come only from the game's own data: Data/FlightPaths.lua holds the
+-- Flight times come only from the game's own data: Rings/Travel/FlightPaths.lua holds the
 -- length of every direct flight path, mined from the client's TaxiNodes, TaxiPath and
 -- TaxiPathNode tables by tools/flight-data. A trip's time is the length of every hop the
 -- game will fly, added up, at the taxi's flying speed, plus any stops on the way.

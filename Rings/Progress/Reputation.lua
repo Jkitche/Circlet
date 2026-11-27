@@ -243,7 +243,7 @@ ns.repRing = repRing
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "rep", name = "Reputation", order = 1,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = repRing,
     preview = PreviewRepRing, slash = { "rep", "reputation" }, help = "preview the reputation ring",
     toggle = { "Reputation ring", "Fills (or drains) when your reputation changes." },

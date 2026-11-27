@@ -101,7 +101,7 @@ local function State(kind, title, frac, channel, ended, how, lost, endedAt, loot
     return st
 end
 
--- The profession's animation (Rings/GatherFx.lua), while gatherFx is on: when the gather
+-- The profession's animation (Rings/Professions/GatherFx.lua), while gatherFx is on: when the gather
 -- started and how long it takes, and when and how it ended.
 local function WithFx(st, kind, start, span, endAt, done)
     if st and db.gatherFx and start and span and ns.GATHER_FX and ns.GATHER_FX[kind] then
@@ -212,7 +212,7 @@ ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_SUCCEEDED:player", "U
         local name, _, _, startMS, endMS = SafeCall(channel and UnitChannelInfo or UnitCastingInfo, "player")
         local kind = GatherKind(name, spellID)
         if not kind then return end
-        -- The fishing ring (Rings/Fishing.lua) handles fishing while it's on.
+        -- The fishing ring (Rings/Professions/Fishing.lua) handles fishing while it's on.
         if kind == "fishing" and ns.FishingRingOn and ns.FishingRingOn() then return end
         g = { kind = kind, spellID = spellID, channel = channel }
         if type(startMS) == "number" and type(endMS) == "number" and not IsSecret(startMS) and not IsSecret(endMS) then
@@ -243,7 +243,7 @@ ns.PreviewGatherRing = function() gatherRing.Preview(14) end
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "gather", name = "Gathering", order = 13,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = gatherRing,
     preview = ns.PreviewGatherRing, slash = { "gather", "gathering" }, help = "preview the gathering ring",
     toggle = { "Gathering ring", "Mining, herbalism, skinning and fishing, then what you got." },
@@ -254,7 +254,7 @@ ns.RegisterRing({
         gatherEnabled   = true,
         gatherIcon      = true,  -- profession / item icon in the middle
         gatherLoot      = true,  -- show what you gathered when it finishes
-        gatherFx        = true,  -- an animation for each profession (Rings/GatherFx.lua)
+        gatherFx        = true,  -- an animation for each profession (Rings/Professions/GatherFx.lua)
         gatherSize      = 110,
         gatherThickness = 11,
         gatherOpacity   = 100,

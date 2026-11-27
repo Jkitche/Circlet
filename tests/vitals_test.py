@@ -1,4 +1,4 @@
-# Health & power rings (Rings/Vitals.lua): readable values fill the ring directly; hidden
+# Health & power rings (Rings/Health/Vitals.lua): readable values fill the ring directly; hidden
 # (secret) values fill it segment by segment through step curves and SetAlpha, and their
 # text goes to the font string unread. Also: what shows when (Show setting), death, no
 # power, edit mode samples, and the hide-the-game's-frame options.

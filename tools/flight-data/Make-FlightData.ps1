@@ -1,5 +1,5 @@
 <#
-Circlet tools: builds Data/FlightPaths.lua from your own WoW Forever install.
+Circlet tools: builds Rings/Travel/FlightPaths.lua from your own WoW Forever install.
 
 Reads three of the game's database tables straight from the local game files (CASC
 storage, read-only) with CascReader.cs:
@@ -9,7 +9,7 @@ storage, read-only) with CascReader.cs:
                 flags (1 = teleport) and stop delay (seconds)
 and writes, per direct flight, the length of its path in yards (the 3D distance from
 point to point, in order) and its stop delays. The flight ring turns those into times
-(Rings/Flight.lua).
+(Rings/Travel/Flight.lua).
 
 Run it again after a patch that changes flight paths:
   powershell -ExecutionPolicy Bypass -File tools\flight-data\Make-FlightData.ps1
@@ -94,7 +94,7 @@ foreach ($p in $paths.Records) {
 $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine("-- Circlet: flight path lengths, generated from the WoW Forever game files. Do not edit by hand.")
 [void]$sb.AppendLine("-- Made by tools/flight-data/Make-FlightData.ps1 from the client's TaxiNodes, TaxiPath and")
-[void]$sb.AppendLine("-- TaxiPathNode tables (build $build). Rings/Flight.lua turns these into flight times")
+[void]$sb.AppendLine("-- TaxiPathNode tables (build $build). Rings/Travel/Flight.lua turns these into flight times")
 [void]$sb.AppendLine("-- (length / taxi speed, plus stops).")
 [void]$sb.AppendLine("--   ns.FLIGHT_PATHS[from node ID][to node ID] = yards, or { yards, stop delay in seconds }")
 [void]$sb.AppendLine("--   ns.FLIGHT_NODES[node ID] = English name (the client's own names may be translated)")
@@ -118,7 +118,7 @@ foreach ($id in ($names.Keys | Sort-Object)) {
 }
 [void]$sb.AppendLine("}")
 
-$dest = Join-Path $addon "Data\FlightPaths.lua"
+$dest = Join-Path $addon "Rings\Travel\FlightPaths.lua"
 New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
 [IO.File]::WriteAllText($dest, $sb.ToString(), (New-Object System.Text.UTF8Encoding $false))
 "Build $build`: $($names.Count) flight masters, $count direct flights ($skipped paths skipped: teleports or no points)."

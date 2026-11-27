@@ -18,7 +18,7 @@ local SafeCall, Clean = ns.SafeCall, ns.Clean
 -- it can't see in combat is pushback, so a pushed-back cast runs a little long.
 -- Crafts and gathers are left to their own rings. Resurrect spells get an animation of
 -- their own (below), and with castSchoolFx on other spells get an effect for their school
--- (Rings/CastSchools.lua).
+-- (Rings/Combat/CastSchools.lua).
 
 local function Learned()
     db.castTimes = db.castTimes or {}
@@ -462,7 +462,7 @@ ns.PreviewCastRing = function() castRing.Preview(db.castRezFx and 11 or 12) end
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "cast", name = "Cast", order = 14,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = castRing,
     preview = ns.PreviewCastRing, slash = { "cast", "casting" }, help = "preview the cast ring",
     toggle = { "Cast ring", "Your casts and channels, timed even in combat." },
@@ -479,7 +479,7 @@ ns.RegisterRing({
         castFromTop   = 265,
         castHold      = 1,
         castRezFx     = true, -- the resurrection animation (resurrect spells)
-        castSchoolFx  = true, -- an effect for the spell's school (Rings/CastSchools.lua)
+        castSchoolFx  = true, -- an effect for the spell's school (Rings/Combat/CastSchools.lua)
         castSchoolFxStrength = 100, -- % brightness of that effect
         castStyle     = "smooth",
         castBorder    = 2,

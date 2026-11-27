@@ -334,7 +334,7 @@ ns.PreviewRegenRing = function() regenRing.Preview(14) end
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "regen", name = "Mana regen", order = 14.9, since = "1.3.0",
-    iconBg = true, -- "Icon as background": the spell's icon fills the ring's middle (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- "Icon as background": the spell's icon fills the ring's middle (Core/Settings.lua, UI/Options/Kit.lua)
     ring = regenRing,
     preview = ns.PreviewRegenRing, slash = { "regen", "fsr", "mana" }, help = "preview the mana regen ring",
     toggle = { "Mana regen ring", "The five-second rule: when your mana regen starts again after you spend mana." },

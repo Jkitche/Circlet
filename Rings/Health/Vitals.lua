@@ -78,7 +78,7 @@ local function Gate(pct)
     end
 end
 
--- For Rings/VitalsFx.lua: the percent scale and whether curves work here.
+-- For Rings/Health/VitalsFx.lua: the percent scale and whether curves work here.
 ns.VitalsCurves = { Scale = function() return percentScale end, Work = CurvesWork, Readable = Readable }
 
 -- The hidden percentage (0..100) for text, through the game's own scaling curve if it has one.
@@ -635,7 +635,7 @@ end
 
 -- Where each ring's level badge sits (degrees, 0 = right, counter-clockwise): bottom left on
 -- yours, bottom right on the target's (the side away from yours).
--- Where the badges sit: each ring's choice (Rings/VitalsFx.lua, ns.VitalsBadges).
+-- Where the badges sit: each ring's choice (Rings/Health/VitalsFx.lua, ns.VitalsBadges).
 local Badges = ns.VitalsBadges
 
 -- The elite marker (<key>Elite) on the level badge: the game's own target-frame dragon
@@ -1599,7 +1599,7 @@ local function Colors()
     }
 end
 
--- The effects (Rings/VitalsFx.lua): name, label, what it does, by the ring it's on.
+-- The effects (Rings/Health/VitalsFx.lua): name, label, what it does, by the ring it's on.
 local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
                    "EnergyTick", "Rage", "FullMana", "Skin", "Quest", "Range", "Tapped", "Loot", "Stance" }
 local FX_TEXT = {
@@ -1648,7 +1648,7 @@ local function Register(spec)
         [key .. "FloatTextSize"]  = 100,
         [key .. "Float"]     = spec.float and true or nil, -- damage and healing numbers floating off it
         [key .. "FloatDir"]  = spec.float and "up" or nil, -- which way they float: up, down, left, right
-        -- Buffs and debuffs in an arc round the ring (Rings/VitalsAuras.lua).
+        -- Buffs and debuffs in an arc round the ring (Rings/Health/VitalsAuras.lua).
         [key .. "Auras"]     = spec.auras ~= nil and spec.auras or nil,
         [key .. "AuraDir"]   = spec.auras ~= nil and "down" or nil,
         [key .. "AuraShow"]  = spec.auras ~= nil and "both" or nil,

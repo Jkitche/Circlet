@@ -1,6 +1,6 @@
 # Flight data generator
 
-Builds `Data/FlightPaths.lua` (the flight ring's path lengths) from your own WoW Forever
+Builds `Rings/Travel/FlightPaths.lua` (the flight ring's path lengths) from your own WoW Forever
 install. It reads the client's `TaxiNodes`, `TaxiPath` and `TaxiPathNode` tables straight
 from the local game files (CASC storage, read-only), works out each direct flight's path
 length in yards and its stop delays, and writes them as Lua.

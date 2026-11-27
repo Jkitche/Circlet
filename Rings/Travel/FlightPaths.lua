@@ -1,6 +1,6 @@
 -- Circlet: flight path lengths, generated from the WoW Forever game files. Do not edit by hand.
 -- Made by tools/flight-data/Make-FlightData.ps1 from the client's TaxiNodes, TaxiPath and
--- TaxiPathNode tables (build 1.60.1.70888). Rings/Flight.lua turns these into flight times
+-- TaxiPathNode tables (build 1.60.1.70888). Rings/Travel/Flight.lua turns these into flight times
 -- (length / taxi speed, plus stops).
 --   ns.FLIGHT_PATHS[from node ID][to node ID] = yards, or { yards, stop delay in seconds }
 --   ns.FLIGHT_NODES[node ID] = English name (the client's own names may be translated)

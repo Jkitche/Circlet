@@ -1,4 +1,4 @@
-"""Writes the rock sprites for the weapon imbue ring's Rockbiter animation (Rings/Imbue.lua):
+"""Writes the rock sprites for the weapon imbue ring's Rockbiter animation (Rings/Class/Shaman/Imbue.lua):
 Textures/Rock1.tga .. Rock4.tga, irregular shaded stones on a transparent background, lit
 from the top left, in greys and browns (the ring draws them untinted, or barely tinted).
 

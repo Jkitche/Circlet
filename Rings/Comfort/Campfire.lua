@@ -212,7 +212,7 @@ ns.PreviewCampRing = function() campRing.Preview(11) end
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "camp", name = "Campfire", order = 11.6,
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = campRing,
     preview = ns.PreviewCampRing, slash = { "camp", "campfire" }, help = "preview the campfire ring",
     toggle = { "Campfire ring", "Resting at a campfire until you're Well Rested." },

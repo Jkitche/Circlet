@@ -1,4 +1,4 @@
-"""Writes the flame sprites for the weapon imbue ring's Flametongue animation (Rings/Imbue.lua):
+"""Writes the flame sprites for the weapon imbue ring's Flametongue animation (Rings/Class/Shaman/Imbue.lua):
 Textures/Flame1.tga .. Flame3.tga, tongues of flame standing on their base, pointing up, on a
 transparent background.
 

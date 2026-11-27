@@ -295,7 +295,7 @@ ns.PreviewHearthRing = function() hearthRing.Preview(SAMPLE_CAST + DONE_SHOW + 0
 ---------------------------------------------------------------------------
 ns.RegisterRing({
     key = "hearth", name = "Hearthstone", order = 11.65, since = "1.4.0",
-    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/OptionsKit.lua)
+    iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = hearthRing,
     preview = ns.PreviewHearthRing, slash = { "hearth", "hs" }, help = "preview the hearthstone ring",
     toggle = { "Hearthstone ring", "Casting your Hearthstone home, with a swirling portal." },
