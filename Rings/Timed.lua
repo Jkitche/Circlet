@@ -222,7 +222,7 @@ ns.RegisterRing({
     page = { folder = "travel", order = 2, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(9, "Timed", "Timed Quest Ring",
+            local tab = RingTab(9, "Timed quests", "Timed Quest Ring",
                 "Up while you have an escort or other timed quest: it drains as time runs out and turns the warning "
                 .. "color near the end. With more than one, it shows the one with the least time left.",
                 MergeTop(TopRow("timed", "timed quest ring", ns.PreviewTimedRing,

@@ -440,7 +440,7 @@ ns.RegisterRing({
     page = { folder = "travel", order = 3, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10, "Corpse", "Corpse Ring",
+            local tab = RingTab(10, "Corpse run", "Corpse Ring",
                 "While you're a ghost: how far your corpse is (filling as you get closer), an arrow on the ring pointing "
                 .. "toward it (straight up = ahead), and when you can resurrect.",
                 MergeTop(TopRow("corpse", "corpse ring", ns.PreviewCorpseRing,

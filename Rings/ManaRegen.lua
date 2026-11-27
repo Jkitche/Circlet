@@ -355,7 +355,7 @@ ns.RegisterRing({
             regen   = { r = 0.45, g = 0.80, b = 1.00 },
         },
     },
-    page = { folder = "combat", order = 3, build = function(O)
+    page = { folder = "combat", order = 5, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             local tab = RingTab(10.97, "Mana regen", "Mana Regen Ring",

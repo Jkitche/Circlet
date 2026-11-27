@@ -203,7 +203,7 @@ ns.RegisterRing({
             miss  = { r = 0.65, g = 0.65, b = 0.70 },
         },
     },
-    page = { folder = "combat", order = 1.5, build = function(O)
+    page = { folder = "combat", order = 3, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             return RingTab(13.2, "Swing timer", "Swing Timer Ring",

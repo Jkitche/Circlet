@@ -143,7 +143,7 @@ ns.RegisterRing({
     page = { folder = "class", order = 4, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(6, "Pet", "Pet Ring",
+            local tab = RingTab(6, "Pet XP", "Pet XP Ring",
                 "A donut that fills when your pet gains experience, and celebrates when it levels up.",
                 MergeTop(TopRow("pet", "pet ring", PreviewPetRing, "Show example pet XP: a gain and a level-up. Also /circ pet."), {
                     general = Box(2, "General", {

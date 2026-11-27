@@ -235,7 +235,22 @@ local function RingTab(order, name, header, intro, args)
         local gameBar = def.gameBar
         if def.iconBg then
             -- def.iconBg: true, or { disabled = fn, note = "..." } when it only applies sometimes.
+            -- The ring's icon settings get a box of their own beside General: its own "Show ...
+            -- icon" switch (args named icon / icons, and Reputation's icon list) moved there,
+            -- then the background ones.
             local ib = type(def.iconBg) == "table" and def.iconBg or {}
+            local iconBox = Box(((box.order or 2) + 0.05), "Icon", {})
+            local n = 0
+            for _, k in ipairs({ "icon", "icons", "list" }) do
+                local o = box.args[k]
+                if o and (k ~= "list" or iconBox.args.icons) then
+                    n = n + 1
+                    o.order = n
+                    iconBox.args[k], box.args[k] = o, nil
+                end
+            end
+            args.iconBox = iconBox
+            box = iconBox
             box.args.iconBg = {
                 type = "toggle", order = 45, width = TOGGLE_WIDTH, name = "Icon as background",
                 desc = "Show the icon filling the middle of the ring, behind its text, instead of as a badge "
@@ -248,6 +263,7 @@ local function RingTab(order, name, header, intro, args)
                 "How strongly the background icon shows. Lower keeps the ring's text easier to read.",
                 { disabled = function() return not db[key .. "IconBg"] or (ib.disabled and ib.disabled()) end })
         end
+        box = args.general or args.size
         if gameBar then
             box.args.hideDefault = {
                 type = "toggle", order = 49, width = "full", name = "Hide " .. gameBar,

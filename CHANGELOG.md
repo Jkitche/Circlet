@@ -87,10 +87,21 @@
     after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings
     see and do (for bug reports).
-- **Badge positions** on the health rings. Each ring's options have a Badge positions box: put
-  each of its badges (level, in-combat, raid marker, stance, skinnable, quest, lootable) at any
-  of eight spots round the ring. Picking a spot another badge has swaps the two; "Default
+- **Badge positions** on the health rings. Each ring's Badges box has every badge (level,
+  in-combat, raid marker, stance, skinnable, quest, lootable) with its switch and where it sits:
+  any of eight spots round the ring. Picking a spot another badge has swaps the two; "Default
   positions" puts them all back.
+- **Tidier options.**
+  - The health rings (yours, target, target of target, pet) have a folder of their own, and
+    Combat & casting is in a sensible order: casting, target casting, swing, shot, mana regen,
+    ammo.
+  - A ring is called the same everywhere: its switches on the General page and in its folder
+    use its page's name. Some pages were renamed to say what they are: Pinned quests, Pet XP,
+    Timed quests, Corpse run.
+  - Health ring pages are split into boxes: General, Bands & text, Portrait, Badges, Buffs &
+    debuffs, Damage & healing numbers, Animations, Effects.
+  - Rings with an icon have an Icon box: show the icon, icon as background and its opacity.
+  - The XP page has Always on & minimap and Resting boxes of their own.
 - **Pet health ring** (new, hunters and warlocks; Class > Pet health). A small ring for your
   pet's health and power, with its name and level, the right-click pet menu, its portrait as
   the center if you like, and the health rings' effects (raid marker, death, heals, big hits,

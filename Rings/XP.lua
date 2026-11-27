@@ -1196,6 +1196,12 @@ ns.RegisterRing({
                     general = Box(2, "General", {
                         enabled = Toggle(1, "xpEnabled", "Show XP ring", "Pop up and fill when you gain experience.",
                             OnXPAlwaysChanged),
+                        afterCombat = Toggle(3, "xpAfterCombat", "Wait until combat ends",
+                            "Add up all XP earned during a fight and show the total once combat ends."),
+                        delta = Toggle(4, "xpShowDelta", "Show gain as %",
+                            "Add a line under the gain showing it as a share of the level, e.g. +4.2%."),
+                    }),
+                    display = Box(2.2, "Always on & minimap", {
                         always = Toggle(2, "xpAlways", "Always show",
                             "Keep the XP ring on screen permanently. Gains still animate and count up.", OnXPAlwaysChanged),
                         minimap = Toggle(2.05, "xpMinimap", "Show as minimap border",
@@ -1233,6 +1239,8 @@ ns.RegisterRing({
                             set = function(_, v) db.xpHideTextDelay = v end,
                             disabled = function() return not ((db.xpAlways or db.xpMinimap) and db.xpHideText) end,
                         },
+                    }),
+                    rest = Box(2.3, "Resting", {
                         resting = Toggle(2.5, "xpRestedRing", "Show while resting",
                             "At an inn or in a city, keep the ring up showing your rested XP building (the blue band) "
                             .. "and roughly how long until you're fully rested.", function() ns.OnRestingChanged() end),
@@ -1242,10 +1250,6 @@ ns.RegisterRing({
                         restedGain = Toggle(2.6, "xpRestedGain", "Show rested XP gained",
                             "When you leave an inn or city, the ring pops up with the rested band growing by the rested "
                             .. "XP you gained there (including while logged out), e.g. +1,240 rested."),
-                        afterCombat = Toggle(3, "xpAfterCombat", "Wait until combat ends",
-                            "Add up all XP earned during a fight and show the total once combat ends."),
-                        delta = Toggle(4, "xpShowDelta", "Show gain as %",
-                            "Add a line under the gain showing it as a share of the level, e.g. +4.2%."),
                     }),
                     levelUp = Box(3, "Effects", {
                         gainFx = Toggle(0.5, "xpGainFx", "Gain effect",
@@ -1266,13 +1270,14 @@ ns.RegisterRing({
             -- it on; idle-text settings when the ring is always up; pop-up settings (how long it
             -- stays, showing while resting) only when it isn't; size and position not around the map.
             local function AlwaysOn() return db.xpAlways or db.xpMinimap end
-            local general, look = tab.args.general.args, tab.args.size.args
+            local general, look = tab.args.display.args, tab.args.size.args
+            local rest = tab.args.rest.args
             general.always.hidden = function() return db.xpMinimap end
             general.minimapGap.hidden = function() return not db.xpMinimap end
             general.minimapBehind.hidden = function() return not db.xpMinimap end
             general.hideText.hidden = function() return not AlwaysOn() end
             general.hideDelay.hidden = function() return not AlwaysOn() end
-            general.resting.hidden = AlwaysOn
+            rest.resting.hidden = AlwaysOn
             look.hold.hidden = AlwaysOn
             look.size.hidden = function() return db.xpMinimap end
             if tab.args.position then tab.args.position.hidden = function() return db.xpMinimap end end

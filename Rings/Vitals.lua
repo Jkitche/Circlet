@@ -1692,7 +1692,7 @@ local function Register(spec)
         toggle = { spec.toggleName, spec.toggleDesc },
         gameBar = spec.gameBar,
         defaults = defaults,
-        page = { folder = spec.folder or "combat", order = spec.pageOrder, build = function(O)
+        page = { folder = "vitals", order = spec.pageOrder, build = function(O)
                 local Toggle, Range, Select, Color, Box = O.Toggle, O.Range, O.Select, O.Color, O.Box
                 local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
                 local tab = RingTab(spec.pageOrder, spec.pageName, spec.header, spec.intro,
@@ -1700,36 +1700,6 @@ local function Register(spec)
                         general = Box(2, "General", {
                             enabled = Toggle(1, key .. "Enabled", "Show " .. spec.what, spec.toggleDesc),
                             show = Select(2, key .. "Show", "Show", SHOW_NAMES, SHOW_ORDER, spec.showDesc),
-                            power = Toggle(3, key .. "Power", "Power band",
-                                "A thinner band inside the health band for mana, rage, energy or focus."),
-                            powerSize = Range(4, key .. "PowerSize", "Power band width (%)", 25, 100, 5,
-                                "How wide the power band is, compared with the health band.",
-                                { disabled = function() return not db[key .. "Power"] end }),
-                            text = Select(5, key .. "Text", "Health text", TEXT_NAMES, TEXT_ORDER,
-                                "What the middle of the ring says: the health as a percentage, the number, both, or "
-                                .. "nothing."),
-                            powerText = Toggle(6, key .. "PowerText", "Power text",
-                                "Mana as a percentage (rage, energy and focus as the number) under the health.",
-                                nil),
-                            split = Toggle(5.5, key .. "SplitText", "Number and % on two lines",
-                                "With Health text on Value and percent: the number on one line and the percentage "
-                                .. "on a second, smaller line under it, instead of side by side."),
-                            name = Toggle(7, key .. "Name", spec.nameLabel, spec.nameDesc),
-                            portrait = Toggle(8, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
-                            level = Toggle(7.3, key .. "Level", "Level badge",
-                                "The level on a small disc on the ring (where: Badge positions)"
-                                .. ((key == "playerHp" or key == "petHp") and "." or ", in the game's difficulty colors (\"??\" when "
-                                .. "it's too high to tell). The name then leaves its level off.")),
-                            elite = key ~= "playerHp" and key ~= "petHp" and spec.level and (function()
-                                local t = Toggle(7.4, key .. "Elite", "Elite indicator",
-                                    "The game's target-frame dragon round the level badge: gold for elites and world "
-                                    .. "bosses, silver for rare elites, and the silver frame for rares.")
-                                t.disabled = function() return not db[key .. "Level"] end
-                                return t
-                            end)() or nil,
-                            combat = spec.combat and Toggle(7.6, key .. "CombatIcon", "In-combat indicator",
-                                "Crossed swords on a small disc at the top right of the ring while you're in combat. "
-                                .. "Edit mode and previews show it so you can see where it sits.") or nil,
                             clickTarget = key == "playerHp" and Toggle(8.4, key .. "ClickTarget", "Click to target yourself",
                                 "Left-click your ring to target yourself, as on your player frame. Off: left clicks "
                                 .. "go through to the world. In combat it stays where the ring was when the fight started.") or nil,
@@ -1737,10 +1707,79 @@ local function Register(spec)
                                 "Right-click the ring for the game's own menu for " .. spec.menuWho .. ", as on its "
                                 .. "frame (Set Focus, raid marks, whisper, inspect...). Left clicks still go through to "
                                 .. "the world. In combat it stays where the ring was when the fight started."),
-                            portraitAlpha = Range(9, key .. "PortraitAlpha", "Portrait opacity", 10, 100, 5,
+                        }),
+                        bands = Box(2.1, "Bands & text", {
+                            power = Toggle(1, key .. "Power", "Power band",
+                                "A thinner band inside the health band for mana, rage, energy or focus."),
+                            powerSize = Range(2, key .. "PowerSize", "Power band width (%)", 25, 100, 5,
+                                "How wide the power band is, compared with the health band.",
+                                { disabled = function() return not db[key .. "Power"] end }),
+                            text = Select(3, key .. "Text", "Health text", TEXT_NAMES, TEXT_ORDER,
+                                "What the middle of the ring says: the health as a percentage, the number, both, or "
+                                .. "nothing."),
+                            split = Toggle(4, key .. "SplitText", "Number and % on two lines",
+                                "With Health text on Value and percent: the number on one line and the percentage "
+                                .. "on a second, smaller line under it, instead of side by side."),
+                            powerText = Toggle(5, key .. "PowerText", "Power text",
+                                "Mana as a percentage (rage, energy and focus as the number) under the health."),
+                            name = Toggle(6, key .. "Name", spec.nameLabel, spec.nameDesc),
+                        }),
+                        portrait = Box(2.2, "Portrait", {
+                            portrait = Toggle(1, key .. "Portrait", spec.portraitLabel, spec.portraitDesc),
+                            portraitAlpha = Range(2, key .. "PortraitAlpha", "Portrait opacity", 10, 100, 5,
                                 "How strongly the portrait shows. Lower keeps the numbers on it easier to read.",
                                 { disabled = function() return not db[key .. "Portrait"] end }),
                         }),
+                        badges = (function()
+                            -- Each badge: its switch, then where it sits (one of eight spots; a spot
+                            -- another badge has swaps the two), side by side.
+                            local args, n = {}, 0
+                            local SWITCH = {
+                                Level = { key .. "Level", "Level badge", "The level on a small disc on the ring"
+                                    .. ((key == "playerHp" or key == "petHp") and "." or ", in the game's difficulty "
+                                    .. "colors (\"??\" when it's too high to tell). The name then leaves its level off.") },
+                                Combat = { key .. "CombatIcon", "In-combat indicator",
+                                    "Crossed swords on a small disc while you're in combat. Edit mode and previews show "
+                                    .. "it so you can see where it sits." },
+                            }
+                            for i, badge in ipairs(Badges.order) do
+                                local b = Badges.badges[badge]
+                                local has = b[key] and (badge == "Level" or (badge == "Combat" and spec.combat)
+                                    or (fxOn[badge] and fxOn[badge][key]))
+                                if has then
+                                    n = n + 1
+                                    local sw = SWITCH[badge]
+                                    if sw then
+                                        args["on" .. badge] = Toggle(i * 2 - 1, sw[1], sw[2], sw[3])
+                                    else
+                                        args["on" .. badge] = Toggle(i * 2 - 1, key .. "Fx" .. badge, FX_TEXT[badge][1], FX_TEXT[badge][2])
+                                    end
+                                    local o = Select(i * 2, key .. "Pos" .. badge, "Where",
+                                        Badges.spotNames, Badges.spotOrder,
+                                        "Where the " .. b[1]:lower() .. " sits on the ring. Picking a spot another "
+                                        .. "badge has swaps the two.")
+                                    o.get = function() return Badges.Spot(key, badge) end
+                                    o.set = function(_, spot) Badges.Set(key, badge, spot) end
+                                    args["pos" .. badge] = o
+                                end
+                            end
+                            if n == 0 then return nil end
+                            if key ~= "playerHp" and key ~= "petHp" and spec.level then
+                                local t = Toggle(90, key .. "Elite", "Elite dragon",
+                                    "The game's target-frame dragon round the level badge: gold for elites and world "
+                                    .. "bosses, silver for rare elites, and the silver frame for rares.")
+                                t.disabled = function() return not db[key .. "Level"] end
+                                args.elite = t
+                            end
+                            args.reset = { type = "execute", order = 91, name = "Default positions", width = 1.2,
+                                desc = "Put every badge back where it started.",
+                                func = function()
+                                    for badge, b in pairs(Badges.badges) do
+                                        if b[key] then db[key .. "Pos" .. badge] = b[key] end
+                                    end
+                                end }
+                            return Box(2.3, "Badges", args)
+                        end)(),
                         anim = Box(2.5, "Animations", {
                             smooth = Toggle(1, key .. "Smooth", "Smooth changes",
                                 "The bands ease to a new value instead of jumping, like the XP ring. When the game "
@@ -1758,52 +1797,29 @@ local function Register(spec)
                                 .. "band; health you gain glows softly as it fills in. Power does the same. Only when "
                                 .. "the values can be read (the game must say how much changed)."),
                         }),
-                        effects = (function()
-                            local args, n = {}, 0
-                            if spec.float then
-                                n = n + 1
-                                args.float = Toggle(0.1, key .. "Float", "Damage and healing numbers",
-                                    "Each hit and heal " .. (key == "playerHp" and "you take" or "your target takes")
-                                    .. " floats off the ring: damage, crits bigger and gold, heals in green, and misses "
-                                    .. "as words (Dodge, Parry, Block...).")
-                                args.floatDir = Select(0.2, key .. "FloatDir", "Direction",
+                        floats = spec.float and Box(2.4, "Damage & healing numbers", {
+                            float = Toggle(1, key .. "Float", "Show",
+                                "Each hit and heal " .. (key == "playerHp" and "you take" or "your target takes")
+                                .. " floats off the ring: damage, crits bigger and gold, heals in green, and misses "
+                                .. "as words (Dodge, Parry, Block...)."),
+                            floatDir = (function()
+                                local o = Select(2, key .. "FloatDir", "Direction",
                                     { up = "Up", down = "Down", left = "Left", right = "Right" }, { "up", "down", "left", "right" },
                                     "Which side of the ring the numbers start on and float away from.")
-                                args.floatDir.disabled = function() return not db[key .. "Float"] end
-                            end
+                                o.disabled = function() return not db[key .. "Float"] end
+                                return o
+                            end)(),
+                        }) or nil,
+                        effects = (function()
+                            local args, n = {}, 0
                             for i, name in ipairs(FX_ORDER) do
-                                if fxOn[name] and fxOn[name][key] then
+                                -- (the badges have their own box)
+                                if fxOn[name] and fxOn[name][key] and not Badges.badges[name] then
                                     n = n + 1
                                     args["fx" .. name] = Toggle(i, key .. "Fx" .. name, FX_TEXT[name][1], FX_TEXT[name][2])
                                 end
                             end
                             return n > 0 and Box(2.7, "Effects", args) or nil
-                        end)(),
-                        positions = (function()
-                            -- Where each badge sits: one of eight spots; a taken spot swaps.
-                            local args, n = {}, 0
-                            for i, badge in ipairs(Badges.order) do
-                                local b = Badges.badges[badge]
-                                local has = b[key] and ((badge == "Level" and spec.level) or (badge == "Combat" and spec.combat)
-                                    or (fxOn[badge] and fxOn[badge][key]))
-                                if has then
-                                    n = n + 1
-                                    local o = Select(i, key .. "Pos" .. badge, b[1], Badges.spotNames, Badges.spotOrder,
-                                        b[2] .. " Picking a spot another badge has swaps the two.")
-                                    o.get = function() return Badges.Spot(key, badge) end
-                                    o.set = function(_, spot) Badges.Set(key, badge, spot) end
-                                    args["pos" .. badge] = o
-                                end
-                            end
-                            if n == 0 then return nil end
-                            args.reset = { type = "execute", order = 50, name = "Default positions", width = 1.2,
-                                desc = "Put every badge back where it started.",
-                                func = function()
-                                    for badge, b in pairs(Badges.badges) do
-                                        if b[key] then db[key .. "Pos" .. badge] = b[key] end
-                                    end
-                                end }
-                            return Box(2.75, "Badge positions", args)
                         end)(),
                         auras = spec.auras ~= nil and (function()
                             local function Off() return not db[key .. "Auras"] end
@@ -1837,7 +1853,7 @@ local function Register(spec)
                             for name, a in pairs(args) do
                                 if name ~= "on" then a.disabled = Off end
                             end
-                            return Box(2.75, "Buffs & debuffs", args)
+                            return Box(2.35, "Buffs & debuffs", args)
                         end)() or nil,
                         colors = Box(3, "Colors", {
                             mode = Select(0.5, key .. "ColorMode", "Health band color", COLOR_MODES, COLOR_ORDER,
@@ -1852,7 +1868,7 @@ local function Register(spec)
                         }),
                         size = SizeBox(4, key, spec.what, "Offset from the center of the screen."),
                     }))
-                local g = tab.args.general.args
+                local g = tab.args.bands.args
                 g.powerText.disabled = function() return not db[key .. "Power"] end
                 g.split.disabled = function() return db[key .. "Text"] ~= "both" end
 
@@ -1862,7 +1878,7 @@ local function Register(spec)
 end
 
 Register({
-    key = "playerHp", ring = playerRing, title = "Health", order = 12.9, pageOrder = 1.5,
+    key = "playerHp", ring = playerRing, title = "Health", order = 12.9, pageOrder = 1,
     show = "combat", name = false, colorMode = "health", x = -230, bigHit = true, level = true, combat = true, float = true, auras = false, menuWho = "yourself",
     preview = ns.PreviewPlayerHpRing, slash = { "health", "hp" }, help = "preview your health and power ring",
     toggleName = "Health ring", toggleDesc = "Your health, with your mana, rage or energy inside it.",
@@ -1879,7 +1895,7 @@ Register({
 })
 
 Register({
-    key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 1.6,
+    key = "targetHp", ring = targetRing, title = "Target health", order = 12.95, pageOrder = 2,
     show = "always", name = true, colorMode = "class", x = 230, bigHit = true, level = true, float = true, auras = true, menuWho = "your target",
     preview = ns.PreviewTargetHpRing, slash = { "targethealth", "thp" }, help = "preview the target health ring",
     toggleName = "Target health ring", toggleDesc = "Your target's health and power, with its name.",
@@ -1897,7 +1913,7 @@ Register({
 })
 
 Register({
-    key = "totHp", ring = totRing, title = "Target of target", order = 12.97, pageOrder = 1.7,
+    key = "totHp", ring = totRing, title = "Target of target", order = 12.97, pageOrder = 3,
     show = "always", name = true, colorMode = "class", x = 330, fromTop = 490, size = 70, thickness = 8, menuWho = "it",
     preview = ns.PreviewTotHpRing, slash = { "tot", "targettarget" }, help = "preview the target of target ring",
     toggleName = "Target of target ring", toggleDesc = "A small ring for your target's target: who it's after.",
@@ -1915,7 +1931,7 @@ Register({
 })
 
 Register({
-    key = "petHp", ring = petRing, title = "Pet health", order = 12.98, pageOrder = 5, folder = "class",
+    key = "petHp", ring = petRing, title = "Pet health", order = 12.98, pageOrder = 4,
     class = { HUNTER = true, WARLOCK = true }, since = "1.5.0",
     show = "always", name = true, colorMode = "health", x = -360, fromTop = 490, size = 70, thickness = 8,
     level = true, float = true, menuWho = "your pet",

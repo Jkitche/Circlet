@@ -19,9 +19,12 @@ local APP = "Circlet"
 local FOLDERS = {
     progress = { order = 2, name = "Progress",
         text = "Rings that pop up and fill as you gain XP, advance quests, and raise skills and reputation." },
-    combat = { order = 3, name = "Combat & casting",
-        text = "Rings for your health and your target's, your casts and your target's, your melee swings "
-            .. "and shots, the five-second rule on mana, and your ammo." },
+    vitals = { order = 3, name = "Health rings",
+        text = "Health and power round a ring, with portraits, badges, buffs and effects: yours, your "
+            .. "target's, its target's and your pet's." },
+    combat = { order = 3.5, name = "Combat & casting",
+        text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
+            .. "on mana, and your ammo." },
     class = { order = 4, name = "Class",
         text = "Rings for one class's own tools: shaman totems and weapon imbues, the warlock's soulstone "
             .. "and the hunter's pet. Only your class's show." },
@@ -44,7 +47,12 @@ end
 -- order as the list on the left. "XP ring" shows as "XP", since the box title says rings.
 -- A ring with no page of its own could name its box here (all of them have pages now).
 local BOX_FOR = {}
-local LABEL_FOR = { pin = "Pinned quests", totem = "Totems" }
+-- Each ring's switch is labelled with its page's name (filled in as the pages are built), so a
+-- ring is called the same thing everywhere.
+local LABEL_FOR = {}
+local function Label(def)
+    return function() return LABEL_FOR[def.key] or (def.toggle[1]:gsub(" rings?$", "")) end
+end
 
 local function RingBoxes()
     local boxes = {}
@@ -57,7 +65,7 @@ local function RingBoxes()
             end
             local t = def.toggle
             local option = Toggle(def.page and def.page.order or def.order, def.key .. "Enabled",
-                LABEL_FOR[def.key] or (t[1]:gsub(" rings?$", "")), t[1] .. ": " .. t[2], t[3])
+                Label(def), t[1] .. ": " .. t[2], t[3])
             option.width = 1
             if def.class then option.hidden = Hidden(def) end
             boxes[folder].args[def.key] = option
@@ -240,7 +248,7 @@ local function FolderRings(folder)
         if def.toggle and def.page and def.page.folder == folder then
             local t = def.toggle
             local option = Toggle(def.page.order, def.key .. "Enabled",
-                LABEL_FOR[def.key] or (t[1]:gsub(" rings?$", "")), t[1] .. ": " .. t[2], t[3])
+                Label(def), t[1] .. ": " .. t[2], t[3])
             if def.class then option.hidden = Hidden(def) end
             args[def.key] = option
         end
@@ -260,6 +268,7 @@ local function BuildOptionsTable()
         if def.page then
             local page = def.page.build(O)
             page.order = def.page.order
+            if type(page.name) == "string" then LABEL_FOR[def.key] = page.name end
             if def.class then page.hidden = Hidden(def) end
             local parent = def.page.folder and args[def.page.folder].args or args
             parent[def.key] = page

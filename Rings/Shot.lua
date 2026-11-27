@@ -163,7 +163,7 @@ ns.RegisterRing({
             ready = { r = 0.75, g = 1.00, b = 0.60 },
         },
     },
-    page = { folder = "combat", order = 1.6, build = function(O)
+    page = { folder = "combat", order = 4, build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
             return RingTab(13.3, "Shot timer", "Shot Timer Ring",

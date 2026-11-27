@@ -1,38 +1,39 @@
 registered: true
 validate: true nil
-counts: color=105 execute=191 range=481 select=141 toggle=364
+counts: color=105 execute=191 range=481 select=142 toggle=364
 general (General)
 progress (Progress)
   xp (XP)
   quest (Quest)
-  pin (Quest rings)
+  pin (Pinned quests)
   skill (Profession skills)
   weapon (Weapon skills)
   rep (Reputation)
-combat (Combat & casting)
-  cast (Casting)
+vitals (Health rings)
   playerHp (Health & power)
-  swing (Swing timer)
-  shot (Shot timer)
   targetHp (Target health)
   totHp (Target of target)
+  petHp (Pet health)
+combat (Combat & casting)
+  cast (Casting)
   targetCast (Target casting)
+  swing (Swing timer)
+  shot (Shot timer)
   regen (Mana regen)
   ammo (Ammo)
 class (Class)
   totem (Totems) [hidden]
   imbue (Weapon imbue) [hidden]
   soulstone (Soulstone) [hidden]
-  pet (Pet)
-  petHp (Pet health)
+  pet (Pet XP)
 group (Group)
   loot (Loot rolls)
   ready (Ready checks)
 travel (Travel & survival)
   flight (Flight)
   hearth (Hearthstone)
-  timed (Timed)
-  corpse (Corpse)
+  timed (Timed quests)
+  corpse (Corpse run)
   breath (Breath)
 professions (Professions)
   craft (Crafting)
@@ -56,8 +57,8 @@ general page: gather=false
 pin page: pin=true
 window closed: pin=false shown=false
 auto off: xp=false
-xp popup: always,resting,hold,size position=true
-xp always: always,hideText,size position=true
-xp minimap: minimapGap,hideText position=false
+xp popup: hold,size position=true
+xp always: size position=true
+xp minimap:  position=false
 compartment opens: true
 ERRORS: {}

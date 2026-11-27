@@ -273,7 +273,7 @@ ns.RegisterRing({
     page = { folder = "progress", order = 3.5, build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(5, "Quest rings", "Quest Rings",
+            local tab = RingTab(5, "Pinned quests", "Pinned Quest Rings",
                 "Right-click a quest in your quest log and choose Create Quest Ring to give it its own ring, stacked "
                 .. "by the quest list. Each shows objectives done, with one notch per objective (segmented style), and "
                 .. "the next objective to do. It goes away once the quest leaves your log. Up to 5; also /circ ring <name>.",
