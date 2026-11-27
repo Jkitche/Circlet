@@ -68,6 +68,22 @@ lua.execute('Advance(8); Dump("settled")')
 lua.execute(
     'Slash("edit"); Advance(0.3); Dump("all on again"); local bar = _G.CircletEditModeFrame; bar._scripts.OnHide(bar); Advance(0.2); Dump("after Esc")'
 )
+lua.execute(r"""
+-- The edit bar can be dragged anywhere; it remembers where, and right-click puts it back.
+local bar = _G.CircletEditModeFrame
+Slash("edit quest"); Advance(0.3)
+local function Where() local p = bar._pt; return p and (p.x .. "," .. p.y) or "?" end
+P("edit bar at " .. Where())
+bar.GetCenter = function() return 400, 700 end
+bar._scripts.OnDragStart(bar); bar._scripts.OnDragStop(bar)
+P("dragged: saved " .. tostring(CircletDB.editBarPoint and (CircletDB.editBarPoint.x .. "," .. CircletDB.editBarPoint.y)) .. ", at " .. Where())
+Slash("edit"); Advance(0.3); Slash("edit quest"); Advance(0.3)
+P("opened again: at " .. Where())
+bar._scripts.OnMouseUp(bar, "RightButton")
+P("right-click: saved " .. tostring(CircletDB.editBarPoint) .. ", at " .. Where())
+bar.GetCenter = nil
+Slash("edit"); Advance(0.3)
+""")
 lua.execute('Slash("edit bogus")')
 print("\n".join(lua.eval("OUT").values()))
 print("ERRORS:", dict(lua.eval('ERRORS')))

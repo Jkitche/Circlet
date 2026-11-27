@@ -63,6 +63,43 @@ editBar.button:SetSize(100, 22)
 editBar.button:SetPoint("BOTTOM", editBar, "BOTTOM", 0, 9)
 editBar.button:SetText(DONE or "Done")
 
+-- Drag the bar anywhere (it remembers where: db.editBarPoint); right-click puts it back.
+editBar:SetMovable(true)
+editBar:SetClampedToScreen(true)
+editBar:EnableMouse(true)
+editBar:RegisterForDrag("LeftButton")
+local function PlaceEditBar()
+    local p = db.editBarPoint
+    editBar:ClearAllPoints()
+    if type(p) == "table" and tonumber(p.x) and tonumber(p.y) then
+        editBar:SetPoint("CENTER", UIParent, "BOTTOMLEFT", p.x, p.y)
+    else
+        editBar:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 180)
+    end
+end
+editBar:SetScript("OnDragStart", function(self) self:StartMoving() end)
+editBar:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    if self.SetUserPlaced then self:SetUserPlaced(false) end -- ours to remember, not the game's
+    local x, y = self:GetCenter()
+    if x and y then db.editBarPoint = { x = math.floor(x + 0.5), y = math.floor(y + 0.5) } end
+    PlaceEditBar()
+end)
+editBar:SetScript("OnMouseUp", function(_, button)
+    if button == "RightButton" then
+        db.editBarPoint = nil
+        PlaceEditBar()
+    end
+end)
+editBar:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText("Circlet edit mode")
+    GameTooltip:AddLine("Drag to move this bar. Right-click to put it back.", 1, 1, 1, true)
+    GameTooltip:Show()
+end)
+editBar:SetScript("OnLeave", function() GameTooltip:Hide() end)
+-- (placed from the saved spot each time it opens: settings aren't loaded yet here)
+
 local SetRingEditing -- forward declaration (the bar's buttons call it)
 
 local function EditingKeys()
@@ -162,6 +199,7 @@ local function UpdateEditBar()
         table.insert(names, Name(key))
     end
     editBar.text:SetText("Circlet: editing " .. table.concat(names, ", ") .. (#keys == 1 and " ring" or " rings"))
+    if not editBar:IsShown() then PlaceEditBar() end
     editBar:Show()
 end
 
