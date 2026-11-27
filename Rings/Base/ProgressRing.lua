@@ -2,7 +2,8 @@
 local ADDON_NAME, ns = ...
 
 local DrawArc, DrawGlyph, EDIT_STRATA = ns.DrawArc, ns.DrawGlyph, ns.EDIT_STRATA
-local ICON_CELEBRATE, IconPose, NewRingLayer, RingHolder = ns.ICON_CELEBRATE, ns.IconPose, ns.NewRingLayer, ns.RingHolder
+local ICON_CELEBRATE, IconPose, NewRingLayer, RingHolder =
+    ns.ICON_CELEBRATE, ns.IconPose, ns.NewRingLayer, ns.RingHolder
 local XP_SEGMENTS, db = ns.XP_SEGMENTS, ns.db
 
 ---------------------------------------------------------------------------
@@ -54,13 +55,15 @@ local function CreateProgressRing(cfg)
     local geom = frame.geom
     frame.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, frame)
 
-    frame.nameText  = frame:CreateFontString(nil, "OVERLAY")
-    frame.gainText  = frame:CreateFontString(nil, "OVERLAY")
+    frame.nameText = frame:CreateFontString(nil, "OVERLAY")
+    frame.gainText = frame:CreateFontString(nil, "OVERLAY")
     frame.deltaText = frame:CreateFontString(nil, "OVERLAY") -- gain as a % of the bar
-    frame.rankText  = frame:CreateFontString(nil, "OVERLAY")
+    frame.rankText = frame:CreateFontString(nil, "OVERLAY")
     frame.labelText = frame:CreateFontString(nil, "OVERLAY")
     local texts = { frame.nameText, frame.gainText, frame.deltaText, frame.rankText, frame.labelText }
-    for _, fs in ipairs(texts) do fs:SetShadowOffset(1, -1) end
+    for _, fs in ipairs(texts) do
+        fs:SetShadowOffset(1, -1)
+    end
 
     local queue = {}
     local inCombat = false
@@ -96,8 +99,11 @@ local function CreateProgressRing(cfg)
     badge.tex:SetPoint("CENTER")
     if badge.CreateMaskTexture then
         badge.mask = badge:CreateMaskTexture()
-        badge.mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask",
-            "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        badge.mask:SetTexture(
+            "Interface\\CharacterFrame\\TempPortraitAlphaMask",
+            "CLAMPTOBLACKADDITIVE",
+            "CLAMPTOBLACKADDITIVE"
+        )
         badge.mask:SetPoint("CENTER")
         badge.tex:AddMaskTexture(badge.mask)
     end
@@ -184,12 +190,17 @@ local function CreateProgressRing(cfg)
         if bg then
             -- No rim, outline or dark backing: just the icon.
             if badge.rim then
-                badge.rim:Hide(); badge.outline:Hide(); badge.backing:Hide()
+                badge.rim:Hide()
+                badge.outline:Hide()
+                badge.backing:Hide()
             else
-                for _, line in ipairs(badge.border) do line:Hide() end
+                for _, line in ipairs(badge.border) do
+                    line:Hide()
+                end
             end
         elseif badge.rim then
-            badge.rim:Show(); badge.backing:Show()
+            badge.rim:Show()
+            badge.backing:Show()
             local d = size + 2 * rimT
             badge.rim:SetSize(d, d)
             badge.rimMask:SetSize(d, d)
@@ -219,7 +230,11 @@ local function CreateProgressRing(cfg)
 
     local function DrawIcon(e)
         local icon = cfg.icon and cfg.icon(e)
-        if not icon then iconHolder:Hide() badge:Hide() return end
+        if not icon then
+            iconHolder:Hide()
+            badge:Hide()
+            return
+        end
         if icon.texture or icon.portrait then
             iconHolder:Hide()
             DrawBadge(e, icon)
@@ -265,7 +280,9 @@ local function CreateProgressRing(cfg)
             fs:SetWordWrap(false)
         end
 
-        for _, fs in ipairs(texts) do fs:ClearAllPoints() end
+        for _, fs in ipairs(texts) do
+            fs:ClearAllPoints()
+        end
         -- Stack: name / +gain / (+delta%) / rank / label. Without the delta line the
         -- rank sits right under the gain and everything moves back down.
         frame.gainText:SetPoint("CENTER", frame, "CENTER", 0, math.floor(inner * (showDelta and 0.10 or 0.04)))
@@ -317,8 +334,10 @@ local function CreateProgressRing(cfg)
         frame.nameText:SetText(e.name)
         frame.nameText:SetTextColor(0.9, 0.9, 0.9)
         local gain = (e.gainOffset or 0) + (value - e.from)
-        frame.gainText:SetText(e.gainText
-            or ((gain < 0 and "-" or "+") .. BreakUpLargeNumbers(math.abs(gain)) .. (e.percent and "%" or "")))
+        frame.gainText:SetText(
+            e.gainText
+                or ((gain < 0 and "-" or "+") .. BreakUpLargeNumbers(math.abs(gain)) .. (e.percent and "%" or ""))
+        )
         frame.gainText:SetTextColor(1, 1, 1)
         -- The same gain as a share of this bar (redundant for objectives already in %).
         if e.percent or e.gainText or not opt("ShowDelta") then
@@ -328,8 +347,9 @@ local function CreateProgressRing(cfg)
             frame.deltaText:SetText(string.format("%s%.1f%%", pct < 0 and "-" or "+", math.abs(pct)))
         end
         frame.deltaText:SetTextColor(s.rank.r, s.rank.g, s.rank.b)
-        frame.rankText:SetText(e.percent and (value .. "%")
-            or (BreakUpLargeNumbers(value) .. " / " .. BreakUpLargeNumbers(e.max)))
+        frame.rankText:SetText(
+            e.percent and (value .. "%") or (BreakUpLargeNumbers(value) .. " / " .. BreakUpLargeNumbers(e.max))
+        )
         frame.rankText:SetTextColor(s.rank.r, s.rank.g, s.rank.b)
         frame.labelText:SetText(s.label or "")
         frame.labelText:SetTextColor(s.labelColor.r, s.labelColor.g, s.labelColor.b)
@@ -343,7 +363,9 @@ local function CreateProgressRing(cfg)
 
     local function Play(entry)
         Layout()
-        local continuing = frame:IsShown() and anim.entry and anim.entry.id == entry.id
+        local continuing = frame:IsShown()
+            and anim.entry
+            and anim.entry.id == entry.id
             and anim.entry.segment == entry.segment
         local fromFrac = continuing and anim.shown or (entry.from / entry.max)
         if continuing then -- keep counting the whole "+N"
@@ -426,9 +448,13 @@ local function CreateProgressRing(cfg)
         if not force and not opt("Enabled") then return end
         if not entry.max or entry.max <= 0 then return end
 
-        if frame:IsShown() and anim.entry and anim.entry.id == entry.id
+        if
+            frame:IsShown()
+            and anim.entry
+            and anim.entry.id == entry.id
             and anim.entry.segment == entry.segment
-            and (force or not (inCombat and opt("AfterCombat"))) then
+            and (force or not (inCombat and opt("AfterCombat")))
+        then
             Play(entry) -- extend the ring that's already up
             return
         end
@@ -438,7 +464,9 @@ local function CreateProgressRing(cfg)
                 local soFar = (waiting.gainOffset or 0) + (waiting.to - waiting.from)
                 local sameSegment = waiting.segment == entry.segment
                 local from, offset = waiting.from, waiting.gainOffset
-                for k, v in pairs(entry) do waiting[k] = v end
+                for k, v in pairs(entry) do
+                    waiting[k] = v
+                end
                 if sameSegment then
                     waiting.from, waiting.gainOffset = from, offset -- keep the earliest starting point
                 else
@@ -493,12 +521,18 @@ local function CreateProgressRing(cfg)
         iconHolder:Hide()
         badge:Hide()
         anim.entry = nil
-        for _, e in ipairs(entries) do ring.Queue(e, true) end
+        for _, e in ipairs(entries) do
+            ring.Queue(e, true)
+        end
     end
 
     -- "Wait until combat ends": progress made in a fight is held back until it's over.
     ns.Listen({ "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }, function(event)
-        if event == "PLAYER_REGEN_DISABLED" then ring.CombatStart() else ring.CombatEnd() end
+        if event == "PLAYER_REGEN_DISABLED" then
+            ring.CombatStart()
+        else
+            ring.CombatEnd()
+        end
     end)
 
     return ring

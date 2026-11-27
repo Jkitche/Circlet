@@ -2,6 +2,7 @@
 # clouds, and the profession / weapon skill effects. Each ring's preview, with and without
 # its Animations option, counting the pieces drawn.
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -9,9 +10,12 @@ local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p,
 wipe = wipe or function(t) for k in pairs(t) do t[k] = nil end return t end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
-NSX = lua.table(); lua.globals().NS = NSX
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end'
+)
+NSX = lua.table()
+lua.globals().NS = NSX
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
@@ -72,4 +76,5 @@ Advance(1.2); P("weapon landed:  " .. Skill("weapon")); Advance(30)
 CircletDB.skillFx = false; CircletDB.weaponFx = false
 Slash("skill"); Slash("weapon"); Advance(0.3); P("skills fx off:  " .. Skill("skill") .. " | " .. Skill("weapon")); Advance(30)
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

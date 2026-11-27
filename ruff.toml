@@ -1,0 +1,6 @@
+# Python formatting: ruff format . (https://docs.astral.sh/ruff/)
+line-length = 120
+
+[format]
+# The tests cut each other's source apart at markers like lua.execute(''' so quotes stay as written.
+quote-style = "preserve"

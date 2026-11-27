@@ -82,7 +82,11 @@ local function QuestState(title, objectives)
         n = n + 1
         local frac = o.done and 1 or (o.need > 0 and math.min(1, o.have / o.need) or 0)
         sum = sum + frac
-        if o.done then done = done + 1 elseif not next then next = o end
+        if o.done then
+            done = done + 1
+        elseif not next then
+            next = o
+        end
     end
     local st = { title = title, notches = n >= 2 and n or nil }
     if n == 0 then
@@ -120,12 +124,20 @@ local function RingMenu(frame, i)
 end
 
 local SAMPLES = {
-    { title = "The Defias Brotherhood", objectives = {
-        { text = "Defias Thug slain: 9/12", have = 9, need = 12 },
-        { text = "Red Leather Bandana: 4/4", have = 4, need = 4, done = true },
-        { text = "Gold Pickup Schedule: 0/1", have = 0, need = 1 } } },
-    { title = "Feathers for Grek", objectives = {
-        { text = "Screecher Feather: 8/8", have = 8, need = 8, done = true } } },
+    {
+        title = "The Defias Brotherhood",
+        objectives = {
+            { text = "Defias Thug slain: 9/12", have = 9, need = 12 },
+            { text = "Red Leather Bandana: 4/4", have = 4, need = 4, done = true },
+            { text = "Gold Pickup Schedule: 0/1", have = 0, need = 1 },
+        },
+    },
+    {
+        title = "Feathers for Grek",
+        objectives = {
+            { text = "Screecher Feather: 8/8", have = 8, need = 8, done = true },
+        },
+    },
 }
 
 for i = 1, MAX_PINS do
@@ -167,11 +179,15 @@ for i = 1, MAX_PINS do
 end
 
 local function SetPinsEditing(on)
-    for _, ring in ipairs(pinRings) do ring.SetEditing(on) end
+    for _, ring in ipairs(pinRings) do
+        ring.SetEditing(on)
+    end
 end
 
 local function PreviewPins()
-    for _, ring in ipairs(pinRings) do ring.Preview(8) end
+    for _, ring in ipairs(pinRings) do
+        ring.Preview(8)
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -182,16 +198,22 @@ local function AddMenuEntry(owner, root, contextData)
         or (owner and (owner.questID or (owner.GetQuestID and owner:GetQuestID())))
     if not questID or IsSecret(questID) or not root or not root.CreateButton then return end
     if root.CreateDivider then root:CreateDivider() end
-    root:CreateButton(IsPinned(questID) and "Remove Quest Ring" or "Create Quest Ring", function()
-        TogglePin(questID)
-    end)
+    root:CreateButton(
+        IsPinned(questID) and "Remove Quest Ring" or "Create Quest Ring",
+        function() TogglePin(questID) end
+    )
 end
 
 -- The world map's quest log and the objective tracker both use the modern menu system;
 -- the exact menu names vary by client, so add to each that exists (others never fire).
 if Menu and Menu.ModifyMenu then
-    for _, tag in ipairs({ "MENU_QUEST_MAP_LOG_TITLE", "MENU_QUEST_LOG_TITLE", "MENU_QUEST_OBJECTIVE_TRACKER",
-                           "MENU_OBJECTIVE_TRACKER_QUEST", "MENU_QUEST_TRACKER" }) do
+    for _, tag in ipairs({
+        "MENU_QUEST_MAP_LOG_TITLE",
+        "MENU_QUEST_LOG_TITLE",
+        "MENU_QUEST_OBJECTIVE_TRACKER",
+        "MENU_OBJECTIVE_TRACKER_QUEST",
+        "MENU_QUEST_TRACKER",
+    }) do
         pcall(Menu.ModifyMenu, tag, AddMenuEntry)
     end
 end
@@ -220,7 +242,9 @@ local function SlashRing(arg)
     local log = QuestLog()
     snapshotAt = -1
     if arg == "" or not log then
-        Print("Right-click a quest in your quest log and choose Create Quest Ring, or /circ ring <part of the quest name>.")
+        Print(
+            "Right-click a quest in your quest log and choose Create Quest Ring, or /circ ring <part of the quest name>."
+        )
         return
     end
     for questID, q in pairs(log) do
@@ -232,7 +256,12 @@ local function SlashRing(arg)
     Print("No quest in your log matches '" .. arg .. "'.")
 end
 
-ns.RegisterCommand({ "ring" }, SlashRing, "pin a quest to its own ring (or right-click it in the quest log); /circ ring clear", "ring <name>")
+ns.RegisterCommand(
+    { "ring" },
+    SlashRing,
+    "pin a quest to its own ring (or right-click it in the quest log); /circ ring clear",
+    "ring <name>"
+)
 
 -- Shared with the files loaded after this one.
 ns.SetPinsEditing = SetPinsEditing
@@ -241,64 +270,94 @@ ns.PreviewPins = PreviewPins
 ns.SlashRing = SlashRing
 ns.ClearPins = function() wipe(PinList()) end
 ns.RefreshPinClicks = function()
-    for _, ring in ipairs(pinRings) do ring.RefreshClicks() end
+    for _, ring in ipairs(pinRings) do
+        ring.RefreshClicks()
+    end
 end
 
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "pin", name = "Quest rings", order = 15,
+    key = "pin",
+    name = "Quest rings",
+    order = 15,
     edit = { set = SetPinsEditing, get = ns.IsPinsEditing },
-    preview = PreviewPins, slash = { "pins", "pin", "rings" }, help = "preview the quest rings",
+    preview = PreviewPins,
+    slash = { "pins", "pin", "rings" },
+    help = "preview the quest rings",
     toggle = { "Quest rings", "Quests you've pinned from the quest log's right-click menu." },
     onReset = function() ns.RefreshPinClicks() end,
     onLoaded = function() ns.RefreshPinClicks() end,
     defaults = {
         -- Quest rings: quests you pin from the quest log's right-click menu, each tracked on
         -- its own ring, stacked down the right side by the quest list.
-        pinEnabled   = true,
-        pinSize      = 100,
+        pinEnabled = true,
+        pinSize = 100,
         pinThickness = 10,
-        pinOpacity   = 100,
-        pinX         = 600,   -- set from your screen width the first time (see Events)
-        pinFromTop   = 200,
-        pinHold      = 3,
-        pinStyle     = "segmented", -- with this, one notch per objective
-        pinBorder    = 2,
-        pinMenu      = true,  -- right-click a quest ring for its menu (remove it)
-        pinMovable   = true,  -- quest rings can be dragged in edit mode
-        pinned       = {},    -- per character: the pinned quest IDs, in order
+        pinOpacity = 100,
+        pinX = 600, -- set from your screen width the first time (see Events)
+        pinFromTop = 200,
+        pinHold = 3,
+        pinStyle = "segmented", -- with this, one notch per objective
+        pinBorder = 2,
+        pinMenu = true, -- right-click a quest ring for its menu (remove it)
+        pinMovable = true, -- quest rings can be dragged in edit mode
+        pinned = {}, -- per character: the pinned quest IDs, in order
     },
-    page = { folder = "progress", order = 3.5, build = function(O)
+    page = {
+        folder = "progress",
+        order = 3.5,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(5, "Pinned quests", "Pinned Quest Rings",
+            local tab = RingTab(
+                5,
+                "Pinned quests",
+                "Pinned Quest Rings",
                 "Right-click a quest in your quest log and choose Create Quest Ring to give it its own ring, stacked "
-                .. "by the quest list. Each shows objectives done, with one notch per objective (segmented style), and "
-                .. "the next objective to do. It goes away once the quest leaves your log. Up to 5; also /circ ring <name>.",
+                    .. "by the quest list. Each shows objectives done, with one notch per objective (segmented style), and "
+                    .. "the next objective to do. It goes away once the quest leaves your log. Up to 5; also /circ ring <name>.",
                 MergeTop(TopRow("pin", "quest rings", ns.PreviewPins, "Show two sample quest rings."), {
                     general = Box(2, "General", {
                         enabled = Toggle(1, "pinEnabled", "Show quest rings", "Show the rings for pinned quests."),
-                        menu = Toggle(1.2, "pinMenu", "Right-click menu",
+                        menu = Toggle(
+                            1.2,
+                            "pinMenu",
+                            "Right-click menu",
                             "Right-click a quest ring for a menu to remove it. Turn off so the rings ignore the mouse "
-                            .. "entirely (remove them from the quest log's menu or /circ ring instead).",
-                            function() ns.RefreshPinClicks() end),
-                        movable = Toggle(1.4, "pinMovable", "Movable",
+                                .. "entirely (remove them from the quest log's menu or /circ ring instead).",
+                            function() ns.RefreshPinClicks() end
+                        ),
+                        movable = Toggle(
+                            1.4,
+                            "pinMovable",
+                            "Movable",
                             "Let the quest rings be dragged (and reset with right-click) in edit mode. Turn off to lock "
-                            .. "them in place; the position sliders below still work."),
+                                .. "them in place; the position sliders below still work."
+                        ),
                         clear = {
-                            type = "execute", order = 2, width = 1.1, name = "Remove all quest rings",
-                            confirm = true, confirmText = "Remove every quest ring on this character?",
+                            type = "execute",
+                            order = 2,
+                            width = 1.1,
+                            name = "Remove all quest rings",
+                            confirm = true,
+                            confirmText = "Remove every quest ring on this character?",
                             func = function() ns.ClearPins() end,
                         },
                     }),
-                    size = SizeBox(3, "pin", "quest rings",
+                    size = SizeBox(
+                        3,
+                        "pin",
+                        "quest rings",
                         "Offset from the center of the screen. The rings stack downward from here; by default they "
-                        .. "start just left of the quest list."),
-                }))
+                            .. "start just left of the quest list."
+                    ),
+                })
+            )
             tab.args.size.args.hold = nil
             tab.args.position.args.fromTop.desc = "Gap between the top of the screen and the top of the first ring."
             return tab
-        end },
+        end,
+    },
 })

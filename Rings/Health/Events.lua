@@ -50,12 +50,14 @@ end)
 
 local function FreshStart(key)
     floats[key] = nil -- the last target's numbers go with it
-    ResetTrack(key .. ":hp"); ResetTrack(key .. ":pw")
+    ResetTrack(key .. ":hp")
+    ResetTrack(key .. ":pw")
     easeNow[key .. ":hp"], easeNow[key .. ":pw"] = true, true
     portraitDirty[key] = true
 end
 ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
-    FreshStart("targetHp"); FreshStart("totHp")
+    FreshStart("targetHp")
+    FreshStart("totHp")
 end)
 ns.Listen({ "UNIT_TARGET" }, function(_, unit)
     if unit == "target" then FreshStart("totHp") end
@@ -67,11 +69,19 @@ end)
 
 ns.Listen({ "PLAYER_TARGET_CHANGED", "UNIT_PORTRAIT_UPDATE", "PLAYER_ENTERING_WORLD" }, function(event, unit)
     if event == "UNIT_PORTRAIT_UPDATE" then
-        if unit == "player" then portraitDirty.playerHp = true elseif unit == "target" then portraitDirty.targetHp = true
-        elseif unit == "pet" then portraitDirty.petHp = true end
+        if unit == "player" then
+            portraitDirty.playerHp = true
+        elseif unit == "target" then
+            portraitDirty.targetHp = true
+        elseif unit == "pet" then
+            portraitDirty.petHp = true
+        end
     else
         portraitDirty.targetHp = true
-        if event == "PLAYER_ENTERING_WORLD" then portraitDirty.playerHp = true; portraitDirty.petHp = true end
+        if event == "PLAYER_ENTERING_WORLD" then
+            portraitDirty.playerHp = true
+            portraitDirty.petHp = true
+        end
     end
 end)
 
@@ -84,7 +94,10 @@ ns.PreviewPetHpRing = function() petRing.Preview(12) end
 -- with what it should show if the eased bands' assumptions hold. Click to close.
 local maskTest
 ns.RegisterCommand({ "masktest" }, function()
-    if maskTest then maskTest:SetShown(not maskTest:IsShown()) return end
+    if maskTest then
+        maskTest:SetShown(not maskTest:IsShown())
+        return
+    end
     local W = 110
     local f = CreateFrame("Button", "CircletMaskTest", UIParent)
     f:SetSize(W * 4 + 40, W * 2 + 90)
@@ -144,28 +157,58 @@ local function Describe(v)
     return tostring(v)
 end
 ns.RegisterCommand({ "hpdebug" }, function()
-    local out = { at = date and date("%Y-%m-%d %H:%M:%S") or "?", combat = InCombat() and true or false,
-                  hasHealthPercent = type(UnitHealthPercent) == "function", hasCurves = CurvesWork() and true or false,
-                  hasScaleTo100 = (CurveConstants and CurveConstants.ScaleTo100) and true or false,
-                  issecretvalue = issecretvalue ~= nil, percentScale = H.percentScale }
+    local out = {
+        at = date and date("%Y-%m-%d %H:%M:%S") or "?",
+        combat = InCombat() and true or false,
+        hasHealthPercent = type(UnitHealthPercent) == "function",
+        hasCurves = CurvesWork() and true or false,
+        hasScaleTo100 = (CurveConstants and CurveConstants.ScaleTo100) and true or false,
+        issecretvalue = issecretvalue ~= nil,
+        percentScale = H.percentScale,
+    }
     for unit, key in pairs({ player = "playerHp", target = "targetHp", targettarget = "totHp", pet = "petHp" }) do
         if Clean(SafeCall(UnitExists, unit)) then
             local tr = tracks[key .. ":hp"] or {}
             local u = {
-                health = Describe(SafeCall(UnitHealth, unit)), max = Describe(SafeCall(UnitHealthMax, unit)),
-                power = Describe(SafeCall(UnitPower, unit)), powerMax = Describe(SafeCall(UnitPowerMax, unit)),
-                healthPercent = type(UnitHealthPercent) == "function" and Describe(SafeCall(UnitHealthPercent, unit)) or "-",
-                smooth = tostring(db[key .. "Smooth"]), shown = tostring(tr.shown), target = tostring(tr.target),
-                hiddenPath = tostring(tr.hidden), easing = tostring(tr.animAt ~= nil),
+                health = Describe(SafeCall(UnitHealth, unit)),
+                max = Describe(SafeCall(UnitHealthMax, unit)),
+                power = Describe(SafeCall(UnitPower, unit)),
+                powerMax = Describe(SafeCall(UnitPowerMax, unit)),
+                healthPercent = type(UnitHealthPercent) == "function" and Describe(SafeCall(UnitHealthPercent, unit))
+                    or "-",
+                smooth = tostring(db[key .. "Smooth"]),
+                shown = tostring(tr.shown),
+                target = tostring(tr.target),
+                hiddenPath = tostring(tr.hidden),
+                easing = tostring(tr.animAt ~= nil),
             }
             out[unit] = u
-            ns.Print(string.format("%s: health %s / %s, power %s / %s, percent %s | smooth=%s shown=%s hidden path=%s",
-                unit, u.health, u.max, u.power, u.powerMax, u.healthPercent, u.smooth, u.shown, u.hiddenPath))
+            ns.Print(
+                string.format(
+                    "%s: health %s / %s, power %s / %s, percent %s | smooth=%s shown=%s hidden path=%s",
+                    unit,
+                    u.health,
+                    u.max,
+                    u.power,
+                    u.powerMax,
+                    u.healthPercent,
+                    u.smooth,
+                    u.shown,
+                    u.hiddenPath
+                )
+            )
         end
     end
-    ns.Print(string.format("in combat %s, UnitHealthPercent %s, curves %s, ScaleTo100 %s, issecretvalue %s",
-        tostring(out.combat), tostring(out.hasHealthPercent), tostring(out.hasCurves), tostring(out.hasScaleTo100),
-        tostring(out.issecretvalue)))
+    ns.Print(
+        string.format(
+            "in combat %s, UnitHealthPercent %s, curves %s, ScaleTo100 %s, issecretvalue %s",
+            tostring(out.combat),
+            tostring(out.hasHealthPercent),
+            tostring(out.hasCurves),
+            tostring(out.hasScaleTo100),
+            tostring(out.issecretvalue)
+        )
+    )
     -- Can a status bar ease to a hidden value on its own (the game doing the in-betweens)?
     local interp = Enum and Enum.StatusBarInterpolation
     local bar = CreateFrame("StatusBar", nil, UIParent)
@@ -179,15 +222,33 @@ ns.RegisterCommand({ "hpdebug" }, function()
         local mode = interp.ExponentialEaseOut or interp.Linear
         okEase, easeErr = pcall(bar.SetValue, bar, hp, mode)
     end
-    out.statusBar = { interpolation = interp and table.concat((function()
-                          local t = {} for k, v in pairs(interp) do t[#t + 1] = k .. "=" .. tostring(v) end return t end)(), ",") or "none",
-                      setRange = okRange, setHiddenValue = okPlain, easeHiddenValue = okEase,
-                      easeError = not okEase and tostring(easeErr) or nil,
-                      hasGetInterpolated = type(bar.GetInterpolatedValue) == "function",
-                      hasMask = type(bar.GetStatusBarTexture) == "function" and bar:GetStatusBarTexture() ~= nil }
-    ns.Print(string.format("status bar: hidden value %s, eased hidden value %s (modes: %s)%s",
-        tostring(okPlain), tostring(okEase), out.statusBar.interpolation,
-        okEase and "" or (" - " .. tostring(easeErr))))
+    out.statusBar = {
+        interpolation = interp and table.concat(
+            (function()
+                local t = {}
+                for k, v in pairs(interp) do
+                    t[#t + 1] = k .. "=" .. tostring(v)
+                end
+                return t
+            end)(),
+            ","
+        ) or "none",
+        setRange = okRange,
+        setHiddenValue = okPlain,
+        easeHiddenValue = okEase,
+        easeError = not okEase and tostring(easeErr) or nil,
+        hasGetInterpolated = type(bar.GetInterpolatedValue) == "function",
+        hasMask = type(bar.GetStatusBarTexture) == "function" and bar:GetStatusBarTexture() ~= nil,
+    }
+    ns.Print(
+        string.format(
+            "status bar: hidden value %s, eased hidden value %s (modes: %s)%s",
+            tostring(okPlain),
+            tostring(okEase),
+            out.statusBar.interpolation,
+            okEase and "" or (" - " .. tostring(easeErr))
+        )
+    )
     db.vitalsDebug = out
 end, "what the health rings can see (for bug reports)")
 ns.PreviewTargetHpRing = function() targetRing.Preview(12) end
@@ -217,15 +278,26 @@ ns.RegisterCommand({ "curvetest" }, function()
     local function Step(points)
         local cv = C_CurveUtil.CreateCurve()
         if Enum and Enum.LuaCurveType and Enum.LuaCurveType.Step then pcall(cv.SetType, cv, Enum.LuaCurveType.Step) end
-        for _, p in ipairs(points) do cv:AddPoint(p[1], p[2]) end
+        for _, p in ipairs(points) do
+            cv:AddPoint(p[1], p[2])
+        end
         return cv
     end
     local tests = {
         { "raw (no curve)", function() return UnitHealthPercent("player") end },
         { "game 0-100 curve", function() return UnitHealthPercent("player", false, CurveConstants.ScaleTo100) end },
-        { "up: 0 then 1 from 0.3", function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 0.3, 1 } })) end },
-        { "down: 1 then 0 from 0.3", function() return UnitHealthPercent("player", false, Step({ { 0, 1 }, { 0.3, 0 } })) end },
-        { "up, 0-100: from 30", function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 30, 1 } })) end },
+        {
+            "up: 0 then 1 from 0.3",
+            function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 0.3, 1 } })) end,
+        },
+        {
+            "down: 1 then 0 from 0.3",
+            function() return UnitHealthPercent("player", false, Step({ { 0, 1 }, { 0.3, 0 } })) end,
+        },
+        {
+            "up, 0-100: from 30",
+            function() return UnitHealthPercent("player", false, Step({ { 0, 0 }, { 30, 1 } })) end,
+        },
         { "curve as 2nd arg, down", function() return UnitHealthPercent("player", Step({ { 0, 1 }, { 0.3, 0 } })) end },
     }
     f.lines[1]:SetText("Circlet curve test (full health: you'd expect up = 1, down = 0)")

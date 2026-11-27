@@ -7,6 +7,7 @@ golden output in golden/. Any difference (or a Lua error) fails.
     python3 tests/run_tests.py --update   accept the current output as the new golden
 
 Needs Python 3 with lupa (pip install lupa)."""
+
 import difflib, glob, os, subprocess, sys
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -25,8 +26,15 @@ if args:
 
 failed = []
 for name in tests:
-    r = subprocess.run([sys.executable, name + '_test.py'], cwd=here, capture_output=True, text=True, timeout=300,
-                       env=env, encoding='utf-8')
+    r = subprocess.run(
+        [sys.executable, name + '_test.py'],
+        cwd=here,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env=env,
+        encoding='utf-8',
+    )
     out = r.stdout + (('\n[stderr]\n' + r.stderr) if r.returncode else '')
     golden = os.path.join(here, 'golden', name + '.txt')
     if update:

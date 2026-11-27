@@ -1,12 +1,15 @@
 from lupa import LuaRuntime
 
+
 def boot(before=''):
     """A fresh game with Circlet loaded; `before` runs first (saved variables, say)."""
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(open('mock.lua').read())
-    lua.execute('local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end')
+    lua.execute(
+        'local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end'
+    )
     s = open('liveedit_test.py').read()
-    exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")], {'lua': lua})
+    exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")], {'lua': lua})
     lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
@@ -33,10 +36,12 @@ function S(l) local n = 0 for _, x in ipairs(F.fill) do if x._shown ~= false and
 ''')
     return lua
 
+
 def report(lua, title):
     print("######## " + title)
     print("\n".join(lua.eval("OUT").values()))
     print("ERRORS:", dict(lua.eval("ERRORS")))
+
 
 # 1. Reading times.
 lua = boot()

@@ -1,6 +1,7 @@
 import math
 from lupa import LuaRuntime
 from PIL import Image, ImageDraw
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -10,8 +11,10 @@ TOTEMS = {}
 GetTotemInfo = function(slot) local t = TOTEMS[slot]; if t then return true, t.name, t.start, t.dur, t.icon, nil, t.spell end return false, "", 0, 0, nil end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
@@ -77,4 +80,5 @@ Cast(8190); TOTEMS[1] = { name = "Magma Totem", start = NOW, dur = 20, icon = 13
 Advance(19.8); Cast(403); TOTEMS[1] = nil; Fire("PLAYER_TOTEM_UPDATE", 1); Advance(1); D("expired as you cast, in combat:")
 IN_COMBAT = false; HIDE = nil; issecretvalue = nil
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

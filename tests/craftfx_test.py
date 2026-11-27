@@ -1,5 +1,6 @@
 # Crafting animations: the profession comes from the open trade skill window, and each one draws.
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute(r'''
@@ -17,9 +18,12 @@ CAST = nil
 function UnitCastingInfo() if CAST then return CAST.name, "", 0, CAST.s * 1000, CAST.e * 1000, false, "g", false, CAST.id end end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
-NSX = lua.table(); lua.globals().NS = NSX
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end'
+)
+NSX = lua.table()
+lua.globals().NS = NSX
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
 lua.execute(r'''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
@@ -54,4 +58,5 @@ CircletDB.craftFx = false; PROF = "Alchemy"; C_TradeSkillUI.CraftRecipe(1, 2); C
 -- The preview runs every profession in turn without errors.
 Slash("craft"); Advance(1); P("preview: " .. Fx()); Advance(9 * 12)
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

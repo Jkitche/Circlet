@@ -19,7 +19,10 @@ local db = ns.db
 -- show/hide logic carry on untouched; turning the option off brings them straight back.
 -- Frame names cover both the modern and the classic interface; whichever exist are used.
 
-local function G(name) local f = _G[name]; return type(f) == "table" and f.SetAlpha and f or nil end
+local function G(name)
+    local f = _G[name]
+    return type(f) == "table" and f.SetAlpha and f or nil
+end
 
 local hidden = {} -- frame -> true while we're hiding it
 
@@ -89,8 +92,16 @@ local function UpdateCastBar()
     if busy then
         castHiding = true
         Suppress(bar, true)
-    elseif castHiding and (not bar:IsShown() or not (db.craftHideDefault or db.gatherHideDefault)
-            or not db.castHideDefault and not (ns.CraftActive and ns.CraftActive()) and not (ns.GatherActive and ns.GatherActive())) then
+    elseif
+        castHiding
+        and (
+            not bar:IsShown()
+            or not (db.craftHideDefault or db.gatherHideDefault)
+            or not db.castHideDefault
+                and not (ns.CraftActive and ns.CraftActive())
+                and not (ns.GatherActive and ns.GatherActive())
+        )
+    then
         castHiding = false
         Suppress(bar, false)
     end
@@ -99,7 +110,9 @@ end
 local function UpdateOthers()
     local breath = db.breathHideDefault and true or false
     Suppress(G("MirrorTimerContainer"), breath)
-    for i = 1, 3 do Suppress(G("MirrorTimer" .. i), breath) end
+    for i = 1, 3 do
+        Suppress(G("MirrorTimer" .. i), breath)
+    end
     Suppress(G("QuestTimerFrame"), db.timedHideDefault and true or false)
     Suppress(G("TotemFrame"), db.totemHideDefault and true or false)
     Suppress(G("TargetFrameSpellBar"), db.targetCastHideDefault and true or false)
@@ -139,7 +152,8 @@ local function ScanSwingBars()
             local low = name:lower()
             if low:find("swing") then
                 local kind = (low:find("ranged") or low:find("range") or low:find("shot") or low:find("auto"))
-                    and "shot" or "swing"
+                        and "shot"
+                    or "swing"
                 if f.SetAlpha then table.insert(swingBars[kind], f) end
             end
         end
@@ -154,8 +168,12 @@ local function UpdateSwingBars()
         lastScan, scans = now, scans + 1
         ScanSwingBars()
     end
-    for _, f in ipairs(swingBars.swing) do Suppress(f, hideSwing) end
-    for _, f in ipairs(swingBars.shot) do Suppress(f, hideShot) end
+    for _, f in ipairs(swingBars.swing) do
+        Suppress(f, hideSwing)
+    end
+    for _, f in ipairs(swingBars.shot) do
+        Suppress(f, hideShot)
+    end
     -- No frames found: the game's own switch, put back when both options are off.
     if InCombatLockdown and InCombatLockdown() then return end
     local found = #swingBars.swing + #swingBars.shot > 0
@@ -176,12 +194,26 @@ ns.RegisterCommand({ "swingbars" }, function()
     ScanSwingBars()
     local function Names(list)
         local t = {}
-        for _, f in ipairs(list) do t[#t + 1] = select(2, pcall(f.GetName, f)) or "?" end
+        for _, f in ipairs(list) do
+            t[#t + 1] = select(2, pcall(f.GetName, f)) or "?"
+        end
         return #t > 0 and table.concat(t, ", ") or "none"
     end
-    ns.Print("Game swing timer bars: melee " .. Names(swingBars.swing) .. "; ranged " .. Names(swingBars.shot)
-        .. "; " .. CVAR .. " = " .. tostring(GetCVarValue(CVAR))
-        .. (CircletDB.swingTimerCVarWas and (" (Circlet turned it off; was " .. CircletDB.swingTimerCVarWas .. ")") or ""))
+    ns.Print(
+        "Game swing timer bars: melee "
+            .. Names(swingBars.swing)
+            .. "; ranged "
+            .. Names(swingBars.shot)
+            .. "; "
+            .. CVAR
+            .. " = "
+            .. tostring(GetCVarValue(CVAR))
+            .. (
+                CircletDB.swingTimerCVarWas
+                    and (" (Circlet turned it off; was " .. CircletDB.swingTimerCVarWas .. ")")
+                or ""
+            )
+    )
 end)
 
 local ticker = CreateFrame("Frame")

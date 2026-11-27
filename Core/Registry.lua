@@ -43,9 +43,7 @@ local function RegisterRing(def)
         DEFAULTS[k] = v
         if type(v) == "table" and k:match("Colors$") then table.insert(COLOR_GROUPS, k) end
     end
-    if def.ring and not def.edit then
-        def.edit = { set = def.ring.SetEditing, get = def.ring.IsEditing }
-    end
+    if def.ring and not def.edit then def.edit = { set = def.ring.SetEditing, get = def.ring.IsEditing } end
     def.order = def.order or (#RINGS + 1)
     BY_KEY[def.key] = def
     table.insert(RINGS, def)

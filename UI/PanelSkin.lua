@@ -22,8 +22,10 @@ local GOLD = { r = 0.95, g = 0.78, b = 0.30 }
 ns.SKIN_GOLD = GOLD
 -- The logo's arcs: gold, sky blue, green, violet (the welcome animation's colors).
 local LOGO = {
-    { r = 1.00, g = 0.82, b = 0.25 }, { r = 0.45, g = 0.75, b = 1.00 },
-    { r = 0.40, g = 0.90, b = 0.45 }, { r = 0.75, g = 0.50, b = 1.00 },
+    { r = 1.00, g = 0.82, b = 0.25 },
+    { r = 0.45, g = 0.75, b = 1.00 },
+    { r = 0.40, g = 0.90, b = 0.45 },
+    { r = 0.75, g = 0.50, b = 1.00 },
 }
 
 -- A gradient on a texture, whichever API this client has (no-op if neither).
@@ -47,10 +49,12 @@ local function Rule(parent, width, r, g, b, a, layer)
     local f = CreateFrame("Frame", nil, parent)
     f:SetSize(width, 1)
     f.left = f:CreateTexture(nil, layer or "ARTWORK")
-    f.left:SetPoint("TOPLEFT"); f.left:SetPoint("BOTTOMRIGHT", f, "BOTTOM", 0, 0)
+    f.left:SetPoint("TOPLEFT")
+    f.left:SetPoint("BOTTOMRIGHT", f, "BOTTOM", 0, 0)
     Gradient(f.left, "HORIZONTAL", r, g, b, 0, r, g, b, a)
     f.right = f:CreateTexture(nil, layer or "ARTWORK")
-    f.right:SetPoint("TOPLEFT", f, "TOP", 0, 0); f.right:SetPoint("BOTTOMRIGHT")
+    f.right:SetPoint("TOPLEFT", f, "TOP", 0, 0)
+    f.right:SetPoint("BOTTOMRIGHT")
     Gradient(f.right, "HORIZONTAL", r, g, b, a, r, g, b, 0)
     return f
 end
@@ -63,7 +67,9 @@ local function Logo(parent, size)
     local geom = { R = size / 2 - 3, T = 4, step = 2 * math.pi / XP_SEGMENTS, start = 0 }
     f.track = NewRingLayer("BACKGROUND", 1, TRACK, 0.9, f)
     f.arcs = {}
-    for i, c in ipairs(LOGO) do f.arcs[i] = NewRingLayer("ARTWORK", 0, c, 1, f) end
+    for i, c in ipairs(LOGO) do
+        f.arcs[i] = NewRingLayer("ARTWORK", 0, c, 1, f)
+    end
     local function Draw(turn)
         geom.start = turn
         DrawArc(f.track, 0, 1, f, geom, true)
@@ -86,16 +92,20 @@ ns.SkinLogo = Logo
 local function Edges(frame, layer, sub, w, out, r, g, b, a)
     local e = {}
     e.top = Solid(frame, layer, sub, r, g, b, a)
-    e.top:SetPoint("TOPLEFT", frame, "TOPLEFT", -out, out); e.top:SetPoint("TOPRIGHT", frame, "TOPRIGHT", out, out)
+    e.top:SetPoint("TOPLEFT", frame, "TOPLEFT", -out, out)
+    e.top:SetPoint("TOPRIGHT", frame, "TOPRIGHT", out, out)
     e.top:SetHeight(w)
     e.bottom = Solid(frame, layer, sub, r, g, b, a)
-    e.bottom:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -out, -out); e.bottom:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", out, -out)
+    e.bottom:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -out, -out)
+    e.bottom:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", out, -out)
     e.bottom:SetHeight(w)
     e.left = Solid(frame, layer, sub, r, g, b, a)
-    e.left:SetPoint("TOPLEFT", frame, "TOPLEFT", -out, out); e.left:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -out, -out)
+    e.left:SetPoint("TOPLEFT", frame, "TOPLEFT", -out, out)
+    e.left:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -out, -out)
     e.left:SetWidth(w)
     e.right = Solid(frame, layer, sub, r, g, b, a)
-    e.right:SetPoint("TOPRIGHT", frame, "TOPRIGHT", out, out); e.right:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", out, -out)
+    e.right:SetPoint("TOPRIGHT", frame, "TOPRIGHT", out, out)
+    e.right:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", out, -out)
     e.right:SetWidth(w)
     return e
 end
@@ -109,7 +119,9 @@ local function SkinPanel(frame, opts)
     if frame.SetBackdrop then frame:SetBackdrop(nil) end
 
     -- Drop shadow: a few soft dark bands just outside the edges.
-    for i, a in ipairs({ 0.35, 0.22, 0.12, 0.05 }) do Edges(frame, "BACKGROUND", -8, 2, i * 2, 0, 0, 0, a) end
+    for i, a in ipairs({ 0.35, 0.22, 0.12, 0.05 }) do
+        Edges(frame, "BACKGROUND", -8, 2, i * 2, 0, 0, 0, a)
+    end
     -- Background: deep blue-black, lighter toward the top.
     skin.bg = frame:CreateTexture(nil, "BACKGROUND", nil, -7)
     skin.bg:SetAllPoints()
@@ -141,7 +153,9 @@ local function SkinPanel(frame, opts)
         local ok, ag = pcall(frame.CreateAnimationGroup, frame)
         if ok and ag and ag.CreateAnimation then
             local fade = ag:CreateAnimation("Alpha")
-            pcall(fade.SetFromAlpha, fade, 0); pcall(fade.SetToAlpha, fade, 1); pcall(fade.SetDuration, fade, 0.18)
+            pcall(fade.SetFromAlpha, fade, 0)
+            pcall(fade.SetToAlpha, fade, 1)
+            pcall(fade.SetDuration, fade, 0.18)
             local grow = ag:CreateAnimation("Scale")
             if not pcall(grow.SetScaleFrom, grow, 0.96, 0.96) then pcall(grow.SetFromScale, grow, 0.96, 0.96) end
             if not pcall(grow.SetScaleTo, grow, 1, 1) then pcall(grow.SetToScale, grow, 1, 1) end

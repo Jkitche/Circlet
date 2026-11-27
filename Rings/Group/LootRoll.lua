@@ -34,7 +34,10 @@ local function DiceTexture()
     if GetFileIDFromPath then
         for _, path in ipairs(DICE_CANDIDATES) do
             local ok, id = pcall(GetFileIDFromPath, path)
-            if ok and id then dice = path break end
+            if ok and id then
+                dice = path
+                break
+            end
         end
     end
     return dice
@@ -42,9 +45,12 @@ end
 
 -- Item quality colors (the game's table if it has one).
 local QUALITY = {
-    [0] = { r = 0.62, g = 0.62, b = 0.62 }, [1] = { r = 1, g = 1, b = 1 },
-    [2] = { r = 0.12, g = 1, b = 0 }, [3] = { r = 0, g = 0.44, b = 0.87 },
-    [4] = { r = 0.64, g = 0.21, b = 0.93 }, [5] = { r = 1, g = 0.5, b = 0 },
+    [0] = { r = 0.62, g = 0.62, b = 0.62 },
+    [1] = { r = 1, g = 1, b = 1 },
+    [2] = { r = 0.12, g = 1, b = 0 },
+    [3] = { r = 0, g = 0.44, b = 0.87 },
+    [4] = { r = 0.64, g = 0.21, b = 0.93 },
+    [5] = { r = 1, g = 0.5, b = 0 },
 }
 local function QualityColor(q)
     local c = type(ITEM_QUALITY_COLORS) == "table" and ITEM_QUALITY_COLORS[q]
@@ -53,7 +59,12 @@ local function QualityColor(q)
 end
 
 local function Hex(c)
-    return string.format("%02x%02x%02x", math.floor(c.r * 255 + 0.5), math.floor(c.g * 255 + 0.5), math.floor(c.b * 255 + 0.5))
+    return string.format(
+        "%02x%02x%02x",
+        math.floor(c.r * 255 + 0.5),
+        math.floor(c.g * 255 + 0.5),
+        math.floor(c.b * 255 + 0.5)
+    )
 end
 
 local rolls = {} -- rollID -> { started, total, name, count, quality, rolled }
@@ -112,20 +123,31 @@ local function BuildFx(frame)
         die.shadow = Tex(frame, DOT, "ARTWORK", 2)
         die.edge = Tex(frame, WHITE, "ARTWORK", 3)
         die.body = Tex(frame, WHITE, "ARTWORK", 4)
-        for p = 1, 6 do die.pips[p] = Tex(frame, DOT, "ARTWORK", 5) end
+        for p = 1, 6 do
+            die.pips[p] = Tex(frame, DOT, "ARTWORK", 5)
+        end
         die.glint = Tex(frame, STAR, "ARTWORK", 6, "ADD")
         fx.dice[d] = die
     end
-    for i = 1, SPARKLES do fx.sparkles[i] = Tex(frame, STAR, "OVERLAY", 6, "ADD") end
+    for i = 1, SPARKLES do
+        fx.sparkles[i] = Tex(frame, STAR, "OVERLAY", 6, "ADD")
+    end
 end
 local function HideFx()
     if not fx then return end
     fx.glow:Hide()
     for _, die in ipairs(fx.dice) do
-        die.shadow:Hide(); die.edge:Hide(); die.body:Hide(); die.glint:Hide()
-        for _, p in ipairs(die.pips) do p:Hide() end
+        die.shadow:Hide()
+        die.edge:Hide()
+        die.body:Hide()
+        die.glint:Hide()
+        for _, p in ipairs(die.pips) do
+            p:Hide()
+        end
     end
-    for _, s in ipairs(fx.sparkles) do s:Hide() end
+    for _, s in ipairs(fx.sparkles) do
+        s:Hide()
+    end
 end
 
 local function Put(t, frame, x, y, w, h, rot, r, g, b, a)
@@ -141,8 +163,19 @@ end
 -- One die at (x, y), `size` across, turned by rot, showing `face`.
 local function DrawDie(frame, die, x, y, floorY, size, rot, face, a)
     local lift = math.max(0, y - floorY)
-    Put(die.shadow, frame, x, floorY - size * 0.45, size * (1.1 - math.min(0.5, lift / (size * 4))), size * 0.35, 0,
-        0, 0, 0, 0.45 * a * (1 - math.min(0.7, lift / (size * 3))))
+    Put(
+        die.shadow,
+        frame,
+        x,
+        floorY - size * 0.45,
+        size * (1.1 - math.min(0.5, lift / (size * 4))),
+        size * 0.35,
+        0,
+        0,
+        0,
+        0,
+        0.45 * a * (1 - math.min(0.7, lift / (size * 3)))
+    )
     Put(die.edge, frame, x, y, size * 1.12, size * 1.12, rot, 0.15, 0.12, 0.10, a)
     Put(die.body, frame, x, y, size, size, rot, 0.96, 0.93, 0.85, a)
     local spots = PIPS[face] or PIPS[1]
@@ -152,8 +185,19 @@ local function DrawDie(frame, die, x, y, floorY, size, rot, face, a)
         if spot then
             local px, py = spot[1] * size * 0.27, spot[2] * size * 0.27
             local red = face == 1 -- a one's single pip is red, like real dice
-            Put(p, frame, x + px * cs - py * sn, y + px * sn + py * cs, size * (red and 0.3 or 0.2), size * (red and 0.3 or 0.2), 0,
-                red and 0.8 or 0.12, red and 0.1 or 0.1, red and 0.1 or 0.1, a)
+            Put(
+                p,
+                frame,
+                x + px * cs - py * sn,
+                y + px * sn + py * cs,
+                size * (red and 0.3 or 0.2),
+                size * (red and 0.3 or 0.2),
+                0,
+                red and 0.8 or 0.12,
+                red and 0.1 or 0.1,
+                red and 0.1 or 0.1,
+                a
+            )
         else
             p:Hide()
         end
@@ -207,8 +251,19 @@ local function DrawLootFx(st, frame, geom)
         -- A glint as they settle.
         local g = age and (age - TUMBLE * 0.85) / 0.5
         if g and g > 0 and g < 1 then
-            Put(die.glint, frame, x + size * 0.3, y + size * 0.3, size * 1.4 * (1 - g * 0.5), size * 1.4 * (1 - g * 0.5), g * 3,
-                1, 1, 0.9, 1 - g)
+            Put(
+                die.glint,
+                frame,
+                x + size * 0.3,
+                y + size * 0.3,
+                size * 1.4 * (1 - g * 0.5),
+                size * 1.4 * (1 - g * 0.5),
+                g * 3,
+                1,
+                1,
+                0.9,
+                1 - g
+            )
         else
             die.glint:Hide()
         end
@@ -222,8 +277,19 @@ local function DrawLootFx(st, frame, geom)
             local life = (now / 1.3 + Hash(i)) % 1
             local x, y = ns.RingPoint(geom, Hash(cyc * 11 + i))
             local tw = math.sin(math.pi * life)
-            Put(s, frame, x, y, T * 2.2 * tw, T * 2.2 * tw, life * 2, q.r + (1 - q.r) * 0.4, q.g + (1 - q.g) * 0.4,
-                q.b + (1 - q.b) * 0.4, tw)
+            Put(
+                s,
+                frame,
+                x,
+                y,
+                T * 2.2 * tw,
+                T * 2.2 * tw,
+                life * 2,
+                q.r + (1 - q.r) * 0.4,
+                q.g + (1 - q.g) * 0.4,
+                q.b + (1 - q.b) * 0.4,
+                tw
+            )
         else
             s:Hide()
         end
@@ -239,7 +305,11 @@ local function State(r, left, more)
     if r.count and r.count > 1 then name = name .. " x" .. r.count end
     if q then name = "|cff" .. Hex(q) .. name .. "|r" end
     local label
-    if r.rolled then label = "Rolled " .. r.rolled else label = "Need or Greed?" end
+    if r.rolled then
+        label = "Rolled " .. r.rolled
+    else
+        label = "Need or Greed?"
+    end
     if more > 0 then label = label .. "  +" .. more end
     return {
         title = name,
@@ -252,7 +322,10 @@ local function State(r, left, more)
         iconColor = color,
         hold = db.lootHold or 0.5,
         -- The dice animation (above).
-        lootFx = db.lootFx or nil, lootWarn = warn and not r.rolled, rolledAt = r.rolledAt, lootSeed = r.seed,
+        lootFx = db.lootFx or nil,
+        lootWarn = warn and not r.rolled,
+        rolledAt = r.rolledAt,
+        lootSeed = r.seed,
         lootQualityColor = r.quality and r.quality >= 3 and QualityColor(r.quality) or nil,
     }
 end
@@ -284,8 +357,13 @@ local lootRing = CreateLiveRing({
         -- An epic up for grabs: 60 s draining fast, rolled Need halfway, into the warning.
         local cycle = t % 14
         local left = math.max(0, 60 - cycle * 4.6)
-        local r = { name = "Ironfoe", quality = 4, total = 60, rolled = cycle > 6 and "Need" or nil,
-                    seed = math.floor(t / 14) + 3 }
+        local r = {
+            name = "Ironfoe",
+            quality = 4,
+            total = 60,
+            rolled = cycle > 6 and "Need" or nil,
+            seed = math.floor(t / 14) + 3,
+        }
         -- When it was rolled, on the real clock, rounded so it holds still from frame to frame.
         if r.rolled then r.rolledAt = math.floor((GetTime() - (cycle - 6)) * 20 + 0.5) / 20 end
         return State(r, left, cycle < 3 and 1 or 0)
@@ -302,14 +380,22 @@ local function StartRoll(id, ms)
         total = left and left / 1000
     end
     local _, name, count, quality = SafeCall(GetLootRollItemInfo, id)
-    rolls[id] = { started = GetTime(), total = total or 60, name = Clean(name),
-                  count = Num(count), quality = Num(quality), seed = id }
+    rolls[id] = {
+        started = GetTime(),
+        total = total or 60,
+        name = Clean(name),
+        count = Num(count),
+        quality = Num(quality),
+        seed = id,
+    }
 end
 
 -- You rolled (the game's Need / Greed / Pass buttons call RollOnLoot).
 local function OnRoll(id, rollType)
     local r = rolls[Num(id) or -1]
-    if r then r.rolled, r.rolledAt = ROLL_NAMES[Num(rollType) or -1] or "?", GetTime() end
+    if r then
+        r.rolled, r.rolledAt = ROLL_NAMES[Num(rollType) or -1] or "?", GetTime()
+    end
 end
 if hooksecurefunc and RollOnLoot then hooksecurefunc("RollOnLoot", OnRoll) end
 
@@ -320,7 +406,9 @@ ns.Listen({ "START_LOOT_ROLL", "CANCEL_LOOT_ROLL", "CANCEL_ALL_LOOT_ROLLS" }, fu
     elseif event == "CANCEL_LOOT_ROLL" then
         rolls[Num(id) or -1] = nil
     else
-        for k in pairs(rolls) do rolls[k] = nil end
+        for k in pairs(rolls) do
+            rolls[k] = nil
+        end
     end
 end)
 
@@ -336,61 +424,102 @@ ns.LootFxParts = function() return fx end -- for the tests
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "loot", name = "Loot roll", order = 14.7, since = "1.2.0",
+    key = "loot",
+    name = "Loot roll",
+    order = 14.7,
+    since = "1.2.0",
     alwaysInCombat = true, -- rolls are short and come up in fights: never faded out
     iconBg = true, -- "Icon as background": the dice fills the ring's middle (Core/Settings.lua, UI/Options/Kit.lua)
     ring = lootRing,
-    preview = PreviewLootRing, slash = { "loot", "roll" }, help = "preview the loot roll ring",
+    preview = PreviewLootRing,
+    slash = { "loot", "roll" },
+    help = "preview the loot roll ring",
     toggle = { "Loot roll ring", "Counts down the time left to roll Need or Greed on an item." },
     defaults = {
         -- Loot roll ring: time left to roll on an item. Right of the target cast ring.
-        lootEnabled   = true,
-        lootWarn      = 10,   -- seconds left when it turns the warning color
-        lootQuality   = true, -- the ring (and item name) in the item's quality color
-        lootFx        = true, -- the dice under the ring, and sparkles for rare and better
-        lootSize      = 100,
+        lootEnabled = true,
+        lootWarn = 10, -- seconds left when it turns the warning color
+        lootQuality = true, -- the ring (and item name) in the item's quality color
+        lootFx = true, -- the dice under the ring, and sparkles for rare and better
+        lootSize = 100,
         lootThickness = 10,
-        lootOpacity   = 100,
-        lootX         = 170,
-        lootFromTop   = 385,
-        lootHold      = 0.5,
-        lootStyle     = "smooth",
-        lootBorder    = 2,
+        lootOpacity = 100,
+        lootX = 170,
+        lootFromTop = 385,
+        lootHold = 0.5,
+        lootStyle = "smooth",
+        lootBorder = 2,
         lootColors = {
-            fill   = { r = 0.95, g = 0.80, b = 0.30 }, -- with quality colors off
-            warn   = { r = 1.00, g = 0.30, b = 0.25 },
+            fill = { r = 0.95, g = 0.80, b = 0.30 }, -- with quality colors off
+            warn = { r = 1.00, g = 0.30, b = 0.25 },
             rolled = { r = 0.55, g = 0.85, b = 0.55 },
         },
     },
-    page = { folder = "group", order = 1, build = function(O)
+    page = {
+        folder = "group",
+        order = 1,
+        build = function(O)
             local Toggle, Range, Color, Box = O.Toggle, O.Range, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.9, "Loot rolls", "Loot Roll Ring",
+            local tab = RingTab(
+                10.9,
+                "Loot rolls",
+                "Loot Roll Ring",
                 "Up while an item is being rolled for: the ring drains over the time left to roll, with the Need "
-                .. "roll's dice (as a badge, or behind the text with Icon as background), the item's name and the seconds left, turning the warning color near the end. Once you roll "
-                .. "it shows your pick; pass and that roll drops off. With several rolls, the ones you still have to "
-                .. "answer come first.",
-                MergeTop(TopRow("loot", "loot roll ring", ns.PreviewLootRing,
-                    "Show a sample roll counting down. Also /circ loot."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "lootEnabled", "Show loot roll ring", "Count down loot rolls."),
-                        quality = Toggle(2, "lootQuality", "Item quality colors",
-                            "Color the ring and the item's name by its quality (green, blue, purple...)."),
-                        warn = Range(3, "lootWarn", "Warn at (seconds left)", 3, 30, 1,
-                            "Below this much time the ring turns the warning color."),
-                        fx = Toggle(4, "lootFx", "Animations",
-                            "Two dice under the ring rattle and hop while you decide (harder, with a red glow, when "
-                            .. "time's nearly up), then tumble and land on their numbers when you roll. Rare items "
-                            .. "and better get sparkles in their quality color round the ring."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "lootColors", "fill", "Time left", "Ring color with item quality colors off."),
-                        warn = Color(2, "lootColors", "warn", "Running out", "Ring and label color near the end."),
-                        rolled = Color(3, "lootColors", "rolled", "Rolled", "Label color once you've rolled."),
-                    }),
-                    size = SizeBox(4, "loot", "loot roll ring", "Offset from the center of the screen."),
-                }))
+                    .. "roll's dice (as a badge, or behind the text with Icon as background), the item's name and the seconds left, turning the warning color near the end. Once you roll "
+                    .. "it shows your pick; pass and that roll drops off. With several rolls, the ones you still have to "
+                    .. "answer come first.",
+                MergeTop(
+                    TopRow(
+                        "loot",
+                        "loot roll ring",
+                        ns.PreviewLootRing,
+                        "Show a sample roll counting down. Also /circ loot."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(1, "lootEnabled", "Show loot roll ring", "Count down loot rolls."),
+                            quality = Toggle(
+                                2,
+                                "lootQuality",
+                                "Item quality colors",
+                                "Color the ring and the item's name by its quality (green, blue, purple...)."
+                            ),
+                            warn = Range(
+                                3,
+                                "lootWarn",
+                                "Warn at (seconds left)",
+                                3,
+                                30,
+                                1,
+                                "Below this much time the ring turns the warning color."
+                            ),
+                            fx = Toggle(
+                                4,
+                                "lootFx",
+                                "Animations",
+                                "Two dice under the ring rattle and hop while you decide (harder, with a red glow, when "
+                                    .. "time's nearly up), then tumble and land on their numbers when you roll. Rare items "
+                                    .. "and better get sparkles in their quality color round the ring."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(
+                                1,
+                                "lootColors",
+                                "fill",
+                                "Time left",
+                                "Ring color with item quality colors off."
+                            ),
+                            warn = Color(2, "lootColors", "warn", "Running out", "Ring and label color near the end."),
+                            rolled = Color(3, "lootColors", "rolled", "Rolled", "Label color once you've rolled."),
+                        }),
+                        size = SizeBox(4, "loot", "loot roll ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the last roll ends."
             return tab
-        end },
+        end,
+    },
 })

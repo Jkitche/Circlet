@@ -16,9 +16,7 @@ local SafeCall = ns.SafeCall
 -- has it, otherwise the most time we've seen left on it.
 local totals = {}
 
-local function Num(v)
-    return type(v) == "number" and not IsSecret(v) and v or nil
-end
+local function Num(v) return type(v) == "number" and not IsSecret(v) and v or nil end
 
 -- Every timed quest in the log: { title, left, total }.
 local function ReadTimedQuests()
@@ -53,9 +51,7 @@ local function ReadTimedQuests()
     return list
 end
 
-local function Warn(left, total)
-    return left <= (db.timedWarn or 60) or (total and left <= total * 0.1)
-end
+local function Warn(left, total) return left <= (db.timedWarn or 60) or (total and left <= total * 0.1) end
 
 local function State(title, left, total, more)
     local warn = Warn(left, total)
@@ -68,7 +64,9 @@ local function State(title, left, total, more)
         frac = total and total > 0 and math.max(0, math.min(1, left / total)) or 1,
         color = c,
         hold = left <= 0 and (db.timedHold or 3) or 0,
-        timed = true, timedWarn = warn, timesUp = left <= 0,
+        timed = true,
+        timedWarn = warn,
+        timesUp = left <= 0,
     }
 end
 
@@ -89,7 +87,10 @@ local function BuildSand(frame)
     sand = { chords = {}, grains = {} }
     for i = 1, CHORDS do
         local l = frame:CreateLine(nil, "BACKGROUND", nil, 2)
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         sand.chords[i] = l
     end
@@ -103,19 +104,30 @@ end
 
 local function HideSand()
     if not sand then return end
-    for _, l in ipairs(sand.chords) do l:Hide() end
-    for _, t in ipairs(sand.grains) do t:Hide() end
+    for _, l in ipairs(sand.chords) do
+        l:Hide()
+    end
+    for _, t in ipairs(sand.grains) do
+        t:Hide()
+    end
 end
 
 local function DrawSand(st, frame, geom)
-    if not (st and st.timed and db.timedFx) or not geom or geom.R <= 0 then timesUpAt = nil return HideSand() end
+    if not (st and st.timed and db.timedFx) or not geom or geom.R <= 0 then
+        timesUpAt = nil
+        return HideSand()
+    end
     if not sand then BuildSand(frame) end
     local now = GetTime()
     local T = math.max(3, geom.T)
     local ri = math.max(4, geom.R - geom.T / 2) - 1
     local frac = st.frac or 1
     local warn = st.timedWarn and 1 or 0
-    if st.timesUp then timesUpAt = timesUpAt or now else timesUpAt = nil end
+    if st.timesUp then
+        timesUpAt = timesUpAt or now
+    else
+        timesUpAt = nil
+    end
     local flash = timesUpAt and math.max(0, math.cos(math.pi * 3 * math.min(1, (now - timesUpAt) / 1.2))) or 0
     local wc = db.timedColors.warn
     local r = SAND.r + (wc.r - SAND.r) * warn * 0.5
@@ -136,8 +148,12 @@ local function DrawSand(st, frame, geom)
             l:SetStartPoint("CENTER", frame, -half, y)
             l:SetEndPoint("CENTER", frame, half, y)
             l:SetThickness(step + 0.6)
-            l:SetColorTexture(math.min(1, r * k + flash * 0.5), math.min(1, g * k + flash * 0.5), math.min(1, b * k + flash * 0.4),
-                (top and 0.5 or 0.32) + flash * 0.3)
+            l:SetColorTexture(
+                math.min(1, r * k + flash * 0.5),
+                math.min(1, g * k + flash * 0.5),
+                math.min(1, b * k + flash * 0.4),
+                (top and 0.5 or 0.32) + flash * 0.3
+            )
             l:Show()
         else
             l:Hide()
@@ -196,53 +212,87 @@ ns.TimedSandParts = function() return sand end -- for the tests
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "timed", name = "Timed quest", order = 9,
+    key = "timed",
+    name = "Timed quest",
+    order = 9,
     ring = timedRing,
-    preview = PreviewTimedRing, slash = { "timed" }, help = "preview the timed quest ring",
+    preview = PreviewTimedRing,
+    slash = { "timed" },
+    help = "preview the timed quest ring",
     toggle = { "Timed quest ring", "Counts down escort and other timed quests." },
     gameBar = "the game's quest timer",
     defaults = {
         -- Timed quest ring: escort and other timed quests. Sits on the right, by the quest list.
-        timedEnabled   = true,
-        timedWarn      = 60, -- seconds left when it turns the warning color
-        timedFx        = true, -- the hourglass: sand pouring from the fill and piling up in the middle
-        timedSize      = 110,
+        timedEnabled = true,
+        timedWarn = 60, -- seconds left when it turns the warning color
+        timedFx = true, -- the hourglass: sand pouring from the fill and piling up in the middle
+        timedSize = 110,
         timedThickness = 11,
-        timedOpacity   = 100,
-        timedX         = 340,  -- right of the flight ring
-        timedFromTop   = 260,
-        timedHold      = 3,
-        timedStyle     = "smooth",
-        timedBorder    = 2, -- black border width (0 = none)
+        timedOpacity = 100,
+        timedX = 340, -- right of the flight ring
+        timedFromTop = 260,
+        timedHold = 3,
+        timedStyle = "smooth",
+        timedBorder = 2, -- black border width (0 = none)
         timedColors = {
             fill = { r = 0.95, g = 0.80, b = 0.25 },
             warn = { r = 0.95, g = 0.25, b = 0.15 },
         },
     },
-    page = { folder = "travel", order = 2, build = function(O)
+    page = {
+        folder = "travel",
+        order = 2,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(9, "Timed quests", "Timed Quest Ring",
+            local tab = RingTab(
+                9,
+                "Timed quests",
+                "Timed Quest Ring",
                 "Up while you have an escort or other timed quest: it drains as time runs out and turns the warning "
-                .. "color near the end. With more than one, it shows the one with the least time left.",
-                MergeTop(TopRow("timed", "timed quest ring", ns.PreviewTimedRing,
-                    "Show a sample timer running down into the warning range. Also /circ timed."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "timedEnabled", "Show timed quest ring", "Count down timed quests."),
-                        warn = Range(2, "timedWarn", "Warn at (seconds left)", 10, 300, 10,
-                            "Below this much time (or the last 10% of the quest's time) the ring turns the warning color."),
-                        fx = Toggle(3, "timedFx", "Animations",
-                            "An hourglass: sand trickles from the end of the fill and piles up in the middle of the ring "
-                            .. "as time runs out, reddening and pouring faster near the end."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "timedColors", "fill", "Time left", "Ring color while there's time."),
-                        warn = Color(2, "timedColors", "warn", "Running out", "Ring and label color near the end."),
-                    }),
-                    size = SizeBox(4, "timed", "timed quest ring",
-                        "Offset from the center of the screen. The default sits on the right, by the quest list."),
-                }))
+                    .. "color near the end. With more than one, it shows the one with the least time left.",
+                MergeTop(
+                    TopRow(
+                        "timed",
+                        "timed quest ring",
+                        ns.PreviewTimedRing,
+                        "Show a sample timer running down into the warning range. Also /circ timed."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(1, "timedEnabled", "Show timed quest ring", "Count down timed quests."),
+                            warn = Range(
+                                2,
+                                "timedWarn",
+                                "Warn at (seconds left)",
+                                10,
+                                300,
+                                10,
+                                "Below this much time (or the last 10% of the quest's time) the ring turns the warning color."
+                            ),
+                            fx = Toggle(
+                                3,
+                                "timedFx",
+                                "Animations",
+                                "An hourglass: sand trickles from the end of the fill and piles up in the middle of the ring "
+                                    .. "as time runs out, reddening and pouring faster near the end."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "timedColors", "fill", "Time left", "Ring color while there's time."),
+                            warn = Color(2, "timedColors", "warn", "Running out", "Ring and label color near the end."),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "timed",
+                            "timed quest ring",
+                            "Offset from the center of the screen. The default sits on the right, by the quest list."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the time runs out."
             return tab
-        end },
+        end,
+    },
 })

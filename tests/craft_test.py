@@ -1,4 +1,5 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -12,8 +13,10 @@ CAST = nil
 function UnitCastingInfo() if CAST then return CAST.name, "", 0, CAST.s * 1000, CAST.e * 1000, false, "g", false, CAST.id end end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
@@ -33,4 +36,5 @@ C_TradeSkillUI.CraftRecipe(123, 1); Cast(); Advance(0.7); P("single: " .. C()); 
 CircletDB.craftSingle = true; C_TradeSkillUI.CraftRecipe(123, 1); Cast(); Advance(0.7); P("single on: " .. C()); Advance(1); Done(); Advance(5)
 Slash("craft"); Advance(2); P("preview: " .. C())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

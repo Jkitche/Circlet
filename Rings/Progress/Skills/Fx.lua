@@ -23,8 +23,8 @@ local GOLD = { r = 1, g = 0.85, b = 0.35 }
 local STEEL = { r = 0.85, g = 0.9, b = 1 }
 local GATHER_PALETTE = {
     Herbalism = { { r = 0.40, g = 0.95, b = 0.35 }, { r = 1.00, g = 0.85, b = 0.40 } },
-    Skinning  = { { r = 0.85, g = 0.62, b = 0.40 }, { r = 1.00, g = 0.90, b = 0.70 } },
-    Fishing   = { { r = 0.35, g = 0.70, b = 1.00 }, { r = 0.80, g = 0.95, b = 1.00 } },
+    Skinning = { { r = 0.85, g = 0.62, b = 0.40 }, { r = 1.00, g = 0.90, b = 0.70 } },
+    Fishing = { { r = 0.35, g = 0.70, b = 1.00 }, { r = 0.80, g = 0.95, b = 1.00 } },
 }
 
 local function Hash(n)
@@ -52,8 +52,12 @@ local function Pools(frame)
         t:Hide()
         return t
     end
-    for i = 1, 6 do p.glow[i] = Tex(GLOW_TEX, 4) end
-    for i = 1, 40 do p.star[i] = Tex(STAR_TEX, 6) end
+    for i = 1, 6 do
+        p.glow[i] = Tex(GLOW_TEX, 4)
+    end
+    for i = 1, 40 do
+        p.star[i] = Tex(STAR_TEX, 6)
+    end
     for i = 1, 48 do
         local l = frame:CreateLine(nil, "OVERLAY", nil, 5)
         if l.SetBlendMode then l:SetBlendMode("ADD") end
@@ -97,7 +101,9 @@ local function Seg(p, frame, x1, y1, x2, y2, w, r, g, b, a)
 end
 local function Finish(p)
     for _, kind in ipairs({ "glow", "star", "line" }) do
-        for i = (p.used[kind] or 0) + 1, #p[kind] do p[kind][i]:Hide() end
+        for i = (p.used[kind] or 0) + 1, #p[kind] do
+            p[kind][i]:Hide()
+        end
         p.used[kind] = 0
     end
 end
@@ -140,8 +146,18 @@ local function DrawSkillFx(e, frame, geom, shown, moving, fill)
             local a = Hash(math.floor(now * 2.2 + i / 10) * 7 + i) * TAU
             local d = T * (0.4 + 2.6 * u)
             local col = (i % 2 == 0) and c1 or c2
-            PutW(p, frame, "star", x + math.cos(a) * d, y + math.sin(a) * d - T * 1.5 * u * u, T * 0.9 * (1 - u),
-                col, 0.3, 1 - u, a)
+            PutW(
+                p,
+                frame,
+                "star",
+                x + math.cos(a) * d,
+                y + math.sin(a) * d - T * 1.5 * u * u,
+                T * 0.9 * (1 - u),
+                col,
+                0.3,
+                1 - u,
+                a
+            )
         end
     elseif landAge and landAge < LAND_TIME then
         -- Landed: a burst from the end of the fill, and motes floating up.
@@ -151,12 +167,33 @@ local function DrawSkillFx(e, frame, geom, shown, moving, fill)
             local a = i / 10 * TAU + 0.3
             local d = T * (0.5 + 4 * (1 - (1 - t) ^ 2))
             local col = (i % 2 == 0) and c1 or c2
-            PutW(p, frame, "star", x + math.cos(a) * d, y + math.sin(a) * d, T * 1.4 * (1 - 0.6 * t), col, 0.3, 1 - t, a + t * 3)
+            PutW(
+                p,
+                frame,
+                "star",
+                x + math.cos(a) * d,
+                y + math.sin(a) * d,
+                T * 1.4 * (1 - 0.6 * t),
+                col,
+                0.3,
+                1 - t,
+                a + t * 3
+            )
         end
         for i = 1, 5 do
             local u = math.min(1, t * 1.2)
-            Put(p, frame, "glow", x + (Hash(i) - 0.5) * T * 3, y + T * (1 + 5 * u) * (0.6 + Hash(i + 3) * 0.6),
-                T * 1.1, c2.r, c2.g, c2.b, (1 - u) * 0.9)
+            Put(
+                p,
+                frame,
+                "glow",
+                x + (Hash(i) - 0.5) * T * 3,
+                y + T * (1 + 5 * u) * (0.6 + Hash(i + 3) * 0.6),
+                T * 1.1,
+                c2.r,
+                c2.g,
+                c2.b,
+                (1 - u) * 0.9
+            )
         end
     end
     local big = e.change == "tier" or (e.to >= e.max)

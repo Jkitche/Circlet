@@ -215,6 +215,13 @@ a local, or the copy would go stale.
 output with `tests/golden/` (needs Python 3 and `pip install lupa pillow`). After an intended change,
 `python3 tests/run_tests.py --update <test>` accepts the new output; check the diff first.
 
+## Formatting
+
+The Lua is formatted with [StyLua](https://github.com/JohnnyMorganz/StyLua) (`stylua .`, settings
+in `stylua.toml`, `Libs/` left alone) and the Python with [Ruff](https://docs.astral.sh/ruff/)
+(`ruff format .`, settings in `ruff.toml`). Ruff keeps quotes as written: the tests find their
+place in each other's source by markers like `lua.execute('''`.
+
 ## Releasing
 
 Releases go to CurseForge from GitHub: bump the version in `CHANGELOG.md` (newest at the top),

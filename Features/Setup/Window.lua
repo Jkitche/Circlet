@@ -41,7 +41,8 @@ local STEP_R = 15
 frame.steps = CreateFrame("Frame", nil, frame)
 frame.steps:SetSize(STEP_R * 2, STEP_R * 2)
 frame.steps:SetPoint("RIGHT", frame, "TOPRIGHT", -56, -HEADER / 2)
-local stepGeom = { R = STEP_R - 2, T = 4, step = 2 * math.pi / ns.XP_SEGMENTS, style = "segmented", notches = STEPS, gapPx = 3 }
+local stepGeom =
+    { R = STEP_R - 2, T = 4, step = 2 * math.pi / ns.XP_SEGMENTS, style = "segmented", notches = STEPS, gapPx = 3 }
 frame.steps.track = ns.NewRingLayer("BACKGROUND", 1, ns.TRACK, 1, frame.steps)
 frame.steps.fill = ns.NewRingLayer("ARTWORK", 0, GOLD, 1, frame.steps)
 frame.steps.text = frame.steps:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -95,14 +96,16 @@ local used = {}
 -- Pictures on the Look cards: mini rings { style, radius } drawn in that style / at that size.
 local ART = {
     ["style:keep"] = { { "smooth", 11 }, { "segmented", 11 }, { "thin", 11 } },
-    ["style:smooth"] = { { "smooth", 22 } }, ["style:segmented"] = { { "segmented", 22 } },
+    ["style:smooth"] = { { "smooth", 22 } },
+    ["style:segmented"] = { { "segmented", 22 } },
     ["style:thin"] = { { "thin", 22 } },
     ["size:keep"] = { { "smooth", 8 }, { "smooth", 11 }, { "smooth", 14 } },
-    ["size:smaller"] = { { "smooth", 16 } }, ["size:default"] = { { "smooth", 20 } },
+    ["size:smaller"] = { { "smooth", 16 } },
+    ["size:default"] = { { "smooth", 20 } },
     ["size:larger"] = { { "smooth", 25 } },
 }
-local CARD_W, CARD_H, CARD_GAP = 155, 92, 10  -- picture cards (two to a column)
-local TEXT_CARD_W, TEXT_CARD_H = 213, 48      -- placement cards (three across)
+local CARD_W, CARD_H, CARD_GAP = 155, 92, 10 -- picture cards (two to a column)
+local TEXT_CARD_W, TEXT_CARD_H = 213, 48 -- placement cards (three across)
 
 local function Tooltip(owner, title, text, hl)
     owner:SetScript("OnEnter", function(self)
@@ -119,7 +122,11 @@ local function Tooltip(owner, title, text, hl)
     end)
 end
 
-local function SetEdges(e, r, g, b, a) for _, t in pairs(e) do t:SetColorTexture(r, g, b, a) end end
+local function SetEdges(e, r, g, b, a)
+    for _, t in pairs(e) do
+        t:SetColorTexture(r, g, b, a)
+    end
+end
 
 -- A mini ring on a card: style "smooth" / "segmented" / "thin", radius r, 70% filled in gold.
 local function MiniRing(card, i)
@@ -138,7 +145,9 @@ local function DrawMini(m, style, r, lit)
     local g = m.geom
     g.T = style == "thin" and 2.5 or math.max(3, r * 0.3)
     g.R, g.style = r - g.T / 2, style
-    for _, l in ipairs(m.fill) do l:SetColorTexture(lit and GOLD.r or 0.75, lit and GOLD.g or 0.75, lit and GOLD.b or 0.8, 1) end
+    for _, l in ipairs(m.fill) do
+        l:SetColorTexture(lit and GOLD.r or 0.75, lit and GOLD.g or 0.75, lit and GOLD.b or 0.8, 1)
+    end
     ns.DrawArc(m.track, 0, 1, m, g, true)
     ns.DrawArc(m.fill, 0, 0.7, m, g)
 end
@@ -151,7 +160,8 @@ local makers = {
         f.text = Wd.Text(f, 11, Wd.HEADING[1], Wd.HEADING[2], Wd.HEADING[3])
         f.text:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, 5)
         f.line = f:CreateTexture(nil, "ARTWORK")
-        f.line:SetPoint("BOTTOMLEFT"); f.line:SetPoint("BOTTOMRIGHT")
+        f.line:SetPoint("BOTTOMLEFT")
+        f.line:SetPoint("BOTTOMRIGHT")
         f.line:SetHeight(1)
         ns.SkinGradient(f.line, "HORIZONTAL", 1, 1, 1, 0.12, 1, 1, 1, 0)
         f.SetLabel = function(self, t) self.text:SetText(tostring(t or ""):upper()) end
@@ -174,8 +184,12 @@ local makers = {
         c.tick:SetSize(9, 9)
         c.tick:SetPoint("TOPRIGHT", c, "TOPRIGHT", -7, -7)
         c.minis = {}
-        c:SetScript("OnEnter", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.3) end end)
-        c:SetScript("OnLeave", function(self) if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.10) end end)
+        c:SetScript("OnEnter", function(self)
+            if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.3) end
+        end)
+        c:SetScript("OnLeave", function(self)
+            if not self.picked then SetEdges(self.edges, 1, 1, 1, 0.10) end
+        end)
         return c
     end,
     button = function()
@@ -200,7 +214,9 @@ local makers = {
         w.edges = ns.SkinEdges(w, "BORDER", 0, 1, 0, 1, 1, 1, 0.07)
         w.tag = Wd.Text(w, 10, GOLD.r, GOLD.g, GOLD.b)
         -- An on/off switch, as in the options window; clicking it clicks w.clickId.
-        w.check = Wd.Switch(w, function() if w.onToggle then w.onToggle() end end)
+        w.check = Wd.Switch(w, function()
+            if w.onToggle then w.onToggle() end
+        end)
         w.check.SetChecked = w.check.SetOn
         w.check.GetChecked = function(self) return self.on end
         w.text = Wd.Text(w, 13, 0.93, 0.93, 0.93)
@@ -222,28 +238,40 @@ local makers = {
 local function Acquire(kind)
     used[kind] = (used[kind] or 0) + 1
     local w = pool[kind][used[kind]]
-    if not w then w = makers[kind]() pool[kind][used[kind]] = w end
+    if not w then
+        w = makers[kind]()
+        pool[kind][used[kind]] = w
+    end
     w:Show()
     return w
 end
-
 
 -- Draws the current page.
 SU.Render = function()
     if not frame:IsShown() then return end
     for kind, list in pairs(pool) do
-        for _, w in ipairs(list) do w:Hide() end
+        for _, w in ipairs(list) do
+            w:Hide()
+        end
         used[kind] = 0
     end
     local title, subtitle, items, buttons = Current()
     frame.title:SetText(title)
     frame.subtitle:SetText(subtitle)
-    if SU.mode == "wizard" then frame.steps:Show(); DrawSteps(SU.step) else frame.steps:Hide() end
+    if SU.mode == "wizard" then
+        frame.steps:Show()
+        DrawSteps(SU.step)
+    else
+        frame.steps:Hide()
+    end
     local y = { 0, 0 }
     -- Cards flow left to right in rows; cardX / rowH track the row being filled per column.
     local cardX, rowH = { 0, 0 }, { 0, 0 }
     local function EndCardRow(c)
-        if cardX[c] > 0 then y[c] = y[c] + rowH[c] + CARD_GAP; cardX[c], rowH[c] = 0, 0 end
+        if cardX[c] > 0 then
+            y[c] = y[c] + rowH[c] + CARD_GAP
+            cardX[c], rowH[c] = 0, 0
+        end
     end
     for _, item in ipairs(items) do
         local c = item.col or 1
@@ -282,7 +310,9 @@ SU.Render = function()
             w:SetPoint("TOPLEFT", body, "TOPLEFT", x, -y[c])
             w:SetSize(width, h)
             w.panel:SetShown(panel)
-            for _, e in pairs(w.edges) do e:SetShown(panel) end
+            for _, e in pairs(w.edges) do
+                e:SetShown(panel)
+            end
             w.check:ClearAllPoints()
             w.check:SetPoint("TOPLEFT", w, "TOPLEFT", panel and 10 or 2, panel and -8 or -1)
             w.check:SetChecked(item.on)
@@ -294,7 +324,10 @@ SU.Render = function()
             w.desc:SetWidth(width - 140)
             if panel then -- tall enough for a description that wraps
                 local dh = w.desc.GetStringHeight and w.desc:GetStringHeight()
-                if type(dh) == "number" and dh > 0 then h = math.max(h, 30 + dh) w:SetHeight(h) end
+                if type(dh) == "number" and dh > 0 then
+                    h = math.max(h, 30 + dh)
+                    w:SetHeight(h)
+                end
             end
             w.tag:ClearAllPoints()
             w.tag:SetPoint("RIGHT", w.show, "LEFT", -10, 0)
@@ -305,8 +338,13 @@ SU.Render = function()
             if item.showId then
                 w.show:SetText(item.showOn and "Hide" or "Show")
                 w.show.onClick = function() SU.Click(item.showId) end
-                Tooltip(w.show, item.text, item.showOn and "Take it off the screen again."
-                    or "Put it on screen with sample content. You can drag it into place.", w.hl)
+                Tooltip(
+                    w.show,
+                    item.text,
+                    item.showOn and "Take it off the screen again."
+                        or "Put it on screen with sample content. You can drag it into place.",
+                    w.hl
+                )
                 w.show:Show()
             else
                 w.show:Hide()
@@ -323,21 +361,40 @@ SU.Render = function()
             card:SetPoint("TOPLEFT", body, "TOPLEFT", x + cardX[c], -y[c])
             card:SetSize(cw, ch)
             card.picked = item.selected
-            card.bg:SetColorTexture(item.selected and 0.15 or 0.10, item.selected and 0.11 or 0.08,
-                item.selected and 0.08 or 0.085, 0.95)
+            card.bg:SetColorTexture(
+                item.selected and 0.15 or 0.10,
+                item.selected and 0.11 or 0.08,
+                item.selected and 0.08 or 0.085,
+                0.95
+            )
             card.glow:SetShown(item.selected)
             card.tick:SetShown(item.selected)
-            SetEdges(card.edges, item.selected and GOLD.r or 1, item.selected and GOLD.g or 1,
-                item.selected and GOLD.b or 1, item.selected and 0.95 or 0.10)
+            SetEdges(
+                card.edges,
+                item.selected and GOLD.r or 1,
+                item.selected and GOLD.g or 1,
+                item.selected and GOLD.b or 1,
+                item.selected and 0.95 or 0.10
+            )
             card.label:ClearAllPoints()
-            if art then card.label:SetPoint("BOTTOM", card, "BOTTOM", 0, 8) else card.label:SetPoint("CENTER") end
+            if art then
+                card.label:SetPoint("BOTTOM", card, "BOTTOM", 0, 8)
+            else
+                card.label:SetPoint("CENTER")
+            end
             card.label:SetWidth(cw - 12)
             card.label:SetText(item.text)
-            card.label:SetTextColor(item.selected and 1 or 0.85, item.selected and 0.86 or 0.85, item.selected and 0.45 or 0.88)
+            card.label:SetTextColor(
+                item.selected and 1 or 0.85,
+                item.selected and 0.86 or 0.85,
+                item.selected and 0.45 or 0.88
+            )
             -- The mini rings, side by side above the label.
             local n = art and #art or 0
             local total = 0
-            for i = 1, n do total = total + art[i][2] * 2 end
+            for i = 1, n do
+                total = total + art[i][2] * 2
+            end
             total = total + math.max(0, n - 1) * 8
             local mx = -total / 2
             for i = 1, n do
@@ -349,16 +406,24 @@ SU.Render = function()
                 m:Show()
                 mx = mx + r * 2 + 8
             end
-            for i = n + 1, #card.minis do card.minis[i]:Hide() end
+            for i = n + 1, #card.minis do
+                card.minis[i]:Hide()
+            end
             card:SetScript("OnClick", function() SU.Click(item.id) end)
             cardX[c] = cardX[c] + cw + CARD_GAP
             rowH[c] = math.max(rowH[c], ch)
         end
     end
-    EndCardRow(1); EndCardRow(2)
+    EndCardRow(1)
+    EndCardRow(2)
     body:SetHeight(math.max(10, y[1], y[2]))
     local page = SU.mode .. ":" .. tostring(SU.step)
-    if scrolledFor ~= page then scrolledFor = page; SetScroll(0) else SetScroll(scroll:GetVerticalScroll()) end
+    if scrolledFor ~= page then
+        scrolledFor = page
+        SetScroll(0)
+    else
+        SetScroll(scroll:GetVerticalScroll())
+    end
     local right = -12
     for i = #buttons, 1, -1 do
         local spec = buttons[i]
@@ -371,7 +436,11 @@ SU.Render = function()
             right = right - 120
         end
         b:SetText(spec.text)
-        if spec.enabled == false then b:Disable() else b:Enable() end
+        if spec.enabled == false then
+            b:Disable()
+        else
+            b:Enable()
+        end
         -- The way forward (Next / Finish / Done) in gold, like the options window's Close.
         if spec.id == "next" or spec.id == "done" then
             b:SetAccent()

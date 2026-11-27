@@ -5,7 +5,9 @@ local orig = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = orig(self, ...); t._parent = self; table.insert(ALL_TEX, t); return t end
 '''
 head = open('breath_test.py').read().split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0]
-head = head.replace("lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1)
+head = head.replace(
+    "lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1
+)
 exec(head)
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD", true, false); Advance(1)
@@ -45,4 +47,5 @@ Show("skill, back to badge", "skill", "Icons", "skill")
 P("totem has no option: " .. tostring(CircletDB.totem1IconBg) .. " " .. tostring(CircletDB.totemIconBg))
 P("xp has no option: " .. tostring(CircletDB.xpIconBg))
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -19,7 +19,11 @@ local DOT = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 W.DOT = DOT
 
 local function Clamp(v, lo, hi)
-    if v < lo then return lo elseif v > hi then return hi end
+    if v < lo then
+        return lo
+    elseif v > hi then
+        return hi
+    end
     return v
 end
 W.Clamp = Clamp
@@ -41,12 +45,12 @@ function W.Solid(parent, layer, r, g, b, a, sub)
 end
 
 -- A 1px outline just inside a frame.
-function W.Border(frame, r, g, b, a, layer)
-    return ns.SkinEdges(frame, layer or "BORDER", 1, 1, 0, r, g, b, a or 1)
-end
+function W.Border(frame, r, g, b, a, layer) return ns.SkinEdges(frame, layer or "BORDER", 1, 1, 0, r, g, b, a or 1) end
 
 function W.SetBorderColor(edges, r, g, b, a)
-    for _, t in pairs(edges) do t:SetColorTexture(r, g, b, a or 1) end
+    for _, t in pairs(edges) do
+        t:SetColorTexture(r, g, b, a or 1)
+    end
 end
 local SetBorderColor = W.SetBorderColor
 
@@ -62,14 +66,22 @@ function W.Chevron(parent, size, r, g, b, right)
         l:SetColorTexture(r, g, b, 1)
     end
     if right then
-        a:SetStartPoint("CENTER", f, -h / 2, h); a:SetEndPoint("CENTER", f, h / 2, 0)
-        c:SetStartPoint("CENTER", f, h / 2, 0); c:SetEndPoint("CENTER", f, -h / 2, -h)
+        a:SetStartPoint("CENTER", f, -h / 2, h)
+        a:SetEndPoint("CENTER", f, h / 2, 0)
+        c:SetStartPoint("CENTER", f, h / 2, 0)
+        c:SetEndPoint("CENTER", f, -h / 2, -h)
     else
-        a:SetStartPoint("CENTER", f, -h, h / 2); a:SetEndPoint("CENTER", f, 0, -h / 2)
-        c:SetStartPoint("CENTER", f, 0, -h / 2); c:SetEndPoint("CENTER", f, h, h / 2)
+        a:SetStartPoint("CENTER", f, -h, h / 2)
+        a:SetEndPoint("CENTER", f, 0, -h / 2)
+        c:SetStartPoint("CENTER", f, 0, -h / 2)
+        c:SetEndPoint("CENTER", f, h, h / 2)
     end
     f.lines = { a, c }
-    function f:SetColor(r2, g2, b2, a2) for _, l in ipairs(self.lines) do l:SetColorTexture(r2, g2, b2, a2 or 1) end end
+    function f:SetColor(r2, g2, b2, a2)
+        for _, l in ipairs(self.lines) do
+            l:SetColorTexture(r2, g2, b2, a2 or 1)
+        end
+    end
     return f
 end
 
@@ -93,8 +105,12 @@ end
 -- Hovering `frame` shows `cell`'s tooltip and hover look (controls cover their cell, so
 -- they pass the hover on).
 function W.PassHover(frame, cell)
-    frame:HookScript("OnEnter", function() if cell.OnHover then cell:OnHover(true) end end)
-    frame:HookScript("OnLeave", function() if cell.OnHover then cell:OnHover(false) end end)
+    frame:HookScript("OnEnter", function()
+        if cell.OnHover then cell:OnHover(true) end
+    end)
+    frame:HookScript("OnLeave", function()
+        if cell.OnHover then cell:OnHover(false) end
+    end)
 end
 
 ---------------------------------------------------------------- button
@@ -181,8 +197,12 @@ function W.Switch(parent, onToggle)
     end
     s:SetScript("OnClick", function(self)
         if PlaySound then
-            pcall(PlaySound, SOUNDKIT and (self.on and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF
-                or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON) or 856)
+            pcall(
+                PlaySound,
+                SOUNDKIT
+                        and (self.on and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_OFF or SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
+                    or 856
+            )
         end
         onToggle(self, not self.on)
     end)
@@ -199,7 +219,8 @@ function W.Slider(parent, width, onChange, onRelease)
     s.width = width
     s.track = W.Solid(s, "BACKGROUND", 0.28, 0.22, 0.21, 1)
     s.track:SetHeight(4)
-    s.track:SetPoint("LEFT"); s.track:SetPoint("RIGHT")
+    s.track:SetPoint("LEFT")
+    s.track:SetPoint("RIGHT")
     s.fill = W.Solid(s, "ARTWORK", ACCENT.r, ACCENT.g, ACCENT.b, 1)
     s.fill:SetHeight(4)
     s.fill:SetPoint("LEFT", s.track, "LEFT")
@@ -365,16 +386,24 @@ local function BuildList()
         self.offset = self.offset - delta * 3
         LayoutList()
     end)
-    list:SetScript("OnHide", function() if catcher then catcher:Hide() end end)
+    list:SetScript("OnHide", function()
+        if catcher then catcher:Hide() end
+    end)
 end
 
 local function OpenList(owner)
     if not list then BuildList() end
-    if list:IsShown() and list.owner == owner then CloseList() return end
+    if list:IsShown() and list.owner == owner then
+        CloseList()
+        return
+    end
     list.owner = owner
     list.offset = 0
     for i, item in ipairs(owner.items or {}) do
-        if item[1] == owner.value then list.offset = i - math.floor(LIST_ROWS / 2) break end
+        if item[1] == owner.value then
+            list.offset = i - math.floor(LIST_ROWS / 2)
+            break
+        end
     end
     -- Same size on screen as the dropdown, whatever the window's scale.
     list:SetScale(owner:GetEffectiveScale() / UIParent:GetEffectiveScale())
@@ -401,10 +430,14 @@ function W.Dropdown(parent, width, onPick)
     function b:SetItems(items, value)
         self.items, self.value = items, value
         local text
-        for _, item in ipairs(items) do if item[1] == value then text = item[2] end end
+        for _, item in ipairs(items) do
+            if item[1] == value then text = item[2] end
+        end
         self.label:SetText(text or "")
     end
-    b:HookScript("OnHide", function(self) if list and list.owner == self then CloseList() end end)
+    b:HookScript("OnHide", function(self)
+        if list and list.owner == self then CloseList() end
+    end)
     return b
 end
 
@@ -415,9 +448,11 @@ function W.Swatch(parent, onClick)
     b.edge = W.Solid(b, "BACKGROUND", 0.4, 0.4, 0.44, 1)
     b.edge:SetAllPoints()
     b.gap = W.Solid(b, "BORDER", 0, 0, 0, 1)
-    b.gap:SetPoint("TOPLEFT", 1, -1); b.gap:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.gap:SetPoint("TOPLEFT", 1, -1)
+    b.gap:SetPoint("BOTTOMRIGHT", -1, 1)
     b.color = W.Solid(b, "ARTWORK", 1, 1, 1, 1)
-    b.color:SetPoint("TOPLEFT", 3, -3); b.color:SetPoint("BOTTOMRIGHT", -3, 3)
+    b.color:SetPoint("TOPLEFT", 3, -3)
+    b.color:SetPoint("BOTTOMRIGHT", -3, 3)
     function b:SetColor(r, g, bl) self.color:SetColorTexture(r or 1, g or 1, bl or 1, 1) end
     b:SetScript("OnEnter", function(self) self.edge:SetColorTexture(ACCENT.r, ACCENT.g, ACCENT.b, 1) end)
     b:SetScript("OnLeave", function(self) self.edge:SetColorTexture(0.4, 0.4, 0.44, 1) end)
@@ -437,8 +472,13 @@ function W.PickColor(r, g, b, onChange)
     local function Cancel() onChange(r, g, b) end
     if picker.SetupColorPickerAndShow then
         picker:SetupColorPickerAndShow({
-            r = r, g = g, b = b, hasOpacity = false,
-            swatchFunc = Current, func = Current, cancelFunc = Cancel,
+            r = r,
+            g = g,
+            b = b,
+            hasOpacity = false,
+            swatchFunc = Current,
+            func = Current,
+            cancelFunc = Cancel,
             previousValues = { r = r, g = g, b = b },
         })
     else
@@ -447,7 +487,11 @@ function W.PickColor(r, g, b, onChange)
         picker.previousValues = { r, g, b }
         picker.func, picker.cancelFunc = Current, Cancel
         picker:SetColorRGB(r, g, b)
-        if ShowUIPanel then ShowUIPanel(picker) else picker:Show() end
+        if ShowUIPanel then
+            ShowUIPanel(picker)
+        else
+            picker:Show()
+        end
     end
 end
 
@@ -479,7 +523,10 @@ function W.ScrollArea(parent)
         local max = MaxScroll()
         local y = Clamp(tonumber(self:GetVerticalScroll()) or 0, 0, max)
         self:SetVerticalScroll(y)
-        if max <= 0 then bar:Hide() return end
+        if max <= 0 then
+            bar:Hide()
+            return
+        end
         bar:Show()
         local trackH = bar:GetHeight() or 1
         local view = self:GetHeight() or 1
@@ -492,7 +539,10 @@ function W.ScrollArea(parent)
         self:SetVerticalScroll(Clamp(y, 0, MaxScroll()))
         self:Update()
     end
-    sf:SetScript("OnMouseWheel", function(self, delta) self:ScrollTo((tonumber(self:GetVerticalScroll()) or 0) - delta * 60) end)
+    sf:SetScript(
+        "OnMouseWheel",
+        function(self, delta) self:ScrollTo((tonumber(self:GetVerticalScroll()) or 0) - delta * 60) end
+    )
     sf:SetScript("OnSizeChanged", function(self) self:Update() end)
     thumb:SetScript("OnMouseDown", function(self)
         self.startY = select(2, GetCursorPosition()) / self:GetEffectiveScale()

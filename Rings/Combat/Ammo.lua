@@ -41,9 +41,13 @@ local function ReadAmmo()
     if not id then
         local ranged = INVSLOT_RANGED or 18
         local rid = SafeCall(GetInventoryItemID, "player", ranged)
-        local equipLoc = rid and C_Item and C_Item.GetItemInfoInstant
+        local equipLoc = rid
+            and C_Item
+            and C_Item.GetItemInfoInstant
             and select(4, SafeCall(C_Item.GetItemInfoInstant, rid))
-        if equipLoc == "INVTYPE_THROWN" then id, slot = rid, ranged end
+        if equipLoc == "INVTYPE_THROWN" then
+            id, slot = rid, ranged
+        end
     end
     if not id then return nil end
     if IsSecret(id) then return nil, nil, nil, nil, true end
@@ -74,7 +78,10 @@ end
 local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, always)
     local st = ammoState[kind]
     if hidden then return end
-    if not count then st.count = nil return end
+    if not count then
+        st.count = nil
+        return
+    end
     if st.count == nil or st.itemID ~= itemID then -- first read, or switched ammo: baseline
         st.count, st.itemID, st.peak, st.step, st.alertFrom = count, itemID, count, nil, nil
         return
@@ -90,8 +97,17 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
         st.step, st.alertFrom = nil, nil
         -- A real restock (not just picking a few back up), or anything that gets you out of the red.
         if wasLow or count - prev >= math.max(5, step) then
-            QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = "restock",
-                             from = prev, to = count, max = math.max(st.peak, count), warn = warn })
+            QueueAmmo({
+                id = kind,
+                kind = kind,
+                name = name,
+                icon = icon,
+                change = "restock",
+                from = prev,
+                to = count,
+                max = math.max(st.peak, count),
+                warn = warn,
+            })
         end
         return
     end
@@ -100,8 +116,17 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
     if always then
         -- Every shot: one ring that keeps counting down while you fire.
         if count <= warn then st.step = bucket end
-        QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "shot",
-                         from = prev, to = count, max = math.max(st.peak, 1), warn = warn })
+        QueueAmmo({
+            id = kind,
+            kind = kind,
+            name = name,
+            icon = icon,
+            change = (count == 0) and "out" or "shot",
+            from = prev,
+            to = count,
+            max = math.max(st.peak, 1),
+            warn = warn,
+        })
         return
     end
     if count > warn then return end
@@ -109,8 +134,17 @@ local function CheckAmmoKind(kind, count, name, icon, itemID, warn, hidden, alwa
     st.step = bucket
     local from = st.alertFrom or prev
     st.alertFrom = count
-    QueueAmmo({ id = kind, kind = kind, name = name, icon = icon, change = (count == 0) and "out" or "low",
-                     from = from, to = count, max = math.max(st.peak, warn, 1), warn = warn })
+    QueueAmmo({
+        id = kind,
+        kind = kind,
+        name = name,
+        icon = icon,
+        change = (count == 0) and "out" or "low",
+        from = from,
+        to = count,
+        max = math.max(st.peak, warn, 1),
+        warn = warn,
+    })
 end
 
 local function CheckAmmo()
@@ -144,12 +178,57 @@ ammoRing = CreateProgressRing({
     holdWhile = function(e) return e.kind == "ammo" and CombatShow() end,
     samples = function()
         return {
-            { id = "edit-a0", kind = "ammo", name = "Sharp Arrow", change = "shot", from = 640, to = 628, max = 1000, warn = 200 },
-            { id = "edit-a1", kind = "ammo", name = "Sharp Arrow", change = "low", from = 200, to = 150, max = 1000, warn = 200 },
-            { id = "edit-a2", kind = "ammo", name = "Sharp Arrow", change = "out", from = 50, to = 0, max = 1000, warn = 200,
-              editTime = 4 },
-            { id = "edit-a3", kind = "ammo", name = "Sharp Arrow", change = "restock", from = 0, to = 1000, max = 1000, warn = 200 },
-            { id = "edit-a4", kind = "shards", name = "Soul Shard", change = "low", from = 5, to = 3, max = 12, warn = 5 },
+            {
+                id = "edit-a0",
+                kind = "ammo",
+                name = "Sharp Arrow",
+                change = "shot",
+                from = 640,
+                to = 628,
+                max = 1000,
+                warn = 200,
+            },
+            {
+                id = "edit-a1",
+                kind = "ammo",
+                name = "Sharp Arrow",
+                change = "low",
+                from = 200,
+                to = 150,
+                max = 1000,
+                warn = 200,
+            },
+            {
+                id = "edit-a2",
+                kind = "ammo",
+                name = "Sharp Arrow",
+                change = "out",
+                from = 50,
+                to = 0,
+                max = 1000,
+                warn = 200,
+                editTime = 4,
+            },
+            {
+                id = "edit-a3",
+                kind = "ammo",
+                name = "Sharp Arrow",
+                change = "restock",
+                from = 0,
+                to = 1000,
+                max = 1000,
+                warn = 200,
+            },
+            {
+                id = "edit-a4",
+                kind = "shards",
+                name = "Soul Shard",
+                change = "low",
+                from = 5,
+                to = 3,
+                max = 12,
+                warn = 5,
+            },
         }
     end,
     icon = function(e)
@@ -162,8 +241,11 @@ ammoRing = CreateProgressRing({
         elseif not texture then
             texture = select(3, ReadAmmo())
         end
-        texture = texture or (e.kind == "shards" and "Interface\\Icons\\INV_Misc_Gem_Amethyst_02"
-            or "Interface\\Icons\\INV_Ammo_Arrow_02")
+        texture = texture
+            or (
+                e.kind == "shards" and "Interface\\Icons\\INV_Misc_Gem_Amethyst_02"
+                or "Interface\\Icons\\INV_Ammo_Arrow_02"
+            )
         return { texture = texture, color = AmmoFill(e), celebrate = e.change == "out" }
     end,
     style = function(e, finished)
@@ -195,10 +277,37 @@ end
 
 local function PreviewAmmoRing()
     ammoRing.Preview({
-        { id = "p-a0", kind = "ammo", name = "Sharp Arrow", change = "shot", from = 640, to = 628, max = 1000, warn = 200 },
-        { id = "p-a1", kind = "ammo", name = "Sharp Arrow", change = "low", from = 200, to = 150, max = 1000, warn = 200 },
+        {
+            id = "p-a0",
+            kind = "ammo",
+            name = "Sharp Arrow",
+            change = "shot",
+            from = 640,
+            to = 628,
+            max = 1000,
+            warn = 200,
+        },
+        {
+            id = "p-a1",
+            kind = "ammo",
+            name = "Sharp Arrow",
+            change = "low",
+            from = 200,
+            to = 150,
+            max = 1000,
+            warn = 200,
+        },
         { id = "p-a2", kind = "ammo", name = "Sharp Arrow", change = "out", from = 50, to = 0, max = 1000, warn = 200 },
-        { id = "p-a3", kind = "ammo", name = "Sharp Arrow", change = "restock", from = 0, to = 1000, max = 1000, warn = 200 },
+        {
+            id = "p-a3",
+            kind = "ammo",
+            name = "Sharp Arrow",
+            change = "restock",
+            from = 0,
+            to = 1000,
+            max = 1000,
+            warn = 200,
+        },
     })
 end
 
@@ -208,18 +317,33 @@ local function OnCombatStart()
     local st = ammoState.ammo
     local count, name, icon, itemID, hidden = ReadAmmo()
     if not hidden and count then
-        if st.count == nil or st.itemID ~= itemID then st.count, st.itemID, st.peak = count, itemID, count end
+        if st.count == nil or st.itemID ~= itemID then
+            st.count, st.itemID, st.peak = count, itemID, count
+        end
     end
     if st.count == nil then return end -- nothing equipped (or never readable)
     name = name or ItemName(st.itemID) or "Ammo"
     icon = icon or select(3, ReadAmmo())
-    QueueAmmo({ id = "ammo", kind = "ammo", name = name, icon = icon, change = (st.count == 0) and "out" or "shot",
-                from = st.count, to = st.count, max = math.max(st.peak or st.count, 1), warn = db.ammoWarn, gainText = "" })
+    QueueAmmo({
+        id = "ammo",
+        kind = "ammo",
+        name = name,
+        icon = icon,
+        change = (st.count == 0) and "out" or "shot",
+        from = st.count,
+        to = st.count,
+        max = math.max(st.peak or st.count, 1),
+        warn = db.ammoWarn,
+        gainText = "",
+    })
 end
 ns.Listen({ "PLAYER_REGEN_DISABLED" }, function() C_Timer.After(0.05, OnCombatStart) end)
 
 -- Ammo used, bought or swapped, and a first read on login.
-ns.Listen({ "UNIT_INVENTORY_CHANGED:player", "BAG_UPDATE_DELAYED", "PLAYER_EQUIPMENT_CHANGED", "PLAYER_ENTERING_WORLD" }, function() QueueCheckAmmo() end)
+ns.Listen(
+    { "UNIT_INVENTORY_CHANGED:player", "BAG_UPDATE_DELAYED", "PLAYER_EQUIPMENT_CHANGED", "PLAYER_ENTERING_WORLD" },
+    function() QueueCheckAmmo() end
+)
 
 -- Shared with the files loaded after this one.
 ns.PreviewAmmoRing = PreviewAmmoRing
@@ -230,92 +354,170 @@ ns.ammoRing = ammoRing
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "ammo", name = "Ammo", order = 7,
+    key = "ammo",
+    name = "Ammo",
+    order = 7,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = ammoRing,
-    preview = PreviewAmmoRing, slash = { "ammo" }, help = "preview the ammo ring",
+    preview = PreviewAmmoRing,
+    slash = { "ammo" },
+    help = "preview the ammo ring",
     toggle = { "Ammo ring", "Pops up when you're running low on ammo or soul shards." },
     class = { HUNTER = true, ROGUE = true, WARRIOR = true, WARLOCK = true }, -- ammo, thrown, soul shards
     defaults = {
         -- Ammo ring: arrows, bullets and thrown weapons, plus a warlock's soul shards.
-        ammoEnabled     = true,
+        ammoEnabled = true,
         ammoAfterCombat = false, -- running low mid-fight is exactly when it matters
-        ammoShowDelta   = false,
-        ammoWarn        = 200, -- show the ring at or below this much ammo
-        ammoAlways      = false, -- show on every shot, counting down
-        ammoFlash       = 15,  -- flash at or below this % of a full supply (0 = never)
-        ammoCombatShow  = false, -- keep the ring up for the whole fight, counting down
-        ammoShards      = true,
-        ammoShardWarn   = 5,   -- ...and at or below this many soul shards
-        ammoSize        = 110,
-        ammoThickness   = 11,
-        ammoOpacity     = 100,
-        ammoX           = 510,
-        ammoFromTop     = 55,
-        ammoHold        = 3,
-        ammoStyle       = "segmented",
-        ammoBorder      = 2, -- black border width (0 = none)
-        ammoIcon        = true, -- the ammo's (or soul shard's) icon as a badge on the ring
+        ammoShowDelta = false,
+        ammoWarn = 200, -- show the ring at or below this much ammo
+        ammoAlways = false, -- show on every shot, counting down
+        ammoFlash = 15, -- flash at or below this % of a full supply (0 = never)
+        ammoCombatShow = false, -- keep the ring up for the whole fight, counting down
+        ammoShards = true,
+        ammoShardWarn = 5, -- ...and at or below this many soul shards
+        ammoSize = 110,
+        ammoThickness = 11,
+        ammoOpacity = 100,
+        ammoX = 510,
+        ammoFromTop = 55,
+        ammoHold = 3,
+        ammoStyle = "segmented",
+        ammoBorder = 2, -- black border width (0 = none)
+        ammoIcon = true, -- the ammo's (or soul shard's) icon as a badge on the ring
         ammoColors = {
-            normal  = { r = 0.86, g = 0.74, b = 0.46 },
-            low     = { r = 1.00, g = 0.55, b = 0.10 },
-            out     = { r = 0.95, g = 0.15, b = 0.15 },
+            normal = { r = 0.86, g = 0.74, b = 0.46 },
+            low = { r = 1.00, g = 0.55, b = 0.10 },
+            out = { r = 0.95, g = 0.15, b = 0.15 },
             restock = { r = 0.30, g = 0.85, b = 0.30 },
         },
     },
-    page = { folder = "combat", order = 6, build = function(O)
+    page = {
+        folder = "combat",
+        order = 6,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(7, "Ammo", "Ammo Ring",
+            local tab = RingTab(
+                7,
+                "Ammo",
+                "Ammo Ring",
                 "Stays out of the way while you have plenty. At or below the warning level it pops up each time "
-                .. "you're another quarter of the way down (not on every shot), again when you run out, and when "
-                .. "you restock. Turn on Always show to watch it count down with every shot instead.",
-                MergeTop(TopRow("ammo", "ammo ring", PreviewAmmoRing, "Show examples: running low, running out, "
-                    .. "and restocking. Also /circ ammo."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "ammoEnabled", "Show ammo ring",
-                            "Arrows, bullets and thrown weapons in your ammo or ranged slot."),
-                        always = Toggle(1.5, "ammoAlways", "Always show",
-                            "Show the ring every time you shoot, counting down what's left, instead of only at the "
-                            .. "warnings. Nothing shows while the game keeps your ammo count hidden."),
-                        combatShow = {
-                            type = "toggle", order = 1.6, width = "full", name = "Keep up in combat",
-                            desc = "When a fight starts the ring comes up with what you have, counts down every "
-                                .. "shot and stays until the fight is over. Overrides Wait until combat ends. "
-                                .. "Needs Show in combat on.",
-                            get = function() return db.ammoCombatShow end,
-                            set = function(_, v) db.ammoCombatShow = v end,
-                            disabled = function() return db.ammoCombat == false end,
-                        },
-                        warn = Range(2, "ammoWarn", "Warn at or below", 20, 1000, 10,
-                            "How much ammo is left when the ring starts showing up (every quarter of this, "
-                            .. "not every shot). With Always show it's where the ring turns the Low color."),
-                        flash = Range(2.5, "ammoFlash", "Flash at or below (%)", 0, 50, 5,
-                            "The ring flashes when what's left is at or below this share of a full supply "
-                            .. "(the most you've carried since your last restock). 0 turns it off."),
-                        afterCombat = Toggle(3, "ammoAfterCombat", "Wait until combat ends",
-                            "Hold the warnings until the fight is over. Off by default: running low mid-fight is when it matters."),
-                        delta = Toggle(4, "ammoShowDelta", "Show change as %",
-                            "Add a line under the change showing it as a share of a full supply."),
-                        icon = Toggle(5, "ammoIcon", "Show ammo icon",
-                            "The icon of the ammo you have equipped (or your soul shards) as a round badge on the "
-                            .. "ring's top edge. Border in the ring color."),
-                    }),
-                    shards = Box(3, "Soul shards (warlocks)", {
-                        enabled = Toggle(1, "ammoShards", "Track soul shards", "Use the same ring for your soul shards."),
-                        warn = Range(2, "ammoShardWarn", "Warn at or below", 1, 20, 1,
-                            "How many shards are left when the ring starts showing up.",
-                            { disabled = function() return not db.ammoShards end }),
-                    }),
-                    colors = Box(4, "Colors", {
-                        normal = Color(1, "ammoColors", "normal", "Plenty", "Ring color above the warning level."),
-                        low = Color(2, "ammoColors", "low", "Low", "Ring color at or below the warning level."),
-                        out = Color(3, "ammoColors", "out", "Out", "Ring color when you've run out."),
-                        restock = Color(4, "ammoColors", "restock", "Restocked", "Ring color when you buy or loot more."),
-                    }),
-                    size = SizeBox(5, "ammo", "ammo ring",
-                        "Offset from the center of the screen. The default sits at the right end of the row."),
-                }))
+                    .. "you're another quarter of the way down (not on every shot), again when you run out, and when "
+                    .. "you restock. Turn on Always show to watch it count down with every shot instead.",
+                MergeTop(
+                    TopRow(
+                        "ammo",
+                        "ammo ring",
+                        PreviewAmmoRing,
+                        "Show examples: running low, running out, " .. "and restocking. Also /circ ammo."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "ammoEnabled",
+                                "Show ammo ring",
+                                "Arrows, bullets and thrown weapons in your ammo or ranged slot."
+                            ),
+                            always = Toggle(
+                                1.5,
+                                "ammoAlways",
+                                "Always show",
+                                "Show the ring every time you shoot, counting down what's left, instead of only at the "
+                                    .. "warnings. Nothing shows while the game keeps your ammo count hidden."
+                            ),
+                            combatShow = {
+                                type = "toggle",
+                                order = 1.6,
+                                width = "full",
+                                name = "Keep up in combat",
+                                desc = "When a fight starts the ring comes up with what you have, counts down every "
+                                    .. "shot and stays until the fight is over. Overrides Wait until combat ends. "
+                                    .. "Needs Show in combat on.",
+                                get = function() return db.ammoCombatShow end,
+                                set = function(_, v) db.ammoCombatShow = v end,
+                                disabled = function() return db.ammoCombat == false end,
+                            },
+                            warn = Range(
+                                2,
+                                "ammoWarn",
+                                "Warn at or below",
+                                20,
+                                1000,
+                                10,
+                                "How much ammo is left when the ring starts showing up (every quarter of this, "
+                                    .. "not every shot). With Always show it's where the ring turns the Low color."
+                            ),
+                            flash = Range(
+                                2.5,
+                                "ammoFlash",
+                                "Flash at or below (%)",
+                                0,
+                                50,
+                                5,
+                                "The ring flashes when what's left is at or below this share of a full supply "
+                                    .. "(the most you've carried since your last restock). 0 turns it off."
+                            ),
+                            afterCombat = Toggle(
+                                3,
+                                "ammoAfterCombat",
+                                "Wait until combat ends",
+                                "Hold the warnings until the fight is over. Off by default: running low mid-fight is when it matters."
+                            ),
+                            delta = Toggle(
+                                4,
+                                "ammoShowDelta",
+                                "Show change as %",
+                                "Add a line under the change showing it as a share of a full supply."
+                            ),
+                            icon = Toggle(
+                                5,
+                                "ammoIcon",
+                                "Show ammo icon",
+                                "The icon of the ammo you have equipped (or your soul shards) as a round badge on the "
+                                    .. "ring's top edge. Border in the ring color."
+                            ),
+                        }),
+                        shards = Box(3, "Soul shards (warlocks)", {
+                            enabled = Toggle(
+                                1,
+                                "ammoShards",
+                                "Track soul shards",
+                                "Use the same ring for your soul shards."
+                            ),
+                            warn = Range(
+                                2,
+                                "ammoShardWarn",
+                                "Warn at or below",
+                                1,
+                                20,
+                                1,
+                                "How many shards are left when the ring starts showing up.",
+                                { disabled = function() return not db.ammoShards end }
+                            ),
+                        }),
+                        colors = Box(4, "Colors", {
+                            normal = Color(1, "ammoColors", "normal", "Plenty", "Ring color above the warning level."),
+                            low = Color(2, "ammoColors", "low", "Low", "Ring color at or below the warning level."),
+                            out = Color(3, "ammoColors", "out", "Out", "Ring color when you've run out."),
+                            restock = Color(
+                                4,
+                                "ammoColors",
+                                "restock",
+                                "Restocked",
+                                "Ring color when you buy or loot more."
+                            ),
+                        }),
+                        size = SizeBox(
+                            5,
+                            "ammo",
+                            "ammo ring",
+                            "Offset from the center of the screen. The default sits at the right end of the row."
+                        ),
+                    }
+                )
+            )
             return tab
-        end },
+        end,
+    },
 })

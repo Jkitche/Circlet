@@ -16,4 +16,5 @@ Fire("PLAYER_REGEN_ENABLED"); Advance(1); P("after combat: " .. ShownRing()); Ad
 CircletDB.weaponEnabled = false; LINES[1].rank = 13; Fire("SKILL_LINES_CHANGED"); Advance(1); P("weapon ring off: '" .. ShownRing() .. "'")
 Slash("weapon"); Advance(1); P("preview weapon: " .. ShownRing()); Advance(15); Slash("skill"); Advance(1); P("preview skill: " .. ShownRing())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

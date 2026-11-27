@@ -1,4 +1,5 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -21,8 +22,10 @@ TIMED = nil
 C_QuestLog.GetTimeAllowed = function(id) if TIMED then return TIMED.total, TIMED.elapsed end end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME or {}; DEFAULT_CHAT_FRAME.AddMessage = function(_, m) P("chat: " .. tostring(m)) end
@@ -65,4 +68,5 @@ Slash("corpse"); Advance(1); D("corpse preview:"); Advance(14)
 Slash("edit timed"); Slash("edit corpse"); Advance(1); D("editing:"); Slash("edit"); Advance(3)
 Fire("PLAYER_CAMPING"); P("logout summary shown=" .. tostring(CircletSummaryFrame._shown))
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

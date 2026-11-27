@@ -8,6 +8,7 @@ game tints them:
 
     python tools/make_vitals_fx.py
 """
+
 import math, os, random, struct
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -47,7 +48,7 @@ def glow_ring():
     yy, xx = np.mgrid[0:S, 0:S].astype(np.float32)
     c = (S - 1) / 2
     r = np.sqrt((xx - c) ** 2 + (yy - c) ** 2) / (S / 2)
-    a = np.exp(-((r - 0.70) / 0.11) ** 2)
+    a = np.exp(-(((r - 0.70) / 0.11) ** 2))
     a[r > 0.99] *= np.clip((1 - r[r > 0.99]) * 100, 0, 1)
     return Image.fromarray(np.dstack([np.full((S, S, 3), 255, np.uint8), (a * 255).astype(np.uint8)]), 'RGBA')
 

@@ -17,7 +17,10 @@ ns.RefreshOptions = function() end
 
 -- The rings, in order, come from the registry (Core/Registry.lua): each has a name and
 -- an edit = { set, get }.
-local function Editor(key) local def = ns.FindRing(key) return def and def.key == key and def.edit end
+local function Editor(key)
+    local def = ns.FindRing(key)
+    return def and def.key == key and def.edit
+end
 local function Name(key) return (ns.FindRing(key) or {}).name or key end
 
 local function SetPosition(key, x, fromTop)
@@ -119,7 +122,9 @@ local function DrawGrid()
         Add(false, i * g)
         if i > 0 then Add(false, -i * g) end
     end
-    for i = n + 1, #grid.lines do grid.lines[i]:Hide() end
+    for i = n + 1, #grid.lines do
+        grid.lines[i]:Hide()
+    end
 end
 
 -- Follows the grid size and snap settings while editing.
@@ -127,7 +132,10 @@ grid:SetScript("OnUpdate", function(self, elapsed)
     self.t = (self.t or 0) + elapsed
     if self.t < 0.2 then return end
     self.t = 0
-    if not db.snapGrid then self:Hide() return end
+    if not db.snapGrid then
+        self:Hide()
+        return
+    end
     DrawGrid()
 end)
 
@@ -150,9 +158,10 @@ local function UpdateEditBar()
         return
     end
     local names = {}
-    for _, key in ipairs(keys) do table.insert(names, Name(key)) end
-    editBar.text:SetText("Circlet: editing " .. table.concat(names, ", ")
-        .. (#keys == 1 and " ring" or " rings"))
+    for _, key in ipairs(keys) do
+        table.insert(names, Name(key))
+    end
+    editBar.text:SetText("Circlet: editing " .. table.concat(names, ", ") .. (#keys == 1 and " ring" or " rings"))
     editBar:Show()
 end
 
@@ -178,7 +187,9 @@ end
 -- One chat line for the lot: the ring's own when only one was being edited.
 local function StopAllEditing()
     local keys = EditingKeys()
-    for _, def in ipairs(RINGS) do SetRingEditing(def.key, false, true) end
+    for _, def in ipairs(RINGS) do
+        SetRingEditing(def.key, false, true)
+    end
     if #keys == 1 then
         Print(Name(keys[1]) .. " ring position saved.")
     elseif #keys > 1 then
@@ -191,7 +202,9 @@ local function ToggleAllEditing()
     if #EditingKeys() > 0 then
         StopAllEditing()
     else
-        for _, def in ipairs(RINGS) do SetRingEditing(def.key, true) end
+        for _, def in ipairs(RINGS) do
+            SetRingEditing(def.key, true)
+        end
     end
 end
 

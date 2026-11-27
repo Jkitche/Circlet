@@ -135,8 +135,12 @@ end
 local function NoteMode(c, mode, extra)
     if c.noted == mode then return end
     c.noted = mode
-    db.targetCastDiag = { at = date and date("%Y-%m-%d %H:%M:%S") or "?", mode = mode, detail = extra,
-                          percentScale = percentScale }
+    db.targetCastDiag = {
+        at = date and date("%Y-%m-%d %H:%M:%S") or "?",
+        mode = mode,
+        detail = extra,
+        percentScale = percentScale,
+    }
 end
 
 -- For the files loaded after this one.

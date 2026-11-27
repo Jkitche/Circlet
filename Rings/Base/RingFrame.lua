@@ -2,7 +2,8 @@
 local ADDON_NAME, ns = ...
 
 local db, RingHolder, MakeRingDraggable, ApplyOpacity = ns.db, ns.RingHolder, ns.MakeRingDraggable, ns.ApplyOpacity
-local ArrangeX, RingThickness, NewRingLayer, TRACK, XP_SEGMENTS = ns.ArrangeX, ns.RingThickness, ns.NewRingLayer, ns.TRACK, ns.XP_SEGMENTS
+local ArrangeX, RingThickness, NewRingLayer, TRACK, XP_SEGMENTS =
+    ns.ArrangeX, ns.RingThickness, ns.NewRingLayer, ns.TRACK, ns.XP_SEGMENTS
 
 ---------------------------------------------------------------------------
 -- Ring frames
@@ -35,8 +36,13 @@ local function PlaceRing(frame, key, size)
     if not frame.dragging then
         frame:ClearAllPoints()
         -- Anchored to the top edge so it stays put across UI scales and resolutions.
-        frame:SetPoint("CENTER", UIParent, "TOP", db[key .. "X"] + ArrangeX(key, frame),
-            -(db[key .. "FromTop"] + size / 2))
+        frame:SetPoint(
+            "CENTER",
+            UIParent,
+            "TOP",
+            db[key .. "X"] + ArrangeX(key, frame),
+            -(db[key .. "FromTop"] + size / 2)
+        )
     end
     frame.editHint:ClearAllPoints()
     frame.editHint:SetPoint("TOP", frame, "CENTER", 0, -(size / 2 + 4))
@@ -69,7 +75,9 @@ local function TextSizesKey(key)
     local roles = TEXT_ROLES[GroupOf(key)]
     if not roles then return "" end
     local t = {}
-    for i, r in ipairs(roles) do t[i] = tostring(db[key .. r.id .. "Size"] or "") end
+    for i, r in ipairs(roles) do
+        t[i] = tostring(db[key .. r.id .. "Size"] or "")
+    end
     return table.concat(t, ",")
 end
 
@@ -80,8 +88,17 @@ end
 -- width, so switching style doesn't resize the text).
 -- thicknessSize: size to work out the band width from (default `size`).
 local function UpdateGeometry(frame, key, size, extra, thicknessSize)
-    local layoutKey = size .. ":" .. db[key .. "Thickness"] .. ":" .. tostring(db[key .. "Style"])
-        .. ":" .. ns.BorderKey(key) .. ":" .. tostring(extra) .. ":" .. TextSizesKey(key)
+    local layoutKey = size
+        .. ":"
+        .. db[key .. "Thickness"]
+        .. ":"
+        .. tostring(db[key .. "Style"])
+        .. ":"
+        .. ns.BorderKey(key)
+        .. ":"
+        .. tostring(extra)
+        .. ":"
+        .. TextSizesKey(key)
     if frame.layoutKey == layoutKey then return nil end
     frame.layoutKey = layoutKey
     local geom, textT = frame.geom, nil

@@ -11,4 +11,5 @@ P("combat: " .. H("rep") .. " | " .. H("quest") .. " | " .. H("xp") .. " | " .. 
 Fire("PLAYER_REGEN_ENABLED"); Advance(1)
 P("after: " .. H("rep") .. " | " .. H("quest") .. " | " .. H("totem1"))
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

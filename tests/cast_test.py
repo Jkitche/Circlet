@@ -26,4 +26,5 @@ SECRET = false; CHAN = { s = NOW, e = NOW + 5 }; Fire("UNIT_SPELLCAST_CHANNEL_ST
 SECRET = true; CHAN = { s = NOW, e = NOW + 5 }; Fire("UNIT_SPELLCAST_CHANNEL_START", "player", "g5", 5143); Advance(1); P("combat channel 1s: " .. C()); Advance(1); Fire("UNIT_SPELLCAST_CHANNEL_STOP", "player", "g5", 5143); Advance(0.3); P("channel cut short: " .. C()); Advance(3)
 Slash("cast"); Advance(1); P("preview: " .. C())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -36,10 +36,17 @@ local STYLE_PRESERVE = 3 -- Enum.CustomAuraButtonDispelTypeTextureStyle.Preserve
 
 -- Previews and edit mode: a few stand-ins.
 local SAMPLE = {
-    debuffs = { "Interface\\Icons\\Ability_Warrior_Sunder", "Interface\\Icons\\Spell_Shadow_ShadowWordPain",
-                "Interface\\Icons\\Ability_Rogue_Garrote" },
-    buffs = { "Interface\\Icons\\Spell_Holy_WordFortitude", "Interface\\Icons\\Spell_Nature_Regeneration",
-              "Interface\\Icons\\Spell_Holy_MagicalSentry", "Interface\\Icons\\Spell_Nature_Thorns" },
+    debuffs = {
+        "Interface\\Icons\\Ability_Warrior_Sunder",
+        "Interface\\Icons\\Spell_Shadow_ShadowWordPain",
+        "Interface\\Icons\\Ability_Rogue_Garrote",
+    },
+    buffs = {
+        "Interface\\Icons\\Spell_Holy_WordFortitude",
+        "Interface\\Icons\\Spell_Nature_Regeneration",
+        "Interface\\Icons\\Spell_Holy_MagicalSentry",
+        "Interface\\Icons\\Spell_Nature_Thorns",
+    },
 }
 local SAMPLE_EDGE = { debuffs = { 0.80, 0.10, 0.10 }, buffs = { 0, 0, 0 } }
 
@@ -127,7 +134,8 @@ local function FillSamples(key, A, set)
                 local c = SAMPLE_EDGE[kind]
                 b.edge:SetColorTexture(c[1], c[2], c[3], 1)
                 if b.cd then
-                    b.cd:SetCooldown(GetTime() - i * 4, 30 + i * 10); b.cd:Show()
+                    b.cd:SetCooldown(GetTime() - i * 4, 30 + i * 10)
+                    b.cd:Show()
                     if b.cd.SetHideCountdownNumbers then b.cd:SetHideCountdownNumbers(not set.time) end
                 end
                 b.count:SetText(i == 2 and "3" or "")
@@ -136,11 +144,15 @@ local function FillSamples(key, A, set)
             if #row > 0 then A.sampleRows[#A.sampleRows + 1] = row end
         end
     end
-    for i = n + 1, #A.icons do A.icons[i]:Hide() end
+    for i = n + 1, #A.icons do
+        A.icons[i]:Hide()
+    end
 end
 
 local function HideSamples(A)
-    for _, b in ipairs(A.icons) do b:Hide() end
+    for _, b in ipairs(A.icons) do
+        b:Hide()
+    end
     A.sampleRows = nil
 end
 
@@ -175,8 +187,14 @@ local function Dress(spot, b, s, set)
         if spot.kind == "debuffs" then
             -- The border, tinted by the game in the debuff's type color.
             parts.edge:SetColorTexture(1, 1, 1, 1)
-            if not Try(b, "AddDispelTypeTexture", parts.edge,
-                    { style = STYLE_PRESERVE, showWhenHarmful = true, showWithoutDispelType = true }) then
+            if
+                not Try(
+                    b,
+                    "AddDispelTypeTexture",
+                    parts.edge,
+                    { style = STYLE_PRESERVE, showWhenHarmful = true, showWithoutDispelType = true }
+                )
+            then
                 parts.edge:SetColorTexture(0.8, 0.1, 0.1, 1)
             end
         else
@@ -233,18 +251,27 @@ local function SetUpSpot(spot, set, s)
             initializeFrame = function(b)
                 spot.buttons[#spot.buttons + 1] = b
                 -- One the game makes in combat is dressed when it ends.
-                if not InCombat() then pcall(Dress, spot, b, spot.s or s, spot.set or set) else spot.A.sig = nil end
+                if not InCombat() then
+                    pcall(Dress, spot, b, spot.s or s, spot.set or set)
+                else
+                    spot.A.sig = nil
+                end
             end,
         }
         spot.s, spot.set = s, set
         spot.group = Try(c, "AddAuraGroup", "a", filter, opts)
-        if not spot.group then spot.broken = true return end
+        if not spot.group then
+            spot.broken = true
+            return
+        end
     else
         Try(c, "SetAuraGroupFilterString", "a", filter)
         Try(c, "SetAuraGroupLayout", "a", layout)
     end
     spot.s, spot.set = s, set
-    for _, b in ipairs(spot.buttons) do pcall(Dress, spot, b, s, set) end
+    for _, b in ipairs(spot.buttons) do
+        pcall(Dress, spot, b, s, set)
+    end
     -- Its row starts this far left of the window, so only button k is inside it.
     c:ClearAllPoints()
     c:SetPoint("TOPLEFT", spot.win, "TOPLEFT", -(spot.k - 1) * (s + INNER_GAP), 0)
@@ -297,7 +324,9 @@ end
 
 local function HideSpots(A)
     for _, kind in ipairs(KINDS) do
-        for _, spot in pairs(A.spots[kind]) do spot.win:Hide() end
+        for _, spot in pairs(A.spots[kind]) do
+            spot.win:Hide()
+        end
     end
 end
 
@@ -339,7 +368,9 @@ local function PlaceAt(f, frame, a, r, s, dt)
         local k = 1 - math.exp(-(dt or 0) * EASE_RATE)
         f.ea = f.ea + (a - f.ea) * k
         f.er = f.er + (r - f.er) * k
-        if math.abs(a - f.ea) < 0.0005 and math.abs(r - f.er) < 0.05 then f.ea, f.er = a, r end
+        if math.abs(a - f.ea) < 0.0005 and math.abs(r - f.er) < 0.05 then
+            f.ea, f.er = a, r
+        end
     end
     local x, y = f.er * math.cos(f.ea), f.er * math.sin(f.ea)
     local key = string.format("%.1f:%.1f:%d", x, y, s)
@@ -360,29 +391,40 @@ local function Step(A)
 end
 
 local function DrawSamples(key, A, frame, geom, d, set)
-    if not A.sampleRows or A.sampleKey ~= key then FillSamples(key, A, set); A.sampleKey = key end
+    if not A.sampleRows or A.sampleKey ~= key then
+        FillSamples(key, A, set)
+        A.sampleKey = key
+    end
     local rows = {}
     for _, list in ipairs(A.sampleRows) do
-        rows[#rows + 1] = { n = #list, slots = #list,
+        rows[#rows + 1] = {
+            n = #list,
+            slots = #list,
             hide = function(i) list[i]:Hide() end,
             place = function(i, a, r, s)
                 local b = list[i]
                 PlaceAt(b, frame, a, r, s, A.dt)
                 local px = math.max(6, math.floor(s * 0.5 * set.text + 0.5))
-                if b.px ~= px then b.px = px; b.count:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
-            end }
+                if b.px ~= px then
+                    b.px = px
+                    b.count:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE")
+                end
+            end,
+        }
     end
     Arc(key, A, frame, geom, d, set, rows)
 end
 
 local function DrawLive(key, A, frame, geom, d, set, unit)
     local s = IconSize(geom, set)
-    local sig = table.concat({ unit, set.show, set.mine, set.max, s, tostring(set.time),
-        string.format("%.2f", set.text) }, "|")
+    local sig =
+        table.concat({ unit, set.show, set.mine, set.max, s, tostring(set.time), string.format("%.2f", set.text) }, "|")
     if A.sig ~= sig and not InCombat() then
         for _, kind in ipairs(KINDS) do
             if set.show == "both" or set.show == kind then
-                for k = 1, set.max do SetUpSpot(Spot(A, kind, k, unit), set, s) end
+                for k = 1, set.max do
+                    SetUpSpot(Spot(A, kind, k, unit), set, s)
+                end
             end
         end
         A.sig, A.s = sig, s
@@ -401,28 +443,51 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
         if (set.show == "both" or set.show == kind) and list[1] and not list[1].broken then
             local n = CountOf(unit, FILTER[kind] .. set.mine, set.max)
             local slots = 0
-            for k in pairs(list) do if k > slots then slots = k end end
-            local row = { slots = slots,
-                hide = function(i) if list[i] then list[i].win:Hide() end end,
+            for k in pairs(list) do
+                if k > slots then slots = k end
+            end
+            local row = {
+                slots = slots,
+                hide = function(i)
+                    if list[i] then list[i].win:Hide() end
+                end,
                 place = function(i, a, r, sz)
                     local spot = list[i]
-                    if spot and not spot.broken and i <= set.max then PlaceAt(spot.win, frame, a, r, sz, A.dt)
-                    elseif spot then spot.win:Hide() end
-                end }
+                    if spot and not spot.broken and i <= set.max then
+                        PlaceAt(spot.win, frame, a, r, sz, A.dt)
+                    elseif spot then
+                        spot.win:Hide()
+                    end
+                end,
+            }
             if n then
                 A.known[kind] = n
-                if n > 0 then row.n = n; rows[#rows + 1] = row
-                else for _, spot in pairs(list) do spot.win:Hide() end end
+                if n > 0 then
+                    row.n = n
+                    rows[#rows + 1] = row
+                else
+                    for _, spot in pairs(list) do
+                        spot.win:Hide()
+                    end
+                end
             else
                 local was = A.known[kind] or 0
                 row.n, row.open = math.max(1, was), set.max
-                if was > 0 then rows[#rows + 1] = row else late[#late + 1] = row end
+                if was > 0 then
+                    rows[#rows + 1] = row
+                else
+                    late[#late + 1] = row
+                end
             end
         else
-            for _, spot in pairs(list) do spot.win:Hide() end
+            for _, spot in pairs(list) do
+                spot.win:Hide()
+            end
         end
     end
-    for _, row in ipairs(late) do rows[#rows + 1] = row end
+    for _, row in ipairs(late) do
+        rows[#rows + 1] = row
+    end
     Arc(key, A, frame, geom, d, set, rows, s)
 end
 
@@ -430,7 +495,11 @@ function ns.DrawVitalsAuras(key, v, st, frame, geom, d)
     if key ~= "playerHp" and key ~= "targetHp" then return end
     local A = v.auras
     if not db[key .. "Auras"] then
-        if A then HideSamples(A); HideSpots(A); A.holder:Hide() end
+        if A then
+            HideSamples(A)
+            HideSpots(A)
+            A.holder:Hide()
+        end
         return
     end
     A = Holder(v, frame)
@@ -449,12 +518,19 @@ function ns.DrawVitalsAuras(key, v, st, frame, geom, d)
 end
 
 function ns.HideVitalsAuras(v)
-    if v.auras then HideSamples(v.auras); HideSpots(v.auras); v.auras.holder:Hide() end
+    if v.auras then
+        HideSamples(v.auras)
+        HideSpots(v.auras)
+        v.auras.holder:Hide()
+    end
 end
 
 -- Settings that change what's in the arc: the stand-ins refill, the containers re-set.
 function ns.VitalsAurasDirty(key)
-    for _, f in pairs(ns.vitalsAuraHolders or {}) do f.sampleRows = nil; f.sig = nil end
+    for _, f in pairs(ns.vitalsAuraHolders or {}) do
+        f.sampleRows = nil
+        f.sig = nil
+    end
 end
 -- A new target starts with nothing remembered about its rows.
 ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
@@ -475,32 +551,73 @@ local function Safe(f, method, ...)
     return tostring(v)
 end
 ns.RegisterCommand({ "auradebug" }, function()
-    ns.Print("Aura arcs: in combat " .. tostring(InCombat() and true or false)
-        .. ", containers " .. tostring(pcall(CreateFrame, "AuraContainer", nil, UIParent, "CustomAuraContainerTemplate")))
+    ns.Print(
+        "Aura arcs: in combat "
+            .. tostring(InCombat() and true or false)
+            .. ", containers "
+            .. tostring(pcall(CreateFrame, "AuraContainer", nil, UIParent, "CustomAuraContainerTemplate"))
+    )
     for _, A in ipairs(ns.vitalsAuraHolders or {}) do
         local set = A.key and Settings(A.key)
-        ns.Print(string.format("%s: unit %s, holder shown %s, set up %s, size %s, show %s, max %s",
-            tostring(A.key), tostring(A.unit), Safe(A.holder, "IsVisible"), tostring(A.sig ~= nil),
-            tostring(A.s), set and set.show or "?", set and set.max or "?"))
+        ns.Print(
+            string.format(
+                "%s: unit %s, holder shown %s, set up %s, size %s, show %s, max %s",
+                tostring(A.key),
+                tostring(A.unit),
+                Safe(A.holder, "IsVisible"),
+                tostring(A.sig ~= nil),
+                tostring(A.s),
+                set and set.show or "?",
+                set and set.max or "?"
+            )
+        )
         local unit = A.key and LIVE_UNIT[A.key]
         for _, kind in ipairs(KINDS) do
             local list, made, shown = A.spots[kind], 0, 0
-            for _, spot in pairs(list) do made = made + 1; if spot.win:IsShown() then shown = shown + 1 end end
+            for _, spot in pairs(list) do
+                made = made + 1
+                if spot.win:IsShown() then shown = shown + 1 end
+            end
             local filt = FILTER[kind] .. (set and set.mine or "")
-            ns.Print(string.format("  %s: counted %s; spots made %d, shown %d", kind,
-                tostring(unit and countSrc[unit .. ":" .. filt] or "-"), made, shown))
+            ns.Print(
+                string.format(
+                    "  %s: counted %s; spots made %d, shown %d",
+                    kind,
+                    tostring(unit and countSrc[unit .. ":" .. filt] or "-"),
+                    made,
+                    shown
+                )
+            )
             for k = 1, math.min(3, made) do
                 local spot = list[k]
                 if spot then
                     local c = spot.c
                     local b = c and Safe(c, "GetAuraGroupFrame", "a", k)
                     local btn = c and c.GetAuraGroupFrame and select(2, pcall(c.GetAuraGroupFrame, c, "a", k))
-                    ns.Print(string.format("    spot %d: window shown %s %sx%s, container %s unit %s, group %s broken %s, buttons %d (dressed %d), button %d shown %s alpha %s",
-                        k, tostring(spot.win:IsShown()), Safe(spot.win, "GetWidth"), Safe(spot.win, "GetHeight"),
-                        c and "yes" or "no", tostring(spot.unit), tostring(spot.group), tostring(spot.broken),
-                        #spot.buttons, (function() local n = 0 for _ in pairs(spot.parts) do n = n + 1 end return n end)(),
-                        k, type(btn) == "table" and Safe(btn, "IsShown") or tostring(b),
-                        type(btn) == "table" and Safe(btn, "GetAlpha") or "-"))
+                    ns.Print(
+                        string.format(
+                            "    spot %d: window shown %s %sx%s, container %s unit %s, group %s broken %s, buttons %d (dressed %d), button %d shown %s alpha %s",
+                            k,
+                            tostring(spot.win:IsShown()),
+                            Safe(spot.win, "GetWidth"),
+                            Safe(spot.win, "GetHeight"),
+                            c and "yes" or "no",
+                            tostring(spot.unit),
+                            tostring(spot.group),
+                            tostring(spot.broken),
+                            #spot.buttons,
+                            (function()
+                                local n = 0
+                                for _ in pairs(spot.parts) do
+                                    n = n + 1
+                                end
+                                return n
+                            end)(),
+                            k,
+                            type(btn) == "table" and Safe(btn, "IsShown") or tostring(b),
+                            type(btn) == "table" and Safe(btn, "GetAlpha") or "-"
+                        )
+                    )
                 end
             end
         end

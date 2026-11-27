@@ -30,13 +30,18 @@ local bigHitAt = {} -- ring key -> GetTime() of the last critical / crushing hit
 local tracks = {} -- "playerHp:hp", "targetHp:pw", ...
 local function Track(id)
     local t = tracks[id]
-    if not t then t = { snaps = {} }; tracks[id] = t end
+    if not t then
+        t = { snaps = {} }
+        tracks[id] = t
+    end
     return t
 end
 
 local function ResetTrack(id)
     local t = tracks[id]
-    if t then t.shown, t.trailTop, t.glowAt, t.animAt = nil, nil, nil, nil end
+    if t then
+        t.shown, t.trailTop, t.glowAt, t.animAt = nil, nil, nil, nil
+    end
 end
 
 -- One frame of a readable value: target is the real value (0..1), tr.shown what's drawn.
@@ -68,7 +73,9 @@ local function Step(key, tr, target, now, isHealth)
     if db[key .. "Smooth"] and tr.animAt then
         local p = math.min(1, (now - tr.animAt) / tr.animDur)
         tr.shown = tr.animFrom + (tr.animTo - tr.animFrom) * (1 - (1 - p) ^ 3) -- ease out, as the XP ring
-        if p >= 1 then tr.shown, tr.animAt = target, nil end
+        if p >= 1 then
+            tr.shown, tr.animAt = target, nil
+        end
     else
         tr.shown = target
     end
@@ -103,7 +110,10 @@ local function EasedOK()
         local f = CreateFrame("Frame")
         local m = f.CreateMaskTexture and f:CreateMaskTexture()
         local t = f:CreateTexture()
-        easedOK = EASE_OUT ~= nil and m ~= nil and type(m.SetRotation) == "function" and type(t.AddMaskTexture) == "function"
+        easedOK = EASE_OUT ~= nil
+            and m ~= nil
+            and type(m.SetRotation) == "function"
+            and type(t.AddMaskTexture) == "function"
     end
     return easedOK
 end
@@ -137,7 +147,10 @@ end
 local HALF_PLANE = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\HalfPlane"
 
 -- The point at `turns` (clockwise from the top) and radius r, from the ring's centre.
-local function XY(turns, r) local a = 2 * math.pi * turns return r * math.sin(a), r * math.cos(a) end
+local function XY(turns, r)
+    local a = 2 * math.pi * turns
+    return r * math.sin(a), r * math.cos(a)
+end
 
 -- Which way the fill moves round the ring at `turns` (unit x, y; s = -1 when it runs backwards).
 local function Motion(turns, s)
@@ -204,7 +217,9 @@ local function LayoutEased(pool, frame, g)
         for _, which in ipairs({ "from", "to" }) do
             local m = M[which]
             local mx, my = Motion(which == "from" and pc.pa or pc.pb, s)
-            if which == "to" then mx, my = -mx, -my end
+            if which == "to" then
+                mx, my = -mx, -my
+            end
             m:SetTexture(HALF_PLANE, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
             m:ClearAllPoints()
             m:SetPoint("CENTER", frame, "CENTER", -mx * SEAM, -my * SEAM)
@@ -226,7 +241,7 @@ local function LayoutEased(pool, frame, g)
         end
         local ea, eb = At(pc.pa), At(pc.pb)
         local L = (eb - ea) / (pc.fb - pc.fa) -- 0..100% of the bar, signed
-        local zero = ea - pc.fa * L           -- where 0% sits
+        local zero = ea - pc.fa * L -- where 0% sits
         local back = L < 0
         local len = math.max(1, math.abs(L))
         local lo = back and (zero - len) or zero -- the bar's low end (left or bottom)
@@ -253,15 +268,25 @@ local function LayoutEased(pool, frame, g)
         e.tex:Show()
         e.bar:Show()
     end
-    for i = #pieces + 1, #pool do pool[i].tex:Hide(); pool[i].bar:Hide() end
+    for i = #pieces + 1, #pool do
+        pool[i].tex:Hide()
+        pool[i].bar:Hide()
+    end
     pool.n = #pieces
 end
 
 -- Draws a band's eased fill: lays it out when the geometry changes, colors it, and hands the
 -- bars the hidden value (eased; at once when `immediate`) when the game says it changed.
 local function DrawEased(pool, frame, g, c, value, changedAt, immediate)
-    local lk = string.format("%.2f:%.2f:%s:%s:%s:%s", g.R, g.T, tostring(g.start), tostring(g.sweep),
-        tostring(g.reverse), tostring(H.percentScale))
+    local lk = string.format(
+        "%.2f:%.2f:%s:%s:%s:%s",
+        g.R,
+        g.T,
+        tostring(g.start),
+        tostring(g.sweep),
+        tostring(g.reverse),
+        tostring(H.percentScale)
+    )
     if pool.layoutKey ~= lk then
         pool.layoutKey = lk
         LayoutEased(pool, frame, g)
@@ -275,11 +300,16 @@ local function DrawEased(pool, frame, g, c, value, changedAt, immediate)
         e.tex:Show()
         e.bar:Show()
     end
-    if feed then pool.fedFor, pool.fedAt = changedAt, GetTime() end
+    if feed then
+        pool.fedFor, pool.fedAt = changedAt, GetTime()
+    end
 end
 
 local function HideEased(pool)
-    for i = 1, #pool do pool[i].tex:Hide(); pool[i].bar:Hide() end
+    for i = 1, #pool do
+        pool[i].tex:Hide()
+        pool[i].bar:Hide()
+    end
     pool.layoutKey = nil
 end
 
@@ -314,7 +344,12 @@ local function UnitState(key, unit)
     else
         hpTrack.hidden = true
         st.hpHidden = { value = hp, pct = type(UnitHealthPercent) == "function" and HiddenPercent100(healthPct) or nil }
-        if db[key .. "Smooth"] and EasedOK() and db[key .. "Style"] ~= "segmented" and type(UnitHealthPercent) == "function" then
+        if
+            db[key .. "Smooth"]
+            and EasedOK()
+            and db[key .. "Style"] ~= "segmented"
+            and type(UnitHealthPercent) == "function"
+        then
             -- The game eases it (eased bands, above); the ring's own fill stays empty.
             st.frac, st.easedOn, st.eased = 0, true, SafeCall(UnitHealthPercent, unit)
         else
@@ -331,10 +366,17 @@ local function UnitState(key, unit)
         token = token or POWER_TOKENS[ptype or 0]
         local pw, pwMax = SafeCall(UnitPower, unit, ptype), SafeCall(UnitPowerMax, unit, ptype)
         local pwTrack = Track(key .. ":pw")
-        local pwr = { color = PowerColor(key, token), token = token, track = pwTrack,
-                      changed = NO_EVENTS[unit] and math.floor(GetTime() * 5) or changes[key .. ":pw"] }
+        local pwr = {
+            color = PowerColor(key, token),
+            token = token,
+            track = pwTrack,
+            changed = NO_EVENTS[unit] and math.floor(GetTime() * 5) or changes[key .. ":pw"],
+        }
         local powerPct = function(curve) return UnitPowerPercent(unit, ptype, false, curve) end
-        if pwTrack.token ~= token then ResetTrack(key .. ":pw"); pwTrack.token = token end -- shapeshifted
+        if pwTrack.token ~= token then
+            ResetTrack(key .. ":pw")
+            pwTrack.token = token
+        end -- shapeshifted
         if Readable(pw, pwMax) then
             if pwMax > 0 then
                 local frac = math.max(0, math.min(1, pw / pwMax))
@@ -346,15 +388,22 @@ local function UnitState(key, unit)
             end -- no power (some NPCs): no inner band
         else
             pwTrack.hidden = true
-            if db[key .. "Smooth"] and EasedOK() and db[key .. "Style"] ~= "segmented" and type(UnitPowerPercent) == "function" then
+            if
+                db[key .. "Smooth"]
+                and EasedOK()
+                and db[key .. "Style"] ~= "segmented"
+                and type(UnitPowerPercent) == "function"
+            then
                 pwr.frac, pwr.easedOn, pwr.eased = 0, true, SafeCall(UnitPowerPercent, unit, ptype)
             else
                 pwr.frac = 1
                 pwr.gate = type(UnitPowerPercent) == "function" and Gate(powerPct) or nil
                 if not pwr.gate then pwr.frac = 0 end
             end
-            pwr.hidden = { value = pw, pct = (token == "MANA" and type(UnitPowerPercent) == "function")
-                and HiddenPercent100(powerPct) or nil }
+            pwr.hidden = {
+                value = pw,
+                pct = (token == "MANA" and type(UnitPowerPercent) == "function") and HiddenPercent100(powerPct) or nil,
+            }
             st.power = pwr
         end
     end

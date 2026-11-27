@@ -1,5 +1,6 @@
 import os
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -16,7 +17,7 @@ local ct = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(ALL_TEX, t); return t end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
 lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
@@ -115,19 +116,23 @@ CircletDB.gatherFx = true
 Slash("gather"); Advance(1.5); FX("preview, skinning"); Advance(2); FX("preview, skinned")
 Advance(3.5); FX("preview, mining"); Advance(3); FX("preview, mined")
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))
 
 # RENDER=dir: draw a few frames of a gather to PNGs, to look at (RENDER_KIND=skinning or mining).
 out = os.environ.get('RENDER')
 if out:
     from PIL import Image, ImageDraw
+
     kind = os.environ.get('RENDER_KIND', 'skinning')
     spell = {'skinning': ('Skinning', 8613), 'mining': ('Mining', 2575), 'herb': ('Herb Gathering', 2366)}[kind]
     lua.execute('Advance(20); Cast("%s", %d, 3)' % spell)
     for n, step in enumerate([0.9, 0.12, 0.12, 0.12, 0.6]):
         lua.execute('Advance(%f)' % step)
-        if n == 4: lua.execute('Done(%d); Advance(0.12)' % spell[1])
-        img = Image.new('RGB', (320, 320), (40, 44, 52)); d = ImageDraw.Draw(img)
+        if n == 4:
+            lua.execute('Done(%d); Advance(0.12)' % spell[1])
+        img = Image.new('RGB', (320, 320), (40, 44, 52))
+        d = ImageDraw.Draw(img)
         for row in lua.eval('''(function()
           local t = {}
           for _, l in ipairs(ALL_LINES) do
@@ -137,12 +142,18 @@ if out:
           end
           return t end)()''').values():
             layer, sub, x1, y1, x2, y2, w, r, g, b, a = [row[i] for i in range(1, 12)]
-            if a < 0.02: continue
-            if layer == 'BACKGROUND': col = (18, 18, 23)
-            elif layer == 'ARTWORK' and sub == 0: col = (110, 210, 90)
-            elif layer == 'ARTWORK' and sub == 5: col = tuple(min(255, int(44 + 255 * v * a)) for v in (r, g, b))
-            elif layer == 'ARTWORK': col = tuple(int(255 * v * a + 44 * (1 - a)) for v in (r, g, b))
-            else: continue
+            if a < 0.02:
+                continue
+            if layer == 'BACKGROUND':
+                col = (18, 18, 23)
+            elif layer == 'ARTWORK' and sub == 0:
+                col = (110, 210, 90)
+            elif layer == 'ARTWORK' and sub == 5:
+                col = tuple(min(255, int(44 + 255 * v * a)) for v in (r, g, b))
+            elif layer == 'ARTWORK':
+                col = tuple(int(255 * v * a + 44 * (1 - a)) for v in (r, g, b))
+            else:
+                continue
             d.line([(160 + x1, 160 - y1), (160 + x2, 160 - y2)], fill=col, width=max(1, int(round(w))))
         tool = lua.eval('''(function()
           for _, t in ipairs(ALL_TEX) do
@@ -152,12 +163,18 @@ if out:
           end end)()''')
         if tool:
             import math
+
             path, cx, cy, size, rot, alpha, mirror = [tool[i] for i in range(1, 8)]
             name = 'ch_Attack' if 'Attack' in path else 'shears' if path == '4675625' else 'ch_Mine'
             spr = Image.open(os.path.join(os.environ.get('SPRITES', out), name + '_raw.png')).convert('RGBA')
-            if mirror: spr = spr.transpose(Image.FLIP_LEFT_RIGHT)
-            spr = spr.resize((int(size), int(size)), Image.LANCZOS).rotate(math.degrees(rot), expand=True, resample=Image.BICUBIC)
-            if alpha < 1: spr.putalpha(spr.getchannel('A').point(lambda v: int(v * alpha)))
-            img = img.convert('RGBA'); img.alpha_composite(spr, (int(160 + cx - spr.size[0] / 2), int(160 - cy - spr.size[1] / 2)))
+            if mirror:
+                spr = spr.transpose(Image.FLIP_LEFT_RIGHT)
+            spr = spr.resize((int(size), int(size)), Image.LANCZOS).rotate(
+                math.degrees(rot), expand=True, resample=Image.BICUBIC
+            )
+            if alpha < 1:
+                spr.putalpha(spr.getchannel('A').point(lambda v: int(v * alpha)))
+            img = img.convert('RGBA')
+            img.alpha_composite(spr, (int(160 + cx - spr.size[0] / 2), int(160 - cy - spr.size[1] / 2)))
             img = img.convert('RGB')
         img.save(os.path.join(out, '%s%d.png' % (kind, n)))

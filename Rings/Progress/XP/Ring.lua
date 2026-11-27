@@ -29,17 +29,15 @@ local STATE_COLORS = {
     normal = { r = 0.74, g = 0.26, b = 0.86 }, -- bar purple (0.58, 0.00, 0.55)
 }
 -- Opaque on purpose: translucent segments overlap at their joints and show seams.
-local REST_BAND = { r = 0.16, g = 0.28, b = 0.48 }   -- dim rested blue
-local GOLD      = { r = 1.00, g = 0.82, b = 0.00 }
-
+local REST_BAND = { r = 0.16, g = 0.28, b = 0.48 } -- dim rested blue
+local GOLD = { r = 1.00, g = 0.82, b = 0.00 }
 
 local xpRing = ns.NewRingFrame("xp")
 
-
 xpRing.levelText = xpRing:CreateFontString(nil, "OVERLAY")
-xpRing.gainText  = xpRing:CreateFontString(nil, "OVERLAY")
+xpRing.gainText = xpRing:CreateFontString(nil, "OVERLAY")
 xpRing.deltaText = xpRing:CreateFontString(nil, "OVERLAY") -- share of a level gained
-xpRing.pctText   = xpRing:CreateFontString(nil, "OVERLAY")
+xpRing.pctText = xpRing:CreateFontString(nil, "OVERLAY")
 xpRing.stateText = xpRing:CreateFontString(nil, "OVERLAY")
 local XP_TEXTS = { xpRing.levelText, xpRing.gainText, xpRing.deltaText, xpRing.pctText, xpRing.stateText }
 
@@ -59,11 +57,9 @@ local DrawArc = function(lines, from, to, frame, geom, noOverlap, shade)
     return ns.DrawArc(lines, from, to, frame or xpRing, geom or ring, noOverlap, shade)
 end
 
-xpRing.restBand   = NewRingLayer("BORDER", 0, REST_BAND, 1)
+xpRing.restBand = NewRingLayer("BORDER", 0, REST_BAND, 1)
 xpRing.fillNormal = NewRingLayer("ARTWORK", 0, STATE_COLORS.normal, 1)
 xpRing.fillRested = NewRingLayer("ARTWORK", 1, STATE_COLORS.rested, 1)
-
-
 
 -- "Show as minimap border": the ring wraps around the minimap instead of sitting in
 -- its own spot. It's always up then, its text goes below the map, and it can't be dragged.
@@ -83,15 +79,21 @@ local function XPSize()
     return math.floor(w + 2 * ((db.xpMinimapGap or 2) + T) + 0.5)
 end
 
-
 xpRing.isLocked = function() return MinimapFrame() ~= nil end
 
 XP.xpEditing = false
 
 -- Around the minimap the ring can sit behind it (one frame strata lower), so the map,
 -- its border and buttons draw over the ring rather than under it.
-local STRATA_BELOW = { LOW = "BACKGROUND", MEDIUM = "LOW", HIGH = "MEDIUM", DIALOG = "HIGH",
-                       FULLSCREEN = "DIALOG", FULLSCREEN_DIALOG = "FULLSCREEN", TOOLTIP = "FULLSCREEN_DIALOG" }
+local STRATA_BELOW = {
+    LOW = "BACKGROUND",
+    MEDIUM = "LOW",
+    HIGH = "MEDIUM",
+    DIALOG = "HIGH",
+    FULLSCREEN = "DIALOG",
+    FULLSCREEN_DIALOG = "FULLSCREEN",
+    TOOLTIP = "FULLSCREEN_DIALOG",
+}
 -- Over it (the default), the ring sits one strata above the map, but never above MEDIUM,
 -- where the game's windows are; anywhere else it's at the rings' usual strata, under them.
 local STRATA_ORDER = { BACKGROUND = 1, LOW = 2, MEDIUM = 3, HIGH = 4, DIALOG = 5 }
@@ -134,8 +136,13 @@ local function LayoutXPRing()
     end
 
     local showDelta = db.xpShowDelta and true or false
-    local inner = ns.UpdateGeometry(xpRing, "xp", size, tostring(showDelta) .. ":" .. tostring(mm ~= nil),
-        mm and db.xpSize or nil)
+    local inner = ns.UpdateGeometry(
+        xpRing,
+        "xp",
+        size,
+        tostring(showDelta) .. ":" .. tostring(mm ~= nil),
+        mm and db.xpSize or nil
+    )
     if not inner then return end
     if mm then inner = 100 end -- text below the minimap: a fixed size
     xpRing.gainText:SetFont(STANDARD_TEXT_FONT, ns.FontSize("xp", "Gain", inner * 0.18, 10), "OUTLINE")
@@ -168,12 +175,24 @@ end
 -- State ---------------------------------------------------------------------
 
 local xpState = { level = nil, cur = nil, max = nil, rest = 0, pendingLevel = nil }
-local anim = { from = 0, to = 0, shown = 0, t = 1, dur = 0.9, session = 0, holdUntil = 0, flashUntil = 0,
-               gainFrom = 0, gainShown = 0,
-               sessionFrom = 0,      -- level units where this ring session started (for the delta %)
-               restRunout = nil,     -- level units where this session's rested XP ran out (nil: wasn't rested)
-               preview = false, previewRested = 0, previewMax = 1000,
-               restGain = nil }      -- leaving a rest area: { from, to, max, shown, t, dur } (rested XP)
+local anim = {
+    from = 0,
+    to = 0,
+    shown = 0,
+    t = 1,
+    dur = 0.9,
+    session = 0,
+    holdUntil = 0,
+    flashUntil = 0,
+    gainFrom = 0,
+    gainShown = 0,
+    sessionFrom = 0, -- level units where this ring session started (for the delta %)
+    restRunout = nil, -- level units where this session's rested XP ran out (nil: wasn't rested)
+    preview = false,
+    previewRested = 0,
+    previewMax = 1000,
+    restGain = nil,
+} -- leaving a rest area: { from, to, max, shown, t, dur } (rested XP)
 
 -- XP earned during combat (or while editing the ring) is held here and shown afterwards.
 local combatQueue = { from = nil, to = nil, gain = 0, rest = nil, max = nil }

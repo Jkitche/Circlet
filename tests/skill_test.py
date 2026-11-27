@@ -1,6 +1,7 @@
 import math, re
 from lupa import LuaRuntime
 from PIL import Image, ImageDraw, ImageFont
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -14,7 +15,9 @@ function Advance(seconds, fps) fps = fps or 30
     for _, f in ipairs(allFrames) do if f._shown and f._scripts.OnUpdate then guard("OnUpdate", f._scripts.OnUpdate, f, 1 / fps) end end
   end end
 ''')
-chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
+chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')(
+    (__import__('subprocess').run(['python3', 'make_bundle.py']), open('bundle.lua').read())[1]
+)
 chunk("Circlet", lua.table())
 lua.execute('Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)')
 lua.execute('''
@@ -31,37 +34,58 @@ function SkillRingParts()
 end
 ''')
 
-LAYER = {"BACKGROUND":0,"BORDER":1,"ARTWORK":2}
+LAYER = {"BACKGROUND": 0, "BORDER": 1, "ARTWORK": 2}
+
+
 def find_skill_ring():
     # the frame whose fontstrings include a "/ " rank text
     for f in lua.eval('ALL_FS').values():
         t = f._text
-        if t and re.match(r'^\d+ / \d+$', str(t)): return f._parent
+        if t and re.match(r'^\d+ / \d+$', str(t)):
+            return f._parent
     return None
+
+
 def render(label):
     parts = lua.eval('{SkillRingParts()}')
-    W=150; S=3
-    im = Image.new("RGB",(W*S,W*S),(50,40,30))
+    W = 150
+    S = 3
+    im = Image.new("RGB", (W * S, W * S), (50, 40, 30))
     if parts[1] is None:
-        ImageDraw.Draw(im).text((10,10), label + " (hidden)", fill=(230,230,230)); return im
-    items=[]
+        ImageDraw.Draw(im).text((10, 10), label + " (hidden)", fill=(230, 230, 230))
+        return im
+    items = []
     for l in parts[1].values():
         items.append((LAYER[l._layer], l._sub, l))
-    items.sort(key=lambda t:(t[0],t[1]))
-    for _,_,l in items:
-        x1,y1,x2,y2,T = l._x1,l._y1,l._x2,l._y2,l._t; c = l._c
-        dx,dy=x2-x1,y2-y1; L=math.hypot(dx,dy) or 1; nx,ny=-dy/L*T/2,dx/L*T/2
-        pts=[((W/2+px)*S,(W/2-py)*S) for px,py in [(x1+nx,y1+ny),(x2+nx,y2+ny),(x2-nx,y2-ny),(x1-nx,y1-ny)]]
-        ImageDraw.Draw(im).polygon(pts, fill=(int(c[1]*255),int(c[2]*255),int(c[3]*255)))
+    items.sort(key=lambda t: (t[0], t[1]))
+    for _, _, l in items:
+        x1, y1, x2, y2, T = l._x1, l._y1, l._x2, l._y2, l._t
+        c = l._c
+        dx, dy = x2 - x1, y2 - y1
+        L = math.hypot(dx, dy) or 1
+        nx, ny = -dy / L * T / 2, dx / L * T / 2
+        pts = [
+            ((W / 2 + px) * S, (W / 2 - py) * S)
+            for px, py in [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny), (x2 - nx, y2 - ny), (x1 - nx, y1 - ny)]
+        ]
+        ImageDraw.Draw(im).polygon(pts, fill=(int(c[1] * 255), int(c[2] * 255), int(c[3] * 255)))
     d = ImageDraw.Draw(im)
     texts = [(f._text, f._tc) for f in parts[2].values()]
     big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
-    y = im.height/2 - 62
+    y = im.height / 2 - 62
     for t, c in texts:
-        col = (int(c[1]*255),int(c[2]*255),int(c[3]*255)) if c else (255,255,255)
-        w = d.textlength(str(t), font=big); d.text(((im.width-w)/2, y), str(t), fill=col, font=big); y += 32
-    d.text((8,8), label, fill=(230,230,230), font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18))
+        col = (int(c[1] * 255), int(c[2] * 255), int(c[3] * 255)) if c else (255, 255, 255)
+        w = d.textlength(str(t), font=big)
+        d.text(((im.width - w) / 2, y), str(t), fill=col, font=big)
+        y += 32
+    d.text(
+        (8, 8),
+        label,
+        fill=(230, 230, 230),
+        font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18),
+    )
     return im
+
 
 imgs = []
 # 1) Weapon skill-ups mid-fight -> nothing during combat, then ring after
@@ -72,7 +96,7 @@ SetSkill(95, 149); Fire("SKILL_LINES_CHANGED"); Advance(0.5)''')
 imgs.append(render("during combat"))
 lua.execute('IN_COMBAT = false; Fire("PLAYER_REGEN_ENABLED"); Advance(2.2)')
 imgs.append(render("after: Swords +2"))
-lua.execute('Advance(2.0)')   # queue moves on to Defense
+lua.execute('Advance(2.0)')  # queue moves on to Defense
 imgs.append(render("then: Defense +1"))
 lua.execute('Advance(6)')
 # 2) Mining out of combat
@@ -94,7 +118,9 @@ lua.execute('CircletDB.skillWeapons = true; Advance(6); SlashCmdList.CIRCLET("sk
 
 out = Image.new("RGB", (sum(i.width for i in imgs), max(i.height for i in imgs)))
 x = 0
-for i in imgs: out.paste(i, (x, 0)); x += i.width
+for i in imgs:
+    out.paste(i, (x, 0))
+    x += i.width
 out.save('/tmp/skill_rings.png')
 errs = lua.eval('ERRORS')
 print("ERRORS:", dict(errs) if list(errs.keys()) else "none")

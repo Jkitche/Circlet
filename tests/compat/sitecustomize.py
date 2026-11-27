@@ -8,10 +8,14 @@
 import os, subprocess, sys
 
 _run = subprocess.run
+
+
 def _run_with_this_python(args, *a, **kw):
     if isinstance(args, (list, tuple)) and args and args[0] == 'python3':
         args = [sys.executable] + list(args[1:])
     return _run(args, *a, **kw)
+
+
 subprocess.run = _run_with_this_python
 
 try:
@@ -26,6 +30,7 @@ if ImageFont is not None:
         'bold': [os.path.join(_windir, 'Fonts', 'arialbd.ttf'), '/Library/Fonts/Arial Bold.ttf'],
         'regular': [os.path.join(_windir, 'Fonts', 'arial.ttf'), '/Library/Fonts/Arial.ttf'],
     }
+
     def _truetype_anywhere(font=None, size=10, *a, **kw):
         if isinstance(font, str) and font.startswith('/usr/share/fonts/') and not os.path.exists(font):
             kind = 'bold' if 'Bold' in font else 'regular'
@@ -34,4 +39,5 @@ if ImageFont is not None:
                     return _truetype(alt, size, *a, **kw)
             return ImageFont.load_default(size)
         return _truetype(font, size, *a, **kw)
+
     ImageFont.truetype = _truetype_anywhere

@@ -9,6 +9,7 @@ the edges with a highlight along the bones.
 
     python tools/make_wing_texture.py
 """
+
 import math, os, struct
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -43,8 +44,8 @@ def P(x, y):
 
 
 def wing():
-    root = (0.92, 0.86)          # where it meets the badge
-    wrist = (0.42, 0.14)         # the bend of the wing, up and out
+    root = (0.92, 0.86)  # where it meets the badge
+    wrist = (0.42, 0.14)  # the bend of the wing, up and out
     claw = (0.30, 0.02)
     tips = [(0.04, 0.30), (0.08, 0.58), (0.26, 0.82)]  # finger ends, fanning down
     # Membrane: root -> wrist -> each fingertip, scalloped between the tips.
@@ -55,15 +56,15 @@ def wing():
         mx, my = (prev[0] + tip[0]) / 2, (prev[1] + tip[1]) / 2
         bx, by = mx + (root[0] - mx) * 0.16, my + (root[1] - my) * 0.16
         for t in np.linspace(0, 1, 10)[1:]:
-            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * bx + t ** 2 * tip[0]
-            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * by + t ** 2 * tip[1]
+            x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * bx + t**2 * tip[0]
+            y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * by + t**2 * tip[1]
             outline.append(P(x, y))
         prev = tip
     # Back to the root along the bottom, bowing in.
     for t in np.linspace(0, 1, 10)[1:]:
         bx, by = 0.66, 0.74
-        x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * bx + t ** 2 * root[0]
-        y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * by + t ** 2 * root[1]
+        x = (1 - t) ** 2 * prev[0] + 2 * (1 - t) * t * bx + t**2 * root[0]
+        y = (1 - t) ** 2 * prev[1] + 2 * (1 - t) * t * by + t**2 * root[1]
         outline.append(P(x, y))
 
     mem = Image.new('L', (BIG, BIG), 0)
@@ -92,7 +93,7 @@ def wing():
     # A darker line round the membrane's edge.
     edge = np.asarray(mem_soft, dtype=np.float32) / 255
     rim = np.clip(1 - np.asarray(mem.filter(ImageFilter.GaussianBlur(SS * 1.5)), dtype=np.float32) / 255 * 1.4, 0, 1)
-    value *= (1 - 0.5 * rim)
+    value *= 1 - 0.5 * rim
     alpha = np.clip(np.maximum(edge, bone), 0, 1)
     v = np.clip(value, 0, 1) * 255
     rgba = np.dstack([v, v, v, alpha * 255]).astype(np.uint8)

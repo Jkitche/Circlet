@@ -12,11 +12,20 @@ local Print, IsSecret = ns.Print, ns.IsSecret
 -- start and whenever it changes.
 
 local EVENTS = {
-    "PLAYER_ENTER_COMBAT", "PLAYER_LEAVE_COMBAT", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
-    "UNIT_ATTACK_SPEED", "UNIT_COMBAT", "UNIT_SPELLCAST_SUCCEEDED",
-    "CHAT_MSG_COMBAT_SELF_HITS", "CHAT_MSG_COMBAT_SELF_MISSES", "CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS",
-    "COMBAT_TEXT_UPDATE", "START_AUTOREPEAT_SPELL", -- not the combat log: registering it is blocked here
-    "STOP_AUTOREPEAT_SPELL", "UNIT_TARGET",
+    "PLAYER_ENTER_COMBAT",
+    "PLAYER_LEAVE_COMBAT",
+    "PLAYER_REGEN_DISABLED",
+    "PLAYER_REGEN_ENABLED",
+    "UNIT_ATTACK_SPEED",
+    "UNIT_COMBAT",
+    "UNIT_SPELLCAST_SUCCEEDED",
+    "CHAT_MSG_COMBAT_SELF_HITS",
+    "CHAT_MSG_COMBAT_SELF_MISSES",
+    "CHAT_MSG_COMBAT_CREATURE_VS_SELF_HITS",
+    "COMBAT_TEXT_UPDATE",
+    "START_AUTOREPEAT_SPELL", -- not the combat log: registering it is blocked here
+    "STOP_AUTOREPEAT_SPELL",
+    "UNIT_TARGET",
 }
 local LIMIT = 80 -- lines, so a long fight doesn't flood chat
 
@@ -47,9 +56,16 @@ probe:SetScript("OnEvent", function(_, event, ...)
     if not running then return end
     local n = select("#", ...)
     local args = {}
-    for i = 1, math.min(n, 6) do args[i] = Show((select(i, ...))) end
+    for i = 1, math.min(n, 6) do
+        args[i] = Show((select(i, ...)))
+    end
     -- Only the player's and target's unit events (others are noise).
-    if event == "UNIT_COMBAT" or event == "UNIT_SPELLCAST_SUCCEEDED" or event == "UNIT_ATTACK_SPEED" or event == "UNIT_TARGET" then
+    if
+        event == "UNIT_COMBAT"
+        or event == "UNIT_SPELLCAST_SUCCEEDED"
+        or event == "UNIT_ATTACK_SPEED"
+        or event == "UNIT_TARGET"
+    then
         local unit = select(1, ...)
         if unit ~= "player" and unit ~= "target" then return end
     end
@@ -72,15 +88,22 @@ local function Stop()
 end
 
 local function Start()
-    if running then Stop() return end
+    if running then
+        Stop()
+        return
+    end
     running, lines, started = true, 0, GetTime()
     local missing = {}
     for _, e in ipairs(EVENTS) do
         if not pcall(probe.RegisterEvent, probe, e) then table.insert(missing, e) end
     end
     Print("Swing probe: 30 seconds. Start auto-attacking something. " .. Speed())
-    Print("Auto Attack current: " .. Show(ns.SafeCall(IsCurrentSpell, 6603))
-        .. "; events this client refused: " .. (#missing > 0 and table.concat(missing, ", ") or "none"))
+    Print(
+        "Auto Attack current: "
+            .. Show(ns.SafeCall(IsCurrentSpell, 6603))
+            .. "; events this client refused: "
+            .. (#missing > 0 and table.concat(missing, ", ") or "none")
+    )
     C_Timer.After(30, Stop)
 end
 

@@ -25,8 +25,22 @@ local function Money()
 end
 
 local function NewSession()
-    return { start = time(), money = Money(), xp = 0, levels = 0, quests = 0, objectives = 0,
-             skills = {}, rep = {}, flights = 0, flightTime = 0, pet = 0, deaths = 0, crafts = 0, gathers = 0 }
+    return {
+        start = time(),
+        money = Money(),
+        xp = 0,
+        levels = 0,
+        quests = 0,
+        objectives = 0,
+        skills = {},
+        rep = {},
+        flights = 0,
+        flightTime = 0,
+        pet = 0,
+        deaths = 0,
+        crafts = 0,
+        gathers = 0,
+    }
 end
 
 -- kind: "xp", "levels", "objectives", "flights", "flightTime", "pet" (amounts), or
@@ -45,9 +59,7 @@ ns.SessionAdd = SessionAdd
 local function StartOrResume(isInitialLogin)
     db.sessions = db.sessions or {}
     local key = CharKey()
-    if isInitialLogin or not db.sessions[key] then
-        db.sessions[key] = NewSession()
-    end
+    if isInitialLogin or not db.sessions[key] then db.sessions[key] = NewSession() end
     session = db.sessions[key]
 end
 
@@ -147,7 +159,9 @@ local function Total(t)
     local sum, top, topName = 0, nil, nil
     for name, v in pairs(t or {}) do
         sum = sum + v
-        if not top or math.abs(v) > math.abs(top) then top, topName = v, name end
+        if not top or math.abs(v) > math.abs(top) then
+            top, topName = v, name
+        end
     end
     return sum, topName, top
 end
@@ -182,38 +196,62 @@ local function BuildTiles()
     end
     -- Only what changed this session: a tile at zero is left out.
     if s.xp > 0 or s.levels > 0 then
-        table.insert(list, { value = "+" .. Short(s.xp), label = "Experience", sub = xpSub, color = purple, frac = levelFrac })
+        table.insert(
+            list,
+            { value = "+" .. Short(s.xp), label = "Experience", sub = xpSub, color = purple, frac = levelFrac }
+        )
     end
 
     if s.quests > 0 or s.objectives > 0 then
-        table.insert(list, { value = tostring(s.quests), label = "Quests done",
-                             sub = s.objectives > 0 and (s.objectives .. " objectives") or nil,
-                             color = Soft(db.questColors.complete), frac = 1 })
+        table.insert(list, {
+            value = tostring(s.quests),
+            label = "Quests done",
+            sub = s.objectives > 0 and (s.objectives .. " objectives") or nil,
+            color = Soft(db.questColors.complete),
+            frac = 1,
+        })
     end
 
     local money = Money() - (s.money or 0)
     if money ~= 0 then
-        table.insert(list, { value = Coins(money), label = "Money", sub = nil,
-                             color = money >= 0 and { r = 1, g = 0.82, b = 0 } or { r = 0.9, g = 0.25, b = 0.2 },
-                             frac = 1, small = true })
+        table.insert(list, {
+            value = Coins(money),
+            label = "Money",
+            sub = nil,
+            color = money >= 0 and { r = 1, g = 0.82, b = 0 } or { r = 0.9, g = 0.25, b = 0.2 },
+            frac = 1,
+            small = true,
+        })
     end
 
     local skillSum, topSkill, topSkillN = Total(s.skills)
     if skillSum > 0 then
-        table.insert(list, { value = "+" .. skillSum, label = "Skill-ups",
-                             sub = topSkill and (topSkill .. " +" .. topSkillN) or nil,
-                             color = db.skillColors.profession, frac = 1 })
+        table.insert(list, {
+            value = "+" .. skillSum,
+            label = "Skill-ups",
+            sub = topSkill and (topSkill .. " +" .. topSkillN) or nil,
+            color = db.skillColors.profession,
+            frac = 1,
+        })
     end
     local repSum, topRep, topRepN = Total(s.rep)
     if topRep then
-        table.insert(list, { value = (repSum >= 0 and "+" or "") .. Short(repSum), label = "Reputation",
-                             sub = topRep .. (topRepN >= 0 and " +" or " ") .. Short(topRepN),
-                             color = { r = 0.2, g = 0.75, b = 0.35 }, frac = 1 })
+        table.insert(list, {
+            value = (repSum >= 0 and "+" or "") .. Short(repSum),
+            label = "Reputation",
+            sub = topRep .. (topRepN >= 0 and " +" or " ") .. Short(topRepN),
+            color = { r = 0.2, g = 0.75, b = 0.35 },
+            frac = 1,
+        })
     end
     if s.flights > 0 then
-        table.insert(list, { value = tostring(s.flights), label = s.flights == 1 and "Flight" or "Flights",
-                             sub = FormatTime(s.flightTime) .. " in the air",
-                             color = db.flightColors and db.flightColors.fill or purple, frac = 1 })
+        table.insert(list, {
+            value = tostring(s.flights),
+            label = s.flights == 1 and "Flight" or "Flights",
+            sub = FormatTime(s.flightTime) .. " in the air",
+            color = db.flightColors and db.flightColors.fill or purple,
+            frac = 1,
+        })
     end
     if (s.crafts or 0) > 0 then
         table.insert(list, { value = tostring(s.crafts), label = "Crafted", color = db.craftColors.fill, frac = 1 })
@@ -225,8 +263,12 @@ local function BuildTiles()
         table.insert(list, { value = "+" .. Short(s.pet), label = "Pet XP", color = db.petColors.xp, frac = 1 })
     end
     if s.deaths > 0 then
-        table.insert(list, { value = tostring(s.deaths), label = s.deaths == 1 and "Death" or "Deaths",
-                             color = { r = 0.55, g = 0.55, b = 0.6 }, frac = 1 })
+        table.insert(list, {
+            value = tostring(s.deaths),
+            label = s.deaths == 1 and "Death" or "Deaths",
+            color = { r = 0.55, g = 0.55, b = 0.6 },
+            frac = 1,
+        })
     end
     return list, s
 end
@@ -249,7 +291,9 @@ local function ShowSummary()
         t:ClearAllPoints()
         t:SetPoint("TOP", panel, "TOP", x, -(HEADER + 12) - row * TILE_H)
         ns.DrawTrack(t.ringFrame, t.bg, t.geom, 2)
-        for _, l in ipairs(t.fill) do l:SetColorTexture(info.color.r, info.color.g, info.color.b, 1) end
+        for _, l in ipairs(t.fill) do
+            l:SetColorTexture(info.color.r, info.color.g, info.color.b, 1)
+        end
         DrawArc(t.fill, 0, info.frac or 1, t.ringFrame, t.geom)
         t.value:SetFont(STANDARD_TEXT_FONT, info.small and 12 or 17, "OUTLINE")
         t.value:SetText(info.value)
@@ -257,37 +301,46 @@ local function ShowSummary()
         t.sub:SetText(info.sub or "")
         t:Show()
     end
-    for i = #list + 1, #tiles do tiles[i]:Hide() end
+    for i = #list + 1, #tiles do
+        tiles[i]:Hide()
+    end
     panel:Show()
 end
 
 local function ToggleSummary()
-    if panel:IsShown() then panel:Hide() else ShowSummary() end
+    if panel:IsShown() then
+        panel:Hide()
+    else
+        ShowSummary()
+    end
 end
 
-panel.reset.onClick = (function()
+panel.reset.onClick = function()
     db.sessions[CharKey()] = NewSession()
     session = db.sessions[CharKey()]
     ShowSummary()
     Print("Started a new session.")
-end)
+end
 
 ---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
-ns.Listen({ "PLAYER_ENTERING_WORLD", "PLAYER_DEAD", "QUEST_TURNED_IN", "PLAYER_CAMPING", "PLAYER_QUITING" }, function(event, arg1)
-    if event == "PLAYER_ENTERING_WORLD" then
-        if not session then StartOrResume(arg1) end
-    elseif not session then
-        return
-    elseif event == "QUEST_TURNED_IN" then
-        session.quests = session.quests + 1
-    elseif event == "PLAYER_DEAD" then
-        session.deaths = session.deaths + 1
-    elseif event == "PLAYER_CAMPING" or event == "PLAYER_QUITING" then
-        if db.summaryOnLogout then ShowSummary() end
+ns.Listen(
+    { "PLAYER_ENTERING_WORLD", "PLAYER_DEAD", "QUEST_TURNED_IN", "PLAYER_CAMPING", "PLAYER_QUITING" },
+    function(event, arg1)
+        if event == "PLAYER_ENTERING_WORLD" then
+            if not session then StartOrResume(arg1) end
+        elseif not session then
+            return
+        elseif event == "QUEST_TURNED_IN" then
+            session.quests = session.quests + 1
+        elseif event == "PLAYER_DEAD" then
+            session.deaths = session.deaths + 1
+        elseif event == "PLAYER_CAMPING" or event == "PLAYER_QUITING" then
+            if db.summaryOnLogout then ShowSummary() end
+        end
     end
-end)
+)
 
 ns.RegisterCommand({ "summary", "session" }, ToggleSummary, "this session's summary")
 

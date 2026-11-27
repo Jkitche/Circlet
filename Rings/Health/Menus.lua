@@ -30,7 +30,10 @@ local menuDebug = {}
 local function MenuButton(m)
     if m.button then return m.button end
     local ok, b = pcall(CreateFrame, "Button", m.name, UIParent, "SecureUnitButtonTemplate")
-    if not ok or not b then menuDebug[m.key] = "couldn't make the button: " .. tostring(b) return nil end
+    if not ok or not b then
+        menuDebug[m.key] = "couldn't make the button: " .. tostring(b)
+        return nil
+    end
     b:SetAttribute("unit", m.unit)
     b:RegisterForClicks("AnyUp")
     b:SetFrameStrata(ns.RING_STRATA)
@@ -55,12 +58,18 @@ local function SetClicks(m, b)
     m.clicks = k
     local menuType = menu and "togglemenu" or nil
     local targetType = click and "target" or nil
-    b:SetAttribute("*type2", menuType); b:SetAttribute("type2", menuType)
-    b:SetAttribute("*type1", targetType); b:SetAttribute("type1", targetType)
+    b:SetAttribute("*type2", menuType)
+    b:SetAttribute("type2", menuType)
+    b:SetAttribute("*type1", targetType)
+    b:SetAttribute("type1", targetType)
     if b.SetPassThroughButtons then
-        if menu and click then pcall(b.SetPassThroughButtons, b)
-        elseif click then pcall(b.SetPassThroughButtons, b, "RightButton")
-        else pcall(b.SetPassThroughButtons, b, "LeftButton") end
+        if menu and click then
+            pcall(b.SetPassThroughButtons, b)
+        elseif click then
+            pcall(b.SetPassThroughButtons, b, "RightButton")
+        else
+            pcall(b.SetPassThroughButtons, b, "LeftButton")
+        end
     end
 end
 
@@ -94,7 +103,10 @@ local function SyncMenus()
         local want = Wants(m)
         local b = (want or m.button) and MenuButton(m)
         if b then
-            if m.driver then pcall(UnregisterStateDriver, b, "visibility"); m.driver = nil end
+            if m.driver then
+                pcall(UnregisterStateDriver, b, "visibility")
+                m.driver = nil
+            end
             local f = m.ring.frame
             local up = want and f:IsVisible() and f:GetAlpha() > 0.05
             if up then
@@ -144,15 +156,30 @@ ns.RegisterCommand({ "menudebug" }, function()
         else
             local x, y = b:GetCenter()
             local rx, ry = m.ring.frame:GetCenter()
-            ns.Print(string.format("%s: shown %s, mouse %s, over %s, at %s,%s (ring at %s,%s), size %d, unit %s, type2 %s, type1 %s, protected %s",
-                m.key, tostring(b:IsVisible()), tostring(b:IsMouseEnabled()), tostring(b:IsMouseOver()),
-                x and math.floor(x) or "?", y and math.floor(y) or "?", rx and math.floor(rx) or "?", ry and math.floor(ry) or "?",
-                b:GetWidth() or 0, tostring(b:GetAttribute("unit")), tostring(b:GetAttribute("*type2")), tostring(b:GetAttribute("*type1")),
-                tostring(b:IsProtected())))
+            ns.Print(
+                string.format(
+                    "%s: shown %s, mouse %s, over %s, at %s,%s (ring at %s,%s), size %d, unit %s, type2 %s, type1 %s, protected %s",
+                    m.key,
+                    tostring(b:IsVisible()),
+                    tostring(b:IsMouseEnabled()),
+                    tostring(b:IsMouseOver()),
+                    x and math.floor(x) or "?",
+                    y and math.floor(y) or "?",
+                    rx and math.floor(rx) or "?",
+                    ry and math.floor(ry) or "?",
+                    b:GetWidth() or 0,
+                    tostring(b:GetAttribute("unit")),
+                    tostring(b:GetAttribute("*type2")),
+                    tostring(b:GetAttribute("*type1")),
+                    tostring(b:IsProtected())
+                )
+            )
         end
     end
     local focus = GetMouseFoci and GetMouseFoci() or (GetMouseFocus and { GetMouseFocus() }) or {}
     local names = {}
-    for _, f in ipairs(focus) do names[#names + 1] = tostring(f.GetName and f:GetName() or f) end
+    for _, f in ipairs(focus) do
+        names[#names + 1] = tostring(f.GetName and f:GetName() or f)
+    end
     ns.Print("Under the mouse: " .. (#names > 0 and table.concat(names, ", ") or "nothing"))
 end)

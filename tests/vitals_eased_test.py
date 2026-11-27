@@ -7,8 +7,9 @@
 # them counter-clockwise about their middle, the image clipped to its own square as it turns (so
 # a mask reaches only half its size from its middle), and texture coordinates are ignored.
 import math, sys
+
 src = open('vitals_test.py').read()
-head = src[:src.index("NSX = lua.table()")]
+head = src[: src.index("NSX = lua.table()")]
 exec(head)
 lua.execute('''
 -- Record geometry calls.
@@ -30,7 +31,8 @@ RM.CreateMaskTexture = function(self) local m = RM.CreateTexture(self); m._kind 
 RM.GetStatusBarTexture = function(s) s._fillTex = s._fillTex or RM.CreateTexture(s); s._fillTex._bar = s; return s._fillTex end
 Enum.StatusBarInterpolation = { Immediate = 0, ExponentialEaseOut = 1 }
 ''')
-NSX = lua.table(); lua.globals().NS = NSX
+NSX = lua.table()
+lua.globals().NS = NSX
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
 lua.execute('''
 UNITS.player = { hp = 900, max = 1000, power = 300, pmax = 1200, ptype = 0, token = "MANA", name = "Jaina", level = 20, player = true }
@@ -62,7 +64,8 @@ def capture():
         p = dict(t[i])
         for k in ('from', 'to'):
             p[k] = dict(p[k])
-        out['pieces'].append(p); i += 1
+        out['pieces'].append(p)
+        i += 1
     return out
 
 
@@ -86,28 +89,37 @@ def lead(p):
 
 
 def render(cap, start, sweep, rev):
-    R, T = cap['R'], cap['T']; rin, rout = R - T / 2, R + T / 2
-    S = 3; N = int((rout + 4) * 2 * S)
+    R, T = cap['R'], cap['T']
+    rin, rout = R - T / 2, R + T / 2
+    S = 3
+    N = int((rout + 4) * 2 * S)
     bad = band = 0
     v = cap['pieces'][0]['val'] / cap['pieces'][0]['max']
     for j in range(N):
         for i in range(N):
-            x = (i + 0.5) / S - N / (2 * S); y = N / (2 * S) - (j + 0.5) / S
+            x = (i + 0.5) / S - N / (2 * S)
+            y = N / (2 * S) - (j + 0.5) / S
             r = math.hypot(x, y)
-            if r < rin or r > rout: continue
+            if r < rin or r > rout:
+                continue
             turn = (math.atan2(x, y) / (2 * math.pi)) % 1
             d = ((start + sweep - turn) if rev else (turn - start)) % 1
-            if d > sweep: continue
+            if d > sweep:
+                continue
             band += 1
             want = d / sweep <= v
             covered = False
             for p in cap['pieces']:
                 ex, ey = lead(p)
-                if (solid(x, y, p['from']['x'], p['from']['y'], p['from']['rot'], p['from']['w'])
-                        and solid(x, y, p['to']['x'], p['to']['y'], p['to']['rot'], p['to']['w'])
-                        and solid(x, y, ex, ey, p['edgeRot'], p['edgeW'])):
-                    covered = True; break
-            if covered != want: bad += 1
+                if (
+                    solid(x, y, p['from']['x'], p['from']['y'], p['from']['rot'], p['from']['w'])
+                    and solid(x, y, p['to']['x'], p['to']['y'], p['to']['rot'], p['to']['w'])
+                    and solid(x, y, ex, ey, p['edgeRot'], p['edgeW'])
+                ):
+                    covered = True
+                    break
+            if covered != want:
+                bad += 1
     return bad, band
 
 
@@ -117,19 +129,28 @@ def edge_angle(cap, start, sweep, rev):
     turn = (start + sweep - v * sweep) if rev else (start + v * sweep)
     cx, cy = cap['R'] * math.sin(2 * math.pi * turn), cap['R'] * math.cos(2 * math.pi * turn)
     for p in cap['pieces']:
-        if (solid(cx, cy, p['from']['x'], p['from']['y'], p['from']['rot'], p['from']['w'])
-                and solid(cx, cy, p['to']['x'], p['to']['y'], p['to']['rot'], p['to']['w'])):
+        if solid(cx, cy, p['from']['x'], p['from']['y'], p['from']['rot'], p['from']['w']) and solid(
+            cx, cy, p['to']['x'], p['to']['y'], p['to']['rot'], p['to']['w']
+        ):
             line = p['edgeRot'] + math.pi / 2  # the half-plane's edge runs at rot + 90 degrees
             radial = math.atan2(cy, cx)
             return abs((math.degrees(line - radial) + 90) % 180 - 90)
     return -1
 
 
-for shape, rot, rev in [('ring', 180, False), ('ring', 0, False), ('ring', 180, True), ('arc', 180, False), ('ring', 33, False)]:
+for shape, rot, rev in [
+    ('ring', 180, False),
+    ('ring', 0, False),
+    ('ring', 180, True),
+    ('arc', 180, False),
+    ('ring', 33, False),
+]:
     for hp in (900, 610, 270):
-        lua.execute(f'CircletDB.playerHpShape = "{shape}"; CircletDB.playerHpRotation = {rot}; '
-                    f'CircletDB.playerHpReverse = {"true" if rev else "false"}; UNITS.player.hp = {hp}; '
-                    f'Fire("UNIT_HEALTH", "player"); Advance(0.3)')
+        lua.execute(
+            f'CircletDB.playerHpShape = "{shape}"; CircletDB.playerHpRotation = {rot}; '
+            f'CircletDB.playerHpReverse = {"true" if rev else "false"}; UNITS.player.hp = {hp}; '
+            f'Fire("UNIT_HEALTH", "player"); Advance(0.3)'
+        )
         cap = capture()
         g = lua.eval('Ring("playerHp").geom')
         bad, band = render(cap, g['start'] % 1, g['sweep'], bool(g['reverse']))
@@ -137,7 +158,9 @@ for shape, rot, rev in [('ring', 180, False), ('ring', 0, False), ('ring', 180, 
         mode = sorted(set(p['mode'] for p in cap['pieces']))
         pinned = all(p['edgeOnFill'] for p in cap['pieces'])
         most = max(p['masks'] for p in cap['pieces'])
-        print(f"{shape} rot {rot} {'ccw' if rev else 'cw'} hp {hp / 10:.0f}%: {len(cap['pieces'])} pieces, "
-              f"{'eased' if mode == [1] else 'set at once'}, edge pinned to the bar: {pinned}, masks {most}, "
-              f"off by {100 * bad / max(band, 1):.1f}% of the band, edge {ang:.1f} deg from radial")
+        print(
+            f"{shape} rot {rot} {'ccw' if rev else 'cw'} hp {hp / 10:.0f}%: {len(cap['pieces'])} pieces, "
+            f"{'eased' if mode == [1] else 'set at once'}, edge pinned to the bar: {pinned}, masks {most}, "
+            f"off by {100 * bad / max(band, 1):.1f}% of the band, edge {ang:.1f} deg from radial"
+        )
 print("ERRORS:", dict(lua.eval("ERRORS")))

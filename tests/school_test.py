@@ -4,7 +4,9 @@ local orig = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = orig(self, ...); t._parent = self; table.insert(ALL_TEX, t); return t end
 '''
 head = open('breath_test.py').read().split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0]
-head = head.replace("lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1)
+head = head.replace(
+    "lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1
+)
 exec(head)
 lua.execute('''
 -- 133/116 are on the built-in list; 9001 "Glacial Spike" and 9002 "Mystery Bolt" aren't.
@@ -82,4 +84,5 @@ for _, line in ipairs(order) do P("sample " .. line) end
 P("combat log touched: " .. tostring(COMBAT_LOG_TOUCHED))
 Slash("edit")
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

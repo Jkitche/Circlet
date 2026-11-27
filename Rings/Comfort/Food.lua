@@ -24,8 +24,8 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 
 local CHOMP, GULP = 1.3, 1.6
 local CRUMBS = 7
-local WISPS, PUFFS = 3, 8   -- steam: columns, and soft puffs travelling up each one
-local TEETH = 3             -- tooth marks along a bite's edge
+local WISPS, PUFFS = 3, 8 -- steam: columns, and soft puffs travelling up each one
+local TEETH = 3 -- tooth marks along a bite's edge
 local BITE_HOLD, BITE_FADE = 0.55, 0.35 -- a bite stays this long, then closes over this fast
 local COLUMNS, SURFACE = 48, 18 -- the water: vertical strips, and segments along its surface
 
@@ -124,15 +124,21 @@ local function State(kinds, frac, left, icon, doneAt, eatFrac, drinkFrac)
     return st
 end
 
-local SAMPLE_ICONS = { eat = "Interface\\Icons\\INV_Misc_Food_15", drink = "Interface\\Icons\\INV_Drink_07",
-                       both = "Interface\\Icons\\INV_Misc_Food_73CinnamonRoll" }
+local SAMPLE_ICONS = {
+    eat = "Interface\\Icons\\INV_Misc_Food_15",
+    drink = "Interface\\Icons\\INV_Drink_07",
+    both = "Interface\\Icons\\INV_Misc_Food_73CinnamonRoll",
+}
 
 local foodRing = CreateLiveRing({
     key = "food",
     read = function(now)
         if dirty then Scan() end
         local eat, drink = buffs.eat, buffs.drink
-        if not (eat or drink) then fullAt = nil return nil end
+        if not (eat or drink) then
+            fullAt = nil
+            return nil
+        end
         local kinds = (eat and drink) and "both" or (eat and "eat" or "drink")
         -- How far through each buff. The game removes a buff the moment it runs out, so its
         -- last moments count as done. frac: the one with longer to go (done when both are).
@@ -209,7 +215,10 @@ local function Build(frame)
     end
     for i = 1, 3 do
         local l = frame:CreateLine(nil, "ARTWORK", nil, 4)
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         fx.impact[i] = l
     end
@@ -219,34 +228,65 @@ local function Build(frame)
         t:Hide()
         local c = CRUMB_COLORS[(i % #CRUMB_COLORS) + 1]
         -- Fixed per crumb: which way it flies, how hard, how big and how fast it turns.
-        fx.crumbs[i] = { tex = t, c = c, angle = -1.1 + 2.2 * ((i * 0.618) % 1), speed = 0.8 + (i * 0.37) % 0.5,
-                         size = 0.7 + (i * 0.53) % 0.6, spin = ((i % 2 == 0) and 1 or -1) * (4 + i % 3 * 2) }
+        fx.crumbs[i] = {
+            tex = t,
+            c = c,
+            angle = -1.1 + 2.2 * ((i * 0.618) % 1),
+            speed = 0.8 + (i * 0.37) % 0.5,
+            size = 0.7 + (i * 0.53) % 0.6,
+            spin = ((i % 2 == 0) and 1 or -1) * (4 + i % 3 * 2),
+        }
     end
     -- The water: strips from the bottom of the hollow up to the surface, and a bright line
     -- along the surface. Lines, worked out to stay inside the circle, so no mask is needed.
     local function Line(sub)
         local l = frame:CreateLine(nil, "BORDER", nil, sub)
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         return l
     end
     fx.water, fx.shallow, fx.surface = {}, {}, {}
-    for i = 1, COLUMNS do fx.water[i], fx.shallow[i] = Line(1), Line(2) end
-    for i = 1, SURFACE do fx.surface[i] = Line(3) end
+    for i = 1, COLUMNS do
+        fx.water[i], fx.shallow[i] = Line(1), Line(2)
+    end
+    for i = 1, SURFACE do
+        fx.surface[i] = Line(3)
+    end
 end
 
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
-    for _, l in ipairs(fx.eatFill) do l:Hide() end
-    for _, l in ipairs(fx.drinkFill) do l:Hide() end
-    for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
-    for _, p in ipairs(fx.steam) do p.tex:Hide() end
-    for _, t in ipairs(fx.bite) do t:Hide() end
-    for _, l in ipairs(fx.impact) do l:Hide() end
-    for _, l in ipairs(fx.water) do l:Hide() end
-    for _, l in ipairs(fx.shallow) do l:Hide() end
-    for _, l in ipairs(fx.surface) do l:Hide() end
+    for _, l in ipairs(fx.eatFill) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.drinkFill) do
+        l:Hide()
+    end
+    for _, cr in ipairs(fx.crumbs) do
+        cr.tex:Hide()
+    end
+    for _, p in ipairs(fx.steam) do
+        p.tex:Hide()
+    end
+    for _, t in ipairs(fx.bite) do
+        t:Hide()
+    end
+    for _, l in ipairs(fx.impact) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.water) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.shallow) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.surface) do
+        l:Hide()
+    end
 end
 
 -- Steam: wisps curling up from the bottom of the hollow, past the top of the ring,
@@ -274,9 +314,15 @@ local function DrawChomp(frame, geom, now, ri, ro, frac)
     local since = now % CHOMP
     local R, T = geom.R, geom.T
     if not frac or frac <= 0.02 or frac >= 0.995 then
-        for _, t in ipairs(fx.bite) do t:Hide() end
-        for _, l in ipairs(fx.impact) do l:Hide() end
-        for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
+        for _, t in ipairs(fx.bite) do
+            t:Hide()
+        end
+        for _, l in ipairs(fx.impact) do
+            l:Hide()
+        end
+        for _, cr in ipairs(fx.crumbs) do
+            cr.tex:Hide()
+        end
         return
     end
     -- Where the fill ends, which way is out from the ring there, and along it.
@@ -285,7 +331,11 @@ local function DrawChomp(frame, geom, now, ri, ro, frac)
     local bx, by = ns.RingPoint(geom, math.max(0, frac - 0.004)) -- a little back: which way the fill runs
     local tx, ty = hx - bx, hy - by
     local tl = math.sqrt(tx * tx + ty * ty)
-    if tl < 1e-6 then tx, ty = -oy, ox else tx, ty = tx / tl, ty / tl end
+    if tl < 1e-6 then
+        tx, ty = -oy, ox
+    else
+        tx, ty = tx / tl, ty / tl
+    end
 
     -- The bite: a chunk over the end of the fill, tooth marks along its edge toward the
     -- filled side. Track-colored, all inside the band.
@@ -411,7 +461,12 @@ local function DrawWater(frame, now, ri, level, c, xMin)
             l:SetThickness(math.max(1.5, ri * 0.045))
             l:SetStartPoint("CENTER", frame, x1, y1)
             l:SetEndPoint("CENTER", frame, x2, y2)
-            l:SetColorTexture(math.min(1, c.r * 0.5 + 0.5), math.min(1, c.g * 0.5 + 0.5), math.min(1, c.b * 0.4 + 0.6), 0.85)
+            l:SetColorTexture(
+                math.min(1, c.r * 0.5 + 0.5),
+                math.min(1, c.g * 0.5 + 0.5),
+                math.min(1, c.b * 0.4 + 0.6),
+                0.85
+            )
             l:Show()
         else
             l:Hide()
@@ -425,20 +480,32 @@ end
 local function HalfGeom(g, geom, right)
     g.R, g.T, g.step, g.style, g.gapPx = geom.R, geom.T, geom.step, geom.style, geom.gapPx
     g.notches = 12 -- half the usual 24, for the segmented style
-    if right then g.start, g.sweep, g.reverse = 0, 0.5, true else g.start, g.sweep, g.reverse = 0.5, 0.5, nil end
+    if right then
+        g.start, g.sweep, g.reverse = 0, 0.5, true
+    else
+        g.start, g.sweep, g.reverse = 0.5, 0.5, nil
+    end
     return g
 end
 
 local function DrawSplit(st, frame, geom)
     if not st.split then
-        for _, l in ipairs(fx.eatFill) do l:Hide() end
-        for _, l in ipairs(fx.drinkFill) do l:Hide() end
+        for _, l in ipairs(fx.eatFill) do
+            l:Hide()
+        end
+        for _, l in ipairs(fx.drinkFill) do
+            l:Hide()
+        end
         return
     end
     local c = db.foodColors
     local left, right = HalfGeom(fx.leftGeom, geom, false), HalfGeom(fx.rightGeom, geom, true)
-    for _, l in ipairs(fx.eatFill) do l:SetColorTexture(c.eat.r, c.eat.g, c.eat.b, 1) end
-    for _, l in ipairs(fx.drinkFill) do l:SetColorTexture(c.drink.r, c.drink.g, c.drink.b, 1) end
+    for _, l in ipairs(fx.eatFill) do
+        l:SetColorTexture(c.eat.r, c.eat.g, c.eat.b, 1)
+    end
+    for _, l in ipairs(fx.drinkFill) do
+        l:SetColorTexture(c.drink.r, c.drink.g, c.drink.b, 1)
+    end
     ns.DrawArc(fx.eatFill, 0, st.eatFrac or 0, frame, left, nil, ns.Shade("food", c.eat))
     ns.DrawArc(fx.drinkFill, 0, st.drinkFrac or 0, frame, right, nil, ns.Shade("food", c.drink))
 end
@@ -457,7 +524,7 @@ local function DrawFoodFx(st, frame, geom)
     end
     local now = GetTime()
     local ri = math.max(4, geom.R - geom.T / 2) -- the hollow
-    local ro = geom.R + geom.T / 2              -- the ring's outer edge
+    local ro = geom.R + geom.T / 2 -- the ring's outer edge
     local eat, drink = st.kinds ~= "drink", st.kinds ~= "eat"
     local c = db.foodColors
     local split = st.kinds == "both" -- each side's effects stay on its own half
@@ -482,10 +549,18 @@ local function DrawFoodFx(st, frame, geom)
         end
     else
         fx.glow:Hide()
-        for _, p in ipairs(fx.steam) do p.tex:Hide() end
-        for _, t in ipairs(fx.bite) do t:Hide() end
-        for _, l in ipairs(fx.impact) do l:Hide() end
-        for _, cr in ipairs(fx.crumbs) do cr.tex:Hide() end
+        for _, p in ipairs(fx.steam) do
+            p.tex:Hide()
+        end
+        for _, t in ipairs(fx.bite) do
+            t:Hide()
+        end
+        for _, l in ipairs(fx.impact) do
+            l:Hide()
+        end
+        for _, cr in ipairs(fx.crumbs) do
+            cr.tex:Hide()
+        end
     end
     if drink then
         if split then
@@ -495,9 +570,15 @@ local function DrawFoodFx(st, frame, geom)
         end
     else
         shownLevel = nil
-        for _, l in ipairs(fx.water) do l:Hide() end
-        for _, l in ipairs(fx.shallow) do l:Hide() end
-        for _, l in ipairs(fx.surface) do l:Hide() end
+        for _, l in ipairs(fx.water) do
+            l:Hide()
+        end
+        for _, l in ipairs(fx.shallow) do
+            l:Hide()
+        end
+        for _, l in ipairs(fx.surface) do
+            l:Hide()
+        end
     end
 end
 ns.DrawFoodFx = DrawFoodFx
@@ -515,57 +596,106 @@ ns.PreviewFoodRing = function() foodRing.Preview(21) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "food", name = "Food & Drink", order = 11.5,
+    key = "food",
+    name = "Food & Drink",
+    order = 11.5,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = foodRing,
-    preview = ns.PreviewFoodRing, slash = { "food", "drink", "eat" }, help = "preview the food & drink ring",
+    preview = ns.PreviewFoodRing,
+    slash = { "food", "drink", "eat" },
+    help = "preview the food & drink ring",
     toggle = { "Food & Drink ring", "Eating and drinking: the food or drink buff filling up." },
     defaults = {
         -- Food & Drink ring: while you eat or drink. Left of the breath ring.
-        foodEnabled   = true,
-        foodFx        = true, -- the eating and drinking animations
-        foodSize      = 110,
+        foodEnabled = true,
+        foodFx = true, -- the eating and drinking animations
+        foodSize = 110,
         foodThickness = 11,
-        foodOpacity   = 100,
-        foodX         = -340,
-        foodFromTop   = 260,
-        foodHold      = 2,
-        foodStyle     = "smooth",
-        foodBorder    = 2,
+        foodOpacity = 100,
+        foodX = -340,
+        foodFromTop = 260,
+        foodHold = 2,
+        foodStyle = "smooth",
+        foodBorder = 2,
         foodColors = {
-            eat   = { r = 0.95, g = 0.60, b = 0.25 },
+            eat = { r = 0.95, g = 0.60, b = 0.25 },
             drink = { r = 0.35, g = 0.65, b = 1.00 },
-            both  = { r = 0.80, g = 0.55, b = 0.90 },
-            full  = { r = 0.35, g = 0.90, b = 0.40 },
+            both = { r = 0.80, g = 0.55, b = 0.90 },
+            full = { r = 0.35, g = 0.90, b = 0.40 },
         },
     },
-    page = { folder = "comfort", order = 1, build = function(O)
+    page = {
+        folder = "comfort",
+        order = 1,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.6, "Food & Drink", "Food & Drink Ring",
+            local tab = RingTab(
+                10.6,
+                "Food & Drink",
+                "Food & Drink Ring",
                 "While you eat or drink, the ring fills as the food or drink buff runs and counts down what's "
-                .. "left, then bursts when it's done. Eating sends up steam and takes a bite out of the ring with every "
-                .. "chomp; drinking fills the "
-                .. "middle with water that rises as you drink and sloshes with every gulp.",
-                MergeTop(TopRow("food", "food & drink ring", ns.PreviewFoodRing,
-                    "Show a sample meal: eating, drinking, then both. Also /circ food."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "foodEnabled", "Show food & drink ring",
-                            "Show the ring while you're eating or drinking."),
-                        fx = Toggle(2, "foodFx", "Animations",
-                            "Steam and bites (with crumbs flying) while you eat; water filling the ring and sloshing with "
-                            .. "each gulp while you drink."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        eat = Color(1, "foodColors", "eat", "Eating", "Ring color while you eat (and the glow behind it)."),
-                        drink = Color(2, "foodColors", "drink", "Drinking", "Ring color while you drink, and the water's."),
-                        both = Color(3, "foodColors", "both", "Both", "Ring color while you eat and drink at once."),
-                        full = Color(4, "foodColors", "full", "Full", "Ring and label color once you're full."),
-                    }),
-                    size = SizeBox(4, "food", "food & drink ring",
-                        "Offset from the center of the screen. By default it sits left of the breath ring."),
-                }))
+                    .. "left, then bursts when it's done. Eating sends up steam and takes a bite out of the ring with every "
+                    .. "chomp; drinking fills the "
+                    .. "middle with water that rises as you drink and sloshes with every gulp.",
+                MergeTop(
+                    TopRow(
+                        "food",
+                        "food & drink ring",
+                        ns.PreviewFoodRing,
+                        "Show a sample meal: eating, drinking, then both. Also /circ food."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "foodEnabled",
+                                "Show food & drink ring",
+                                "Show the ring while you're eating or drinking."
+                            ),
+                            fx = Toggle(
+                                2,
+                                "foodFx",
+                                "Animations",
+                                "Steam and bites (with crumbs flying) while you eat; water filling the ring and sloshing with "
+                                    .. "each gulp while you drink."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            eat = Color(
+                                1,
+                                "foodColors",
+                                "eat",
+                                "Eating",
+                                "Ring color while you eat (and the glow behind it)."
+                            ),
+                            drink = Color(
+                                2,
+                                "foodColors",
+                                "drink",
+                                "Drinking",
+                                "Ring color while you drink, and the water's."
+                            ),
+                            both = Color(
+                                3,
+                                "foodColors",
+                                "both",
+                                "Both",
+                                "Ring color while you eat and drink at once."
+                            ),
+                            full = Color(4, "foodColors", "full", "Full", "Ring and label color once you're full."),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "food",
+                            "food & drink ring",
+                            "Offset from the center of the screen. By default it sits left of the breath ring."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after you stop eating or drinking."
             return tab
-        end },
+        end,
+    },
 })

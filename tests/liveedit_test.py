@@ -1,4 +1,5 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -17,7 +18,9 @@ function Advance(seconds, fps) fps = fps or 30
   end end
 function Slash(c) guard("slash "..c, SlashCmdList.CIRCLET, c) end
 ''')
-chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
+chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')(
+    (__import__('subprocess').run(['python3', 'make_bundle.py']), open('bundle.lua').read())[1]
+)
 chunk("Circlet", lua.table())
 lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select('#',...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t,' ')) end
@@ -44,7 +47,9 @@ lua.execute('Advance(4); Dump("quest t=8")')
 lua.execute('Slash("edit skill"); Advance(1); Dump("quest+skill")')
 lua.execute('for i=1,5 do Advance(3.6) end; Dump("skill cycled")')
 lua.execute('Slash("edit rep"); Slash("edit xp"); Advance(1); Dump("all four")')
-lua.execute('XP = 500; Fire("PLAYER_XP_UPDATE", "player"); Advance(4); Dump("xp gain during edit (should keep sample)")')
+lua.execute(
+    'XP = 500; Fire("PLAYER_XP_UPDATE", "player"); Advance(4); Dump("xp gain during edit (should keep sample)")'
+)
 # drag xp
 lua.execute('''
 local x
@@ -60,8 +65,11 @@ lua.execute('CircletDB.questSize = 200; Advance(0.2)')
 lua.execute('Slash("edit"); Advance(0.3); Dump("after /circ edit (all off)")')
 lua.execute('Advance(4); Dump("t+4 after edit off (xp queued gain should play)")')
 lua.execute('Advance(8); Dump("settled")')
-lua.execute('Slash("edit"); Advance(0.3); Dump("all on again"); local bar = _G.CircletEditModeFrame; bar._scripts.OnHide(bar); Advance(0.2); Dump("after Esc")')
+lua.execute(
+    'Slash("edit"); Advance(0.3); Dump("all on again"); local bar = _G.CircletEditModeFrame; bar._scripts.OnHide(bar); Advance(0.2); Dump("after Esc")'
+)
 lua.execute('Slash("edit bogus")')
 print("\n".join(lua.eval("OUT").values()))
 print("ERRORS:", dict(lua.eval('ERRORS')))
-u = dict(lua.eval('UNDEF')); print("UNDEF:", sorted(u))
+u = dict(lua.eval('UNDEF'))
+print("UNDEF:", sorted(u))

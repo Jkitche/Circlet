@@ -35,7 +35,10 @@ end
 
 local function DrawCombo(key, fx, st, frame, geom, d, now)
     local cp = st.unit and ComboPoints() or (not st.unit and 3) -- previews: three
-    if not cp or cp <= 0 then fx.cpLast = 0 return end -- like the game: only once you have some
+    if not cp or cp <= 0 then
+        fx.cpLast = 0
+        return
+    end -- like the game: only once you have some
     fx.cpLast = fx.cpLast or 0
     if cp > fx.cpLast then fx.cpPop = now end
     fx.cpLast = cp
@@ -52,14 +55,22 @@ local function DrawCombo(key, fx, st, frame, geom, d, now)
         local lit = i <= cp
         local pop = (lit and i == cp and fx.cpPop) and math.max(0, 1 - (now - fx.cpPop) / 0.25) or 0
         At(pip, frame, x, y, (pd - 3) * (1 + 0.5 * pop))
-        if not lit then pip:SetVertexColor(0.22, 0.12, 0.10, 1)
-        elseif full then pip:SetVertexColor(1, 0.80, 0.25, 1)
-        else pip:SetVertexColor(1, 0.30, 0.12, 1) end
+        if not lit then
+            pip:SetVertexColor(0.22, 0.12, 0.10, 1)
+        elseif full then
+            pip:SetVertexColor(1, 0.80, 0.25, 1)
+        else
+            pip:SetVertexColor(1, 0.30, 0.12, 1)
+        end
         pip:SetAlpha(lit and pulse or 1)
         local glow = Tex(fx, "cpG" .. i, SOFT, "ARTWORK", 3, true)
         if lit then
             At(glow, frame, x, y, pd * (1.8 + pop))
-            if full then glow:SetVertexColor(1, 0.75, 0.2) else glow:SetVertexColor(1, 0.35, 0.1) end
+            if full then
+                glow:SetVertexColor(1, 0.75, 0.2)
+            else
+                glow:SetVertexColor(1, 0.35, 0.1)
+            end
             glow:SetAlpha(0.6 * pulse)
         else
             glow:Hide()
@@ -76,13 +87,20 @@ local MARK_SHEET = "Interface\\TargetingFrame\\UI-RaidTargetingIcons"
 
 local function DrawMark(key, fx, st, frame, geom, d)
     local raw
-    if st.unit then raw = SafeCall(GetRaidTargetIndex, st.unit) else raw = 8 end -- previews: a skull
+    if st.unit then
+        raw = SafeCall(GetRaidTargetIndex, st.unit)
+    else
+        raw = 8
+    end -- previews: a skull
     if not IsSecret(raw) then -- (never compare a hidden one, not even to nil)
         local idx = raw ~= nil and CleanNumber(raw)
         if not idx or idx < 1 or idx > 8 then return end
     end
     local t = Tex(fx, "mark", MARK_SHEET, "OVERLAY", 2)
-    if not (t.SetSpriteSheetCell and pcall(t.SetSpriteSheetCell, t, raw, 4, 4)) then t:Hide() return end
+    if not (t.SetSpriteSheetCell and pcall(t.SetSpriteSheetCell, t, raw, 4, 4)) then
+        t:Hide()
+        return
+    end
     local x, y = Polar(BadgeAngle(key, "Mark"), geom.R)
     t:SetAlpha(1)
     At(t, frame, x, y, d * 1.25)
@@ -91,7 +109,8 @@ end
 local function DrawAggro(key, fx, st, frame, geom, d, now)
     local on
     if st.unit then
-        on = Clean(SafeCall(UnitCanAttack, "player", st.unit)) and Clean(SafeCall(UnitIsUnit, st.unit .. "target", "player"))
+        on = Clean(SafeCall(UnitCanAttack, "player", st.unit))
+            and Clean(SafeCall(UnitIsUnit, st.unit .. "target", "player"))
     else
         on = true -- previews
     end
@@ -118,7 +137,10 @@ local function DrawThreshold(fx, name, frame, r, gate, color, alpha)
     local level = math.max(0, frame:GetFrameLevel() - 1)
     if f:GetFrameLevel() ~= level then f:SetFrameLevel(level) end
     local t = Tex(fx, name .. "Halo", GLOW, "BACKGROUND", 0, true, f)
-    if not Gate(t, gate) then f:Hide() return end
+    if not Gate(t, gate) then
+        f:Hide()
+        return
+    end
     GlowOn(t, frame, r)
     t:SetVertexColor(color[1], color[2], color[3])
     f:SetAlpha(alpha)
@@ -135,13 +157,19 @@ local function DrawLowHealth(key, fx, st, frame, geom, d, now)
     local gate = HealthUnder(st, 0.30)
     -- Lub-dub: two beats a second, the second softer.
     local ph = now % 1
-    local beat = math.max(math.exp(-((ph - 0.0) / 0.07) ^ 2), 0.6 * math.exp(-((ph - 0.22) / 0.07) ^ 2),
-        math.exp(-((ph - 1.0) / 0.07) ^ 2))
+    local beat = math.max(
+        math.exp(-((ph - 0.0) / 0.07) ^ 2),
+        0.6 * math.exp(-((ph - 0.22) / 0.07) ^ 2),
+        math.exp(-((ph - 1.0) / 0.07) ^ 2)
+    )
     DrawThreshold(fx, "low", frame, geom.R + geom.T * 0.3, gate, { 1, 0.08, 0.05 }, 0.25 + 0.6 * beat)
 end
 
 local function DrawDeath(key, fx, st, frame, geom, d, now)
-    if not st.dead then fx.deadAt = nil return end
+    if not st.dead then
+        fx.deadAt = nil
+        return
+    end
     fx.deadAt = fx.deadAt or now
     local a = math.min(1, (now - fx.deadAt) / 0.5)
     if st.dead == "Ghost" then
@@ -268,7 +296,10 @@ local function DrawAvoid(key, fx, st, frame, geom, d, now)
     local sp = Since(key, "parry")
     local blades = Tex(fx, "blades", SWORDS, "OVERLAY", 4)
     if sp < 0.6 then
-        if not fx.bladesCoord then fx.bladesCoord = true; blades:SetTexCoord(0.5, 1, 0, 0.5) end
+        if not fx.bladesCoord then
+            fx.bladesCoord = true
+            blades:SetTexCoord(0.5, 1, 0, 0.5)
+        end
         local u = sp / 0.6
         local x, y = Polar(0, geom.R + geom.T)
         At(blades, frame, x, y, d * (1.2 + 0.6 * math.max(0, 1 - u / 0.15)))
@@ -339,8 +370,10 @@ local function DrawFullMana(key, fx, st, frame, g2, now)
     local p = st.power
     if not (p and p.token == "MANA") then return end
     local gate
-    if type(p.real) == "number" and not IsSecret(p.real) then gate = p.real >= 0.995
-    elseif not st.unit then gate = true
+    if type(p.real) == "number" and not IsSecret(p.real) then
+        gate = p.real >= 0.995
+    elseif not st.unit then
+        gate = true
     elseif type(UnitPowerPercent) == "function" and ns.VitalsCurves.Work() then
         local ok, v = pcall(UnitPowerPercent, st.unit, 0, false, Curve(0.995, 0, 1))
         if ok then gate = v end

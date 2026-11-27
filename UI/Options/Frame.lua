@@ -57,7 +57,9 @@ local function BuildWindow()
     table.insert(UISpecialFrames, "CircletConfigFrame") -- Esc closes it
 
     -- Background: dark slate, the sidebar darker, a faint blue glow behind the title.
-    for i, a in ipairs({ 0.35, 0.22, 0.12, 0.05 }) do ns.SkinEdges(UI.win, "BACKGROUND", -8, 2, i * 2, 0, 0, 0, a) end
+    for i, a in ipairs({ 0.35, 0.22, 0.12, 0.05 }) do
+        ns.SkinEdges(UI.win, "BACKGROUND", -8, 2, i * 2, 0, 0, 0, a)
+    end
     UI.win.bg = W.Solid(UI.win, "BACKGROUND", W.BG[1], W.BG[2], W.BG[3], W.BG[4], -7)
     UI.win.bg:SetAllPoints()
     UI.win.glow = UI.win:CreateTexture(nil, "BACKGROUND", nil, -6)
@@ -66,7 +68,8 @@ local function BuildWindow()
     UI.win.glow:SetHeight(170)
     ns.SkinGradient(UI.win.glow, "VERTICAL", A.r, A.g, A.b, 0, A.r, A.g, A.b, 0.07)
     UI.win.side = W.Solid(UI.win, "BACKGROUND", 0.04, 0.03, 0.038, 1, -5)
-    UI.win.side:SetPoint("TOPLEFT"); UI.win.side:SetPoint("BOTTOMLEFT")
+    UI.win.side:SetPoint("TOPLEFT")
+    UI.win.side:SetPoint("BOTTOMLEFT")
     UI.win.side:SetWidth(SIDE_W)
     UI.win.sideEdge = W.Solid(UI.win, "BORDER", 1, 1, 1, 0.07)
     UI.win.sideEdge:SetPoint("TOPLEFT", UI.win, "TOPLEFT", SIDE_W, 0)
@@ -113,7 +116,12 @@ local function BuildWindow()
         b.text:SetPoint("LEFT", b.icon, "RIGHT", 14, 0)
         b.text:SetFont(W.TITLE_FONT, 13, "")
         b:SetScript("OnClick", function()
-            if item.path then UI.SelectPage(item.path) else item.func(); UI.Refresh() end
+            if item.path then
+                UI.SelectPage(item.path)
+            else
+                item.func()
+                UI.Refresh()
+            end
         end)
         UI.win.nav[#UI.win.nav + 1] = b
         y = y - 34
@@ -130,7 +138,10 @@ local function BuildWindow()
         self.hint:SetShown(UI.search == "")
         RefreshSidebar()
     end)
-    UI.win.search:SetScript("OnEscapePressed", function(self) self:SetText(""); self:ClearFocus() end)
+    UI.win.search:SetScript("OnEscapePressed", function(self)
+        self:SetText("")
+        self:ClearFocus()
+    end)
 
     -- Sidebar: the rings, under their folders.
     UI.win.ringList = W.ScrollArea(UI.win)
@@ -229,14 +240,16 @@ local function OpenOptions(page)
     else
         if page then UI.current = page end
         if PlaySound then PlaySound(SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION or 852) end
-        if UI.win:IsShown() then UI.SelectPage(UI.current) else UI.win:Show() end
+        if UI.win:IsShown() then
+            UI.SelectPage(UI.current)
+        else
+            UI.win:Show()
+        end
     end
 end
 
 -- The game's addon button by the minimap (set up in Circlet.toc).
-function Circlet_OnAddonCompartmentClick()
-    OpenOptions()
-end
+function Circlet_OnAddonCompartmentClick() OpenOptions() end
 
 function Circlet_OnAddonCompartmentEnter(_, button)
     if not GameTooltip then return end

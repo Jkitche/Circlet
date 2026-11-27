@@ -3,6 +3,7 @@
 # text goes to the font string unread. Also: what shows when (Show setting), death, no
 # power, edit mode samples, and the hide-the-game's-frame options.
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -70,8 +71,10 @@ RegionMethods.SetFormattedText = function(s, fmt, ...)
 end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end'
+)
 # The mock's SetText records plain values; a hidden one shows as <v>.
 lua.execute('''
 local origFS = RegionMethods.CreateFontString
@@ -82,7 +85,8 @@ RegionMethods.CreateFontString = function(self, ...)
   return f
 end
 ''')
-NSX = lua.table(); lua.globals().NS = NSX
+NSX = lua.table()
+lua.globals().NS = NSX
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", NSX)
 lua.execute('''
 UNITS.player = { hp = 900, max = 1000, power = 300, pmax = 1200, ptype = 0, token = "MANA", name = "Jaina", level = 20, player = true }
@@ -465,4 +469,5 @@ CircletDB.playerHpHideDefault = true; Advance(0.3)
 P("player frame alpha " .. PlayerFrame:GetAlpha() .. ", target frame alpha " .. TargetFrame:GetAlpha())
 CircletDB.playerHpHideDefault = false; Advance(0.3); P("player frame back: " .. PlayerFrame:GetAlpha())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

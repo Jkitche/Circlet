@@ -30,21 +30,21 @@ local startDist -- distance when this corpse run began, for the fill
 -- revived, so edit mode's sample plays the same animation.
 -- Reviving at a spirit healer (far from your corpse) doesn't play it.
 
-local REVIVE_TIME  = 3.2  -- seconds the animation runs
+local REVIVE_TIME = 3.2 -- seconds the animation runs
 local REVIVE_WISPS = 8
-local WISP_TRAIL   = 3    -- puffs per wisp: its head and a smoky tail
-local SOUL_TAIL    = 6    -- puffs trailing the soul as it drifts down
-local MIST_PUFFS   = 6    -- the last of the ghost, rising away after the heartbeat
-local GATHER_END   = 1.1  -- the soul settles into the body by now
-local BEATS        = { 1.3, 1.57 } -- lub, dub
-local GLOW_TEX     = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
-local STAR_TEX     = "Interface\\Cooldown\\star4"
-local WHITE        = { r = 1, g = 1, b = 1 }
+local WISP_TRAIL = 3 -- puffs per wisp: its head and a smoky tail
+local SOUL_TAIL = 6 -- puffs trailing the soul as it drifts down
+local MIST_PUFFS = 6 -- the last of the ghost, rising away after the heartbeat
+local GATHER_END = 1.1 -- the soul settles into the body by now
+local BEATS = { 1.3, 1.57 } -- lub, dub
+local GLOW_TEX = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
+local STAR_TEX = "Interface\\Cooldown\\star4"
+local WHITE = { r = 1, g = 1, b = 1 }
 
-local revivedAt     -- GetTime() when you came back to life (while the animation plays)
-local reviveAsked   -- GetTime() you clicked Resurrect at your corpse or accepted a resurrect
-local wasInRange    -- you were within resurrect range of your corpse as a ghost
-local wasGhost      -- the ring saw you as a ghost (so a revive is a return from a corpse run)
+local revivedAt -- GetTime() when you came back to life (while the animation plays)
+local reviveAsked -- GetTime() you clicked Resurrect at your corpse or accepted a resurrect
+local wasInRange -- you were within resurrect range of your corpse as a ghost
+local wasGhost -- the ring saw you as a ghost (so a revive is a return from a corpse run)
 
 local function EaseOut(t) return 1 - (1 - t) ^ 2 end
 local function EaseIn(t) return t * t end
@@ -62,22 +62,16 @@ local function SoulPos(u, geom, ri)
     return math.sin(u * math.pi * 2.2) * ri * 0.35 * (1 - u), geom.R * 1.8 * (1 - EaseInOut(u))
 end
 
-local function Lighten(c, w)
-    return c.r + (1 - c.r) * w, c.g + (1 - c.g) * w, c.b + (1 - c.b) * w
-end
+local function Lighten(c, w) return c.r + (1 - c.r) * w, c.g + (1 - c.g) * w, c.b + (1 - c.b) * w end
 
-local function Mix(a, b, t)
-    return { r = a.r + (b.r - a.r) * t, g = a.g + (b.g - a.g) * t, b = a.b + (b.b - a.b) * t }
-end
+local function Mix(a, b, t) return { r = a.r + (b.r - a.r) * t, g = a.g + (b.g - a.g) * t, b = a.b + (b.b - a.b) * t } end
 
 -- How hard the heart is beating at `age`: a quick bump at each beat, 0 between.
 local function Pulse(age)
     local p = 0
     for i, at in ipairs(BEATS) do
         local d = (age - at) / 0.22
-        if d >= 0 and d < 1 then
-            p = math.max(p, math.sin(math.pi * d) * (i == 1 and 1 or 0.8))
-        end
+        if d >= 0 and d < 1 then p = math.max(p, math.sin(math.pi * d) * (i == 1 and 1 or 0.8)) end
     end
     return p
 end
@@ -99,43 +93,63 @@ local function BuildFx(frame)
         fx.all[#fx.all + 1] = t
         return t
     end
-    fx.heart    = Glow("BACKGROUND", -7) -- in the ring's hollow, behind the track
-    fx.core     = Glow("BORDER", 1)
+    fx.heart = Glow("BACKGROUND", -7) -- in the ring's hollow, behind the track
+    fx.core = Glow("BORDER", 1)
     fx.soulHalo = Glow("ARTWORK", 1)
-    fx.soul     = Glow("ARTWORK", 2)
+    fx.soul = Glow("ARTWORK", 2)
     fx.soulCore = Glow("ARTWORK", 3)
-    fx.glow     = ns.NewRingLayer("OVERLAY", 2, WHITE, 1, frame)
-    fx.pull     = ns.NewRingLayer("OVERLAY", 1, WHITE, 1, frame) -- the ring drawing in
+    fx.glow = ns.NewRingLayer("OVERLAY", 2, WHITE, 1, frame)
+    fx.pull = ns.NewRingLayer("OVERLAY", 1, WHITE, 1, frame) -- the ring drawing in
     for i = 1, #BEATS do
         fx.waves[i] = { lines = ns.NewRingLayer("OVERLAY", 3, WHITE, 1, frame), geom = {} }
     end
-    for i = 1, SOUL_TAIL do fx.tail[i] = Glow("ARTWORK", 0) end
+    for i = 1, SOUL_TAIL do
+        fx.tail[i] = Glow("ARTWORK", 0)
+    end
     for i = 1, REVIVE_WISPS do
         local puffs = {}
-        for k = 1, WISP_TRAIL do puffs[k] = Glow("ARTWORK", k == 1 and 1 or 0) end
+        for k = 1, WISP_TRAIL do
+            puffs[k] = Glow("ARTWORK", k == 1 and 1 or 0)
+        end
         -- Fixed per wisp: where round the ring it rises from, how late it sets off, how
         -- far out it starts, how big it is and how much it snakes, so no two match.
-        fx.wisps[i] = { puffs = puffs,
-                        angle  = (i / REVIVE_WISPS) * 2 * math.pi + ((i * 0.37) % 1) * 0.4,
-                        delay  = ((i * 0.618) % 1) * 0.3,
-                        reach  = 1.05 + ((i * 0.29) % 1) * 0.3,
-                        size   = 0.75 + ((i * 0.53) % 1) * 0.5,
-                        wobble = 0.25 + ((i * 0.71) % 1) * 0.3,
-                        seed   = i * 1.7 }
+        fx.wisps[i] = {
+            puffs = puffs,
+            angle = (i / REVIVE_WISPS) * 2 * math.pi + ((i * 0.37) % 1) * 0.4,
+            delay = ((i * 0.618) % 1) * 0.3,
+            reach = 1.05 + ((i * 0.29) % 1) * 0.3,
+            size = 0.75 + ((i * 0.53) % 1) * 0.5,
+            wobble = 0.25 + ((i * 0.71) % 1) * 0.3,
+            seed = i * 1.7,
+        }
     end
     for i = 1, MIST_PUFFS do
-        fx.mist[i] = { tex = Glow("ARTWORK", 0), side = ((i * 0.437) % 1) * 2 - 1,
-                       delay = ((i * 0.29) % 1) * 0.4, size = 0.8 + ((i * 0.53) % 1) * 0.6, seed = i * 2.3 }
+        fx.mist[i] = {
+            tex = Glow("ARTWORK", 0),
+            side = ((i * 0.437) % 1) * 2 - 1,
+            delay = ((i * 0.29) % 1) * 0.4,
+            size = 0.8 + ((i * 0.53) % 1) * 0.6,
+            seed = i * 2.3,
+        }
     end
 end
 
-local function HideLines(lines) for _, l in ipairs(lines) do l:Hide() end end
+local function HideLines(lines)
+    for _, l in ipairs(lines) do
+        l:Hide()
+    end
+end
 
 local function HideFx()
     if not fx then return end
-    for _, t in ipairs(fx.all) do t:Hide() end
-    HideLines(fx.glow); HideLines(fx.pull)
-    for _, w in ipairs(fx.waves) do HideLines(w.lines) end
+    for _, t in ipairs(fx.all) do
+        t:Hide()
+    end
+    HideLines(fx.glow)
+    HideLines(fx.pull)
+    for _, w in ipairs(fx.waves) do
+        HideLines(w.lines)
+    end
 end
 
 -- A soft puff of light at (x, y) from the ring's middle, or hidden when it's too faint.
@@ -152,7 +166,9 @@ end
 -- A full ring of radius R and band T in color r, g, b at alpha a.
 local function DrawBand(lines, g, geom, frame, R, T, r, gr, b, a)
     g.R, g.T, g.start, g.sweep, g.step, g.reverse = R, T, geom.start, geom.sweep, geom.step, geom.reverse
-    for _, l in ipairs(lines) do l:SetColorTexture(r, gr, b, a) end
+    for _, l in ipairs(lines) do
+        l:SetColorTexture(r, gr, b, a)
+    end
     ns.DrawArc(lines, 0, 1, frame, g, true)
 end
 
@@ -166,7 +182,7 @@ local function DrawReviveFx(st, frame, geom)
     local ri = math.max(4, geom.R - geom.T / 2) -- the hollow's radius
     local fade = 1 - Clamp01((age - (REVIVE_TIME - 0.7)) / 0.7) -- everything dims at the end
     local pr, pg, pb = Lighten(ghost, 0.55) -- the soul's own pale light
-    local u = Clamp01(age / GATHER_END)     -- how far down the soul has come
+    local u = Clamp01(age / GATHER_END) -- how far down the soul has come
     local land = Clamp01((age - GATHER_END) / 0.2) -- it sinks into the body and is gone
 
     -- The soul: a flickering orb drifting down into the ring, a smoky tail behind it.
@@ -183,15 +199,18 @@ local function DrawReviveFx(st, frame, geom)
             if uk > 0 then
                 local tx, ty = SoulPos(uk, geom, ri)
                 local f = 1 - k / (SOUL_TAIL + 1)
-                Puff(t, frame, tx, ty, s * (0.4 + 0.6 * f), ghost.r, ghost.g, ghost.b,
-                    a * 0.5 * f * Flicker(age, k))
+                Puff(t, frame, tx, ty, s * (0.4 + 0.6 * f), ghost.r, ghost.g, ghost.b, a * 0.5 * f * Flicker(age, k))
             else
                 t:Hide()
             end
         end
     else
-        fx.soulHalo:Hide(); fx.soul:Hide(); fx.soulCore:Hide()
-        for _, t in ipairs(fx.tail) do t:Hide() end
+        fx.soulHalo:Hide()
+        fx.soul:Hide()
+        fx.soulCore:Hide()
+        for _, t in ipairs(fx.tail) do
+            t:Hide()
+        end
     end
 
     -- Wisps: rise from round the ring and snake up into the soul, each trailing smoke.
@@ -226,8 +245,18 @@ local function DrawReviveFx(st, frame, geom)
     -- Just before the soul lands, the ring draws in around it, brightening.
     local pt = (age - (GATHER_END - 0.4)) / 0.4
     if pt >= 0 and pt < 1 then
-        DrawBand(fx.pull, fx.pullGeom, geom, frame, geom.R * (1.35 - 0.35 * EaseIn(pt)),
-            math.max(1.5, geom.T * (0.3 + 0.7 * pt)), pr, pg, pb, 0.75 * pt)
+        DrawBand(
+            fx.pull,
+            fx.pullGeom,
+            geom,
+            frame,
+            geom.R * (1.35 - 0.35 * EaseIn(pt)),
+            math.max(1.5, geom.T * (0.3 + 0.7 * pt)),
+            pr,
+            pg,
+            pb,
+            0.75 * pt
+        )
     else
         HideLines(fx.pull)
     end
@@ -278,8 +307,17 @@ local function DrawReviveFx(st, frame, geom)
             local e = EaseOut(t)
             local x = (m.side * 0.5 + math.sin(t * math.pi * 2 + m.seed) * 0.15) * ri
             local y = ri * (-0.3 + 2.2 * e)
-            Puff(m.tex, frame, x, y, ri * 0.5 * m.size * (1 + t), ghost.r, ghost.g, ghost.b,
-                0.35 * math.sin(math.pi * t) * Flicker(age, m.seed))
+            Puff(
+                m.tex,
+                frame,
+                x,
+                y,
+                ri * 0.5 * m.size * (1 + t),
+                ghost.r,
+                ghost.g,
+                ghost.b,
+                0.35 * math.sin(math.pi * t) * Flicker(age, m.seed)
+            )
         else
             m.tex:Hide()
         end
@@ -291,10 +329,22 @@ local function DrawReviveFx(st, frame, geom)
         local wt = (age - at) / 0.95
         if wt >= 0 and wt < 1 then
             local r, g, b = Lighten(life, 0.2)
-            DrawBand(w.lines, w.geom, geom, frame, geom.R * (1 + 0.7 * EaseOut(wt)),
-                math.max(1.5, geom.T * (i == 1 and 0.9 or 0.7) * (1 - wt)), r, g, b, (1 - wt) * (i == 1 and 1 or 0.8))
+            DrawBand(
+                w.lines,
+                w.geom,
+                geom,
+                frame,
+                geom.R * (1 + 0.7 * EaseOut(wt)),
+                math.max(1.5, geom.T * (i == 1 and 0.9 or 0.7) * (1 - wt)),
+                r,
+                g,
+                b,
+                (1 - wt) * (i == 1 and 1 or 0.8)
+            )
         else
-            for _, l in ipairs(w.lines) do l:Hide() end
+            for _, l in ipairs(w.lines) do
+                l:Hide()
+            end
         end
     end
 end
@@ -304,8 +354,16 @@ local function ReviveState(at)
     local c = db.corpseColors
     local age = math.max(0, GetTime() - at)
     local color = Mix(c.fill, c.ready, Clamp01((age - GATHER_END * 0.85) / 0.5))
-    return { title = "Your corpse", value = "", label = age < GATHER_END and "Returning..." or "Alive again!",
-             labelColor = color, color = color, frac = 1, reviveAt = at, hold = 0.3 }
+    return {
+        title = "Your corpse",
+        value = "",
+        label = age < GATHER_END and "Returning..." or "Alive again!",
+        labelColor = color,
+        color = color,
+        frac = 1,
+        reviveAt = at,
+        hold = 0.3,
+    }
 end
 
 -- Clicking Resurrect at your corpse, or accepting someone's resurrect as a ghost, brings
@@ -374,8 +432,13 @@ local corpseRing = CreateLiveRing({
         if not UnitIsGhost("player") then
             -- Just came back to life from a corpse run: in your own body (not at a
             -- spirit healer) if you asked to, or were standing by your corpse.
-            if wasGhost and not revivedAt and db.corpseReviveFx and not (UnitIsDead and UnitIsDead("player"))
-                and ((reviveAsked and now - reviveAsked < 10) or wasInRange) then
+            if
+                wasGhost
+                and not revivedAt
+                and db.corpseReviveFx
+                and not (UnitIsDead and UnitIsDead("player"))
+                and ((reviveAsked and now - reviveAsked < 10) or wasInRange)
+            then
                 revivedAt = now
             end
             startDist, wasGhost, wasInRange, reviveAsked = nil, nil, nil, nil
@@ -415,51 +478,85 @@ ns.PreviewCorpseRing = PreviewCorpseRing
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "corpse", name = "Corpse", order = 10,
+    key = "corpse",
+    name = "Corpse",
+    order = 10,
     ring = corpseRing,
-    preview = PreviewCorpseRing, slash = { "corpse", "ghost" }, help = "preview the corpse ring",
+    preview = PreviewCorpseRing,
+    slash = { "corpse", "ghost" },
+    help = "preview the corpse ring",
     toggle = { "Corpse ring", "Distance and direction to your corpse while you're a ghost." },
     defaults = {
         -- Corpse ring: distance (and direction) to your body while you're a ghost.
-        corpseEnabled   = true,
-        corpseReviveFx  = true, -- the revive animation when you're back in your body
-        corpseSize      = 130,
+        corpseEnabled = true,
+        corpseReviveFx = true, -- the revive animation when you're back in your body
+        corpseSize = 130,
         corpseThickness = 12,
-        corpseOpacity   = 100,
-        corpseX         = -170, -- left of the crafting ring
-        corpseFromTop   = 250,
-        corpseHold      = 0,
-        corpseStyle     = "smooth",
-        corpseBorder    = 2, -- black border width (0 = none)
+        corpseOpacity = 100,
+        corpseX = -170, -- left of the crafting ring
+        corpseFromTop = 250,
+        corpseHold = 0,
+        corpseStyle = "smooth",
+        corpseBorder = 2, -- black border width (0 = none)
         corpseColors = {
-            fill   = { r = 0.60, g = 0.75, b = 0.95 },
-            ready  = { r = 0.30, g = 0.90, b = 0.40 },
+            fill = { r = 0.60, g = 0.75, b = 0.95 },
+            ready = { r = 0.30, g = 0.90, b = 0.40 },
             marker = { r = 1.00, g = 0.95, b = 0.60 },
         },
     },
-    page = { folder = "travel", order = 3, build = function(O)
+    page = {
+        folder = "travel",
+        order = 3,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10, "Corpse run", "Corpse Ring",
+            local tab = RingTab(
+                10,
+                "Corpse run",
+                "Corpse Ring",
                 "While you're a ghost: how far your corpse is (filling as you get closer), an arrow on the ring pointing "
-                .. "toward it (straight up = ahead), and when you can resurrect.",
-                MergeTop(TopRow("corpse", "corpse ring", ns.PreviewCorpseRing,
-                    "Show a sample corpse run. Also /circ corpse."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "corpseEnabled", "Show corpse ring", "Show the ring while you're a ghost."),
-                        reviveFx = Toggle(2, "corpseReviveFx", "Revive animation",
-                            "When you come back to life in your own body, your soul drifts down into the ring "
-                            .. "with wisps of ghost light streaming into it, a heartbeat thumps out, and the last "
-                            .. "of the ghost rises away as mist. Not at a spirit healer."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "corpseColors", "fill", "Distance", "Ring color on the way back."),
-                        ready = Color(2, "corpseColors", "ready", "In range", "Ring color once you can resurrect."),
-                        marker = Color(3, "corpseColors", "marker", "Direction arrow", "Tint of the arrow pointing at your corpse."),
-                    }),
-                    size = SizeBox(4, "corpse", "corpse ring", "Offset from the center of the screen."),
-                }))
+                    .. "toward it (straight up = ahead), and when you can resurrect.",
+                MergeTop(
+                    TopRow(
+                        "corpse",
+                        "corpse ring",
+                        ns.PreviewCorpseRing,
+                        "Show a sample corpse run. Also /circ corpse."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "corpseEnabled",
+                                "Show corpse ring",
+                                "Show the ring while you're a ghost."
+                            ),
+                            reviveFx = Toggle(
+                                2,
+                                "corpseReviveFx",
+                                "Revive animation",
+                                "When you come back to life in your own body, your soul drifts down into the ring "
+                                    .. "with wisps of ghost light streaming into it, a heartbeat thumps out, and the last "
+                                    .. "of the ghost rises away as mist. Not at a spirit healer."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "corpseColors", "fill", "Distance", "Ring color on the way back."),
+                            ready = Color(2, "corpseColors", "ready", "In range", "Ring color once you can resurrect."),
+                            marker = Color(
+                                3,
+                                "corpseColors",
+                                "marker",
+                                "Direction arrow",
+                                "Tint of the arrow pointing at your corpse."
+                            ),
+                        }),
+                        size = SizeBox(4, "corpse", "corpse ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
             tab.args.size.args.hold = nil
             return tab
-        end },
+        end,
+    },
 })

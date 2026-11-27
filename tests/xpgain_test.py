@@ -1,7 +1,8 @@
 # XP gain effect: a comet riding the fill as XP comes in, sparkles behind it, a flare where it lands.
 from lupa import LuaRuntime
+
 src = open('fx_test.py').read()
-HEAD = eval(src[src.index('HEAD = ') + 7:src.index('\n', src.index('HEAD = '))])
+HEAD = eval(src[src.index('HEAD = ') + 7 : src.index('\n', src.index('HEAD = '))])
 HEAD = HEAD.replace('chunk("Circlet", lua.table())', 'NSX = lua.table(); lua.globals().NS = NSX; chunk("Circlet", NSX)')
 exec(HEAD)
 lua.execute('''
@@ -26,4 +27,5 @@ Slash("showxp"); Advance(0.5); P("showxp: " .. XPRingState())
 Advance(12); P("showxp later: " .. XPRingState())
 ''')
 print("\n".join(lua.eval("OUT").values()))
-errs = lua.eval('ERRORS'); print("ERRORS:", dict(errs) if list(errs.keys()) else "none")
+errs = lua.eval('ERRORS')
+print("ERRORS:", dict(errs) if list(errs.keys()) else "none")

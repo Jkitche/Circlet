@@ -63,14 +63,30 @@ end
 
 -- Spells that bring someone back. Any rank counts: these are matched by name as well.
 local RESURRECT_SPELLS = {
-    2006, 2010, 10880, 10881, 20770,     -- Resurrection (priest)
-    7328, 10322, 10324, 20772, 20773,    -- Redemption (paladin)
-    2008, 20609, 20610, 20776, 20777,    -- Ancestral Spirit (shaman)
-    20484, 20739, 20742, 20747, 20748,   -- Rebirth (druid, in combat)
-    50769,  -- Revive (druid)
+    2006,
+    2010,
+    10880,
+    10881,
+    20770, -- Resurrection (priest)
+    7328,
+    10322,
+    10324,
+    20772,
+    20773, -- Redemption (paladin)
+    2008,
+    20609,
+    20610,
+    20776,
+    20777, -- Ancestral Spirit (shaman)
+    20484,
+    20739,
+    20742,
+    20747,
+    20748, -- Rebirth (druid, in combat)
+    50769, -- Revive (druid)
     115178, -- Resuscitate (monk)
     361227, -- Return (evoker)
-    61999,  -- Raise Ally (death knight)
+    61999, -- Raise Ally (death knight)
     391054, -- Intercession (paladin)
     212036, -- Mass Resurrection (priest)
     212056, -- Absolution (paladin)
@@ -78,10 +94,12 @@ local RESURRECT_SPELLS = {
     212040, -- Revitalize (druid)
     212051, -- Reawaken (monk)
     361178, -- Mass Return (evoker)
-    83968,  -- Mass Resurrection (guild perk)
+    83968, -- Mass Resurrection (guild perk)
 }
 local rezIDs = {}
-for _, id in ipairs(RESURRECT_SPELLS) do rezIDs[id] = true end
+for _, id in ipairs(RESURRECT_SPELLS) do
+    rezIDs[id] = true
+end
 local rezNames -- built on first use, once spell names can be read
 
 local function IsResurrect(spellID, name)
@@ -91,7 +109,9 @@ local function IsResurrect(spellID, name)
         local names, any = {}, false
         for _, id in ipairs(RESURRECT_SPELLS) do
             local n = ns.SpellName(id)
-            if n then names[n], any = true, true end
+            if n then
+                names[n], any = true, true
+            end
         end
         if any then rezNames = names end -- try again later if nothing could be read yet
         return names[name] == true
@@ -99,20 +119,18 @@ local function IsResurrect(spellID, name)
     return rezNames[name] == true
 end
 
-local REZ_MOTES   = 12
-local REZ_BURST   = 1.6  -- seconds the burst runs after the cast goes off
-local REZ_FADE    = 0.45 -- seconds the light takes to gutter out when it's cut short
-local REZ_HOLD    = 2.0  -- the ring stays at least this long after a resurrect goes off
-local GLOW_TEX    = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
-local STAR_TEX    = "Interface\\Cooldown\\star4"
-local WHITE       = { r = 1, g = 1, b = 1 }
+local REZ_MOTES = 12
+local REZ_BURST = 1.6 -- seconds the burst runs after the cast goes off
+local REZ_FADE = 0.45 -- seconds the light takes to gutter out when it's cut short
+local REZ_HOLD = 2.0 -- the ring stays at least this long after a resurrect goes off
+local GLOW_TEX = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
+local STAR_TEX = "Interface\\Cooldown\\star4"
+local WHITE = { r = 1, g = 1, b = 1 }
 
 local function EaseOut(t) return 1 - (1 - t) ^ 2 end
 
 -- c mixed toward white by w (0..1).
-local function Lighten(c, w)
-    return c.r + (1 - c.r) * w, c.g + (1 - c.g) * w, c.b + (1 - c.b) * w
-end
+local function Lighten(c, w) return c.r + (1 - c.r) * w, c.g + (1 - c.g) * w, c.b + (1 - c.b) * w end
 
 local fx -- the effect's textures and lines, made on the cast ring's frame on first use
 
@@ -126,11 +144,11 @@ end
 
 local function BuildFx(frame)
     fx = { motes = {}, glowGeom = {}, waveGeom = {} }
-    fx.halo   = SoftGlow(frame, "BACKGROUND", -7) -- behind the track, in the ring's hollow
+    fx.halo = SoftGlow(frame, "BACKGROUND", -7) -- behind the track, in the ring's hollow
     fx.pillar = SoftGlow(frame, "BORDER", 0)
-    fx.core   = SoftGlow(frame, "BORDER", 1)
-    fx.glow   = ns.NewRingLayer("OVERLAY", 2, WHITE, 1, frame)
-    fx.wave   = ns.NewRingLayer("OVERLAY", 3, WHITE, 1, frame)
+    fx.core = SoftGlow(frame, "BORDER", 1)
+    fx.glow = ns.NewRingLayer("OVERLAY", 2, WHITE, 1, frame)
+    fx.wave = ns.NewRingLayer("OVERLAY", 3, WHITE, 1, frame)
     for i = 1, REZ_MOTES do
         local t = frame:CreateTexture(nil, "ARTWORK", nil, 2) -- under the ring's text
         t:SetTexture(STAR_TEX)
@@ -138,24 +156,39 @@ local function BuildFx(frame)
         t:Hide()
         -- Fixed per mote, so they don't move in lockstep: speed (rises per second),
         -- where in its rise it starts, which side it drifts up, how much it sways, size.
-        fx.motes[i] = { tex = t, speed = 1 / (1.5 + (i * 0.37) % 0.9), phase = (i * 0.618) % 1,
-                        side = ((i * 0.437) % 1) * 2 - 1, sway = 0.08 + (i * 0.29) % 0.12,
-                        size = 0.7 + (i * 0.53) % 0.6 }
+        fx.motes[i] = {
+            tex = t,
+            speed = 1 / (1.5 + (i * 0.37) % 0.9),
+            phase = (i * 0.618) % 1,
+            side = ((i * 0.437) % 1) * 2 - 1,
+            sway = 0.08 + (i * 0.29) % 0.12,
+            size = 0.7 + (i * 0.53) % 0.6,
+        }
     end
 end
 
 local function HideFx()
     if not fx then return end
-    fx.halo:Hide(); fx.pillar:Hide(); fx.core:Hide()
-    for _, l in ipairs(fx.glow) do l:Hide() end
-    for _, l in ipairs(fx.wave) do l:Hide() end
-    for _, m in ipairs(fx.motes) do m.tex:Hide() end
+    fx.halo:Hide()
+    fx.pillar:Hide()
+    fx.core:Hide()
+    for _, l in ipairs(fx.glow) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.wave) do
+        l:Hide()
+    end
+    for _, m in ipairs(fx.motes) do
+        m.tex:Hide()
+    end
 end
 
 -- A full ring (or the ring's arc) of radius R and band T, in color r, g, b at alpha a.
 local function DrawBand(lines, g, geom, frame, R, T, r, gr, b, a)
     g.R, g.T, g.start, g.sweep, g.step, g.reverse = R, T, geom.start, geom.sweep, geom.step, geom.reverse
-    for _, l in ipairs(lines) do l:SetColorTexture(r, gr, b, a) end
+    for _, l in ipairs(lines) do
+        l:SetColorTexture(r, gr, b, a)
+    end
     ns.DrawArc(lines, 0, 1, frame, g, true)
 end
 
@@ -217,9 +250,14 @@ local function DrawRezFx(st, frame, geom)
     end
 
     if phase ~= "done" then
-        fx.pillar:Hide(); fx.core:Hide()
-        for _, l in ipairs(fx.glow) do l:Hide() end
-        for _, l in ipairs(fx.wave) do l:Hide() end
+        fx.pillar:Hide()
+        fx.core:Hide()
+        for _, l in ipairs(fx.glow) do
+            l:Hide()
+        end
+        for _, l in ipairs(fx.wave) do
+            l:Hide()
+        end
         return
     end
 
@@ -243,7 +281,8 @@ local function DrawRezFx(st, frame, geom)
         fx.core:SetAlpha(a)
         fx.core:Show()
     else
-        fx.pillar:Hide(); fx.core:Hide()
+        fx.pillar:Hide()
+        fx.core:Hide()
     end
 
     -- The ring flashes, up and back down.
@@ -252,17 +291,31 @@ local function DrawRezFx(st, frame, geom)
         local r, g, b = Lighten(c, 0.5)
         DrawBand(fx.glow, fx.glowGeom, geom, frame, geom.R, geom.T + 4, r, g, b, math.sin(math.pi * gt) * 0.85)
     else
-        for _, l in ipairs(fx.glow) do l:Hide() end
+        for _, l in ipairs(fx.glow) do
+            l:Hide()
+        end
     end
 
     -- A wave rolls out from the ring, thinning as it goes.
     local wt = (age - 0.08) / 0.9
     if wt >= 0 and wt < 1 then
         local r, g, b = Lighten(c, 0.15)
-        DrawBand(fx.wave, fx.waveGeom, geom, frame, geom.R * (1 + 0.65 * EaseOut(wt)),
-            math.max(1.5, geom.T * 0.8 * (1 - wt)), r, g, b, 1 - wt)
+        DrawBand(
+            fx.wave,
+            fx.waveGeom,
+            geom,
+            frame,
+            geom.R * (1 + 0.65 * EaseOut(wt)),
+            math.max(1.5, geom.T * 0.8 * (1 - wt)),
+            r,
+            g,
+            b,
+            1 - wt
+        )
     else
-        for _, l in ipairs(fx.wave) do l:Hide() end
+        for _, l in ipairs(fx.wave) do
+            l:Hide()
+        end
     end
 end
 
@@ -271,8 +324,12 @@ end
 local function State(name, icon, channel, frac, left, ended, how, lost, endedAt, guessed, rez, interact)
     local c = db.castColors
     rez = rez and db.castRezFx
-    local st = { title = name or "Casting", color = channel and c.channel or c.cast,
-                 icon = db.castIcon and icon or nil, hold = db.castHold or 1 }
+    local st = {
+        title = name or "Casting",
+        color = channel and c.channel or c.cast,
+        icon = db.castIcon and icon or nil,
+        hold = db.castHold or 1,
+    }
     if ended then
         if how == "done" then
             st.frac, st.color, st.labelColor, st.label, st.value = 1, c.done, c.done, channel and "Done" or "Cast", ""
@@ -281,7 +338,9 @@ local function State(name, icon, channel, frac, left, ended, how, lost, endedAt,
                 st.rez, st.rezAt, st.hold = "done", endedAt, math.max(st.hold, REZ_HOLD)
             end
         else
-            if rez then st.rez, st.rezAt = how, endedAt end
+            if rez then
+                st.rez, st.rezAt = how, endedAt
+            end
             st.frac = channel and (frac or 0) or 0
             st.color, st.labelColor = c.interrupted, c.interrupted
             st.label, st.value = how == "failed" and "Failed" or "Interrupted", ""
@@ -292,7 +351,9 @@ local function State(name, icon, channel, frac, left, ended, how, lost, endedAt,
         return st
     end
     local doing = rez and "Resurrecting" or channel and "Channeling" or "Casting"
-    if rez then st.rez, st.rezFrac, st.color = "cast", frac, c.rez or c.cast end
+    if rez then
+        st.rez, st.rezFrac, st.color = "cast", frac, c.rez or c.cast
+    end
     if not frac then
         -- No timing at all (a new channel in combat): just the spell, ring full.
         st.frac, st.value, st.label = 1, "", doing
@@ -310,7 +371,11 @@ end
 local function WithSchool(st, school, frac, how, endedAt)
     if st and school and db.castSchoolFx and not st.rez then
         st.school = school
-        if how then st.schoolEnd, st.schoolAt = how, endedAt else st.schoolFrac = frac end
+        if how then
+            st.schoolEnd, st.schoolAt = how, endedAt
+        else
+            st.schoolFrac = frac
+        end
     end
     return st
 end
@@ -332,15 +397,24 @@ local castRing = CreateLiveRing({
         local c = cast
         if not c then return nil end
         -- A craft or gather that started with this cast belongs to its own ring.
-        if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) or (ns.FishingActive and ns.FishingActive()) then
+        if
+            (ns.CraftActive and ns.CraftActive())
+            or (ns.GatherActive and ns.GatherActive())
+            or (ns.FishingActive and ns.FishingActive())
+        then
             cast = nil
             return nil
         end
         if not c.school then c.school = ns.SpellSchool(c.spellID, c.name, c.icon) end -- the log may name it late
         if c.endedAt then
             if now - c.endedAt > 0.1 then return nil end -- the end state shows once; the ring holds it
-            return WithSchool(State(c.name, c.icon, c.channel, c.lost or 1, 0, true, c.how, c.lost, c.endedAt, nil,
-                c.rez, c.interact), c.school, nil, c.how, c.endedAt)
+            return WithSchool(
+                State(c.name, c.icon, c.channel, c.lost or 1, 0, true, c.how, c.lost, c.endedAt, nil, c.rez, c.interact),
+                c.school,
+                nil,
+                c.how,
+                c.endedAt
+            )
         end
         -- Out of combat the real times are readable, pushback included.
         local s, f = RealTimes(c.channel)
@@ -349,8 +423,11 @@ local castRing = CreateLiveRing({
             if c.spellID then Learned()[c.spellID] = f - s end
         end
         local frac, left = Progress(now)
-        return WithSchool(State(c.name, c.icon, c.channel, frac, left or 0, false, nil, nil, nil, frac and not c.real, c.rez),
-            c.school, frac)
+        return WithSchool(
+            State(c.name, c.icon, c.channel, frac, left or 0, false, nil, nil, nil, frac and not c.real, c.rez),
+            c.school,
+            frac
+        )
     end,
     sample = function(t)
         -- A cast that goes off, one that's interrupted (each round, the next two schools:
@@ -369,7 +446,13 @@ local castRing = CreateLiveRing({
         end
         if cycle < 6 then
             local at = GetTime() - (cycle - 4.6)
-            return WithSchool(State(b[1], b[2], false, 0.56, 0, true, "interrupted", 0.56, at), b[3], nil, "interrupted", at)
+            return WithSchool(
+                State(b[1], b[2], false, 0.56, 0, true, "interrupted", 0.56, at),
+                b[3],
+                nil,
+                "interrupted",
+                at
+            )
         end
         local rez = "Interface\\Icons\\Spell_Holy_Resurrection"
         if cycle < 9 then
@@ -386,7 +469,13 @@ local castRing = CreateLiveRing({
 local function Begin(spellID, guid, channel)
     if not db.castEnabled then return end
     -- Crafts and gathers have their own rings.
-    if (ns.CraftActive and ns.CraftActive()) or (ns.GatherActive and ns.GatherActive()) or (ns.FishingActive and ns.FishingActive()) then return end
+    if
+        (ns.CraftActive and ns.CraftActive())
+        or (ns.GatherActive and ns.GatherActive())
+        or (ns.FishingActive and ns.FishingActive())
+    then
+        return
+    end
     spellID = Clean(spellID)
     if ns.IsHearthCast and ns.IsHearthCast(spellID) then return end -- the hearthstone ring has it
     local name = spellID and ns.SpellName(spellID)
@@ -396,8 +485,14 @@ local function Begin(spellID, guid, channel)
         name, icon = Clean(n), icon or Clean(tex)
     end
     local now = GetTime()
-    cast = { spellID = spellID, guid = Clean(guid), name = name, icon = icon, channel = channel,
-             rez = IsResurrect(spellID, name) }
+    cast = {
+        spellID = spellID,
+        guid = Clean(guid),
+        name = name,
+        icon = icon,
+        channel = channel,
+        rez = IsResurrect(spellID, name),
+    }
     -- At something you're interacting with? (It bursts when done: Core/Interact.lua.)
     cast.interact = ns.IsInteraction(guid, spellID)
     local s, f = RealTimes(channel)
@@ -407,7 +502,9 @@ local function Begin(spellID, guid, channel)
         return
     end
     local dur = (not channel and spellID and ListedCastTime(spellID)) or (spellID and Learned()[spellID])
-    if dur and dur > 0 then cast.start, cast.finish = now, now + dur end
+    if dur and dur > 0 then
+        cast.start, cast.finish = now, now + dur
+    end
 end
 
 local function Finish(how)
@@ -427,7 +524,15 @@ local function Ours(guid, spellID)
     return true
 end
 
-ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_STOP:player", "UNIT_SPELLCAST_SUCCEEDED:player", "UNIT_SPELLCAST_INTERRUPTED:player", "UNIT_SPELLCAST_FAILED:player", "UNIT_SPELLCAST_CHANNEL_START:player", "UNIT_SPELLCAST_CHANNEL_STOP:player" }, function(event, _, guid, spellID)
+ns.Listen({
+    "UNIT_SPELLCAST_START:player",
+    "UNIT_SPELLCAST_STOP:player",
+    "UNIT_SPELLCAST_SUCCEEDED:player",
+    "UNIT_SPELLCAST_INTERRUPTED:player",
+    "UNIT_SPELLCAST_FAILED:player",
+    "UNIT_SPELLCAST_CHANNEL_START:player",
+    "UNIT_SPELLCAST_CHANNEL_STOP:player",
+}, function(event, _, guid, spellID)
     if not CircletDB then return end
     if event == "UNIT_SPELLCAST_START" then
         Begin(spellID, guid, false)
@@ -461,76 +566,130 @@ ns.PreviewCastRing = function() castRing.Preview(db.castRezFx and 11 or 12) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "cast", name = "Cast", order = 14,
+    key = "cast",
+    name = "Cast",
+    order = 14,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = castRing,
-    preview = ns.PreviewCastRing, slash = { "cast", "casting" }, help = "preview the cast ring",
+    preview = ns.PreviewCastRing,
+    slash = { "cast", "casting" },
+    help = "preview the cast ring",
     toggle = { "Cast ring", "Your casts and channels, timed even in combat." },
     gameBar = "the game's cast bar",
     defaults = {
         -- Cast ring: your casts and channels, timed even in combat. Shares the crafting
         -- ring's spot (crafts and gathers are left to their own rings).
-        castEnabled   = true,
-        castIcon      = true,
-        castSize      = 100,
+        castEnabled = true,
+        castIcon = true,
+        castSize = 100,
         castThickness = 10,
-        castOpacity   = 100,
-        castX         = 0,
-        castFromTop   = 265,
-        castHold      = 1,
-        castRezFx     = true, -- the resurrection animation (resurrect spells)
-        castSchoolFx  = true, -- an effect for the spell's school (Rings/Combat/CastSchools.lua)
+        castOpacity = 100,
+        castX = 0,
+        castFromTop = 265,
+        castHold = 1,
+        castRezFx = true, -- the resurrection animation (resurrect spells)
+        castSchoolFx = true, -- an effect for the spell's school (Rings/Combat/CastSchools.lua)
         castSchoolFxStrength = 100, -- % brightness of that effect
-        castStyle     = "smooth",
-        castBorder    = 2,
+        castStyle = "smooth",
+        castBorder = 2,
         castColors = {
-            cast        = { r = 1.00, g = 0.75, b = 0.20 },
-            channel     = { r = 0.40, g = 0.80, b = 1.00 },
-            done        = { r = 0.40, g = 0.90, b = 0.40 },
+            cast = { r = 1.00, g = 0.75, b = 0.20 },
+            channel = { r = 0.40, g = 0.80, b = 1.00 },
+            done = { r = 0.40, g = 0.90, b = 0.40 },
             interrupted = { r = 1.00, g = 0.30, b = 0.30 },
-            rez         = { r = 1.00, g = 0.90, b = 0.55 },
+            rez = { r = 1.00, g = 0.90, b = 0.55 },
         },
     },
-    page = { folder = "combat", order = 1, build = function(O)
+    page = {
+        folder = "combat",
+        order = 1,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(13, "Casting", "Cast Ring",
+            local tab = RingTab(
+                13,
+                "Casting",
+                "Cast Ring",
                 "Fills while you cast and drains while you channel, with the spell's icon and the time left. In combat "
-                .. "the game hides cast timing from addons, so the ring keeps its own time from the spell's cast time "
-                .. "(or how long it took when it last could see), and snaps to the real end when the cast goes off or "
-                .. "is interrupted. It can't see pushback in combat, so a pushed-back cast runs a little long. A * after "
-                .. "\"Casting\" means the time is the ring's own. Spells get an effect for their school, and resurrects an "
-                .. "animation of their own. Crafts and gathers use their own rings.",
-                MergeTop(TopRow("cast", "cast ring", ns.PreviewCastRing,
-                    "Show a sample cast that goes off, one that's interrupted, then a resurrect. Also /circ cast."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "castEnabled", "Show cast ring", "Show the ring while you cast or channel."),
-                        icon = Toggle(2, "castIcon", "Show spell icon", "The spell's icon on the ring."),
-                        schoolFx = Toggle(2.5, "castSchoolFx", "Spell school effects",
-                            "An effect in the ring for the spell's school while you cast: embers for fire, "
-                            .. "snowflakes for frost, orbiting motes for arcane, wisps for shadow, a swirl for nature "
-                            .. "and turning rays for holy. Physical and unknown spells have none."),
-                        schoolFxStrength = Range(2.6, "castSchoolFxStrength", "Effect strength", 25, 200, 5,
-                            "How bright the spell school effects are. 100% is the default; lower is subtler.",
-                            { disabled = function() return not db.castSchoolFx end }),
-                        rezFx = Toggle(3, "castRezFx", "Resurrection animation",
-                            "When you cast a resurrect, motes of light rise through the ring, and a pillar of "
-                            .. "light shoots up when it goes off."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        cast = Color(1, "castColors", "cast", "Casting", "Ring color while casting."),
-                        channel = Color(2, "castColors", "channel", "Channeling", "Ring color while channeling."),
-                        done = Color(3, "castColors", "done", "Done", "Ring color when the cast goes off."),
-                        interrupted = Color(4, "castColors", "interrupted", "Interrupted", "Ring color when it's interrupted or fails."),
-                        rez = Color(5, "castColors", "rez", "Resurrecting",
-                            "Ring and light color while you cast a resurrect (with the resurrection animation on)."),
-                    }),
-                    size = SizeBox(4, "cast", "cast ring",
-                        "Offset from the center of the screen. By default it shares the crafting ring's spot."),
-                }))
+                    .. "the game hides cast timing from addons, so the ring keeps its own time from the spell's cast time "
+                    .. "(or how long it took when it last could see), and snaps to the real end when the cast goes off or "
+                    .. "is interrupted. It can't see pushback in combat, so a pushed-back cast runs a little long. A * after "
+                    .. '"Casting" means the time is the ring\'s own. Spells get an effect for their school, and resurrects an '
+                    .. "animation of their own. Crafts and gathers use their own rings.",
+                MergeTop(
+                    TopRow(
+                        "cast",
+                        "cast ring",
+                        ns.PreviewCastRing,
+                        "Show a sample cast that goes off, one that's interrupted, then a resurrect. Also /circ cast."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "castEnabled",
+                                "Show cast ring",
+                                "Show the ring while you cast or channel."
+                            ),
+                            icon = Toggle(2, "castIcon", "Show spell icon", "The spell's icon on the ring."),
+                            schoolFx = Toggle(
+                                2.5,
+                                "castSchoolFx",
+                                "Spell school effects",
+                                "An effect in the ring for the spell's school while you cast: embers for fire, "
+                                    .. "snowflakes for frost, orbiting motes for arcane, wisps for shadow, a swirl for nature "
+                                    .. "and turning rays for holy. Physical and unknown spells have none."
+                            ),
+                            schoolFxStrength = Range(
+                                2.6,
+                                "castSchoolFxStrength",
+                                "Effect strength",
+                                25,
+                                200,
+                                5,
+                                "How bright the spell school effects are. 100% is the default; lower is subtler.",
+                                { disabled = function() return not db.castSchoolFx end }
+                            ),
+                            rezFx = Toggle(
+                                3,
+                                "castRezFx",
+                                "Resurrection animation",
+                                "When you cast a resurrect, motes of light rise through the ring, and a pillar of "
+                                    .. "light shoots up when it goes off."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            cast = Color(1, "castColors", "cast", "Casting", "Ring color while casting."),
+                            channel = Color(2, "castColors", "channel", "Channeling", "Ring color while channeling."),
+                            done = Color(3, "castColors", "done", "Done", "Ring color when the cast goes off."),
+                            interrupted = Color(
+                                4,
+                                "castColors",
+                                "interrupted",
+                                "Interrupted",
+                                "Ring color when it's interrupted or fails."
+                            ),
+                            rez = Color(
+                                5,
+                                "castColors",
+                                "rez",
+                                "Resurrecting",
+                                "Ring and light color while you cast a resurrect (with the resurrection animation on)."
+                            ),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "cast",
+                            "cast ring",
+                            "Offset from the center of the screen. By default it shares the crafting ring's spot."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the cast ends."
             tab.args.size.args.hold.min = 0.5
             tab.args.size.args.hold.step = 0.5
             return tab
-        end },
+        end,
+    },
 })

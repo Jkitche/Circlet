@@ -46,8 +46,9 @@ local function SetExclaimIcon(turnIn)
     if C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(atlas) then
         exclaim.icon:SetAtlas(atlas)
     else
-        exclaim.icon:SetTexture(turnIn and "Interface\\GossipFrame\\ActiveQuestIcon"
-            or "Interface\\GossipFrame\\AvailableQuestIcon")
+        exclaim.icon:SetTexture(
+            turnIn and "Interface\\GossipFrame\\ActiveQuestIcon" or "Interface\\GossipFrame\\AvailableQuestIcon"
+        )
     end
 end
 exclaim.turnIn = false
@@ -70,7 +71,10 @@ end
 exclaim:SetScript("OnUpdate", function(self, elapsed)
     self.t = self.t + elapsed
     local t = self.t
-    if t > EXCLAIM_LENGTH then self:Hide() return end
+    if t > EXCLAIM_LENGTH then
+        self:Hide()
+        return
+    end
 
     -- Scale: spring in (0 -> 1.3), settle back to 1.
     local scale
@@ -111,21 +115,32 @@ local questRing = CreateProgressRing({
     samples = function()
         return {
             { id = "edit-q1", name = "Screecher Feather", title = "Feathers for Grek", from = 3, to = 5, max = 8 },
-            { id = "edit-q2", name = "Sunscale Screecher slain", title = "Raptor Thieves", from = 9, to = 10,
-              max = 10, editTime = 4 },
-            { id = "edit-q3", name = "Raptor Thieves", from = 2, to = 3, max = 3, turnIn = true,
-              gainText = "Done!", editTime = 4 },
+            {
+                id = "edit-q2",
+                name = "Sunscale Screecher slain",
+                title = "Raptor Thieves",
+                from = 9,
+                to = 10,
+                max = 10,
+                editTime = 4,
+            },
+            {
+                id = "edit-q3",
+                name = "Raptor Thieves",
+                from = 2,
+                to = 3,
+                max = 3,
+                turnIn = true,
+                gainText = "Done!",
+                editTime = 4,
+            },
         }
     end,
     style = function(e, finished)
         local c, done = db.questColors.progress, db.questColors.complete
         local complete = e.to >= e.max
-        if e.turnIn then
-            return { fill = done, rank = done, label = "Ready to turn in", labelColor = done }
-        end
-        if complete and finished then
-            return { fill = done, rank = done, label = "Complete!", labelColor = done }
-        end
+        if e.turnIn then return { fill = done, rank = done, label = "Ready to turn in", labelColor = done } end
+        if complete and finished then return { fill = done, rank = done, label = "Complete!", labelColor = done } end
         return { fill = complete and done or c, rank = c, label = e.title, labelColor = { r = 0.8, g = 0.8, b = 0.8 } }
     end,
     onFinish = function(e, frame, geom)
@@ -133,7 +148,7 @@ local questRing = CreateProgressRing({
             PlayExclaim(frame, geom, e.turnIn)
             return EXCLAIM_LENGTH + 0.3 -- keep the ring up while the "!" plays
         end
-    end
+    end,
 })
 
 local objectiveSnapshot -- [questID] = { title, objectives = { [index] = { have, need, done, text, bar } } }
@@ -148,9 +163,7 @@ local function ObjectiveName(text)
 end
 
 local function ReadQuestLog()
-    if not (C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetQuestObjectives) then
-        return nil
-    end
+    if not (C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetQuestObjectives) then return nil end
 
     local snap = {}
     for i = 1, C_QuestLog.GetNumQuestLogEntries() do
@@ -168,7 +181,7 @@ local function ReadQuestLog()
                             need = need or 0,
                             done = done == true,
                             text = text or "",
-                            bar  = (o.type == "progressbar"),
+                            bar = (o.type == "progressbar"),
                         }
                     end
                 end
@@ -225,7 +238,9 @@ local function CheckProgress()
             -- Every objective done now, and not before: the quest is ready to hand in.
             if db.questTurnIn and AllObjectivesDone(quest) and not AllObjectivesDone(old) then
                 local count = 0
-                for _ in pairs(quest.objectives) do count = count + 1 end
+                for _ in pairs(quest.objectives) do
+                    count = count + 1
+                end
                 questRing.Queue({
                     id = questID .. ":turnin",
                     name = quest.title,
@@ -259,7 +274,15 @@ end
 local function PreviewQuestRing()
     questRing.Preview({
         { id = "p1", name = "Screecher Feather", title = "Feathers for Grek", from = 3, to = 5, max = 8 },
-        { id = "p2", name = "Area explored", title = "Into the Barrens", from = 40, to = 65, max = 100, percent = true },
+        {
+            id = "p2",
+            name = "Area explored",
+            title = "Into the Barrens",
+            from = 40,
+            to = 65,
+            max = 100,
+            percent = true,
+        },
         { id = "p3", name = "Sunscale Screecher slain", title = "Raptor Thieves", from = 9, to = 10, max = 10 },
         { id = "p5", name = "Raptor Thieves", from = 2, to = 3, max = 3, turnIn = true, gainText = "Done!" },
     })
@@ -282,55 +305,112 @@ ns.questRing = questRing
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "quest", name = "Quest", order = 2,
+    key = "quest",
+    name = "Quest",
+    order = 2,
     ring = questRing,
-    preview = PreviewQuestRing, slash = { "quest", "pop" }, help = "preview the quest ring",
+    preview = PreviewQuestRing,
+    slash = { "quest", "pop" },
+    help = "preview the quest ring",
     toggle = { "Quest ring", "Fills when a kill or drop advances a quest objective." },
     defaults = {
-        questEnabled     = true,
+        questEnabled = true,
         questAfterCombat = true,
-        questShowDelta   = false,
-        questCompleteFx  = true, -- "!" animation when an objective completes
-        questSize        = 120,
-        questThickness   = 12,
-        questOpacity     = 100, -- percent
-        questX           = -170,
-        questFromTop     = 50,
-        questHold        = 3,
-        questStyle       = "smooth",
-        questBorder      = 2, -- black border width (0 = none)
-        questTurnIn      = true, -- "Ready to turn in" once every objective of a quest is done
+        questShowDelta = false,
+        questCompleteFx = true, -- "!" animation when an objective completes
+        questSize = 120,
+        questThickness = 12,
+        questOpacity = 100, -- percent
+        questX = -170,
+        questFromTop = 50,
+        questHold = 3,
+        questStyle = "smooth",
+        questBorder = 2, -- black border width (0 = none)
+        questTurnIn = true, -- "Ready to turn in" once every objective of a quest is done
         questColors = {
             progress = { r = 1.00, g = 0.82, b = 0.00 }, -- quest gold
             complete = { r = 0.25, g = 1.00, b = 0.25 },
         },
     },
-    page = { folder = "progress", order = 3, build = function(O)
+    page = {
+        folder = "progress",
+        order = 3,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(3, "Quest", "Quest Ring",
+            local tab = RingTab(
+                3,
+                "Quest",
+                "Quest Ring",
                 "A donut that fills when a kill or drop advances a quest objective, e.g. Screecher Feather 5 / 8.",
-                MergeTop(TopRow("quest", "quest ring", PreviewQuestRing, "Show example progress: a drop, a percentage "
-                    .. "objective, and an objective finishing. Also /circ quest."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "questEnabled", "Show quest ring", "Pop up and fill when an objective advances."),
-                        afterCombat = Toggle(2, "questAfterCombat", "Wait until combat ends",
-                            "Hold objective progress made in a fight and show it once combat ends."),
-                        delta = Toggle(3, "questShowDelta", "Show gain as %",
-                            "Add a line under the gain showing it as a share of the objective, e.g. +4.2%."),
-                        completeFx = Toggle(4, "questCompleteFx", "Complete animation",
-                            "A quest-giver \"!\" pops up in the middle of the ring, behind the text, when an objective is finished."),
-                        turnIn = Toggle(5, "questTurnIn", "Turn-in alert",
-                            "Once every objective of a quest is done, the ring shows the quest as \"Ready to turn in\" "
-                            .. "(with a \"?\" if the complete animation is on)."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        progress = Color(1, "questColors", "progress", "In progress", "Ring and count color while an objective is in progress."),
-                        complete = Color(2, "questColors", "complete", "Complete", "Ring color when an objective is finished."),
-                    }),
-                    size = SizeBox(4, "quest", "quest ring",
-                        "Offset from the center of the screen. The default sits just left of the XP ring."),
-                }))
+                MergeTop(
+                    TopRow(
+                        "quest",
+                        "quest ring",
+                        PreviewQuestRing,
+                        "Show example progress: a drop, a percentage "
+                            .. "objective, and an objective finishing. Also /circ quest."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "questEnabled",
+                                "Show quest ring",
+                                "Pop up and fill when an objective advances."
+                            ),
+                            afterCombat = Toggle(
+                                2,
+                                "questAfterCombat",
+                                "Wait until combat ends",
+                                "Hold objective progress made in a fight and show it once combat ends."
+                            ),
+                            delta = Toggle(
+                                3,
+                                "questShowDelta",
+                                "Show gain as %",
+                                "Add a line under the gain showing it as a share of the objective, e.g. +4.2%."
+                            ),
+                            completeFx = Toggle(
+                                4,
+                                "questCompleteFx",
+                                "Complete animation",
+                                'A quest-giver "!" pops up in the middle of the ring, behind the text, when an objective is finished.'
+                            ),
+                            turnIn = Toggle(
+                                5,
+                                "questTurnIn",
+                                "Turn-in alert",
+                                'Once every objective of a quest is done, the ring shows the quest as "Ready to turn in" '
+                                    .. '(with a "?" if the complete animation is on).'
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            progress = Color(
+                                1,
+                                "questColors",
+                                "progress",
+                                "In progress",
+                                "Ring and count color while an objective is in progress."
+                            ),
+                            complete = Color(
+                                2,
+                                "questColors",
+                                "complete",
+                                "Complete",
+                                "Ring color when an objective is finished."
+                            ),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "quest",
+                            "quest ring",
+                            "Offset from the center of the screen. The default sits just left of the XP ring."
+                        ),
+                    }
+                )
+            )
             return tab
-        end },
+        end,
+    },
 })

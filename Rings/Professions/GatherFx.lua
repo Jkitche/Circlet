@@ -31,18 +31,33 @@ local STAR_TEX = "Interface\\Cooldown\\star4"
 -- The tools: the game's cursor art (32x32). Points are fractions of the image, measured from
 -- its top left: where it's held and the end that does the work.
 local TOOLS = {
-    knife = { tex = "Interface\\Cursor\\Crosshair\\Attack", fallback = "Interface\\Cursor\\Attack",
-              grip = { 0.78, 0.78 }, tip = { 0.03, 0.03 } },
-    pick  = { tex = "Interface\\Cursor\\Crosshair\\Mine", fallback = "Interface\\Cursor\\Mine",
-              grip = { 0.77, 0.875 }, tip = { 0.92, 0.06 } },
+    knife = {
+        tex = "Interface\\Cursor\\Crosshair\\Attack",
+        fallback = "Interface\\Cursor\\Attack",
+        grip = { 0.78, 0.78 },
+        tip = { 0.03, 0.03 },
+    },
+    pick = {
+        tex = "Interface\\Cursor\\Crosshair\\Mine",
+        fallback = "Interface\\Cursor\\Mine",
+        grip = { 0.77, 0.875 },
+        tip = { 0.92, 0.06 },
+    },
     -- Gold pruning shears (a crosshair cursor known only by its file ID): jaws at the top left.
-    shears = { tex = 4675625, fallback = "Interface\\Cursor\\GatherHerbs",
-               grip = { 0.75, 0.75 }, tip = { 0.19, 0.19 } },
+    shears = {
+        tex = 4675625,
+        fallback = "Interface\\Cursor\\GatherHerbs",
+        grip = { 0.75, 0.75 },
+        tip = { 0.19, 0.19 },
+    },
 }
 
 -- A point of the image, from its middle, in screen units (y up) for an image `size` across.
 local function FromMiddle(pt, size) return (pt[1] - 0.5) * size, (0.5 - pt[2]) * size end
-local function Turn(x, y, a) local c, s = math.cos(a), math.sin(a) return x * c - y * s, x * s + y * c end
+local function Turn(x, y, a)
+    local c, s = math.cos(a), math.sin(a)
+    return x * c - y * s, x * s + y * c
+end
 local function Angle(x, y) return math.atan2 and math.atan2(y, x) or math.atan(y, x) end
 
 -- A repeatable "random" number in [0, 1) for n: the same n always gives the same number.
@@ -51,7 +66,7 @@ local function Hash(n)
     return x - math.floor(x)
 end
 
-local BITS = 96   -- lines for solid bits (fur: two per tuft; rock chips: one each)
+local BITS = 96 -- lines for solid bits (fur: two per tuft; rock chips: one each)
 local SPARKS = 64 -- glowing lines (sparks)
 
 local fx -- lines and textures on the gathering ring's frame, made on first use
@@ -87,11 +102,17 @@ end
 
 local function HideAll()
     if not fx then return end
-    for _, l in ipairs(fx.cut) do l:Hide() end
+    for _, l in ipairs(fx.cut) do
+        l:Hide()
+    end
     fx.glint:Hide()
     fx.tool:Hide()
-    for _, l in ipairs(fx.bits) do l:Hide() end
-    for _, l in ipairs(fx.sparks) do l:Hide() end
+    for _, l in ipairs(fx.bits) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.sparks) do
+        l:Hide()
+    end
 end
 
 -- Where the tools work: the ring's top right. Places round the ring here are fractions of
@@ -134,9 +155,14 @@ local function Cut(frame, geom, from, to, a, r, g, b, onRing)
     if to <= from then return end
     local cg = fx.cutGeom
     cg.R, cg.T, cg.step = geom.R, math.max(1.5, geom.T * 0.35), geom.step
-    if onRing then cg.start, cg.sweep, cg.reverse = geom.start, geom.sweep, geom.reverse
-    else cg.start, cg.sweep, cg.reverse = 0, 1, nil end
-    for _, l in ipairs(fx.cut) do l:SetColorTexture(r or 0.85, g or 0.92, b or 1, a) end
+    if onRing then
+        cg.start, cg.sweep, cg.reverse = geom.start, geom.sweep, geom.reverse
+    else
+        cg.start, cg.sweep, cg.reverse = 0, 1, nil
+    end
+    for _, l in ipairs(fx.cut) do
+        l:SetColorTexture(r or 0.85, g or 0.92, b or 1, a)
+    end
     ns.DrawArc(fx.cut, from, to, frame, cg, true)
     used.cut = true
 end
@@ -173,7 +199,11 @@ local function Tool(frame, which, size, turn, at, x, y, a, mirror)
     fx.tool:ClearAllPoints()
     fx.tool:SetPoint("CENTER", frame, "CENTER", x - px, y - py)
     fx.tool:SetSize(size, size)
-    if mirror then fx.tool:SetTexCoord(1, 0, 0, 1) else fx.tool:SetTexCoord(0, 1, 0, 1) end
+    if mirror then
+        fx.tool:SetTexCoord(1, 0, 0, 1)
+    else
+        fx.tool:SetTexCoord(0, 1, 0, 1)
+    end
     fx.tool:SetRotation(turn)
     fx.tool:SetAlpha(a)
     fx.tool:Show()
@@ -202,13 +232,16 @@ local function ToolAlpha(now, from, fade)
     return math.max(0, 1 - (now - from) / fade)
 end
 
-local function Smooth(x) x = math.max(0, math.min(1, x)) return x * x * (3 - 2 * x) end
+local function Smooth(x)
+    x = math.max(0, math.min(1, x))
+    return x * x * (3 - 2 * x)
+end
 
 ---------------------------------------------------------------- skinning
-local STROKE = 0.42      -- seconds per knife stroke
-local REACH = 0.10       -- how far back along the ring a stroke starts
-local PER_STROKE = 3     -- tufts flicked off each stroke
-local KEEP = 8           -- strokes whose tufts can still be falling
+local STROKE = 0.42 -- seconds per knife stroke
+local REACH = 0.10 -- how far back along the ring a stroke starts
+local PER_STROKE = 3 -- tufts flicked off each stroke
+local KEEP = 8 -- strokes whose tufts can still be falling
 local FUR = {
     { 0.55, 0.38, 0.22 }, -- tan
     { 0.40, 0.27, 0.16 }, -- brown
@@ -234,8 +267,20 @@ local function Tuft(frame, geom, s, now, born, f, seed, burst)
     for k = 0, 1 do
         local ang = spin + k * 0.55
         local ll = len * (k == 0 and 1 or 0.75)
-        Put(fx.bits, "bits", frame, px, py, px + math.cos(ang) * ll, py + math.sin(ang) * ll,
-            math.max(1, 1.6 * s), c[1], c[2], c[3], a)
+        Put(
+            fx.bits,
+            "bits",
+            frame,
+            px,
+            py,
+            px + math.cos(ang) * ll,
+            py + math.sin(ang) * ll,
+            math.max(1, 1.6 * s),
+            c[1],
+            c[2],
+            c[3],
+            a
+        )
     end
 end
 
@@ -315,11 +360,11 @@ local function Skinning(st, frame, geom, now, s)
 end
 
 ---------------------------------------------------------------- mining
-local SWING = 0.55       -- seconds per swing of the pick
-local WIND = 0.6         -- of a swing spent winding up; the strike lands then
-local SPARKS_PER = 5     -- sparks thrown each strike
-local CHIPS_PER = 3      -- chips of rock knocked off each strike
-local KEEP_SWINGS = 3    -- swings whose sparks and chips can still be flying
+local SWING = 0.55 -- seconds per swing of the pick
+local WIND = 0.6 -- of a swing spent winding up; the strike lands then
+local SPARKS_PER = 5 -- sparks thrown each strike
+local CHIPS_PER = 3 -- chips of rock knocked off each strike
+local KEEP_SWINGS = 3 -- swings whose sparks and chips can still be flying
 local ROCK = {
     { 0.50, 0.48, 0.45 }, -- grey
     { 0.36, 0.34, 0.32 }, -- dark
@@ -337,8 +382,20 @@ local function Spark(frame, geom, s, now, born, f, seed, burst)
     local px, py, vx, vy = Thrown(geom, f, age, out, along, 30 * s, -260 * s)
     local u = age / life
     local tail = 0.035 -- seconds of travel the streak covers
-    Put(fx.sparks, "sparks", frame, px, py, px - vx * tail, py - vy * tail, math.max(1, 1.4 * s),
-        1, 0.95 - 0.45 * u, 0.7 - 0.6 * u, (1 - u) ^ 1.5)
+    Put(
+        fx.sparks,
+        "sparks",
+        frame,
+        px,
+        py,
+        px - vx * tail,
+        py - vy * tail,
+        math.max(1, 1.4 * s),
+        1,
+        0.95 - 0.45 * u,
+        0.7 - 0.6 * u,
+        (1 - u) ^ 1.5
+    )
 end
 
 -- A chip of rock: a small tumbling block, knocked out and falling.
@@ -416,8 +473,12 @@ local function Mining(st, frame, geom, now, s)
         local hit = ks + SWING * WIND -- when the pick lands
         if hit <= stopAt then
             local f = SPOT
-            for m = 1, SPARKS_PER do Spark(frame, geom, s, now, hit, f, i * 5.31 + m * 2.17, false) end
-            for m = 1, CHIPS_PER do Chip(frame, geom, s, now, hit + m * 0.02, f, i * 3.77 + m * 1.43, false) end
+            for m = 1, SPARKS_PER do
+                Spark(frame, geom, s, now, hit, f, i * 5.31 + m * 2.17, false)
+            end
+            for m = 1, CHIPS_PER do
+                Chip(frame, geom, s, now, hit + m * 0.02, f, i * 3.77 + m * 1.43, false)
+            end
         end
         if i == k and now < stopAt then
             local e = SPOT
@@ -453,11 +514,11 @@ local function Mining(st, frame, geom, now, s)
 end
 
 ---------------------------------------------------------------- herbalism
-local SNIP = 0.45        -- seconds per snip
-local SNIP_AT = 0.42     -- of a snip: when the jaws close
-local LEAVES_PER = 3     -- leaves cut loose each snip
-local PETALS_PER = 2     -- and petals
-local KEEP_SNIPS = 4     -- snips whose leaves can still be falling
+local SNIP = 0.45 -- seconds per snip
+local SNIP_AT = 0.42 -- of a snip: when the jaws close
+local LEAVES_PER = 3 -- leaves cut loose each snip
+local PETALS_PER = 2 -- and petals
+local KEEP_SNIPS = 4 -- snips whose leaves can still be falling
 local LEAF = {
     { 0.35, 0.65, 0.25 }, -- green
     { 0.24, 0.50, 0.20 }, -- dark green
@@ -522,8 +583,16 @@ local function Shears(st, frame, geom, now, s, start, stopAt)
     local hx, hy = HoldWay(ox, oy, tx, ty)
     local turn = PointAlong("shears", -hx, -hy) + 0.18 * squeeze
     local h = geom.T * (0.5 + SHEARS_GAP * gap) -- the jaws close just over the band's outside
-    Tool(frame, "shears", 34 * s * (1 - 0.1 * squeeze), turn, "tip", x + (ox * 0.5 + hx * 0.5) * h,
-        y + (oy * 0.5 + hy * 0.5) * h, a)
+    Tool(
+        frame,
+        "shears",
+        34 * s * (1 - 0.1 * squeeze),
+        turn,
+        "tip",
+        x + (ox * 0.5 + hx * 0.5) * h,
+        y + (oy * 0.5 + hy * 0.5) * h,
+        a
+    )
 end
 
 local function Herbalism(st, frame, geom, now, s)
@@ -534,8 +603,12 @@ local function Herbalism(st, frame, geom, now, s)
         local at = start + (i + SNIP_AT) * SNIP -- when the jaws close
         if at <= stopAt then
             local f = SPOT
-            for m = 1, LEAVES_PER do Leaf(frame, geom, s, now, at + m * 0.02, f, i * 6.17 + m * 1.37, false) end
-            for m = 1, PETALS_PER do Leaf(frame, geom, s, now, at + m * 0.03, f, i * 4.91 + m * 2.53, true) end
+            for m = 1, LEAVES_PER do
+                Leaf(frame, geom, s, now, at + m * 0.02, f, i * 6.17 + m * 1.37, false)
+            end
+            for m = 1, PETALS_PER do
+                Leaf(frame, geom, s, now, at + m * 0.03, f, i * 4.91 + m * 2.53, true)
+            end
             -- A small bright snip where the jaws meet.
             local d = now - at
             if d >= 0 and d < 0.18 then
@@ -569,11 +642,19 @@ local function DrawGatherFx(st, frame, geom)
     if not fx then Build(frame) end
     used = { bits = 0, sparks = 0 }
     draw(st, frame, geom, GetTime(), math.max(0.4, geom.R / 50)) -- sizes and speeds follow the ring's size
-    if not used.cut then for _, l in ipairs(fx.cut) do l:Hide() end end
+    if not used.cut then
+        for _, l in ipairs(fx.cut) do
+            l:Hide()
+        end
+    end
     if not used.glint then fx.glint:Hide() end
     if not used.tool then fx.tool:Hide() end
-    for i = used.bits + 1, BITS do fx.bits[i]:Hide() end
-    for i = used.sparks + 1, SPARKS do fx.sparks[i]:Hide() end
+    for i = used.bits + 1, BITS do
+        fx.bits[i]:Hide()
+    end
+    for i = used.sparks + 1, SPARKS do
+        fx.sparks[i]:Hide()
+    end
 end
 
 -- Shared with the files loaded after this one.

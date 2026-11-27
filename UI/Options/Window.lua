@@ -39,15 +39,20 @@ local function TabButton(i)
         b.text:SetPoint("CENTER", b, "CENTER", 0, 2)
         b.line = W.Solid(b, "ARTWORK", A.r, A.g, A.b, 1)
         b.line:SetHeight(2)
-        b.line:SetPoint("BOTTOMLEFT"); b.line:SetPoint("BOTTOMRIGHT")
+        b.line:SetPoint("BOTTOMLEFT")
+        b.line:SetPoint("BOTTOMRIGHT")
         b:SetScript("OnClick", function(self)
             tabOf[UI.current] = self.tab
             UI.lastSig = nil
             UI.win.body:ScrollTo(0)
             UI.Refresh()
         end)
-        b:SetScript("OnEnter", function(self) if not self.selected then self.text:SetTextColor(0.9, 0.9, 0.92) end end)
-        b:SetScript("OnLeave", function(self) if not self.selected then self.text:SetTextColor(0.6, 0.62, 0.66) end end)
+        b:SetScript("OnEnter", function(self)
+            if not self.selected then self.text:SetTextColor(0.9, 0.9, 0.92) end
+        end)
+        b:SetScript("OnLeave", function(self)
+            if not self.selected then self.text:SetTextColor(0.6, 0.62, 0.66) end
+        end)
         tabButtons[i] = b
     end
     b:Show()
@@ -83,7 +88,9 @@ local function UpdateFooter(m)
         b:SetPoint("BOTTOMLEFT", UI.win, "BOTTOMLEFT", x, 13)
         x = x + Num(b:GetWidth(), 120) + 12
     end
-    for i = #m.buttons + 1, #footButtons do footButtons[i]:Hide() end
+    for i = #m.buttons + 1, #footButtons do
+        footButtons[i]:Hide()
+    end
 end
 
 local function Render(m, tabs, tab)
@@ -105,7 +112,9 @@ local function Render(m, tabs, tab)
         b:SetPoint("TOPLEFT", UI.win, "TOPLEFT", x, -tabsTop)
         x = x + Num(b:GetWidth(), 100) + 6
     end
-    for i = #tabs + 1, #tabButtons do tabButtons[i]:Hide() end
+    for i = #tabs + 1, #tabButtons do
+        tabButtons[i]:Hide()
+    end
     UI.win.tabRule:ClearAllPoints()
     UI.win.tabRule:SetPoint("TOPLEFT", UI.win, "TOPLEFT", SIDE_W + PAD, -(tabsTop + 34))
     UI.win.tabRule:SetPoint("TOPRIGHT", UI.win, "TOPRIGHT", -PAD, -(tabsTop + 34))
@@ -130,7 +139,11 @@ local function Render(m, tabs, tab)
             end
             local col, row = 0, 0
             local function NextRow()
-                if col > 0 then y = y - ROW_H; row = row + 1; col = 0 end
+                if col > 0 then
+                    y = y - ROW_H
+                    row = row + 1
+                    col = 0
+                end
             end
             for _, e in ipairs(s.items) do
                 local kind = CELL_KIND[e.opt.type]
@@ -182,7 +195,9 @@ UI.Refresh = function()
         UI.win.body:ScrollTo(scroll or 0)
     else
         UpdateHeader(m)
-        EachCell(function(c) if c.opt then c:Update() end end)
+        EachCell(function(c)
+            if c.opt then c:Update() end
+        end)
         UpdateFooter(m)
     end
     RefreshSidebar()

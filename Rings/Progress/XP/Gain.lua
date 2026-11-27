@@ -28,14 +28,19 @@ local function GainTex(layer, sub, glow)
 end
 gainFx.glow = GainTex("OVERLAY", 5, true)
 gainFx.star = GainTex("OVERLAY", 6)
-for i = 1, GAIN_SPARKLES do gainFx.sparkles[i] = { tex = GainTex("OVERLAY", 4) } end
+for i = 1, GAIN_SPARKLES do
+    gainFx.sparkles[i] = { tex = GainTex("OVERLAY", 4) }
+end
 
 local function Whiter(c, k) return c.r + (1 - c.r) * k, c.g + (1 - c.g) * k, c.b + (1 - c.b) * k end
 
 local function HideGainFx()
     gainFx.glow:Hide()
     gainFx.star:Hide()
-    for _, s in ipairs(gainFx.sparkles) do s.tex:Hide(); s.born = nil end
+    for _, s in ipairs(gainFx.sparkles) do
+        s.tex:Hide()
+        s.born = nil
+    end
     gainFx.landAt = nil
 end
 
@@ -50,7 +55,9 @@ local function DrawGainFx(now, moving, landed)
 
     -- The comet's head while it moves; a flare where it lands.
     local landAge = gainFx.landAt and now - gainFx.landAt
-    if landAge and landAge >= LAND_TIME then gainFx.landAt, landAge = nil, nil end
+    if landAge and landAge >= LAND_TIME then
+        gainFx.landAt, landAge = nil, nil
+    end
     if moving or landAge then
         local k = moving and 1 or (1 - landAge / LAND_TIME)
         local swell = moving and 1 or (1 + 0.8 * math.sin(math.pi * math.min(1, landAge / LAND_TIME * 1.5)))

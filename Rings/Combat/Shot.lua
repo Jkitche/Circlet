@@ -17,7 +17,7 @@ local db, CreateLiveRing, SafeCall, CleanNumber = ns.db, ns.CreateLiveRing, ns.S
 -- Casting something else (Aimed Shot, a spell) shows "Casting" until it's done.
 
 local SHOTS = { 75, 5019, 2764 } -- Auto Shot, Shoot (wands), Throw (every rank by name)
-local AIM = 0.5                  -- Auto Shot's aim: the last half second
+local AIM = 0.5 -- Auto Shot's aim: the last half second
 local SAMPLE_SPEED = 2.8
 
 local repeating = false
@@ -26,7 +26,9 @@ local casting
 local measured
 
 local shotByID, shotByName = {}, nil
-for _, id in ipairs(SHOTS) do shotByID[id] = true end
+for _, id in ipairs(SHOTS) do
+    shotByID[id] = true
+end
 
 local function IsShot(spellID)
     if not spellID then return false end
@@ -35,7 +37,9 @@ local function IsShot(spellID)
         local names, any = {}, false
         for id in pairs(shotByID) do
             local n = ns.SpellName(id)
-            if n then names[n], any = true, true end
+            if n then
+                names[n], any = true, true
+            end
         end
         if not any then return false end
         shotByName = names
@@ -66,7 +70,9 @@ local function State(elapsed, speed, auto, moving, icon)
     local st = { title = "Shot", icon = icon, hold = 0.4, label = "" }
     if left <= 0.05 then
         st.frac, st.value, st.color = 1, "Ready", c.ready
-        if auto and moving and db.shotAim then st.label, st.labelColor = "Hold still", c.aim end
+        if auto and moving and db.shotAim then
+            st.label, st.labelColor = "Hold still", c.aim
+        end
         return st
     end
     st.frac = math.min(1, elapsed / speed)
@@ -86,8 +92,15 @@ local shotRing = CreateLiveRing({
     read = function(now)
         if not repeating then return nil end
         if casting then
-            return { title = "Shot", frac = 0, value = "", label = "Casting", color = db.shotColors.fill,
-                     icon = RangedIcon(), hold = 0.4 }
+            return {
+                title = "Shot",
+                frac = 0,
+                value = "",
+                label = "Casting",
+                color = db.shotColors.fill,
+                icon = RangedIcon(),
+                hold = 0.4,
+            }
         end
         local speed = Speed()
         if not last then return State(speed, speed, true, Moving(), RangedIcon()) end
@@ -109,8 +122,13 @@ ns.Listen({ "START_AUTOREPEAT_SPELL", "STOP_AUTOREPEAT_SPELL" }, function(event)
     if not repeating then casting = nil end
 end)
 
-ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_STOP:player", "UNIT_SPELLCAST_SUCCEEDED:player",
-            "UNIT_SPELLCAST_INTERRUPTED:player", "UNIT_SPELLCAST_FAILED:player" }, function(event, _, _, spellID)
+ns.Listen({
+    "UNIT_SPELLCAST_START:player",
+    "UNIT_SPELLCAST_STOP:player",
+    "UNIT_SPELLCAST_SUCCEEDED:player",
+    "UNIT_SPELLCAST_INTERRUPTED:player",
+    "UNIT_SPELLCAST_FAILED:player",
+}, function(event, _, _, spellID)
     local id = CleanNumber(spellID)
     local shot = IsShot(id)
     if event == "UNIT_SPELLCAST_START" then
@@ -138,53 +156,82 @@ ns.PreviewShotRing = function() shotRing.Preview(SAMPLE_SPEED * 3) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "shot", name = "Shot", order = 14.3, since = "1.4.0",
+    key = "shot",
+    name = "Shot",
+    order = 14.3,
+    since = "1.4.0",
     iconBg = true,
     ring = shotRing,
     gameBar = "the game's ranged swing timer bar", -- WoW Forever's own (Features/DefaultUI.lua)
     alwaysInCombat = true,
-    preview = ns.PreviewShotRing, slash = { "shot", "autoshot" }, help = "preview the shot timer ring",
+    preview = ns.PreviewShotRing,
+    slash = { "shot", "autoshot" },
+    help = "preview the shot timer ring",
     toggle = { "Shot timer ring", "Time to your next Auto Shot, wand shot or throw." },
     defaults = {
         -- Shot timer ring: left of the swing timer ring.
-        shotEnabled   = true,
-        shotAim       = true, -- Auto Shot's last half second (the aim) in its own color
-        shotSize      = 80,
+        shotEnabled = true,
+        shotAim = true, -- Auto Shot's last half second (the aim) in its own color
+        shotSize = 80,
         shotThickness = 8,
-        shotOpacity   = 100,
-        shotX         = -255,
-        shotFromTop   = 385,
-        shotHold      = 0.4,
-        shotStyle     = "smooth",
-        shotBorder    = 2,
+        shotOpacity = 100,
+        shotX = -255,
+        shotFromTop = 385,
+        shotHold = 0.4,
+        shotStyle = "smooth",
+        shotBorder = 2,
         shotColors = {
-            fill  = { r = 0.45, g = 0.80, b = 0.40 },
-            aim   = { r = 1.00, g = 0.40, b = 0.30 },
+            fill = { r = 0.45, g = 0.80, b = 0.40 },
+            aim = { r = 1.00, g = 0.40, b = 0.30 },
             ready = { r = 0.75, g = 1.00, b = 0.60 },
         },
     },
-    page = { folder = "combat", order = 4, build = function(O)
+    page = {
+        folder = "combat",
+        order = 4,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            return RingTab(13.3, "Shot timer", "Shot Timer Ring",
+            return RingTab(
+                13.3,
+                "Shot timer",
+                "Shot Timer Ring",
                 "While Auto Shot repeats (or a wand's Shoot, or Throw), the ring fills over your ranged weapon's "
-                .. "speed and counts down to the next shot. Auto Shot's last half second is its aim, when moving holds "
-                .. "the shot back: the ring turns its own color for it, and the label says Hold still if you're moving.",
-                MergeTop(TopRow("shot", "shot timer ring", ns.PreviewShotRing,
-                    "Show a few sample shots. Also /circ shot."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "shotEnabled", "Show shot timer ring",
-                            "Show the ring while Auto Shot, Shoot or Throw repeats."),
-                        aim = Toggle(2, "shotAim", "Show Auto Shot's aim",
-                            "Turn the ring the Aiming color for the last half second (when moving holds the shot back), and say "
-                            .. "Hold still if you're moving."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "shotColors", "fill", "Reloading", "Ring color until the aim."),
-                        aim = Color(2, "shotColors", "aim", "Aiming", "Ring color for Auto Shot's last half second."),
-                        ready = Color(3, "shotColors", "ready", "Ready", "Ring color once the shot is ready."),
-                    }),
-                    size = SizeBox(4, "shot", "shot timer ring", "Offset from the center of the screen."),
-                }))
-        end },
+                    .. "speed and counts down to the next shot. Auto Shot's last half second is its aim, when moving holds "
+                    .. "the shot back: the ring turns its own color for it, and the label says Hold still if you're moving.",
+                MergeTop(
+                    TopRow("shot", "shot timer ring", ns.PreviewShotRing, "Show a few sample shots. Also /circ shot."),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "shotEnabled",
+                                "Show shot timer ring",
+                                "Show the ring while Auto Shot, Shoot or Throw repeats."
+                            ),
+                            aim = Toggle(
+                                2,
+                                "shotAim",
+                                "Show Auto Shot's aim",
+                                "Turn the ring the Aiming color for the last half second (when moving holds the shot back), and say "
+                                    .. "Hold still if you're moving."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "shotColors", "fill", "Reloading", "Ring color until the aim."),
+                            aim = Color(
+                                2,
+                                "shotColors",
+                                "aim",
+                                "Aiming",
+                                "Ring color for Auto Shot's last half second."
+                            ),
+                            ready = Color(3, "shotColors", "ready", "Ready", "Ring color once the shot is ready."),
+                        }),
+                        size = SizeBox(4, "shot", "shot timer ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
+        end,
+    },
 })

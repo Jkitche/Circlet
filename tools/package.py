@@ -6,9 +6,11 @@ ignores, and with @project-version@ filled in.
     python3 tools/package.py            version from the top of CHANGELOG.md
     python3 tools/package.py 0.62.1     a given version
 """
+
 import os, re, sys, zipfile
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def version():
     if len(sys.argv) > 1:
@@ -18,6 +20,7 @@ def version():
         if m:
             return m.group(1)
     sys.exit('No version given and none found in CHANGELOG.md')
+
 
 def ignored():
     names, inside = [], False
@@ -29,6 +32,7 @@ def ignored():
         elif inside and line.strip() and not line.startswith(' '):
             inside = False
     return set(names) | {'.git', 'dist', '__pycache__'}
+
 
 ver = version()
 skip = ignored()

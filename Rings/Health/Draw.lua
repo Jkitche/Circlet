@@ -39,8 +39,18 @@ local PowerText = H.PowerText
 -- be formatted or added up); readable amounts are shortened (12.3k).
 local FLOAT_TIME, FLOAT_MAX = 1.5, 8
 local FLOAT_DIRS = { up = { 0, 1 }, down = { 0, -1 }, left = { -1, 0 }, right = { 1, 0 } }
-local MISS_WORDS = { MISS = "Miss", DODGE = "Dodge", PARRY = "Parry", BLOCK = "Block", ABSORB = "Absorb",
-                     RESIST = "Resist", IMMUNE = "Immune", DEFLECT = "Deflect", EVADE = "Evade", REFLECT = "Reflect" }
+local MISS_WORDS = {
+    MISS = "Miss",
+    DODGE = "Dodge",
+    PARRY = "Parry",
+    BLOCK = "Block",
+    ABSORB = "Absorb",
+    RESIST = "Resist",
+    IMMUNE = "Immune",
+    DEFLECT = "Deflect",
+    EVADE = "Evade",
+    REFLECT = "Reflect",
+}
 local floats = {} -- ring key -> { { kind, amount, crit, word, at, drift } ... }, oldest first
 
 local function AddFloat(key, action, flag, amount)
@@ -61,7 +71,9 @@ local function AddFloat(key, action, flag, amount)
     list.n = (list.n or 0) + 1
     f.at, f.drift = GetTime(), ((list.n % 3) - 1) * 0.55 + (math.random() - 0.5) * 0.3
     table.insert(list, f)
-    while #list > FLOAT_MAX do table.remove(list, 1) end
+    while #list > FLOAT_MAX do
+        table.remove(list, 1)
+    end
 end
 
 local function ShortAmount(n)
@@ -73,7 +85,10 @@ end
 
 -- Puts an amount on a font string with a prefix ("+" for heals), hidden or not.
 local function SetAmount(fs, prefix, amount)
-    if amount == nil then fs:SetText(prefix) return end
+    if amount == nil then
+        fs:SetText(prefix)
+        return
+    end
     if ns.IsSecret(amount) then
         if not pcall(fs.SetFormattedText, fs, prefix .. "%s", amount) then
             if not pcall(fs.SetText, fs, amount) then fs:SetText(prefix ~= "" and prefix or "Hit") end
@@ -98,7 +113,11 @@ local function DrawFloats(key, v, frame, geom, now)
     if list and db[key .. "Float"] then
         local i = 1
         while i <= #list do
-            if now - list[i].at >= FLOAT_TIME then table.remove(list, i) else i = i + 1 end
+            if now - list[i].at >= FLOAT_TIME then
+                table.remove(list, i)
+            else
+                i = i + 1
+            end
         end
         local size = math.max(9, geom.R * 0.3) * (tonumber(db[key .. "FloatTextSize"]) or 100) / 100
         for _, f in ipairs(list) do
@@ -114,11 +133,15 @@ local function DrawFloats(key, v, frame, geom, now)
             -- A crit pops in big and settles; everything rises, drifts aside and fades.
             local scale = f.crit and (1.25 + 0.5 * math.max(0, 1 - t / 0.12)) or 1
             local px = math.floor(size * scale * (f.kind == "miss" and 0.8 or 1) + 0.5)
-            if fs.px ~= px then fs.px = px; fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
+            if fs.px ~= px then
+                fs.px = px
+                fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE")
+            end
             local ease = 1 - (1 - t) ^ 2
             -- <key>FloatDir: which side they start on and float out from (up, down, left, right);
             -- the drift aside runs across that.
-            local dx, dy = FLOAT_DIRS[db[key .. "FloatDir"]] and FLOAT_DIRS[db[key .. "FloatDir"]][1] or 0,
+            local dx, dy =
+                FLOAT_DIRS[db[key .. "FloatDir"]] and FLOAT_DIRS[db[key .. "FloatDir"]][1] or 0,
                 FLOAT_DIRS[db[key .. "FloatDir"]] and FLOAT_DIRS[db[key .. "FloatDir"]][2] or 1
             local out = geom.R + geom.T + size * (dx ~= 0 and 1.2 or 0.2) + ease * geom.R * 0.9
             local side = f.drift * geom.R * 0.6 * ease
@@ -131,28 +154,49 @@ local function DrawFloats(key, v, frame, geom, now)
                 fs:SetTextColor(0.8, 0.8, 0.85)
                 fs:SetText(f.word)
             else
-                if f.crit then fs:SetTextColor(1, 0.8, 0.2)
-                elseif key == "playerHp" then fs:SetTextColor(1, 0.3, 0.25)
-                else fs:SetTextColor(1, 1, 1) end
+                if f.crit then
+                    fs:SetTextColor(1, 0.8, 0.2)
+                elseif key == "playerHp" then
+                    fs:SetTextColor(1, 0.3, 0.25)
+                else
+                    fs:SetTextColor(1, 1, 1)
+                end
                 SetAmount(fs, "", f.amount)
             end
             fs:SetAlpha(t < 0.6 and 1 or math.max(0, 1 - (t - 0.6) / 0.4))
             fs:Show()
         end
     end
-    for i = used + 1, #pool do pool[i]:Hide() end
+    for i = used + 1, #pool do
+        pool[i]:Hide()
+    end
 end
 
 local function DrawVitals(key, st, frame, geom)
     local v = Parts(frame)
     if not st or not geom or geom.R <= 0 then
-        HideLayer(v.border); HideLayer(v.track); HideLayer(v.fill)
-        for _, b in ipairs({ "h", "p" }) do for _, l in pairs(v[b]) do HideLayer(l) end end
-        HideEased(v.eh); HideEased(v.ep)
-        v.hp:SetText(""); v.hp2:SetText(""); v.pw:SetText(""); v.name:SetText("")
+        HideLayer(v.border)
+        HideLayer(v.track)
+        HideLayer(v.fill)
+        for _, b in ipairs({ "h", "p" }) do
+            for _, l in pairs(v[b]) do
+                HideLayer(l)
+            end
+        end
+        HideEased(v.eh)
+        HideEased(v.ep)
+        v.hp:SetText("")
+        v.hp2:SetText("")
+        v.pw:SetText("")
+        v.name:SetText("")
         v.portrait:Hide()
-        HideBadge(v.lvl); HideBadge(v.cmb)
-        if v.floats then for _, fs in ipairs(v.floats) do fs:Hide() end end
+        HideBadge(v.lvl)
+        HideBadge(v.cmb)
+        if v.floats then
+            for _, fs in ipairs(v.floats) do
+                fs:Hide()
+            end
+        end
         if ns.HideVitalsFx then ns.HideVitalsFx(v, frame) end
         if ns.HideVitalsAuras then ns.HideVitalsAuras(v) end
         return
@@ -180,21 +224,39 @@ local function DrawVitals(key, st, frame, geom)
         g2.R = geom.R - geom.T / 2 - (2 * b + 1) - T2 / 2
         g2.step, g2.style, g2.notches = geom.step, geom.style, geom.notches
         g2.start, g2.sweep, g2.reverse = geom.start, geom.sweep, geom.reverse
-        local layoutKey = string.format("%.2f:%.2f:%s:%s:%s:%s:%d", g2.R, T2, tostring(g2.style), tostring(g2.start),
-            tostring(g2.sweep), tostring(g2.reverse), b)
+        local layoutKey = string.format(
+            "%.2f:%.2f:%s:%s:%s:%s:%d",
+            g2.R,
+            T2,
+            tostring(g2.style),
+            tostring(g2.start),
+            tostring(g2.sweep),
+            tostring(g2.reverse),
+            b
+        )
         if v.layoutKey ~= layoutKey then
             v.layoutKey = layoutKey
             DrawArc(v.track, 0, 1, frame, g2)
             if b > 0 then
-                local gb = { R = g2.R, T = T2 + 2 * b, step = g2.step, style = g2.style, notches = g2.notches,
-                             start = g2.start, sweep = g2.sweep, reverse = g2.reverse }
+                local gb = {
+                    R = g2.R,
+                    T = T2 + 2 * b,
+                    step = g2.step,
+                    style = g2.style,
+                    notches = g2.notches,
+                    start = g2.start,
+                    sweep = g2.sweep,
+                    reverse = g2.reverse,
+                }
                 DrawArc(v.border, 0, 1, frame, gb)
             else
                 HideLayer(v.border)
             end
         end
         local c = p.color
-        for _, l in ipairs(v.fill) do l:SetColorTexture(c.r, c.g, c.b, 1) end
+        for _, l in ipairs(v.fill) do
+            l:SetColorTexture(c.r, c.g, c.b, 1)
+        end
         DrawArc(v.fill, 0, p.frac or 0, frame, g2, nil, ns.Shade(key, c))
         if p.gate then
             for _, l in ipairs(v.fill) do
@@ -202,7 +264,9 @@ local function DrawVitals(key, st, frame, geom)
             end
             v.gated = true
         elseif v.gated then
-            for _, l in ipairs(v.fill) do l:SetAlpha(1) end
+            for _, l in ipairs(v.fill) do
+                l:SetAlpha(1)
+            end
             v.gated = nil
         end
         local tr, tg, tb = Whiten(c, 0.55)
@@ -216,8 +280,12 @@ local function DrawVitals(key, st, frame, geom)
         inner = g2.R - T2 / 2 - b
     else
         v.layoutKey = nil
-        HideLayer(v.border); HideLayer(v.track); HideLayer(v.fill)
-        for _, l in pairs(v.p) do HideLayer(l) end
+        HideLayer(v.border)
+        HideLayer(v.track)
+        HideLayer(v.fill)
+        for _, l in pairs(v.p) do
+            HideLayer(l)
+        end
         HideEased(v.ep)
     end
 
@@ -255,7 +323,11 @@ local function DrawVitals(key, st, frame, geom)
     if ns.DrawVitalsAuras then ns.DrawVitalsAuras(key, v, st, frame, geom, d) end
     if st.name ~= nil then
         v.name:SetTextColor(1, 0.82, 0.25)
-        if st.level and not db[key .. "Level"] then Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level) else Put(v.name, nil, st.name) end
+        if st.level and not db[key .. "Level"] then
+            Put(v.name, "%s |cffbbbbbb%d|r", st.name, st.level)
+        else
+            Put(v.name, nil, st.name)
+        end
     else
         v.name:SetText("")
     end
@@ -275,25 +347,50 @@ local function Sample(key, t)
     local pwTarget = SAMPLE_PW[i % #SAMPLE_PW + 1]
     local now = GetTime()
     local hpTrack, pwTrack = Track(key .. ":sample:hp"), Track(key .. ":sample:pw")
-    if t < 0.05 then ResetTrack(key .. ":sample:hp"); ResetTrack(key .. ":sample:pw") end
+    if t < 0.05 then
+        ResetTrack(key .. ":sample:hp")
+        ResetTrack(key .. ":sample:pw")
+    end
     Step(key, hpTrack, hpTarget, now, true)
     Step(key, pwTrack, pwTarget, now, false)
     local hpf, pwf = hpTrack.shown, pwTrack.shown
     local mana = math.floor(t / 12.8) % 2 == 0
     local token = mana and "MANA" or "RAGE"
-    local st = { color = db[key .. "ColorMode"] == "class" and (key == "targetHp" and REACTION.hostile or db[key .. "Colors"].health)
-                     or db[key .. "Colors"].health,
-                 frac = hpf, hpFrac = hpTarget, hold = 0.5, vitals = key, hpTrack = hpTrack,
-                 hpText = { pct = string.format("%d%%", math.floor(hpTarget * 100 + 0.5)),
-                            value = ShortAmount(math.floor(hpTarget * 2480)) } }
+    local st = {
+        color = db[key .. "ColorMode"] == "class"
+                and (key == "targetHp" and REACTION.hostile or db[key .. "Colors"].health)
+            or db[key .. "Colors"].health,
+        frac = hpf,
+        hpFrac = hpTarget,
+        hold = 0.5,
+        vitals = key,
+        hpTrack = hpTrack,
+        hpText = {
+            pct = string.format("%d%%", math.floor(hpTarget * 100 + 0.5)),
+            value = ShortAmount(math.floor(hpTarget * 2480)),
+        },
+    }
     if db[key .. "Power"] then
         local pc = PowerColor(key, token)
-        st.power = { frac = pwf, real = pwTarget, color = pc, token = token, track = pwTrack,
-                     text = mana and string.format("%d%%", math.floor(pwTarget * 100 + 0.5)) or tostring(math.floor(pwTarget * 100)) }
+        st.power = {
+            frac = pwf,
+            real = pwTarget,
+            color = pc,
+            token = token,
+            track = pwTrack,
+            text = mana and string.format("%d%%", math.floor(pwTarget * 100 + 0.5))
+                or tostring(math.floor(pwTarget * 100)),
+        }
     end
     if db[key .. "Name"] then
         st.name = SAMPLE_NAMES[key] or Clean(SafeCall(UnitName, "player")) or "You"
-        if key == "targetHp" then st.level = 18 elseif key == "totHp" then st.level = 20 elseif key == "petHp" then st.level = 19 end
+        if key == "targetHp" then
+            st.level = 18
+        elseif key == "totHp" then
+            st.level = 20
+        elseif key == "petHp" then
+            st.level = 19
+        end
     end
     return st
 end
@@ -317,7 +414,11 @@ local function MakeRing(key, unit)
             { id = "PowerText", name = "Power", desc = "The mana, rage or energy under the health." },
             { id = "LevelText", name = "Level", desc = "The level on its badge at the bottom left." },
             { id = "FloatText", name = "Damage & healing", desc = "The numbers floating up off the ring." },
-            key ~= "totHp" and key ~= "petHp" and { id = "AuraText", name = "Buff stacks", desc = "The stack counts on the buff and debuff icons." } or nil,
+            key ~= "totHp" and key ~= "petHp" and {
+                id = "AuraText",
+                name = "Buff stacks",
+                desc = "The stack counts on the buff and debuff icons.",
+            } or nil,
         },
         decorate = function(st, frame, geom) DrawVitals(key, st, frame, geom) end,
     })

@@ -1,4 +1,12 @@
-exec(open('breath_test.py').read().split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0].replace("lua.eval('function(s) return load(s, \"@b\") end')","PRE = 1; lua.eval('function(s) return load(s, \"@b\") end')"))
+exec(
+    open('breath_test.py')
+    .read()
+    .split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0]
+    .replace(
+        "lua.eval('function(s) return load(s, \"@b\") end')",
+        "PRE = 1; lua.eval('function(s) return load(s, \"@b\") end')",
+    )
+)
 lua.execute('''
 UnitName = function() return CHAR or "Hero" end; GetRealmName = function() return "Forever" end
 ''')
@@ -23,4 +31,5 @@ CHAR = "Hero"; ns.LoadProfile(); P("Hero again: " .. ns.CurrentProfile() .. " xp
 ns.SwitchProfile("Default"); ns.DeleteProfile("Alt"); P("deleted Alt: profiles=" .. table.concat(select(2, ns.ProfileList()), ",") .. " Hero=" .. tostring(CircletProfiles.chars["Hero - Forever"]) .. " Third=" .. tostring(CircletProfiles.chars["Third - Forever"]))
 Slash("profile"); Slash("profile nope"); ns.NewProfile("PvP"); Slash("profile default"); P("slash switched: " .. ns.CurrentProfile())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

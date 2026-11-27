@@ -29,7 +29,10 @@ local dragging -- the ring being dragged, if any
 local dragDriver = CreateFrame("Frame")
 dragDriver:Hide()
 dragDriver:SetScript("OnUpdate", function()
-    if not dragging then dragDriver:Hide() return end
+    if not dragging then
+        dragDriver:Hide()
+        return
+    end
     local cx, cy = DragCenter(dragging)
     dragging:ClearAllPoints()
     dragging:SetPoint("CENTER", UIParent, "BOTTOMLEFT", cx, cy)

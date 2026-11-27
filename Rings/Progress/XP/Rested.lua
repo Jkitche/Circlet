@@ -27,16 +27,23 @@ local function FindFlipbook(region)
     for _, tex in ipairs(textures) do
         local atlas = tex:GetAtlas()
         if atlas and tex.GetAnimationGroups then
-            for _, g in ipairs({ tex:GetAnimationGroups() }) do table.insert(groups, { tex = tex, g = g }) end
+            for _, g in ipairs({ tex:GetAnimationGroups() }) do
+                table.insert(groups, { tex = tex, g = g })
+            end
         end
     end
     if region.GetAnimationGroups then
-        for _, g in ipairs({ region:GetAnimationGroups() }) do table.insert(groups, { tex = textures[1], g = g }) end
+        for _, g in ipairs({ region:GetAnimationGroups() }) do
+            table.insert(groups, { tex = textures[1], g = g })
+        end
     end
     for _, entry in ipairs(groups) do
         for _, a in ipairs({ entry.g:GetAnimations() }) do
             if a.GetFlipBookRows and entry.tex and entry.tex:GetAtlas() then
-                return entry.tex:GetAtlas(), a:GetFlipBookRows(), a:GetFlipBookColumns(), a:GetFlipBookFrames(),
+                return entry.tex:GetAtlas(),
+                    a:GetFlipBookRows(),
+                    a:GetFlipBookColumns(),
+                    a:GetFlipBookFrames(),
                     a:GetDuration()
             end
         end
@@ -50,7 +57,9 @@ local function BuildRestIcon()
     local content = PlayerFrame and PlayerFrame.PlayerFrameContent
     local contextual = content and content.PlayerFrameContentContextual
     local atlas, rows, cols, frames, duration = FindFlipbook(contextual and contextual.PlayerRestLoop)
-    if not atlas then atlas, rows, cols, frames, duration = FindFlipbook(_G.PlayerRestLoop) end
+    if not atlas then
+        atlas, rows, cols, frames, duration = FindFlipbook(_G.PlayerRestLoop)
+    end
     if atlas and rows and cols and frames and rows * cols > 0 then
         local tex = restIcon:CreateTexture(nil, "OVERLAY")
         tex:SetAtlas(atlas, false)
@@ -65,7 +74,8 @@ local function BuildRestIcon()
         restIcon.tex, restIcon.anim, restIcon.kind = tex, group, "flipbook"
         local info = C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(atlas)
         restIcon.aspect = (info and info.width and info.height and info.height > 0)
-            and (info.width / cols) / (info.height / rows) or 1
+                and (info.width / cols) / (info.height / rows)
+            or 1
         return
     end
     -- Classic player frame: a static "zzz" from the state icon sheet; it bobs gently.

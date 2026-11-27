@@ -1,12 +1,15 @@
 from lupa import LuaRuntime
 
+
 def boot(before=''):
     """A game with Circlet loaded, fishing, bindings and CVars the test can watch."""
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(open('mock.lua').read())
-    lua.execute('local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end')
+    lua.execute(
+        'local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end'
+    )
     s = open('liveedit_test.py').read()
-    exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")], {'lua': lua})
+    exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")], {'lua': lua})
     lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
@@ -57,10 +60,12 @@ end
 ''')
     return lua
 
+
 def report(lua, title):
     print("######## " + title)
     print("\n".join(lua.eval("OUT").values()))
     print("ERRORS:", dict(lua.eval("ERRORS")))
+
 
 # 1. A cast: bobbing while waiting, flashing in the bite windows, then a catch.
 lua = boot()
@@ -111,11 +116,15 @@ LineIn(); Advance(2); P("done: " .. Reel())
 report(lua, "reel in")
 
 # 4. The game closed mid-cast with the reel on: the CVars are put back at the next login.
-lua = boot('CircletDB = { fishReel = true, fishSavedCVars = { SoftTargetInteract = "1", SoftTargetInteractArc = "0", SoftTargetInteractRange = "10" } }; CVARS = { SoftTargetInteract = "3", SoftTargetInteractArc = "2", SoftTargetInteractRange = "60" }')
+lua = boot(
+    'CircletDB = { fishReel = true, fishSavedCVars = { SoftTargetInteract = "1", SoftTargetInteractArc = "0", SoftTargetInteractRange = "10" } }; CVARS = { SoftTargetInteract = "3", SoftTargetInteractArc = "2", SoftTargetInteractRange = "60" }'
+)
 lua.execute('P("after login: " .. Reel() .. " saved=" .. tostring(CircletDB.fishSavedCVars))')
 report(lua, "restored after a crash")
 
 # 5. The preview.
 lua = boot()
-lua.execute('Slash("fish"); Advance(1); S("preview"); Advance(2.2); S("preview, 17s left: watch!"); Advance(9); S("preview, the catch")')
+lua.execute(
+    'Slash("fish"); Advance(1); S("preview"); Advance(2.2); S("preview, 17s left: watch!"); Advance(9); S("preview, the catch")'
+)
 report(lua, "preview")

@@ -53,10 +53,13 @@ end
 local function State(element, left, duration, icon, name)
     local c = db.totemColors[element]
     local st = {
-        title = nil, label = nil,
+        title = nil,
+        label = nil,
         value = left >= 60 and FormatTime(left) or tostring(math.max(0, math.ceil(left))),
         frac = duration > 0 and math.max(0, math.min(1, left / duration)) or 0,
-        color = c, icon = icon, iconColor = c,
+        color = c,
+        icon = icon,
+        iconColor = c,
     }
     if db.totemWarn and left <= WARN_AT then
         -- Pulse: the ring and icon brighten and dim twice a second.
@@ -89,7 +92,7 @@ local function LongestTotem()
     end
     return longest > 0 and longest or FALLBACK_MAX
 end
-local known = {}       -- slot -> { start, duration, icon }: our own countdown for it
+local known = {} -- slot -> { start, duration, icon }: our own countdown for it
 
 -- Remembers a totem spell's slot, duration and icon (whenever times are readable).
 local function Learn(spellID, slot, duration, icon)
@@ -135,7 +138,10 @@ for i, e in ipairs(ELEMENTS) do
         valueScale = 0.42,
         watchEvery = 0.2,
         read = function()
-            if not HasTotems() then HideSecret(i) return nil end
+            if not HasTotems() then
+                HideSecret(i)
+                return nil
+            end
             local have, name, start, duration, icon, _, spellID = SafeCall(GetTotemInfo, e.slot)
             -- The game can say the slot is empty while still hiding its times: it's empty.
             if not IsSecret(have) and not have then
@@ -213,7 +219,7 @@ end
 -- Casting a totem we've learned starts our own countdown for its slot right away; a
 -- slot changing without such a cast means its totem was destroyed or recalled.
 local lastPlaced = {} -- slot -> GetTime() a learned totem was cast into it
-local lastCast = -10  -- GetTime() of your last successful cast of anything
+local lastCast = -10 -- GetTime() of your last successful cast of anything
 
 ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function(event, a1, a2, a3)
     if not CircletDB then return end
@@ -262,7 +268,9 @@ ns.Listen({ "PLAYER_TOTEM_UPDATE", "UNIT_SPELLCAST_SUCCEEDED:player" }, function
             maybeActive[s] = now
         end
     end
-    for _, w in pairs(secret) do w.stale = true end
+    for _, w in pairs(secret) do
+        w.stale = true
+    end
 end)
 
 -- /circ totemdebug: which totem values the client is hiding right now.
@@ -275,16 +283,23 @@ local function TotemDebug()
         end
         ns.Print(e.element .. ": " .. table.concat(parts, "  "))
     end
-    ns.Print("GetTotemDuration " .. (GetTotemDuration and "available" or "missing")
-        .. (InCombatLockdown() and " (in combat)" or " (out of combat)"))
+    ns.Print(
+        "GetTotemDuration "
+            .. (GetTotemDuration and "available" or "missing")
+            .. (InCombatLockdown() and " (in combat)" or " (out of combat)")
+    )
 end
 
 local function SetTotemsEditing(on)
-    for _, ring in ipairs(totemRings) do ring.SetEditing(on) end
+    for _, ring in ipairs(totemRings) do
+        ring.SetEditing(on)
+    end
 end
 
 local function PreviewTotems()
-    for _, ring in ipairs(totemRings) do ring.Preview(12) end
+    for _, ring in ipairs(totemRings) do
+        ring.Preview(12)
+    end
 end
 
 ns.RegisterCommand({ "totemdebug" }, TotemDebug) -- what the game hides about your totems
@@ -299,57 +314,86 @@ ns.TotemDebug = TotemDebug
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "totem", name = "Totem", order = 16,
+    key = "totem",
+    name = "Totem",
+    order = 16,
     edit = { set = SetTotemsEditing, get = ns.IsTotemsEditing },
-    preview = PreviewTotems, slash = { "totems", "totem" }, help = "preview the totem rings",
+    preview = PreviewTotems,
+    slash = { "totems", "totem" },
+    help = "preview the totem rings",
     toggle = { "Totem rings", "Shamans: a small ring for each totem you have down." },
     class = { SHAMAN = true },
     gameBar = "the game's totem timers",
     defaults = {
         -- Totem rings (shamans): one small ring per active totem, in a row.
-        totemEnabled   = true,
-        totemWarn      = true, -- pulse in the last 10 seconds
-        totemSize      = 56,
+        totemEnabled = true,
+        totemWarn = true, -- pulse in the last 10 seconds
+        totemSize = 56,
         totemThickness = 6,
-        totemOpacity   = 100,
-        totemX         = -96,  -- the first (earth) ring; the rest go to its right
-        totemFromTop   = 400,
-        totemHold      = 0,
-        totemStyle     = "smooth",
-        totemBorder    = 2,
+        totemOpacity = 100,
+        totemX = -96, -- the first (earth) ring; the rest go to its right
+        totemFromTop = 400,
+        totemHold = 0,
+        totemStyle = "smooth",
+        totemBorder = 2,
         totemSpells = {}, -- learned: totem spell ID -> { slot, duration, icon }
         totemColors = {
             earth = { r = 0.65, g = 0.50, b = 0.30 },
-            fire  = { r = 1.00, g = 0.40, b = 0.15 },
+            fire = { r = 1.00, g = 0.40, b = 0.15 },
             water = { r = 0.25, g = 0.60, b = 1.00 },
-            air   = { r = 0.80, g = 0.90, b = 1.00 },
+            air = { r = 0.80, g = 0.90, b = 1.00 },
         },
     },
-    page = { folder = "class", order = 1, build = function(O)
+    page = {
+        folder = "class",
+        order = 1,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(6, "Totems", "Totem Rings",
+            local tab = RingTab(
+                6,
+                "Totems",
+                "Totem Rings",
                 "Shamans: a small ring for each totem you have down, in the totem bar's order (earth, fire, water, "
-                .. "air). The totem's icon sits in the middle with the time left, and the ring drains in the element's "
-                .. "color.",
-                MergeTop(TopRow("totem", "totem rings", ns.PreviewTotems, "Show four sample totems. Also /circ totems."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "totemEnabled", "Show totem rings", "Show a ring for each active totem."),
-                        warn = Toggle(2, "totemWarn", "Pulse when ending", "Pulse a totem's ring in its last 10 seconds."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        earth = Color(1, "totemColors", "earth", "Earth", "Earth totem ring color."),
-                        fire = Color(2, "totemColors", "fire", "Fire", "Fire totem ring color."),
-                        water = Color(3, "totemColors", "water", "Water", "Water totem ring color."),
-                        air = Color(4, "totemColors", "air", "Air", "Air totem ring color."),
-                    }),
-                    size = SizeBox(4, "totem", "totem rings",
-                        "Offset from the center of the screen to the first (earth) ring; the others line up to its right."),
-                }))
+                    .. "air). The totem's icon sits in the middle with the time left, and the ring drains in the element's "
+                    .. "color.",
+                MergeTop(
+                    TopRow("totem", "totem rings", ns.PreviewTotems, "Show four sample totems. Also /circ totems."),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "totemEnabled",
+                                "Show totem rings",
+                                "Show a ring for each active totem."
+                            ),
+                            warn = Toggle(
+                                2,
+                                "totemWarn",
+                                "Pulse when ending",
+                                "Pulse a totem's ring in its last 10 seconds."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            earth = Color(1, "totemColors", "earth", "Earth", "Earth totem ring color."),
+                            fire = Color(2, "totemColors", "fire", "Fire", "Fire totem ring color."),
+                            water = Color(3, "totemColors", "water", "Water", "Water totem ring color."),
+                            air = Color(4, "totemColors", "air", "Air", "Air totem ring color."),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "totem",
+                            "totem rings",
+                            "Offset from the center of the screen to the first (earth) ring; the others line up to its right."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold = nil
             tab.args.size.args.size.min = 30
             tab.args.size.args.size.max = 120
             tab.args.size.args.size.step = 2
             return tab
-        end },
+        end,
+    },
 })

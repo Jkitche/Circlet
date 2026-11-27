@@ -21,15 +21,11 @@ local ADDON_NAME, ns = ...
 
 local PREFIX = "|cffffd100Circlet|r: "
 
-local function Print(...)
-    print(PREFIX .. string.join(" ", tostringall(...)))
-end
+local function Print(...) print(PREFIX .. string.join(" ", tostringall(...))) end
 
 -- In combat the client hides some values from addons ("secret values"). They can be
 -- passed to display functions but not compared or used in arithmetic.
-local function IsSecret(v)
-    return issecretvalue ~= nil and issecretvalue(v) == true
-end
+local function IsSecret(v) return issecretvalue ~= nil and issecretvalue(v) == true end
 
 -- A value, or nil if it's hidden.
 local function Clean(v)
@@ -38,9 +34,7 @@ local function Clean(v)
 end
 
 -- A number, or nil if it's hidden or not a number.
-local function CleanNumber(v)
-    return (type(v) == "number" and not IsSecret(v)) and v or nil
-end
+local function CleanNumber(v) return (type(v) == "number" and not IsSecret(v)) and v or nil end
 
 -- Calls fn if it exists and returns its results; nil if it doesn't exist or errors
 -- (APIs that this client lacks, or that refuse in some situation).
@@ -52,9 +46,7 @@ local function SafeCall(fn, ...)
     return Pass(pcall(fn, ...))
 end
 
-local function Copy(v)
-    return type(v) == "table" and CopyTable(v) or v
-end
+local function Copy(v) return type(v) == "table" and CopyTable(v) or v end
 
 -- 0:42, 12:05 or 1:02:05.
 local function FormatTime(seconds)

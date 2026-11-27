@@ -20,26 +20,50 @@ local Polar = FX.Polar
 -- fallback if this client has no such cursor file.
 local CURSOR_CROP = 0.3 -- the arrow's share of the cursor image, from its top-left corner
 local SKIN_KINDS = {
-    { kind = "leather", text = UNIT_SKINNABLE_LEATHER or "Skinnable", icon = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
-      cursor = "Interface\\Cursor\\Skin" },
-    { kind = "herb", text = UNIT_SKINNABLE_HERB or "Requires Herbalism", icon = "Interface\\Icons\\INV_Misc_Flower_02",
-      cursor = "Interface\\Cursor\\GatherHerbs" },
-    { kind = "rock", text = UNIT_SKINNABLE_ROCK or "Requires Mining", icon = "Interface\\Icons\\Trade_Mining",
-      cursor = "Interface\\Cursor\\Mine" },
-    { kind = "bolts", text = UNIT_SKINNABLE_BOLTS or "Requires Engineering", icon = "Interface\\Icons\\Trade_Engineering" },
+    {
+        kind = "leather",
+        text = UNIT_SKINNABLE_LEATHER or "Skinnable",
+        icon = "Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
+        cursor = "Interface\\Cursor\\Skin",
+    },
+    {
+        kind = "herb",
+        text = UNIT_SKINNABLE_HERB or "Requires Herbalism",
+        icon = "Interface\\Icons\\INV_Misc_Flower_02",
+        cursor = "Interface\\Cursor\\GatherHerbs",
+    },
+    {
+        kind = "rock",
+        text = UNIT_SKINNABLE_ROCK or "Requires Mining",
+        icon = "Interface\\Icons\\Trade_Mining",
+        cursor = "Interface\\Cursor\\Mine",
+    },
+    {
+        kind = "bolts",
+        text = UNIT_SKINNABLE_BOLTS or "Requires Engineering",
+        icon = "Interface\\Icons\\Trade_Engineering",
+    },
 }
 local SKIN_BY = {}
-for _, k in ipairs(SKIN_KINDS) do SKIN_BY[k.kind] = k end
+for _, k in ipairs(SKIN_KINDS) do
+    SKIN_BY[k.kind] = k
+end
 
 -- Whether you can gather it yourself: you need the profession (Skinning 393, Herbalism 182,
 -- Mining 186, Engineering 202; looked up by ID, else by name in your skills list, as Forever
 -- may number them its own way), and the corpse's tooltip line turns red when it's beyond your
 -- skill. If the client won't say what skills you have, it counts as yes.
-local SKILL_OF = { leather = { 393, "Skinning" }, herb = { 182, "Herbalism" }, rock = { 186, "Mining" },
-                   bolts = { 202, "Engineering" } }
+local SKILL_OF = {
+    leather = { 393, "Skinning" },
+    herb = { 182, "Herbalism" },
+    rock = { 186, "Mining" },
+    bolts = { 202, "Engineering" },
+}
 local skillCache, skillAt = {}, -math.huge
 local function HasSkill(kind, now)
-    if now - skillAt > 2 then skillCache, skillAt = {}, now end
+    if now - skillAt > 2 then
+        skillCache, skillAt = {}, now
+    end
     if skillCache[kind] ~= nil then return skillCache[kind] end
     local s, has = SKILL_OF[kind], nil
     local api = C_SkillInfo
@@ -68,14 +92,15 @@ local function HasSkill(kind, now)
     return has
 end
 
-local function TooHard(color)
-    return color and color[1] > 0.9 and color[2] < 0.35 and color[3] < 0.35
-end
+local function TooHard(color) return color and color[1] > 0.9 and color[2] < 0.35 and color[3] < 0.35 end
 
 local function NpcId(unit)
     local guid = Clean(SafeCall(UnitGUID, unit))
     if type(guid) ~= "string" then return nil end
-    return tonumber(guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)") or guid:match("^Vehicle%-%d+%-%d+%-%d+%-%d+%-(%d+)")), guid
+    return tonumber(
+        guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)") or guid:match("^Vehicle%-%d+%-%d+%-%d+%-%d+%-(%d+)")
+    ),
+        guid
 end
 
 -- The corpse's tooltip line: kind and its color, or nil.
@@ -90,7 +115,9 @@ local function SkinFromTooltip(unit)
                 if text == k.text then
                     local c = line.leftColor
                     local r, g, b = c and Clean(c.r), c and Clean(c.g), c and Clean(c.b)
-                    if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then r, g, b = 1, 0.82, 0 end
+                    if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+                        r, g, b = 1, 0.82, 0
+                    end
                     return k.kind, { r, g, b }
                 end
             end
@@ -141,7 +168,10 @@ local function DrawSkin(key, fx, st, frame, geom, d, now)
             cur.skinOk = cur:SetTexture(k.cursor) ~= false
             cur:SetTexCoord(CURSOR_CROP, 1, CURSOR_CROP, 1) -- leave out the arrow
         end
-        if not cur.skinOk then cur.used = false cur = nil end
+        if not cur.skinOk then
+            cur.used = false
+            cur = nil
+        end
     end
     local icon = not cur and Tex(fx, "skin", k.icon, "OVERLAY", 3)
     if cur then
@@ -204,8 +234,11 @@ local function QuestFromTooltip(unit)
                 local have, need = text:match("(%d+)%s*/%s*(%d+)")
                 have, need = tonumber(have), tonumber(need)
                 if have and need then
-                    if have < need then progress = progress or (have .. "/" .. need)
-                    else done = done or (have .. "/" .. need) end
+                    if have < need then
+                        progress = progress or (have .. "/" .. need)
+                    else
+                        done = done or (have .. "/" .. need)
+                    end
                 end
             end
         end
@@ -217,7 +250,10 @@ local questSeen = {} -- unit -> { guid, at, on, progress }
 local function QuestState(unit, now)
     local guid = Clean(SafeCall(UnitGUID, unit))
     local q = questSeen[unit]
-    if not q or q.guid ~= guid then q = { guid = guid, at = -math.huge }; questSeen[unit] = q end
+    if not q or q.guid ~= guid then
+        q = { guid = guid, at = -math.huge }
+        questSeen[unit] = q
+    end
     if now - q.at >= 1 then
         q.at = now
         local tipOn, progress = QuestFromTooltip(unit)
@@ -229,12 +265,18 @@ local function QuestState(unit, now)
     return q.on, q.progress
 end
 ns.Listen({ "QUEST_LOG_UPDATE", "UNIT_QUEST_LOG_CHANGED", "QUEST_WATCH_UPDATE" }, function()
-    for _, q in pairs(questSeen) do q.at = -math.huge end
+    for _, q in pairs(questSeen) do
+        q.at = -math.huge
+    end
 end)
 
 local function DrawQuest(key, fx, st, frame, geom, d, now)
     local on, progress
-    if st.unit then on, progress = QuestState(st.unit, now) else on, progress = true, "3/10" end -- previews
+    if st.unit then
+        on, progress = QuestState(st.unit, now)
+    else
+        on, progress = true, "3/10"
+    end -- previews
     if not on then return end
     local x, y = Polar(BadgeAngle(key, "Quest"), geom.R)
     local icon = Tex(fx, "quest", QUEST_ICON, "OVERLAY", 3)
@@ -252,7 +294,10 @@ local function DrawQuest(key, fx, st, frame, geom, d, now)
             fx.questText = fs
         end
         local px = math.max(8, math.floor(d * 0.55 + 0.5))
-        if fs.px ~= px then fs.px = px; fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE") end
+        if fs.px ~= px then
+            fs.px = px
+            fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE")
+        end
         fs:SetText(progress)
         fs:SetTextColor(1, 0.85, 0.2)
         fs:ClearAllPoints()
@@ -284,16 +329,16 @@ end
 -- left alone if none can be checked (a friendly target, a class with none known yet). The dim
 -- is the ring's own fade (ns.SetRingDim), so it eases and goes with its opacity setting.
 local RANGE_SPELLS = {
-    MAGE = { 133, 116, 5143 },            -- Fireball, Frostbolt, Arcane Missiles
-    WARLOCK = { 686, 172 },               -- Shadow Bolt, Corruption
-    PRIEST = { 585, 589, 8092 },          -- Smite, Shadow Word: Pain, Mind Blast
-    DRUID = { 5176, 8921 },               -- Wrath, Moonfire
-    SHAMAN = { 403, 8042 },               -- Lightning Bolt, Earth Shock
-    HUNTER = { 75, 3044, 2973 },          -- Auto Shot, Arcane Shot, Raptor Strike
-    ROGUE = { 1752, 2098 },               -- Sinister Strike, Eviscerate
-    WARRIOR = { 78, 772 },                -- Heroic Strike, Rend
-    PALADIN = { 20271, 35395 },           -- Judgement, Crusader Strike
-    DEATHKNIGHT = { 45477, 49998 },       -- Icy Touch, Death Strike
+    MAGE = { 133, 116, 5143 }, -- Fireball, Frostbolt, Arcane Missiles
+    WARLOCK = { 686, 172 }, -- Shadow Bolt, Corruption
+    PRIEST = { 585, 589, 8092 }, -- Smite, Shadow Word: Pain, Mind Blast
+    DRUID = { 5176, 8921 }, -- Wrath, Moonfire
+    SHAMAN = { 403, 8042 }, -- Lightning Bolt, Earth Shock
+    HUNTER = { 75, 3044, 2973 }, -- Auto Shot, Arcane Shot, Raptor Strike
+    ROGUE = { 1752, 2098 }, -- Sinister Strike, Eviscerate
+    WARRIOR = { 78, 772 }, -- Heroic Strike, Rend
+    PALADIN = { 20271, 35395 }, -- Judgement, Crusader Strike
+    DEATHKNIGHT = { 45477, 49998 }, -- Icy Touch, Death Strike
 }
 local function Knows(id)
     local f = (C_SpellBook and C_SpellBook.IsSpellKnown) or IsPlayerSpell or IsSpellKnown
@@ -323,7 +368,13 @@ local function DrawRange(key, fx, st, frame, geom, d, now)
             for _, id in ipairs(RANGE_SPELLS[Clean(class) or ""] or {}) do
                 if Knows(id) then
                     local v = InRange(id, st.unit)
-                    if v ~= nil then any = true; if v then reach = true break end end
+                    if v ~= nil then
+                        any = true
+                        if v then
+                            reach = true
+                            break
+                        end
+                    end
                 end
             end
             rangeOut = any and not reach
@@ -377,9 +428,7 @@ local function DrawStance(key, fx, st, frame, geom, d, now)
     local icon
     if st.unit then
         local idx = CleanNumber(SafeCall(GetShapeshiftForm))
-        if idx and idx > 0 and GetShapeshiftFormInfo then
-            icon = Clean(SafeCall(GetShapeshiftFormInfo, idx))
-        end
+        if idx and idx > 0 and GetShapeshiftFormInfo then icon = Clean(SafeCall(GetShapeshiftFormInfo, idx)) end
     else
         icon = "Interface\\Icons\\Ability_Warrior_OffensiveStance"
     end

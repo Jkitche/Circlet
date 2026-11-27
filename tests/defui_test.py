@@ -22,4 +22,5 @@ CASTING = nil; Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "g", 2575); Advance(0.
 PlayerCastingBarFrame:Hide(); Advance(0.5); P("bar hidden -> restored: " .. a("PlayerCastingBarFrame"))
 for _, k in ipairs({"xp","rep","breath","totem","timed","gather"}) do CircletDB[k .. "HideDefault"] = false end; Advance(0.5); P("all off: " .. all())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -1,9 +1,12 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
-lua.execute('local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end')
+lua.execute(
+    'local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end'
+)
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
 lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select('#',...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t,' ')) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
@@ -25,7 +28,9 @@ QUEST = { objectives = { { text = "7/8 Screecher Feather", type = "item", numFul
                          { text = "Raptor slain: 3/3", type = "monster", numFulfilled = 3, numRequired = 3, finished = true } } }
 C_QuestLog.GetQuestObjectives = function(id) return QUEST.objectives end
 ''')
-chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
+chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')(
+    (__import__('subprocess').run(['python3', 'make_bundle.py']), open('bundle.lua').read())[1]
+)
 chunk("Circlet", lua.table())
 lua.execute('''
 -- Unit events reach only frames registered for that unit, as in the game.
@@ -137,4 +142,5 @@ P("thin thickness ok")
 Advance(20)
 Slash("edit"); Advance(1); Dump("edit all:"); Slash("edit"); Advance(10)
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -52,7 +52,15 @@ function DRAW.blacksmithing(c, p)
     -- The metal glows where it's being worked, fading between blows.
     local n = math.floor(c.now / BEAT)
     local since = c.now - n * BEAT -- time since the last blow
-    Glow(c.x, c.y, c.T * 3.2 * (1 + 0.3 * math.max(0, 1 - since / 0.3)), h.r, h.g, h.b, (0.4 + 0.5 * math.max(0, 1 - since / 0.4)) * c.k)
+    Glow(
+        c.x,
+        c.y,
+        c.T * 3.2 * (1 + 0.3 * math.max(0, 1 - since / 0.3)),
+        h.r,
+        h.g,
+        h.b,
+        (0.4 + 0.5 * math.max(0, 1 - since / 0.4)) * c.k
+    )
     -- The hammer: raised, then brought down on the beat.
     local swing = since < 0.12 and (since / 0.12) or (since < 0.2 and 1 or 1 - (since - 0.2) / (BEAT - 0.2))
     swing = 1 - Clamp(swing) -- 0 = down on the metal, 1 = raised
@@ -82,7 +90,18 @@ function DRAW.blacksmithing(c, p)
                 local vy = (c.oy * math.cos(ang) + c.ox * math.sin(ang)) * sp
                 local px, py = c.x + vx * age, c.y + vy * age - c.R * 1.6 * age * age
                 local tx, ty = px - vx * 0.04, py - (vy - c.R * 3.2 * age) * 0.04
-                Seg("spark", tx, ty, px, py, math.max(1, c.T * 0.18), h.r, Mix(h.g, 1, 0.4), Mix(h.b, 0.8, 0.3), (1 - age / 0.6) * c.k)
+                Seg(
+                    "spark",
+                    tx,
+                    ty,
+                    px,
+                    py,
+                    math.max(1, c.T * 0.18),
+                    h.r,
+                    Mix(h.g, 1, 0.4),
+                    Mix(h.b, 0.8, 0.3),
+                    (1 - age / 0.6) * c.k
+                )
             end
         end
     end
@@ -121,8 +140,15 @@ function DRAW.engineering(c, p)
     -- A few loose sparks jumping off the end of the fill.
     for i = 1, 4 do
         local seed = tick * 3 + i
-        Star(c.x + (Hash(seed) - 0.5) * c.T * 2.5, c.y + (Hash(seed + 9) - 0.5) * c.T * 2.5, c.T * 0.8,
-            p[2].r, p[2].g, p[2].b, Hash(seed + 4) * c.k)
+        Star(
+            c.x + (Hash(seed) - 0.5) * c.T * 2.5,
+            c.y + (Hash(seed + 9) - 0.5) * c.T * 2.5,
+            c.T * 0.8,
+            p[2].r,
+            p[2].g,
+            p[2].b,
+            Hash(seed + 4) * c.k
+        )
     end
 end
 
@@ -139,8 +165,16 @@ function DRAW.enchanting(c, p)
         for i = 1, n do
             local a = spin + i / n * TAU
             local tw = 0.6 + 0.4 * math.sin(c.now * 5 + i * 1.7 + ring)
-            Star(math.sin(a) * rad, math.cos(a) * rad, c.ri * (ring == 1 and 0.22 or 0.18) * tw,
-                Mix(col.r, 1, 0.3), Mix(col.g, 1, 0.3), Mix(col.b, 1, 0.3), tw * c.k, -spin * 2)
+            Star(
+                math.sin(a) * rad,
+                math.cos(a) * rad,
+                c.ri * (ring == 1 and 0.22 or 0.18) * tw,
+                Mix(col.r, 1, 0.3),
+                Mix(col.g, 1, 0.3),
+                Mix(col.b, 1, 0.3),
+                tw * c.k,
+                -spin * 2
+            )
         end
     end
     -- The beam from the heart to the work, shimmering.
@@ -169,7 +203,18 @@ function DRAW.tailoring(c, p)
         local tx, ty = oy, -ox -- along the ring
         local tilt = 0.45
         local ax, ay = ox * math.cos(tilt) + tx * math.sin(tilt), oy * math.cos(tilt) + ty * math.sin(tilt)
-        Seg("line", x - ax * L, y - ay * L, x + ax * L, y + ay * L, math.max(1, c.T * 0.16), th.r, th.g, th.b, 0.9 * c.k)
+        Seg(
+            "line",
+            x - ax * L,
+            y - ay * L,
+            x + ax * L,
+            y + ay * L,
+            math.max(1, c.T * 0.16),
+            th.r,
+            th.g,
+            th.b,
+            0.9 * c.k
+        )
     end)
     -- The needle: a bright glint bobbing through the band.
     local bob = math.sin(c.now * 9)
@@ -177,20 +222,30 @@ function DRAW.tailoring(c, p)
     Star(nx, ny, c.T * 1.8, 1, 1, 1, c.k, c.now * 2)
     -- Thread trailing from the needle, swaying.
     local sway = math.sin(c.now * 2.3) * c.T
-    Seg("line", nx, ny, nx + c.ox * c.T * 3 - c.oy * sway, ny + c.oy * c.T * 3 + c.ox * sway,
-        math.max(1, c.T * 0.12), p[2].r, p[2].g, p[2].b, 0.8 * c.k)
+    Seg(
+        "line",
+        nx,
+        ny,
+        nx + c.ox * c.T * 3 - c.oy * sway,
+        ny + c.oy * c.T * 3 + c.ox * sway,
+        math.max(1, c.T * 0.12),
+        p[2].r,
+        p[2].g,
+        p[2].b,
+        0.8 * c.k
+    )
 end
 
 -- Leatherworking: the filled part of the band turns to tooled, studded leather. It takes a
 -- leather-brown tint, worn and cracked, a carved scroll groove (dark, with a light edge) winds along
 -- it, and brass studs sit in it every so often, each popping in as the fill reaches it. At
 -- the end of the fill a needle laces a thread along it in wide, sweeping waves.
-local HIDE  = { r = 0.45, g = 0.27, b = 0.13 }
+local HIDE = { r = 0.45, g = 0.27, b = 0.13 }
 local GROOVE = { r = 0.18, g = 0.10, b = 0.04 }
 local BRASS = { r = 0.90, g = 0.72, b = 0.35 }
-local LACE  = { r = 0.92, g = 0.82, b = 0.62 } -- waxed thread
+local LACE = { r = 0.92, g = 0.82, b = 0.62 } -- waxed thread
 local CRACK = { r = 0.12, g = 0.06, b = 0.02 } -- cracks in the worn leather
-local WORN  = { r = 0.78, g = 0.58, b = 0.38 } -- the lighter, raised edge along a crack
+local WORN = { r = 0.78, g = 0.58, b = 0.38 } -- the lighter, raised edge along a crack
 local WEAVE = 0.55 -- seconds the needle takes over one stitch
 local function Along(geom, f)
     local x, y = ns.RingPoint(geom, f)
@@ -213,10 +268,12 @@ function DRAW.leatherworking(c, p)
         if Hash(i * 3.1) < 0.65 then
             local seglen = math.sqrt((x - px) ^ 2 + (y - py) ^ 2)
             local tx, ty = 0, 0
-            if seglen > 0 then tx, ty = (x - px) / seglen, (y - py) / seglen end
+            if seglen > 0 then
+                tx, ty = (x - px) / seglen, (y - py) / seglen
+            end
             local mx, my = (px + x) / 2, (py + y) / 2
-            local side = Hash(i * 5.7) < 0.5 and -1 or 1         -- which edge it starts from
-            local reach = 0.55 + 0.4 * Hash(i * 2.3)            -- how far across it gets
+            local side = Hash(i * 5.7) < 0.5 and -1 or 1 -- which edge it starts from
+            local reach = 0.55 + 0.4 * Hash(i * 2.3) -- how far across it gets
             local w = math.max(1, T * 0.08)
             local function Pt(a, along) -- a: -0.5..0.5 across the band; along: shift along the ring
                 return mx + ox * a * T * 0.9 + tx * along, my + oy * a * T * 0.9 + ty * along
@@ -229,7 +286,9 @@ function DRAW.leatherworking(c, p)
                 local bx, by = Pt(a1, (Hash(i * 11.3 + s) - 0.5) * seglen * 0.7)
                 Seg("line", ax + tx * w, ay + ty * w, bx + tx * w, by + ty * w, w, WORN.r, WORN.g, WORN.b, 0.35 * k)
                 Seg("line", ax, ay, bx, by, w, CRACK.r, CRACK.g, CRACK.b, 0.9 * k)
-                if s == 1 then forkX, forkY = bx, by end
+                if s == 1 then
+                    forkX, forkY = bx, by
+                end
                 ax, ay = bx, by
             end
             if Hash(i * 13.7) < 0.4 then -- a fork off the first bend
@@ -276,16 +335,16 @@ function DRAW.leatherworking(c, p)
     -- fill, and the needle works just ahead of it on the same path, pushing on and drawing
     -- back a little with a short loose length of thread between, so it follows the lacing
     -- round as the fill grows.
-    local GAP = 1 / 10       -- about one sweep (out and back in) per this much of the ring
-    local AMP = T * 0.7      -- about how far it swings either side of the band's middle (just past its edges)
-    local PIECES = 14        -- straight pieces per sweep
+    local GAP = 1 / 10 -- about one sweep (out and back in) per this much of the ring
+    local AMP = T * 0.7 -- about how far it swings either side of the band's middle (just past its edges)
+    local PIECES = 14 -- straight pieces per sweep
     local function Smooth(sw) -- a smooth wander in 0..1 along the sweeps (fixed per ring)
         local i = math.floor(sw)
         local t = sw - i
         t = t * t * (3 - 2 * t)
         return Mix(Hash(i * 1.37 + 5), Hash((i + 1) * 1.37 + 5), t)
     end
-    local function Wave(f)   -- the point on the lacing at f, and whether it's in front (0..1)
+    local function Wave(f) -- the point on the lacing at f, and whether it's in front (0..1)
         local sw = f / GAP
         -- Sweeps a little longer or shorter than each other, and lopsided (quicker going out
         -- than coming back in).
@@ -312,7 +371,7 @@ function DRAW.leatherworking(c, p)
     -- seconds), never more than a sixth of a sweep ahead.
     local u = (c.now % WEAVE) / WEAVE
     local push = u < 0.6 and (1 - math.cos(math.pi * u / 0.6)) / 2 -- pushing through
-        or (1 + math.cos(math.pi * (u - 0.6) / 0.4)) / 2           -- drawing back
+        or (1 + math.cos(math.pi * (u - 0.6) / 0.4)) / 2 -- drawing back
     local fade = k
     local fn = c.frac + GAP * (0.04 + 0.13 * push)
     Thread(c.frac, fn, 0.85 * fade) -- the loose length between the laid lacing and the needle
@@ -320,7 +379,11 @@ function DRAW.leatherworking(c, p)
     local nx2, ny2 = Wave(fn + GAP * 0.02)
     local dx, dy = nx2 - nx1, ny2 - ny1
     local dl = math.sqrt(dx * dx + dy * dy)
-    if dl < 1e-4 then dx, dy = -c.oy, c.ox else dx, dy = dx / dl, dy / dl end
+    if dl < 1e-4 then
+        dx, dy = -c.oy, c.ox
+    else
+        dx, dy = dx / dl, dy / dl
+    end
     local na = (0.3 + 0.7 * front) * fade
     local NL = T * 2.4
     local tipx, tipy = nx1 + dx * NL * 0.6, ny1 + dy * NL * 0.6
@@ -363,7 +426,15 @@ function DRAW.firstaid(c, p)
         local u = (c.now * 0.4 + i / 6) % 1
         local x = (Hash(i) * 2 - 1) * c.ri * 0.55 + math.sin(c.now * 2 + i) * c.ri * 0.05
         local y = -c.ri * 0.7 + u * c.ri * 1.5
-        Cross(x, y, c.ri * 0.09 * (0.8 + 0.4 * Hash(i + 3)), Mix(h.r, 1, 0.4), 1, Mix(h.b, 1, 0.4), math.min(1, u * 5) * (1 - u) * c.k)
+        Cross(
+            x,
+            y,
+            c.ri * 0.09 * (0.8 + 0.4 * Hash(i + 3)),
+            Mix(h.r, 1, 0.4),
+            1,
+            Mix(h.b, 1, 0.4),
+            math.min(1, u * 5) * (1 - u) * c.k
+        )
     end
     Glow(c.x, c.y, c.T * 2.6, 1, 1, 1, (0.3 + 0.4 * thump) * c.k)
 end
@@ -379,7 +450,16 @@ function DRAW.smelting(c, p)
         local u = (c.now * speed + Hash(i + 9)) % 1
         local x = (Hash(i + 30) * 2 - 1) * c.ri * 0.6 + math.sin(c.now * 4 + i) * c.ri * 0.06
         local y = -c.ri * 0.5 + u * (c.ri * 0.5 + c.R * 1.1)
-        Star(x, y, c.T * 1.1 * (1 - 0.5 * u), m2.r, Mix(m2.g, m1.g, u), Mix(m2.b, m1.b, u), math.min(1, u * 6) * (1 - u) * c.k, u * 3)
+        Star(
+            x,
+            y,
+            c.T * 1.1 * (1 - 0.5 * u),
+            m2.r,
+            Mix(m2.g, m1.g, u),
+            Mix(m2.b, m1.b, u),
+            math.min(1, u * 6) * (1 - u) * c.k,
+            u * 3
+        )
     end
 end
 
@@ -410,7 +490,16 @@ function DRAW.generic(c)
     for i = 1, 6 do
         local u = (c.now * 0.8 + i / 6) % 1
         local a = i / 6 * TAU + c.now
-        Star(c.x + math.sin(a) * c.T * 2 * u, c.y + math.cos(a) * c.T * 2 * u, c.T * (1 - u), 1, 0.95, 0.8, (1 - u) * c.k, a)
+        Star(
+            c.x + math.sin(a) * c.T * 2 * u,
+            c.y + math.cos(a) * c.T * 2 * u,
+            c.T * (1 - u),
+            1,
+            0.95,
+            0.8,
+            (1 - u) * c.k,
+            a
+        )
     end
 end
 
@@ -422,7 +511,16 @@ local function MadePop(c, p, age)
         local a = i / 6 * TAU + 0.4
         local d = c.T * (1 + 3.5 * (1 - (1 - t) ^ 2))
         local col = p[(i % 2) + 1]
-        Star(c.x + math.sin(a) * d, c.y + math.cos(a) * d, c.T * 1.2 * (1 - 0.5 * t), Mix(col.r, 1, 0.3), Mix(col.g, 1, 0.3), Mix(col.b, 1, 0.3), 1 - t, a)
+        Star(
+            c.x + math.sin(a) * d,
+            c.y + math.cos(a) * d,
+            c.T * 1.2 * (1 - 0.5 * t),
+            Mix(col.r, 1, 0.3),
+            Mix(col.g, 1, 0.3),
+            Mix(col.b, 1, 0.3),
+            1 - t,
+            a
+        )
     end
 end
 
@@ -437,7 +535,16 @@ local function DoneBurst(c, p, age)
         local ox, oy = d > 0 and x / d or 0, d > 0 and y / d or 1
         local out = c.R * 0.8 * (1 - (1 - t) ^ 2) * (0.7 + 0.6 * Hash(i))
         local col = p[(i % 2) + 1]
-        Star(x + ox * out, y + oy * out, c.T * 1.8 * (1 - 0.6 * t), Mix(col.r, 1, 0.3), Mix(col.g, 1, 0.3), Mix(col.b, 1, 0.3), 1 - t, t * 4 + i)
+        Star(
+            x + ox * out,
+            y + oy * out,
+            c.T * 1.8 * (1 - 0.6 * t),
+            Mix(col.r, 1, 0.3),
+            Mix(col.g, 1, 0.3),
+            Mix(col.b, 1, 0.3),
+            1 - t,
+            t * 4 + i
+        )
     end
 end
 
@@ -452,7 +559,9 @@ local function DrawCraftFx(st, frame, geom)
     if st.fxEndAt then c.k = 1 - Clamp((now - st.fxEndAt) / FADE_TIME) end
     if c.k > 0 then (DRAW[kind] or DRAW.generic)(c, p) end
     if st.fxMadeAt and now - st.fxMadeAt < POP_TIME and now >= st.fxMadeAt then MadePop(c, p, now - st.fxMadeAt) end
-    if st.fxDone and st.fxEndAt and now - st.fxEndAt < BURST_TIME and now >= st.fxEndAt then DoneBurst(c, p, now - st.fxEndAt) end
+    if st.fxDone and st.fxEndAt and now - st.fxEndAt < BURST_TIME and now >= st.fxEndAt then
+        DoneBurst(c, p, now - st.fxEndAt)
+    end
     HideRest()
     CF.used.tool = nil
 end
@@ -467,14 +576,64 @@ ns.CraftFxParts = function() return CF.fx end -- for the tests
 ns.CraftPalette = function(kind) return PALETTE[kind] end -- a profession's two colors (the skill ring's effects)
 -- For the options' preview and edit mode's sample: each profession with a recipe to show.
 ns.CRAFT_FX_SAMPLES = {
-    { kind = "alchemy",        name = "Alchemy",        recipe = "Lesser Healing Potion", icon = "Interface\\Icons\\INV_Potion_51" },
-    { kind = "blacksmithing",  name = "Blacksmithing",  recipe = "Copper Chain Belt",     icon = "Interface\\Icons\\INV_Belt_03" },
-    { kind = "engineering",    name = "Engineering",    recipe = "Rough Boomstick",       icon = "Interface\\Icons\\INV_Weapon_Rifle_04" },
-    { kind = "enchanting",     name = "Enchanting",     recipe = "Runed Copper Rod",      icon = "Interface\\Icons\\INV_Staff_Goldfeathered_01" },
-    { kind = "tailoring",      name = "Tailoring",      recipe = "Bolt of Linen Cloth",   icon = "Interface\\Icons\\INV_Fabric_Linen_02" },
-    { kind = "leatherworking", name = "Leatherworking", recipe = "Light Armor Kit",       icon = "Interface\\Icons\\INV_Misc_ArmorKit_17" },
-    { kind = "cooking",        name = "Cooking",        recipe = "Roasted Boar Meat",     icon = "Interface\\Icons\\INV_Misc_Food_14" },
-    { kind = "firstaid",       name = "First Aid",      recipe = "Heavy Linen Bandage",   icon = "Interface\\Icons\\INV_Misc_Bandage_18" },
-    { kind = "smelting",       name = "Smelting",       recipe = "Smelt Copper",          icon = "Interface\\Icons\\INV_Ingot_02" },
-    { kind = "poisons",        name = "Poisons",        recipe = "Instant Poison",        icon = "Interface\\Icons\\Ability_Poisons" },
+    {
+        kind = "alchemy",
+        name = "Alchemy",
+        recipe = "Lesser Healing Potion",
+        icon = "Interface\\Icons\\INV_Potion_51",
+    },
+    {
+        kind = "blacksmithing",
+        name = "Blacksmithing",
+        recipe = "Copper Chain Belt",
+        icon = "Interface\\Icons\\INV_Belt_03",
+    },
+    {
+        kind = "engineering",
+        name = "Engineering",
+        recipe = "Rough Boomstick",
+        icon = "Interface\\Icons\\INV_Weapon_Rifle_04",
+    },
+    {
+        kind = "enchanting",
+        name = "Enchanting",
+        recipe = "Runed Copper Rod",
+        icon = "Interface\\Icons\\INV_Staff_Goldfeathered_01",
+    },
+    {
+        kind = "tailoring",
+        name = "Tailoring",
+        recipe = "Bolt of Linen Cloth",
+        icon = "Interface\\Icons\\INV_Fabric_Linen_02",
+    },
+    {
+        kind = "leatherworking",
+        name = "Leatherworking",
+        recipe = "Light Armor Kit",
+        icon = "Interface\\Icons\\INV_Misc_ArmorKit_17",
+    },
+    {
+        kind = "cooking",
+        name = "Cooking",
+        recipe = "Roasted Boar Meat",
+        icon = "Interface\\Icons\\INV_Misc_Food_14",
+    },
+    {
+        kind = "firstaid",
+        name = "First Aid",
+        recipe = "Heavy Linen Bandage",
+        icon = "Interface\\Icons\\INV_Misc_Bandage_18",
+    },
+    {
+        kind = "smelting",
+        name = "Smelting",
+        recipe = "Smelt Copper",
+        icon = "Interface\\Icons\\INV_Ingot_02",
+    },
+    {
+        kind = "poisons",
+        name = "Poisons",
+        recipe = "Instant Poison",
+        icon = "Interface\\Icons\\Ability_Poisons",
+    },
 }

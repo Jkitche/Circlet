@@ -23,7 +23,7 @@ local DurationObject = TC.DurationObject
 -- slow too, so the game's countdown numbers then come from a second, sweepless cooldown
 -- fed the real duration. If neither way works in this client, the arc gets a disc in its
 -- middle instead. What happened is kept in db.targetCastDiag (and /circ targetdebug).
-local CIRCLE   = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
+local CIRCLE = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local RING_TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\Ring%d"
 
 local function PlainCooldown(parent, swipe)
@@ -99,8 +99,10 @@ end
 local function PlaceTimer(w, frame, geom, channel)
     local sweep = geom.sweep or 1
     local disc = sweep < 1 and w.cantSlow
-    local layout = table.concat({ geom.R, geom.T, tostring(geom.start), tostring(geom.reverse), sweep,
-                                  tostring(disc), tostring(channel) }, ":")
+    local layout = table.concat(
+        { geom.R, geom.T, tostring(geom.start), tostring(geom.reverse), sweep, tostring(disc), tostring(channel) },
+        ":"
+    )
     if w.layout == layout then return end
     w.layout = layout
     local outer = geom.R + geom.T / 2
@@ -137,9 +139,7 @@ local function Try(obj, method, ...)
 end
 
 -- An error message, short and without the file and line.
-local function Err(e)
-    return (tostring(e or "?"):gsub("^.-:%d+: ", "")):sub(1, 120)
-end
+local function Err(e) return (tostring(e or "?"):gsub("^.-:%d+: ", "")):sub(1, 120) end
 
 -- Calls fn, noting in w.attempts how it went (for the diagnostics). true if it worked.
 local function Attempt(w, label, fn, ...)
@@ -161,7 +161,10 @@ local function Feed(w, c)
     -- The cast's start, end and length, as the game gives them (possibly hidden).
     local function Get(m)
         local fn = dur[m]
-        if type(fn) ~= "function" then table.insert(w.attempts, m .. ": missing") return nil end
+        if type(fn) ~= "function" then
+            table.insert(w.attempts, m .. ": missing")
+            return nil
+        end
         local ok, v = pcall(fn, dur)
         table.insert(w.attempts, m .. (ok and (type(v) == "nil" and ": nil" or ": ok") or (": " .. Err(v))))
         if ok then return v end
@@ -175,26 +178,37 @@ local function Feed(w, c)
             table.insert(w.attempts, "CreateDuration: " .. Err(copy))
         elseif type(copy.SetTimeFromStart) ~= "function" then
             table.insert(w.attempts, "copy:SetTimeFromStart: missing")
-        elseif Attempt(w, "copy:SetTimeFromStart(start, total, rate)", copy.SetTimeFromStart, copy, start, total, rate)
-            and Attempt(w, "SetCooldownFromDurationObject(copy)", cd.SetCooldownFromDurationObject, cd, copy) then
+        elseif
+            Attempt(w, "copy:SetTimeFromStart(start, total, rate)", copy.SetTimeFromStart, copy, start, total, rate)
+            and Attempt(w, "SetCooldownFromDurationObject(copy)", cd.SetCooldownFromDurationObject, cd, copy)
+        then
             return "slowed copy of the duration"
         end
     end
     -- 2. The cooldown's own rate, from the cast's start.
-    if type(cd.SetCooldown) == "function" and start and total
-        and Attempt(w, "SetCooldown(start, total, rate)", cd.SetCooldown, cd, start, total, rate) then
+    if
+        type(cd.SetCooldown) == "function"
+        and start
+        and total
+        and Attempt(w, "SetCooldown(start, total, rate)", cd.SetCooldown, cd, start, total, rate)
+    then
         return "SetCooldown with a rate"
     end
     -- 3. From now (the cast has only just started), for its length, at the rate.
-    if type(cd.SetCooldownDuration) == "function" and total
-        and Attempt(w, "SetCooldownDuration(total, rate)", cd.SetCooldownDuration, cd, total, rate) then
+    if
+        type(cd.SetCooldownDuration) == "function"
+        and total
+        and Attempt(w, "SetCooldownDuration(total, rate)", cd.SetCooldownDuration, cd, total, rate)
+    then
         return "SetCooldownDuration with a rate"
     end
     -- 4. Started as it is, then slowed, if the cooldown can change its rate.
     for _, m in ipairs({ "SetCooldownModRate", "SetModRate" }) do
         if type(cd[m]) == "function" then
-            if Attempt(w, "SetCooldownFromDurationObject(cast)", cd.SetCooldownFromDurationObject, cd, dur)
-                and Attempt(w, m .. "(rate)", cd[m], cd, rate) then
+            if
+                Attempt(w, "SetCooldownFromDurationObject(cast)", cd.SetCooldownFromDurationObject, cd, dur)
+                and Attempt(w, m .. "(rate)", cd[m], cd, rate)
+            then
                 return m
             end
         end
@@ -211,7 +225,9 @@ local function Methods(obj, filter)
     local src = type(idx) == "table" and idx or (type(obj) == "table" and obj) or nil
     if src then
         for k, v in pairs(src) do
-            if type(v) == "function" and (not filter or tostring(k):find(filter)) then table.insert(names, tostring(k)) end
+            if type(v) == "function" and (not filter or tostring(k):find(filter)) then
+                table.insert(names, tostring(k))
+            end
         end
     end
     table.sort(names)
@@ -225,10 +241,17 @@ local function Diagnose(w, how, c)
     diagProbe = diagProbe or (UIParent and UIParent.CreateTexture and UIParent:CreateTexture())
     local probe = diagProbe
     local loads = probe and probe:SetTexture(w.texPath)
-    if probe then probe:SetTexture(nil); probe:Hide() end
+    if probe then
+        probe:SetTexture(nil)
+        probe:Hide()
+    end
     db.targetCastDiag = {
-        at = date and date("%Y-%m-%d %H:%M:%S") or "?", mode = w.mode, fed = how or "failed",
-        texture = w.texPath, textureLoads = tostring(loads), rate = w.rate,
+        at = date and date("%Y-%m-%d %H:%M:%S") or "?",
+        mode = w.mode,
+        fed = how or "failed",
+        texture = w.texPath,
+        textureLoads = tostring(loads),
+        rate = w.rate,
         attempts = w.attempts and table.concat(w.attempts, " | ") or "(none: not slowed)",
         durationMethods = c and c.durObj and Methods(c.durObj) or "?",
         durationUtil = C_DurationUtil and Methods(C_DurationUtil) or "(no C_DurationUtil)",
@@ -245,9 +268,11 @@ local function ShowTimer(c, frame, geom, color)
     end
     if not c.durObj then return false end
     local w = Timer(frame)
-    if not (w.cd.SetCooldownFromDurationObject) then return false end
+    if not w.cd.SetCooldownFromDurationObject then return false end
     w.cd:Show()
-    if w.numbersOnly then w.numbersOnly, w.fedWith, w.layout = nil, nil, nil end
+    if w.numbersOnly then
+        w.numbersOnly, w.fedWith, w.layout = nil, nil, nil
+    end
     PlaceTimer(w, frame, geom, c.channel)
     w:SetFrameLevel(frame:GetFrameLevel() + 2)
     -- The ring's color, kept in the look (it changes: casting, channel, can't interrupt).
@@ -291,7 +316,9 @@ end
 local function ShowNumbers(c, frame, geom)
     local w = Timer(frame)
     if not (w.numbers and w.numbers.SetCooldownFromDurationObject) then return false end
-    if not w.numbersOnly then w.numbersOnly, w.fedWith, w.layout = true, nil, nil end
+    if not w.numbersOnly then
+        w.numbersOnly, w.fedWith, w.layout = true, nil, nil
+    end
     w.cd:Hide()
     local inner = math.max(8, (geom.R - geom.T / 2) * 2)
     w:SetSize(inner, inner)

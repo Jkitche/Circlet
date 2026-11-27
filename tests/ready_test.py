@@ -1,4 +1,5 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -22,9 +23,13 @@ function GetReadyCheckTimeLeft() return CHECK_ENDS and math.max(0, math.floor(CH
 function GetReadyCheckStatus(u) if not CHECK_ENDS then return nil end return (UNITS[u] and UNITS[u].name == STARTER) and "ready" or "waiting" end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
-lua.execute('TEXS = {}; local ct = RegionMethods.CreateTexture; RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(TEXS, t); return t end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
+lua.execute(
+    'TEXS = {}; local ct = RegionMethods.CreateTexture; RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(TEXS, t); return t end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)
@@ -76,4 +81,5 @@ Slash("ready"); Advance(1); S("preview")
 Advance(9); S("preview, one not ready")
 Advance(3); S("preview result")
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

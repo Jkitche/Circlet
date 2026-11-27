@@ -17,16 +17,16 @@ local CF = ns.CraftFx
 -- Inscription).
 local PROFESSIONS = {
     -- kind           English names                        the profession's spell (for its local name)
-    { kind = "alchemy",        names = { "Alchemy" },                 spell = 2259 },
-    { kind = "blacksmithing",  names = { "Blacksmithing" },           spell = 2018 },
-    { kind = "enchanting",     names = { "Enchanting" },              spell = 7411 },
-    { kind = "engineering",    names = { "Engineering" },             spell = 4036 },
-    { kind = "leatherworking", names = { "Leatherworking" },          spell = 2108 },
-    { kind = "tailoring",      names = { "Tailoring" },               spell = 3908 },
-    { kind = "cooking",        names = { "Cooking" },                 spell = 2550 },
-    { kind = "firstaid",       names = { "First Aid" },               spell = 3273 },
-    { kind = "smelting",       names = { "Mining", "Smelting" },      spell = 2656 },
-    { kind = "poisons",        names = { "Poisons" },                 spell = 2842 },
+    { kind = "alchemy", names = { "Alchemy" }, spell = 2259 },
+    { kind = "blacksmithing", names = { "Blacksmithing" }, spell = 2018 },
+    { kind = "enchanting", names = { "Enchanting" }, spell = 7411 },
+    { kind = "engineering", names = { "Engineering" }, spell = 4036 },
+    { kind = "leatherworking", names = { "Leatherworking" }, spell = 2108 },
+    { kind = "tailoring", names = { "Tailoring" }, spell = 3908 },
+    { kind = "cooking", names = { "Cooking" }, spell = 2550 },
+    { kind = "firstaid", names = { "First Aid" }, spell = 3273 },
+    { kind = "smelting", names = { "Mining", "Smelting" }, spell = 2656 },
+    { kind = "poisons", names = { "Poisons" }, spell = 2842 },
 }
 
 local byName
@@ -36,7 +36,9 @@ local function KindOf(name)
     if not byName then
         byName = {}
         for _, p in ipairs(PROFESSIONS) do
-            for _, n in ipairs(p.names) do byName[n] = p.kind end
+            for _, n in ipairs(p.names) do
+                byName[n] = p.kind
+            end
             local own = ns.SpellName and ns.SpellName(p.spell)
             if own then byName[own] = byName[own] or p.kind end
         end
@@ -52,7 +54,9 @@ local function OpenProfession(craft)
         name = GetCraftDisplaySkillLine and SafeCall(GetCraftDisplaySkillLine)
         if not name and GetCraftName then name = SafeCall(GetCraftName) end
     else
-        local info = C_TradeSkillUI and C_TradeSkillUI.GetBaseProfessionInfo and SafeCall(C_TradeSkillUI.GetBaseProfessionInfo)
+        local info = C_TradeSkillUI
+            and C_TradeSkillUI.GetBaseProfessionInfo
+            and SafeCall(C_TradeSkillUI.GetBaseProfessionInfo)
         if type(info) == "table" then name = Clean(info.professionName) end
         if not name and GetTradeSkillLine then name = SafeCall(GetTradeSkillLine) end
     end
@@ -91,16 +95,16 @@ local POP_TIME, BURST_TIME, FADE_TIME = 0.5, 1.2, 0.8
 
 -- Each profession's colors: the main one and a second one for variety.
 local PALETTE = {
-    alchemy        = { { r = 0.35, g = 1.00, b = 0.45 }, { r = 0.75, g = 0.40, b = 1.00 } },
-    blacksmithing  = { { r = 1.00, g = 0.60, b = 0.15 }, { r = 1.00, g = 0.90, b = 0.55 } },
-    engineering    = { { r = 0.55, g = 0.85, b = 1.00 }, { r = 1.00, g = 0.85, b = 0.30 } },
-    enchanting     = { { r = 0.75, g = 0.45, b = 1.00 }, { r = 1.00, g = 0.55, b = 0.95 } },
-    tailoring      = { { r = 1.00, g = 0.95, b = 0.80 }, { r = 0.55, g = 0.75, b = 1.00 } },
+    alchemy = { { r = 0.35, g = 1.00, b = 0.45 }, { r = 0.75, g = 0.40, b = 1.00 } },
+    blacksmithing = { { r = 1.00, g = 0.60, b = 0.15 }, { r = 1.00, g = 0.90, b = 0.55 } },
+    engineering = { { r = 0.55, g = 0.85, b = 1.00 }, { r = 1.00, g = 0.85, b = 0.30 } },
+    enchanting = { { r = 0.75, g = 0.45, b = 1.00 }, { r = 1.00, g = 0.55, b = 0.95 } },
+    tailoring = { { r = 1.00, g = 0.95, b = 0.80 }, { r = 0.55, g = 0.75, b = 1.00 } },
     leatherworking = { { r = 0.70, g = 0.45, b = 0.22 }, { r = 0.90, g = 0.72, b = 0.35 } },
-    cooking        = { { r = 1.00, g = 0.55, b = 0.15 }, { r = 1.00, g = 0.90, b = 0.40 } },
-    firstaid       = { { r = 0.45, g = 1.00, b = 0.55 }, { r = 1.00, g = 1.00, b = 1.00 } },
-    smelting       = { { r = 1.00, g = 0.45, b = 0.10 }, { r = 1.00, g = 0.85, b = 0.35 } },
-    poisons        = { { r = 0.45, g = 1.00, b = 0.20 }, { r = 0.75, g = 1.00, b = 0.40 } },
+    cooking = { { r = 1.00, g = 0.55, b = 0.15 }, { r = 1.00, g = 0.90, b = 0.40 } },
+    firstaid = { { r = 0.45, g = 1.00, b = 0.55 }, { r = 1.00, g = 1.00, b = 1.00 } },
+    smelting = { { r = 1.00, g = 0.45, b = 0.10 }, { r = 1.00, g = 0.85, b = 0.35 } },
+    poisons = { { r = 0.45, g = 1.00, b = 0.20 }, { r = 0.75, g = 1.00, b = 0.40 } },
 }
 
 local function Hash(n)
@@ -126,17 +130,32 @@ local function Build(frame)
     local function Line(add, sub)
         local l = frame:CreateLine(nil, "ARTWORK", nil, sub)
         if add and l.SetBlendMode then l:SetBlendMode("ADD") end
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         return l
     end
     CF.fx.glow, CF.fx.star, CF.fx.dot, CF.fx.puff, CF.fx.line, CF.fx.spark = {}, {}, {}, {}, {}, {}
-    for i = 1, POOL_SIZES.glow do CF.fx.glow[i] = Tex(GLOW_TEX, "ADD", 2) end
-    for i = 1, POOL_SIZES.puff do CF.fx.puff[i] = Tex(GLOW_TEX, "BLEND", 3) end -- soft smoke and steam
-    for i = 1, POOL_SIZES.star do CF.fx.star[i] = Tex(STAR_TEX, "ADD", 6) end
-    for i = 1, POOL_SIZES.dot do CF.fx.dot[i] = Tex(DOT_TEX, "BLEND", 3) end
-    for i = 1, POOL_SIZES.line do CF.fx.line[i] = Line(false, 4) end
-    for i = 1, POOL_SIZES.spark do CF.fx.spark[i] = Line(true, 5) end
+    for i = 1, POOL_SIZES.glow do
+        CF.fx.glow[i] = Tex(GLOW_TEX, "ADD", 2)
+    end
+    for i = 1, POOL_SIZES.puff do
+        CF.fx.puff[i] = Tex(GLOW_TEX, "BLEND", 3)
+    end -- soft smoke and steam
+    for i = 1, POOL_SIZES.star do
+        CF.fx.star[i] = Tex(STAR_TEX, "ADD", 6)
+    end
+    for i = 1, POOL_SIZES.dot do
+        CF.fx.dot[i] = Tex(DOT_TEX, "BLEND", 3)
+    end
+    for i = 1, POOL_SIZES.line do
+        CF.fx.line[i] = Line(false, 4)
+    end
+    for i = 1, POOL_SIZES.spark do
+        CF.fx.spark[i] = Line(true, 5)
+    end
     CF.fx.tool = frame:CreateTexture(nil, "ARTWORK", nil, 7)
     if CF.fx.tool:SetTexture(HAMMER_TEX) == false then CF.fx.tool:SetTexture(HAMMER_FALLBACK) end
     CF.fx.tool:Hide()
@@ -182,7 +201,9 @@ end
 local function HideRest()
     for kind in pairs(POOL_SIZES) do
         local pool = CF.fx[kind]
-        for i = CF.used[kind] + 1, #pool do pool[i]:Hide() end
+        for i = CF.used[kind] + 1, #pool do
+            pool[i]:Hide()
+        end
     end
     if not CF.used.tool then CF.fx.tool:Hide() end
 end
@@ -200,10 +221,21 @@ local function Context(st, geom, now)
     local frac = Clamp(st.frac or 0)
     local x, y = ns.RingPoint(geom, frac)
     local d = math.sqrt(x * x + y * y)
-    return { now = now, t = now - (st.fxStart or now), frac = frac, x = x, y = y,
-             ox = d > 0 and x / d or 0, oy = d > 0 and y / d or 1,
-             R = geom.R, T = math.max(3, geom.T), ri = math.max(4, geom.R - geom.T / 2), geom = geom,
-             k = 1, ended = st.fxEndAt ~= nil }
+    return {
+        now = now,
+        t = now - (st.fxStart or now),
+        frac = frac,
+        x = x,
+        y = y,
+        ox = d > 0 and x / d or 0,
+        oy = d > 0 and y / d or 1,
+        R = geom.R,
+        T = math.max(3, geom.T),
+        ri = math.max(4, geom.R - geom.T / 2),
+        geom = geom,
+        k = 1,
+        ended = st.fxEndAt ~= nil,
+    }
 end
 
 -- For the files loaded after this one.

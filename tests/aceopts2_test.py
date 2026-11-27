@@ -1,18 +1,25 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-L='../Libs/'
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+L = '../Libs/'
 load = lua.eval('function(s, n) local f, e = load(s, "@"..n); if not f then error(e) end; return f end')
-for f in ['LibStub/LibStub.lua','CallbackHandler-1.0/CallbackHandler-1.0.lua','AceConfig-3.0/AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua']:
-    load(open(L+f).read(), f)()
+for f in [
+    'LibStub/LibStub.lua',
+    'CallbackHandler-1.0/CallbackHandler-1.0.lua',
+    'AceConfig-3.0/AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua',
+]:
+    load(open(L + f).read(), f)()
 lua.execute('''
 OUT = {}
 C_AddOns = C_AddOns or {}; C_AddOns.GetAddOnMetadata = function() return "0.24.0" end
 PlaySound = function() end
 ''')
-chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
+chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')(
+    (__import__('subprocess').run(['python3', 'make_bundle.py']), open('bundle.lua').read())[1]
+)
 NSX = lua.table()
 chunk("Circlet", NSX)
 lua.globals().NSX = NSX
@@ -106,4 +113,5 @@ CircletDB.xpMinimap = true; table.insert(OUT, "xp minimap: " .. XPShown())
 CircletDB.xpAlways, CircletDB.xpMinimap = false, false
 Circlet_OnAddonCompartmentClick(); table.insert(OUT, "compartment opens: " .. tostring(CircletConfigFrame:IsShown())); Circlet_OnAddonCompartmentClick()
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

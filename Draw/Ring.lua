@@ -12,9 +12,7 @@ local RING_STYLE_ORDER = { "smooth", "segmented", "thin" }
 -- one, so switching style doesn't resize the text).
 local function RingThickness(key, size)
     local t = math.min(db[key .. "Thickness"], size / 2 - 2)
-    if db[key .. "Style"] == "thin" then
-        return math.max(2, math.floor(t * 0.4 + 0.5)), t
-    end
+    if db[key .. "Style"] == "thin" then return math.max(2, math.floor(t * 0.4 + 0.5)), t end
     return t, t
 end
 
@@ -99,8 +97,12 @@ local function DrawArc(lines, from, to, frame, geom, noOverlap, shade)
             if len > 0 then
                 local ux, uy = (x2 - x1) / len * miter, (y2 - y1) / len * miter
                 -- Extend into neighbouring segments, but not past the arc's (or notch's) ends.
-                if full or s > lo + 1e-6 then x1, y1 = x1 - ux, y1 - uy end
-                if full or e < hi - 1e-6 then x2, y2 = x2 + ux, y2 + uy end
+                if full or s > lo + 1e-6 then
+                    x1, y1 = x1 - ux, y1 - uy
+                end
+                if full or e < hi - 1e-6 then
+                    x2, y2 = x2 + ux, y2 + uy
+                end
             end
             line:SetStartPoint("CENTER", frame, x1, y1)
             line:SetEndPoint("CENTER", frame, x2, y2)
@@ -115,7 +117,9 @@ local function DrawArc(lines, from, to, frame, geom, noOverlap, shade)
             line:Hide()
         end
     end
-    for i = total + 1, #lines do lines[i]:Hide() end
+    for i = total + 1, #lines do
+        lines[i]:Hide()
+    end
 end
 
 -- A ring's gradient for color c, as DrawArc's shade; nil for a solid fill.
@@ -137,16 +141,14 @@ end
 local BORDER_COLOR = { r = 0, g = 0, b = 0, a = 0.9 }
 
 -- Each ring's own border width (<key>Border; 0 = none).
-local function BorderWidth(key)
-    return key and tonumber(db[key .. "Border"]) or 0
-end
+local function BorderWidth(key) return key and tonumber(db[key .. "Border"]) or 0 end
 
 -- Ring shapes: a full ring, or an arc open at the bottom. start: where the arc begins,
 -- clockwise from 12 o'clock; sweep: how much of the circle it covers (both fractions).
 local RING_SHAPES = {
     ring = { start = 0, sweep = 1 },
-    arc  = { start = 0.625, sweep = 0.75 }, -- 7:30 round the top to 4:30
-    half = { start = 0.75, sweep = 0.5 },   -- 9 o'clock over the top to 3 o'clock
+    arc = { start = 0.625, sweep = 0.75 }, -- 7:30 round the top to 4:30
+    half = { start = 0.75, sweep = 0.5 }, -- 9 o'clock over the top to 3 o'clock
 }
 local RING_SHAPE_NAMES = { ring = "Ring", arc = "Arc (three quarters)", half = "Half arc" }
 local RING_SHAPE_ORDER = { "ring", "arc", "half" }
@@ -163,8 +165,14 @@ end
 
 -- Part of each ring's layout key: changes when its border or shape does.
 local function BorderKey(key)
-    return "b" .. BorderWidth(key) .. ":" .. tostring(key and db[key .. "Shape"])
-        .. ":" .. tostring(key and db[key .. "Rotation"]) .. ":" .. tostring(key and db[key .. "Reverse"])
+    return "b"
+        .. BorderWidth(key)
+        .. ":"
+        .. tostring(key and db[key .. "Shape"])
+        .. ":"
+        .. tostring(key and db[key .. "Rotation"])
+        .. ":"
+        .. tostring(key and db[key .. "Reverse"])
 end
 
 -- Draws a ring's track (the full background circle) and its border, if it has one.
@@ -187,8 +195,16 @@ local function DrawTrack(frame, bg, geom, width)
             end
             frame.sqBorder = border
         end
-        local outer = { R = geom.R, T = geom.T + 2 * b, step = geom.step, style = geom.style, notches = geom.notches,
-                        start = geom.start, sweep = geom.sweep, reverse = geom.reverse }
+        local outer = {
+            R = geom.R,
+            T = geom.T + 2 * b,
+            step = geom.step,
+            style = geom.style,
+            notches = geom.notches,
+            start = geom.start,
+            sweep = geom.sweep,
+            reverse = geom.reverse,
+        }
         if geom.style ~= "segmented" and (geom.sweep or 1) < 1 then
             -- An arc's border runs a little past each end, so the ends are outlined too.
             local e = b / (2 * math.pi * math.max(geom.R, 1))
@@ -197,12 +213,15 @@ local function DrawTrack(frame, bg, geom, width)
         if geom.style == "segmented" then
             local notches = geom.notches or XP_SEGMENTS / NOTCH_LINES
             local circ = 2 * math.pi * math.max(geom.R, 1)
-            local bandGap = math.min(math.max(1.5, geom.T * 0.3), 0.33 / math.max(notches, 1) * circ * (geom.sweep or 1))
+            local bandGap =
+                math.min(math.max(1.5, geom.T * 0.3), 0.33 / math.max(notches, 1) * circ * (geom.sweep or 1))
             outer.gapPx = math.max(0, bandGap - 2 * b)
         end
         DrawArc(border, 0, 1, frame, outer)
     elseif border then
-        for _, line in ipairs(border) do line:Hide() end
+        for _, line in ipairs(border) do
+            line:Hide()
+        end
     end
     DrawArc(bg, 0, 1, frame, geom)
 end

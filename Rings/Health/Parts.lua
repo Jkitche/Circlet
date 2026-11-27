@@ -26,8 +26,11 @@ local function Parts(frame)
     v.eh, v.ep = {}, {} -- eased bands' bars (health, power)
     local white = { r = 1, g = 1, b = 1 }
     for _, b in ipairs({ "h", "p" }) do
-        v[b] = { trail = NewRingLayer("ARTWORK", -1, white, 1, frame), glow = NewRingLayer("ARTWORK", 2, white, 1, frame),
-                 flash = NewRingLayer("ARTWORK", 3, white, 1, frame) }
+        v[b] = {
+            trail = NewRingLayer("ARTWORK", -1, white, 1, frame),
+            glow = NewRingLayer("ARTWORK", 2, white, 1, frame),
+            flash = NewRingLayer("ARTWORK", 3, white, 1, frame),
+        }
     end
     local function Text(layer)
         local fs = frame:CreateFontString(nil, layer or "OVERLAY")
@@ -42,7 +45,11 @@ local function Parts(frame)
     v.portrait:SetPoint("CENTER")
     if frame.CreateMaskTexture then
         v.mask = frame:CreateMaskTexture()
-        v.mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+        v.mask:SetTexture(
+            "Interface\\CharacterFrame\\TempPortraitAlphaMask",
+            "CLAMPTOBLACKADDITIVE",
+            "CLAMPTOBLACKADDITIVE"
+        )
         v.mask:SetPoint("CENTER")
         v.portrait:AddMaskTexture(v.mask)
     end
@@ -59,7 +66,8 @@ local function Parts(frame)
         bd.edge:SetVertexColor(0, 0, 0, 0.9)
         bd.fill = bf:CreateTexture(nil, "ARTWORK")
         bd.fill:SetTexture(DISC)
-        bd.edge:Hide(); bd.fill:Hide()
+        bd.edge:Hide()
+        bd.fill:Hide()
         return bd
     end
     v.lvl = Badge()
@@ -83,7 +91,8 @@ local function Parts(frame)
     v.lvl.wingR = bf:CreateTexture(nil, "BACKGROUND", nil, -2)
     v.lvl.wingR:SetTexture(WING)
     v.lvl.wingR:SetTexCoord(1, 0, 0, 1) -- flipped
-    v.lvl.wingL:Hide(); v.lvl.wingR:Hide()
+    v.lvl.wingL:Hide()
+    v.lvl.wingR:Hide()
     v.cmb = Badge()
     v.cmb.fill:SetVertexColor(0.32, 0.05, 0.04, 1)
     v.cmb.icon = bf:CreateTexture(nil, "OVERLAY")
@@ -103,23 +112,34 @@ local function PlaceBadge(bd, R, deg, d)
         local a = math.rad(deg)
         local x, y = R * math.cos(a), R * math.sin(a)
         bd.x, bd.y, bd.d = x, y, d
-        bd.edge:ClearAllPoints(); bd.edge:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.edge:SetSize(d, d)
+        bd.edge:ClearAllPoints()
+        bd.edge:SetPoint("CENTER", bd.parent, "CENTER", x, y)
+        bd.edge:SetSize(d, d)
         local inset = 3
         if bd.rim then
             -- Outline: about a tenth of the disc, at least 2 px, inside a 1 px dark edge.
             local w = math.max(2, math.floor(d * 0.1 + 0.5))
-            bd.rim:ClearAllPoints(); bd.rim:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.rim:SetSize(d - 2, d - 2)
+            bd.rim:ClearAllPoints()
+            bd.rim:SetPoint("CENTER", bd.parent, "CENTER", x, y)
+            bd.rim:SetSize(d - 2, d - 2)
             inset = 2 + 2 * w
         end
-        bd.fill:ClearAllPoints(); bd.fill:SetPoint("CENTER", bd.parent, "CENTER", x, y); bd.fill:SetSize(d - inset, d - inset)
+        bd.fill:ClearAllPoints()
+        bd.fill:SetPoint("CENTER", bd.parent, "CENTER", x, y)
+        bd.fill:SetSize(d - inset, d - inset)
     end
-    bd.edge:Show(); bd.fill:Show()
+    bd.edge:Show()
+    bd.fill:Show()
     if bd.rim then bd.rim:Show() end
 end
 local function HideBadge(bd)
-    bd.edge:Hide(); bd.fill:Hide()
+    bd.edge:Hide()
+    bd.fill:Hide()
     if bd.rim then bd.rim:Hide() end
-    if bd.wingL then bd.wingL:Hide(); bd.wingR:Hide() end
+    if bd.wingL then
+        bd.wingL:Hide()
+        bd.wingR:Hide()
+    end
     if bd.dragon then bd.dragon:Hide() end
     if bd.text then bd.text:SetText("") end
     if bd.icon then bd.icon:Hide() end
@@ -149,15 +169,15 @@ local DRAGON_ART = {
     rare = "Interface\\TargetingFrame\\UI-TargetingFrame-Rare",
 }
 local ART_W, ART_H = 256, 128
-local PU, PV, PD = 182.5, 44.5, 64          -- the portrait's center and size, in texels
-local U0, U1, V0, V1 = 142, 256, 0, 100     -- the piece we draw
+local PU, PV, PD = 182.5, 44.5, 64 -- the portrait's center and size, in texels
+local U0, U1, V0, V1 = 142, 256, 0, 100 -- the piece we draw
 local WING_COLORS = { gold = { 1, 0.80, 0.32 }, silver = { 0.85, 0.88, 0.95 } }
 -- The badge's colors (rim, outline, inside): plain, or, with a dragon round it, taken from
 -- the dragon's own art (its gold or steel, and the dark of its shading) so the two read as
 -- one piece rather than a black-edged disc sat on the dragon.
 local BADGE_LOOK = {
-    plain  = { rim = { 0.85, 0.66, 0.28 }, edge = { 0, 0, 0, 0.9 },          fill = { 0.11, 0.08, 0.10 } },
-    gold   = { rim = { 0.96, 0.72, 0.22 }, edge = { 0.24, 0.13, 0.03, 0.85 }, fill = { 0.17, 0.10, 0.04 } },
+    plain = { rim = { 0.85, 0.66, 0.28 }, edge = { 0, 0, 0, 0.9 }, fill = { 0.11, 0.08, 0.10 } },
+    gold = { rim = { 0.96, 0.72, 0.22 }, edge = { 0.24, 0.13, 0.03, 0.85 }, fill = { 0.17, 0.10, 0.04 } },
     silver = { rim = { 0.80, 0.83, 0.88 }, edge = { 0.13, 0.13, 0.16, 0.85 }, fill = { 0.11, 0.11, 0.14 } },
 }
 
@@ -179,7 +199,10 @@ local function DrawDragon(bd, class)
         bd.dragonOK = t:SetTexture(file) ~= false
         t:SetTexCoord(U0 / ART_W, U1 / ART_W, V0 / ART_H, V1 / ART_H)
     end
-    if not bd.dragonOK then t:Hide() return false end
+    if not bd.dragonOK then
+        t:Hide()
+        return false
+    end
     local k = bd.d / PD
     t:ClearAllPoints()
     t:SetPoint("TOPLEFT", bd.parent, "CENTER", bd.x - (PU - U0) * k, bd.y + (PV - V0) * k)
@@ -199,10 +222,23 @@ local function DrawElite(key, bd, st)
     end
     local kind = ELITE[class or ""]
     BadgeLook(bd, kind or "plain")
-    if not kind or not bd.x then bd.dragon:Hide(); bd.wingL:Hide(); bd.wingR:Hide() return end
-    if DrawDragon(bd, class) then bd.wingL:Hide(); bd.wingR:Hide() return end
+    if not kind or not bd.x then
+        bd.dragon:Hide()
+        bd.wingL:Hide()
+        bd.wingR:Hide()
+        return
+    end
+    if DrawDragon(bd, class) then
+        bd.wingL:Hide()
+        bd.wingR:Hide()
+        return
+    end
     -- No dragon art on this client: our wings (rares, like the game, get none).
-    if class == "rare" then bd.wingL:Hide(); bd.wingR:Hide() return end
+    if class == "rare" then
+        bd.wingL:Hide()
+        bd.wingR:Hide()
+        return
+    end
     local d, c = bd.d, WING_COLORS[kind]
     local w = d * 1.05
     -- Each wing's root (its inner bottom corner) tucked behind the disc's upper side.
@@ -220,14 +256,20 @@ end
 -- The level badge (<key>Level): the unit's level on a disc at the bottom of the ring;
 -- others' levels in the game's difficulty colors, "??" for ones too high to tell.
 local function DrawLevel(key, v, st, geom, d)
-    if not db[key .. "Level"] then HideBadge(v.lvl) return end
+    if not db[key .. "Level"] then
+        HideBadge(v.lvl)
+        return
+    end
     local unit = st.unit or "player"
     local level = st.level or CleanNumber(SafeCall(UnitLevel, unit))
     if not st.unit and key ~= "playerHp" then level = st.level or 18 end
-    if not level then HideBadge(v.lvl) return end
+    if not level then
+        HideBadge(v.lvl)
+        return
+    end
     d = math.floor(d * 1.4 + 0.5) -- bigger than the combat badge: it carries text
     PlaceBadge(v.lvl, geom.R, Badges.Angle(key, "Level"), d)
-    local fk = d .. ":" .. ((tonumber(db[key .. "LevelTextSize"]) or 100))
+    local fk = d .. ":" .. (tonumber(db[key .. "LevelTextSize"]) or 100)
     if v.lvl.fk ~= fk then
         v.lvl.fk = fk
         local size = math.max(6, math.floor(d * 0.5 * (tonumber(db[key .. "LevelTextSize"]) or 100) / 100 + 0.5))
@@ -244,7 +286,9 @@ local function DrawLevel(key, v, st, geom, d)
     elseif key ~= "playerHp" and st.unit and Difficulty then
         local eff = UnitEffectiveLevel and CleanNumber(SafeCall(UnitEffectiveLevel, st.unit)) or level
         local ok, c = pcall(Difficulty, (eff and eff > 0) and eff or 999)
-        if ok and type(c) == "table" and c.r then r, g, b = c.r, c.g, c.b end
+        if ok and type(c) == "table" and c.r then
+            r, g, b = c.r, c.g, c.b
+        end
     end
     v.lvl.text:SetTextColor(r, g, b)
     v.lvl.text:SetText(level > 0 and tostring(level) or "??")
@@ -256,7 +300,10 @@ end
 local function DrawCombat(key, v, st, geom, d, now)
     local on = db[key .. "CombatIcon"]
     if on and st.unit then on = Clean(SafeCall(UnitAffectingCombat, st.unit)) and true or false end
-    if not on then HideBadge(v.cmb) return end
+    if not on then
+        HideBadge(v.cmb)
+        return
+    end
     PlaceBadge(v.cmb, geom.R, Badges.Angle(key, "Combat"), d)
     v.cmb.icon:SetSize(d * 0.8, d * 0.8)
     v.cmb.icon:Show()
@@ -269,7 +316,10 @@ end
 local portraitDirty = {}
 
 local function DrawPortrait(key, v, unit, room)
-    if not db[key .. "Portrait"] or not SetPortraitTexture then v.portrait:Hide() return end
+    if not db[key .. "Portrait"] or not SetPortraitTexture then
+        v.portrait:Hide()
+        return
+    end
     local size = math.max(8, room - 2)
     v.portrait:SetSize(size, size)
     if v.mask then v.mask:SetSize(size, size) end
@@ -283,7 +333,10 @@ local function DrawPortrait(key, v, unit, room)
     v.portrait:SetAlpha((tonumber(db[key .. "PortraitAlpha"]) or 70) / 100)
     -- Grey for a mob someone else tagged (the Tapped effect).
     local grey = db[key .. "FxTapped"] and unit ~= "player" and Clean(SafeCall(UnitIsTapDenied, unit)) and true or false
-    if v.portrait.grey ~= grey then v.portrait.grey = grey; pcall(v.portrait.SetDesaturated, v.portrait, grey) end
+    if v.portrait.grey ~= grey then
+        v.portrait.grey = grey
+        pcall(v.portrait.SetDesaturated, v.portrait, grey)
+    end
     v.portrait:Show()
 end
 
@@ -306,7 +359,11 @@ local function PlaceTexts(v, frame, room, split)
     v.name:SetPoint("BOTTOM", v.hp, "TOP", 0, 1)
 end
 
-local function HideLayer(lines) for _, l in ipairs(lines) do l:Hide() end end
+local function HideLayer(lines)
+    for _, l in ipairs(lines) do
+        l:Hide()
+    end
+end
 
 local function Whiten(c, k) return c.r + (1 - c.r) * k, c.g + (1 - c.g) * k, c.b + (1 - c.b) * k end
 
@@ -316,7 +373,9 @@ local function Effects(key, L, tr, g, frame, c, now, trailColor)
     local readable = tr and not tr.hidden and tr.shown ~= nil
     -- The trail behind a loss: holds, then drains after the fill.
     if readable and db[key .. "Trail"] and tr.trailTop and tr.trailTop > tr.shown then
-        for _, l in ipairs(L.trail) do l:SetColorTexture(trailColor.r, trailColor.g, trailColor.b, 0.85) end
+        for _, l in ipairs(L.trail) do
+            l:SetColorTexture(trailColor.r, trailColor.g, trailColor.b, 0.85)
+        end
         DrawArc(L.trail, tr.shown, tr.trailTop, frame, g)
     else
         HideLayer(L.trail)
@@ -327,7 +386,9 @@ local function Effects(key, L, tr, g, frame, c, now, trailColor)
         local to = math.min(tr.glowTo, tr.shown)
         if to > tr.glowFrom + 0.002 then
             local r, gg, b = Whiten(c, 0.4)
-            for _, l in ipairs(L.glow) do l:SetColorTexture(r, gg, b, 0.4 * k * k) end
+            for _, l in ipairs(L.glow) do
+                l:SetColorTexture(r, gg, b, 0.4 * k * k)
+            end
             DrawArc(L.glow, tr.glowFrom, to, frame, g, true)
         else
             HideLayer(L.glow)
@@ -342,7 +403,9 @@ local function BigHitFlash(key, L, g, frame, now)
     local at = bigHitAt[key]
     if db[key .. "BigHit"] and at and now - at < FLASH_TIME then
         local k = 1 - (now - at) / FLASH_TIME
-        for _, l in ipairs(L.flash) do l:SetColorTexture(1, 0.3, 0.25, 0.55 * k * k) end
+        for _, l in ipairs(L.flash) do
+            l:SetColorTexture(1, 0.3, 0.25, 0.55 * k * k)
+        end
         DrawArc(L.flash, 0, 1, frame, g, true)
     else
         HideLayer(L.flash)
@@ -366,21 +429,41 @@ end
 local function HealthText(key, st, fs, fs2, split)
     local mode = db[key .. "Text"]
     fs2:SetText("")
-    if mode == "none" then fs:SetText("") return end
-    if st.dead then fs:SetText(st.dead) return end
+    if mode == "none" then
+        fs:SetText("")
+        return
+    end
+    if st.dead then
+        fs:SetText(st.dead)
+        return
+    end
     if st.hpText then
         local t = st.hpText
-        if mode == "value" then fs:SetText(t.value)
-        elseif mode == "both" and split then fs:SetText(t.value); fs2:SetText(t.pct)
-        elseif mode == "both" then fs:SetText(t.value .. "  |cffcccccc" .. t.pct .. "|r")
-        else fs:SetText(t.pct) end
+        if mode == "value" then
+            fs:SetText(t.value)
+        elseif mode == "both" and split then
+            fs:SetText(t.value)
+            fs2:SetText(t.pct)
+        elseif mode == "both" then
+            fs:SetText(t.value .. "  |cffcccccc" .. t.pct .. "|r")
+        else
+            fs:SetText(t.pct)
+        end
         return
     end
     local h = st.hpHidden or {}
     if mode == "value" or (mode == "both" and h.pct == nil) then
-        if h.value ~= nil then Put(fs, nil, h.value) else fs:SetText("") end
+        if h.value ~= nil then
+            Put(fs, nil, h.value)
+        else
+            fs:SetText("")
+        end
     elseif mode == "both" and split then
-        if h.value ~= nil then Put(fs, nil, h.value) else fs:SetText("") end
+        if h.value ~= nil then
+            Put(fs, nil, h.value)
+        else
+            fs:SetText("")
+        end
         Put(fs2, "%d%%", h.pct)
     elseif mode == "both" then
         Put(fs, "%s  |cffcccccc%d%%|r", h.value, h.pct)
@@ -392,14 +475,24 @@ local function HealthText(key, st, fs, fs2, split)
 end
 
 local function PowerText(key, p, fs)
-    if not (p and db[key .. "PowerText"]) then fs:SetText("") return end
+    if not (p and db[key .. "PowerText"]) then
+        fs:SetText("")
+        return
+    end
     local c = p.color
     fs:SetTextColor(c.r + (1 - c.r) * 0.35, c.g + (1 - c.g) * 0.35, c.b + (1 - c.b) * 0.35)
-    if p.text then fs:SetText(p.text) return end
+    if p.text then
+        fs:SetText(p.text)
+        return
+    end
     local h = p.hidden or {}
-    if h.pct ~= nil then Put(fs, "%d%%", h.pct)
-    elseif h.value ~= nil then Put(fs, nil, h.value)
-    else fs:SetText("") end
+    if h.pct ~= nil then
+        Put(fs, "%d%%", h.pct)
+    elseif h.value ~= nil then
+        Put(fs, nil, h.value)
+    else
+        fs:SetText("")
+    end
 end
 
 -- For the files loaded after this one.

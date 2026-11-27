@@ -58,13 +58,15 @@ local function State(t)
     end
     local when = date("%b %d"):gsub(" 0", " ")
     return {
-        clock = true, hour = h,
+        clock = true,
+        hour = h,
         title = date("%A"),
         value = value,
         label = (ampm and (ampm .. " · ") or "") .. when .. (db.clockRealm and " · Realm" or ""),
         frac = (m + s / 60) / 60,
         hourFrac = ((h % 12) + (m + s / 60) / 60) / 12,
-        color = c.fill, labelColor = { r = 0.8, g = 0.8, b = 0.8 },
+        color = c.fill,
+        labelColor = { r = 0.8, g = 0.8, b = 0.8 },
         hold = 1,
     }
 end
@@ -89,7 +91,10 @@ local function Build(frame)
     face = { ticks = {} }
     for i = 1, TICKS do
         local l = frame:CreateLine(nil, "OVERLAY", nil, 1)
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         face.ticks[i] = l
     end
@@ -101,13 +106,18 @@ local function Build(frame)
     face.rim:SetVertexColor(0, 0, 0)
     face.dot = frame:CreateTexture(nil, "OVERLAY", nil, 4)
     face.dot:SetTexture(CIRCLE_TEX)
-    for _, t in ipairs({ face.glow, face.rim, face.dot }) do t:Hide() end
+    for _, t in ipairs({ face.glow, face.rim, face.dot }) do
+        t:Hide()
+    end
 
     -- The sun: the top half of a disc sitting on a horizon, rays fanning up from it, and a
     -- small arrow under the horizon (up for sunrise, down for sunset).
     local function Line(sub)
         local l = frame:CreateLine(nil, "OVERLAY", nil, sub)
-        if l.SetSnapToPixelGrid then l:SetSnapToPixelGrid(false); l:SetTexelSnappingBias(0) end
+        if l.SetSnapToPixelGrid then
+            l:SetSnapToPixelGrid(false)
+            l:SetTexelSnappingBias(0)
+        end
         l:Hide()
         return l
     end
@@ -116,7 +126,9 @@ local function Build(frame)
     face.sun:SetTexCoord(0, 1, 0, 0.5) -- the top half
     face.horizon = Line(5)
     face.rays, face.arrow = {}, { Line(5), Line(5) }
-    for i = 1, RAYS do face.rays[i] = Line(4) end
+    for i = 1, RAYS do
+        face.rays[i] = Line(4)
+    end
     -- The moon: a pale disc, with a dark disc set off to one side and clipped to the moon
     -- (by a mask the moon's shape) so only a crescent stays lit.
     face.moon = frame:CreateTexture(nil, "OVERLAY", nil, 4)
@@ -128,13 +140,22 @@ local function Build(frame)
         face.moonMask:SetTexture(CIRCLE_TEX, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
         face.shade:AddMaskTexture(face.moonMask)
     end
-    for _, t in ipairs({ face.sun, face.moon, face.shade }) do t:Hide() end
+    for _, t in ipairs({ face.sun, face.moon, face.shade }) do
+        t:Hide()
+    end
 end
 
 local function HideSunMoon()
-    face.sun:Hide(); face.horizon:Hide(); face.moon:Hide(); face.shade:Hide()
-    for _, l in ipairs(face.rays) do l:Hide() end
-    for _, l in ipairs(face.arrow) do l:Hide() end
+    face.sun:Hide()
+    face.horizon:Hide()
+    face.moon:Hide()
+    face.shade:Hide()
+    for _, l in ipairs(face.rays) do
+        l:Hide()
+    end
+    for _, l in ipairs(face.arrow) do
+        l:Hide()
+    end
 end
 
 local SUN = { rise = { r = 1.00, g = 0.82, b = 0.30 }, set = { r = 1.00, g = 0.50, b = 0.20 } }
@@ -200,8 +221,12 @@ end
 
 local function HideFace()
     if not face then return end
-    for _, l in ipairs(face.ticks) do l:Hide() end
-    face.glow:Hide(); face.rim:Hide(); face.dot:Hide()
+    for _, l in ipairs(face.ticks) do
+        l:Hide()
+    end
+    face.glow:Hide()
+    face.rim:Hide()
+    face.dot:Hide()
     HideSunMoon()
 end
 
@@ -235,30 +260,41 @@ local function DrawClockFace(st, frame, geom)
     local x, y = ns.RingPoint(geom, st.hourFrac or 0)
     local phase = db.clockSunMoon and Phase(st.hour or 12) or "day"
     if phase ~= "day" then
-        face.rim:Hide(); face.dot:Hide()
+        face.rim:Hide()
+        face.dot:Hide()
         local S = math.max(14, T * 3)
         HideSunMoon()
         local gc = phase == "night" and { r = 0.45, g = 0.6, b = 1 } or SUN[phase]
-        face.glow:ClearAllPoints(); face.glow:SetPoint("CENTER", frame, "CENTER", x, y)
+        face.glow:ClearAllPoints()
+        face.glow:SetPoint("CENTER", frame, "CENTER", x, y)
         face.glow:SetSize(S * 1.8, S * 1.8)
         face.glow:SetVertexColor(gc.r, gc.g, gc.b)
         face.glow:SetAlpha(0.55)
         face.glow:Show()
-        if phase == "night" then DrawMoon(frame, x, y, S) else DrawSun(frame, x, y, S, phase) end
+        if phase == "night" then
+            DrawMoon(frame, x, y, S)
+        else
+            DrawSun(frame, x, y, S, phase)
+        end
         return
     end
     HideSunMoon()
     local size = math.max(6, T * 1.5)
-    face.rim:ClearAllPoints(); face.rim:SetPoint("CENTER", frame, "CENTER", x, y)
+    face.rim:ClearAllPoints()
+    face.rim:SetPoint("CENTER", frame, "CENTER", x, y)
     face.rim:SetSize(size + 3, size + 3)
-    face.dot:ClearAllPoints(); face.dot:SetPoint("CENTER", frame, "CENTER", x, y)
+    face.dot:ClearAllPoints()
+    face.dot:SetPoint("CENTER", frame, "CENTER", x, y)
     face.dot:SetSize(size, size)
     face.dot:SetVertexColor(hc.r, hc.g, hc.b)
-    face.glow:ClearAllPoints(); face.glow:SetPoint("CENTER", frame, "CENTER", x, y)
+    face.glow:ClearAllPoints()
+    face.glow:SetPoint("CENTER", frame, "CENTER", x, y)
     face.glow:SetSize(size * 2.6, size * 2.6)
     face.glow:SetVertexColor(hc.r, hc.g, hc.b)
     face.glow:SetAlpha(0.6)
-    face.rim:Show(); face.dot:Show(); face.glow:Show()
+    face.rim:Show()
+    face.dot:Show()
+    face.glow:Show()
 end
 ns.DrawClockFace = DrawClockFace
 
@@ -270,57 +306,102 @@ ns.PreviewClockRing = function() clockRing.Preview(8) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "clock", name = "Clock", order = 11.7, since = "1.2.0",
+    key = "clock",
+    name = "Clock",
+    order = 11.7,
+    since = "1.2.0",
     ring = clockRing,
-    preview = ns.PreviewClockRing, slash = { "clock" }, help = "preview the clock ring",
+    preview = ns.PreviewClockRing,
+    slash = { "clock" },
+    help = "preview the clock ring",
     toggle = { "Clock ring", "A clock, always on screen: the time, the day and the date." },
     defaults = {
         -- Clock ring: always on screen once it's on. Top right, past the ammo ring.
-        clockEnabled   = false, -- a ring that never goes away: off until you want it
-        clock24        = false, -- 24-hour time
-        clockRealm     = false, -- the realm's time instead of your computer's
-        clockTicks     = true,  -- hour ticks around the ring
-        clockSunMoon   = true,  -- the hour dot becomes a rising sun, setting sun or moon
-        clockSize      = 100,
+        clockEnabled = false, -- a ring that never goes away: off until you want it
+        clock24 = false, -- 24-hour time
+        clockRealm = false, -- the realm's time instead of your computer's
+        clockTicks = true, -- hour ticks around the ring
+        clockSunMoon = true, -- the hour dot becomes a rising sun, setting sun or moon
+        clockSize = 100,
         clockThickness = 8,
-        clockOpacity   = 100,
-        clockX         = 680,
-        clockFromTop   = 55,
-        clockHold      = 1,
-        clockStyle     = "smooth",
-        clockRotation  = 0,     -- 12 at the top (other rings default to 180: filling from the bottom)
-        clockBorder    = 2,
+        clockOpacity = 100,
+        clockX = 680,
+        clockFromTop = 55,
+        clockHold = 1,
+        clockStyle = "smooth",
+        clockRotation = 0, -- 12 at the top (other rings default to 180: filling from the bottom)
+        clockBorder = 2,
         clockColors = {
-            fill  = { r = 0.55, g = 0.75, b = 1.00 },
-            hour  = { r = 1.00, g = 0.85, b = 0.35 },
+            fill = { r = 0.55, g = 0.75, b = 1.00 },
+            hour = { r = 1.00, g = 0.85, b = 0.35 },
             ticks = { r = 0.90, g = 0.90, b = 0.95 },
         },
     },
-    page = { folder = "comfort", order = 3, build = function(O)
+    page = {
+        folder = "comfort",
+        order = 3,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.8, "Clock", "Clock Ring",
+            local tab = RingTab(
+                10.8,
+                "Clock",
+                "Clock Ring",
                 "A clock that stays on screen: the ring fills as the hour goes by, a dot marks the hour, and the "
-                .. "middle shows the time with the day and date. Off until you turn it on.",
-                MergeTop(TopRow("clock", "clock ring", ns.PreviewClockRing, "Show the clock for a few seconds. Also /circ clock."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "clockEnabled", "Show clock ring", "Keep a clock on screen."),
-                        h24 = Toggle(2, "clock24", "24-hour time", "18:30 instead of 6:30 PM."),
-                        realm = Toggle(3, "clockRealm", "Realm time",
-                            "The realm's time instead of your computer's. \"Realm\" shows under the time."),
-                        ticks = Toggle(4, "clockTicks", "Hour ticks", "Ticks around the outside of the ring at every hour."),
-                        sunMoon = Toggle(5, "clockSunMoon", "Sun and moon",
-                            "The hour dot becomes a rising sun in the morning (5-9), a setting sun in the evening "
-                            .. "(5-9 PM) and a crescent moon at night (9 PM-5 AM)."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "clockColors", "fill", "Minutes", "The ring: how far through the hour."),
-                        hour = Color(2, "clockColors", "hour", "Hour", "The dot marking the hour (in the daytime, with Sun and moon on)."),
-                        ticks = Color(3, "clockColors", "ticks", "Ticks", "The hour ticks around the ring."),
-                    }),
-                    size = SizeBox(4, "clock", "clock ring", "Offset from the center of the screen. By default it sits top right."),
-                }))
+                    .. "middle shows the time with the day and date. Off until you turn it on.",
+                MergeTop(
+                    TopRow(
+                        "clock",
+                        "clock ring",
+                        ns.PreviewClockRing,
+                        "Show the clock for a few seconds. Also /circ clock."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(1, "clockEnabled", "Show clock ring", "Keep a clock on screen."),
+                            h24 = Toggle(2, "clock24", "24-hour time", "18:30 instead of 6:30 PM."),
+                            realm = Toggle(
+                                3,
+                                "clockRealm",
+                                "Realm time",
+                                "The realm's time instead of your computer's. \"Realm\" shows under the time."
+                            ),
+                            ticks = Toggle(
+                                4,
+                                "clockTicks",
+                                "Hour ticks",
+                                "Ticks around the outside of the ring at every hour."
+                            ),
+                            sunMoon = Toggle(
+                                5,
+                                "clockSunMoon",
+                                "Sun and moon",
+                                "The hour dot becomes a rising sun in the morning (5-9), a setting sun in the evening "
+                                    .. "(5-9 PM) and a crescent moon at night (9 PM-5 AM)."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "clockColors", "fill", "Minutes", "The ring: how far through the hour."),
+                            hour = Color(
+                                2,
+                                "clockColors",
+                                "hour",
+                                "Hour",
+                                "The dot marking the hour (in the daytime, with Sun and moon on)."
+                            ),
+                            ticks = Color(3, "clockColors", "ticks", "Ticks", "The hour ticks around the ring."),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "clock",
+                            "clock ring",
+                            "Offset from the center of the screen. By default it sits top right."
+                        ),
+                    }
+                )
+            )
             if tab.args.size and tab.args.size.args.hold then tab.args.size.args.hold = nil end -- it never goes away
             return tab
-        end },
+        end,
+    },
 })

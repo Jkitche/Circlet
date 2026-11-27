@@ -66,17 +66,29 @@ end
 -- Starts following the target's current cast or channel (from an event, or a new target).
 -- castID / spellID come from the event when there is one.
 local function Begin(channel, castID, spellID)
-    if not Watching() then TC.cast = nil return end
+    if not Watching() then
+        TC.cast = nil
+        return
+    end
     local name, icon, s, f, shielded, infoID = Info(channel)
     if not name and not s and not Clean(spellID) then
         -- Nothing readable at all: maybe it's casting nothing (a new target).
-        if not SafeCall(channel and UnitChannelInfo or UnitCastingInfo, UNIT) then TC.cast = nil return end
+        if not SafeCall(channel and UnitChannelInfo or UnitCastingInfo, UNIT) then
+            TC.cast = nil
+            return
+        end
     end
     spellID = Clean(spellID) or infoID
     local now = GetTime()
-    TC.cast = { castID = Clean(castID), spellID = spellID, channel = channel, shielded = shielded and true or false,
-             name = name or (spellID and ns.SpellName(spellID)) or "Casting",
-             icon = icon or (spellID and ns.SpellIcon(spellID)), caster = CasterName() }
+    TC.cast = {
+        castID = Clean(castID),
+        spellID = spellID,
+        channel = channel,
+        shielded = shielded and true or false,
+        name = name or (spellID and ns.SpellName(spellID)) or "Casting",
+        icon = icon or (spellID and ns.SpellIcon(spellID)),
+        caster = CasterName(),
+    }
     if s then
         TC.cast.start, TC.cast.finish, TC.cast.real = s, f, true
         Learn(TC.cast)
@@ -84,7 +96,9 @@ local function Begin(channel, castID, spellID)
     end
     -- Times hidden: what this spell took before, or its listed cast time.
     local dur = LearnedTime(TC.cast) or (not channel and spellID and ListedCastTime(spellID))
-    if dur and dur > 0 then TC.cast.start, TC.cast.finish = now, now + dur end
+    if dur and dur > 0 then
+        TC.cast.start, TC.cast.finish = now, now + dur
+    end
 end
 
 -- A new target: show what it's casting now, if anything (no end animation for the old one).
@@ -117,8 +131,12 @@ end
 
 local function State(st)
     local c = db.targetCastColors
-    local out = { title = st.name or "Casting", icon = db.targetCastIcon and st.icon or nil,
-                  hold = db.targetCastHold or 1, noBurst = true }
+    local out = {
+        title = st.name or "Casting",
+        icon = db.targetCastIcon and st.icon or nil,
+        hold = db.targetCastHold or 1,
+        noBurst = true,
+    }
     if st.ended then
         if st.how == "done" then
             out.frac, out.color, out.labelColor = 1, c.done, c.done
@@ -156,7 +174,7 @@ end
 
 -- Edit mode's sample: an enemy's Fireball that goes off, a Frostbolt that's interrupted,
 -- then a channel you can't interrupt.
-local SAMPLE_FIRE  = "Interface\\Icons\\Spell_Fire_FlameBolt"
+local SAMPLE_FIRE = "Interface\\Icons\\Spell_Fire_FlameBolt"
 local SAMPLE_FROST = "Interface\\Icons\\Spell_Frost_FrostBolt02"
 local SAMPLE_DRAIN = "Interface\\Icons\\Spell_Shadow_LifeDrain02"
 
@@ -166,11 +184,25 @@ local targetCastRing = CreateLiveRing({
         local c = TC.cast
         if not c then return nil end
         if c.endedAt then
-            if now - c.endedAt > 0.1 then cast = nil return nil end -- shown once; the ring holds it
-            return State({ name = c.name, icon = c.icon, channel = c.channel, ended = true, how = c.how,
-                           endedAt = c.endedAt, lost = c.lost, frac = c.lost or 1 })
+            if now - c.endedAt > 0.1 then
+                cast = nil
+                return nil
+            end -- shown once; the ring holds it
+            return State({
+                name = c.name,
+                icon = c.icon,
+                channel = c.channel,
+                ended = true,
+                how = c.how,
+                endedAt = c.endedAt,
+                lost = c.lost,
+                frac = c.lost or 1,
+            })
         end
-        if not Watching() then cast = nil return nil end
+        if not Watching() then
+            cast = nil
+            return nil
+        end
         -- Keep up with the game's timing (pushback, channel updates) while it's readable.
         local name, _, s, f, shielded = Info(c.channel)
         if s then
@@ -181,14 +213,26 @@ local targetCastRing = CreateLiveRing({
         if shielded ~= nil then c.shielded = shielded and true or false end
         -- Ran out with no event (say the target went out of range): it went off.
         -- (A hidden name still means it's casting, so ask the game directly.)
-        if c.finish and now > c.finish + 0.3 and not name
-            and not SafeCall(c.channel and UnitChannelInfo or UnitCastingInfo, UNIT) then
+        if
+            c.finish
+            and now > c.finish + 0.3
+            and not name
+            and not SafeCall(c.channel and UnitChannelInfo or UnitCastingInfo, UNIT)
+        then
             Finish("done")
             return nil
         end
         local frac, left = Progress(now)
-        local st = State({ name = c.name, icon = c.icon, channel = c.channel, shielded = c.shielded, caster = c.caster,
-                           frac = frac, left = left or 0, guessed = frac and not c.real })
+        local st = State({
+            name = c.name,
+            icon = c.icon,
+            channel = c.channel,
+            shielded = c.shielded,
+            caster = c.caster,
+            frac = frac,
+            left = left or 0,
+            guessed = frac and not c.real,
+        })
         if not frac then
             -- No timing we can read: the cast's duration object, in order of preference:
             -- its progress as a plain number; the ring's segments gated by curves (decorate
@@ -230,23 +274,48 @@ local targetCastRing = CreateLiveRing({
             return State({ name = "Fireball", icon = SAMPLE_FIRE, caster = who, frac = cycle / 2.5, left = 2.5 - cycle })
         end
         if cycle < 3.2 then
-            return State({ name = "Fireball", icon = SAMPLE_FIRE, ended = true, how = "done", endedAt = GetTime() - (cycle - 2.5) })
+            return State({
+                name = "Fireball",
+                icon = SAMPLE_FIRE,
+                ended = true,
+                how = "done",
+                endedAt = GetTime() - (cycle - 2.5),
+            })
         end
         if cycle < 4.6 then
             local f = (cycle - 3.2) / 2.5
             return State({ name = "Frostbolt", icon = SAMPLE_FROST, caster = who, frac = f, left = 2.5 - (cycle - 3.2) })
         end
         if cycle < 5.4 then
-            return State({ name = "Frostbolt", icon = SAMPLE_FROST, ended = true, how = "interrupted",
-                           endedAt = GetTime() - (cycle - 4.6), lost = 0.56 })
+            return State({
+                name = "Frostbolt",
+                icon = SAMPLE_FROST,
+                ended = true,
+                how = "interrupted",
+                endedAt = GetTime() - (cycle - 4.6),
+                lost = 0.56,
+            })
         end
         if cycle < 9.4 then
             local f = (cycle - 5.4) / 4
-            return State({ name = "Drain Life", icon = SAMPLE_DRAIN, caster = who, channel = true, shielded = true,
-                           frac = f, left = 4 - (cycle - 5.4) })
+            return State({
+                name = "Drain Life",
+                icon = SAMPLE_DRAIN,
+                caster = who,
+                channel = true,
+                shielded = true,
+                frac = f,
+                left = 4 - (cycle - 5.4),
+            })
         end
-        return State({ name = "Drain Life", icon = SAMPLE_DRAIN, channel = true, ended = true, how = "done",
-                       endedAt = GetTime() - (cycle - 9.4) })
+        return State({
+            name = "Drain Life",
+            icon = SAMPLE_DRAIN,
+            channel = true,
+            ended = true,
+            how = "done",
+            endedAt = GetTime() - (cycle - 9.4),
+        })
     end,
     decorate = function(st, frame, geom)
         if st and st.timerNumbers and geom.R > 0 and ShowNumbers(st.timerNumbers, frame, geom) then return end
@@ -262,10 +331,19 @@ local function AlreadyFollowing(castID)
     return TC.cast and not TC.cast.endedAt and castID and TC.cast.castID == castID
 end
 
-local SPELLCAST_EVENTS = { "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_SUCCEEDED",
-    "UNIT_SPELLCAST_INTERRUPTED", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_DELAYED",
-    "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_STOP", "UNIT_SPELLCAST_CHANNEL_UPDATE",
-    "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" }
+local SPELLCAST_EVENTS = {
+    "UNIT_SPELLCAST_START",
+    "UNIT_SPELLCAST_STOP",
+    "UNIT_SPELLCAST_SUCCEEDED",
+    "UNIT_SPELLCAST_INTERRUPTED",
+    "UNIT_SPELLCAST_FAILED",
+    "UNIT_SPELLCAST_DELAYED",
+    "UNIT_SPELLCAST_CHANNEL_START",
+    "UNIT_SPELLCAST_CHANNEL_STOP",
+    "UNIT_SPELLCAST_CHANNEL_UPDATE",
+    "UNIT_SPELLCAST_INTERRUPTIBLE",
+    "UNIT_SPELLCAST_NOT_INTERRUPTIBLE",
+}
 
 local function OnEvent(event, unit, castID, spellID)
     if not CircletDB then return end
@@ -282,7 +360,9 @@ local function OnEvent(event, unit, castID, spellID)
     elseif event == "UNIT_SPELLCAST_DELAYED" or event == "UNIT_SPELLCAST_CHANNEL_UPDATE" then
         if TC.cast and not TC.cast.endedAt then
             local _, _, s, f = Info(TC.cast.channel)
-            if s then TC.cast.start, TC.cast.finish, TC.cast.real = s, f, true end
+            if s then
+                TC.cast.start, TC.cast.finish, TC.cast.real = s, f, true
+            end
             -- The game's timer (if it's showing) needs the updated duration.
             if TC.cast.durObj then
                 TC.cast.durObj = DurationObject(TC.cast.channel) or TC.cast.durObj
@@ -328,17 +408,30 @@ end
 local probeTexture -- for checking the ring texture loads (made on first use)
 
 local function TargetCastDebug()
-    ns.Print("Target cast debug" .. (InCombatLockdown() and " (in combat)" or " (out of combat)")
-        .. ": target " .. (Yes(UnitExists, UNIT) and Show(SafeCall(UnitName, UNIT)) or "none"))
-    for _, which in ipairs({ { "Casting", UnitCastingInfo, { 1, 4, 5, 8, 9 } }, { "Channel", UnitChannelInfo, { 1, 4, 5, 7, 8 } } }) do
+    ns.Print(
+        "Target cast debug"
+            .. (InCombatLockdown() and " (in combat)" or " (out of combat)")
+            .. ": target "
+            .. (Yes(UnitExists, UNIT) and Show(SafeCall(UnitName, UNIT)) or "none")
+    )
+    for _, which in ipairs({
+        { "Casting", UnitCastingInfo, { 1, 4, 5, 8, 9 } },
+        { "Channel", UnitChannelInfo, { 1, 4, 5, 7, 8 } },
+    }) do
         local r = { SafeCall(which[2], UNIT) }
         local labels = { "name", "start", "end", "notInterruptible", "spellID" }
         local parts = {}
-        for i, idx in ipairs(which[3]) do table.insert(parts, labels[i] .. "=" .. Show(r[idx])) end
+        for i, idx in ipairs(which[3]) do
+            table.insert(parts, labels[i] .. "=" .. Show(r[idx]))
+        end
         ns.Print(which[1] .. ": " .. table.concat(parts, "  "))
     end
-    ns.Print("UnitCastingDuration " .. (_G.UnitCastingDuration and "available" or "missing")
-        .. ", UnitChannelDuration " .. (_G.UnitChannelDuration and "available" or "missing"))
+    ns.Print(
+        "UnitCastingDuration "
+            .. (_G.UnitCastingDuration and "available" or "missing")
+            .. ", UnitChannelDuration "
+            .. (_G.UnitChannelDuration and "available" or "missing")
+    )
     -- The game's timer, used when the times are hidden: how it's drawn, and whether the game
     -- can load the ring texture it sweeps with (if not, it falls back to a plain pie).
     local probe = RingTexture(0.8)
@@ -348,16 +441,33 @@ local function TargetCastDebug()
     local fileID = test.GetTextureFileID and test:GetTextureFileID()
     test:SetTexture(nil)
     local cdProbe = TC.timer and TC.timer.cd
-    ns.Print("Timer: " .. (TC.timer and ((TC.timer:IsShown() and "showing" or "hidden") .. ", " .. tostring(TC.timer.mode)
-            .. ", texture " .. tostring(TC.timer.texPath)) or "not made yet (no hidden-time cast seen)")
-        .. "  |  Ring80 loads: " .. tostring(loaded) .. " (file ID " .. tostring(fileID) .. ")"
-        .. "  |  SetSwipeTexture " .. ((cdProbe and cdProbe.SetSwipeTexture) and "yes" or (cdProbe and "no" or "?"))
-        .. ", SetCooldownFromDurationObject " .. ((cdProbe and cdProbe.SetCooldownFromDurationObject) and "yes"
-            or (cdProbe and "no" or "?")))
+    ns.Print(
+        "Timer: "
+            .. (TC.timer and ((TC.timer:IsShown() and "showing" or "hidden") .. ", " .. tostring(TC.timer.mode) .. ", texture " .. tostring(
+                TC.timer.texPath
+            )) or "not made yet (no hidden-time cast seen)")
+            .. "  |  Ring80 loads: "
+            .. tostring(loaded)
+            .. " (file ID "
+            .. tostring(fileID)
+            .. ")"
+            .. "  |  SetSwipeTexture "
+            .. ((cdProbe and cdProbe.SetSwipeTexture) and "yes" or (cdProbe and "no" or "?"))
+            .. ", SetCooldownFromDurationObject "
+            .. ((cdProbe and cdProbe.SetCooldownFromDurationObject) and "yes" or (cdProbe and "no" or "?"))
+    )
     local d = db.targetCastDiag
     if d then
-        ns.Print("Last timer (" .. tostring(d.at) .. "): " .. tostring(d.mode) .. ", started: " .. tostring(d.fed)
-            .. ", texture loads: " .. tostring(d.textureLoads))
+        ns.Print(
+            "Last timer ("
+                .. tostring(d.at)
+                .. "): "
+                .. tostring(d.mode)
+                .. ", started: "
+                .. tostring(d.fed)
+                .. ", texture loads: "
+                .. tostring(d.textureLoads)
+        )
         ns.Print("  tried: " .. tostring(d.attempts))
         ns.Print("  duration: " .. tostring(d.durationMethods))
         ns.Print("  C_DurationUtil: " .. tostring(d.durationUtil) .. "  |  cooldown: " .. tostring(d.cooldownMethods))
@@ -368,10 +478,20 @@ local function TargetCastDebug()
         return
     end
     local how = c.endedAt and ("ended: " .. tostring(c.how))
-        or (c.real and "game's times") or (c.start and "own time (learned or listed)")
-        or (c.durObj and "game's timer display") or "no timing (ring full)"
-    ns.Print("Ring: " .. tostring(c.name) .. " (spellID " .. tostring(c.spellID) .. ", "
-        .. (c.channel and "channel" or "cast") .. ") - " .. how)
+        or (c.real and "game's times")
+        or (c.start and "own time (learned or listed)")
+        or (c.durObj and "game's timer display")
+        or "no timing (ring full)"
+    ns.Print(
+        "Ring: "
+            .. tostring(c.name)
+            .. " (spellID "
+            .. tostring(c.spellID)
+            .. ", "
+            .. (c.channel and "channel" or "cast")
+            .. ") - "
+            .. how
+    )
 end
 ns.RegisterCommand({ "targetdebug" }, TargetCastDebug) -- what the game hides about your target's cast
 

@@ -7,6 +7,7 @@ cut): to keep each piece of the band to its own slice of the ring, and as the fi
 
     python tools/make_mask_textures.py
 """
+
 import os, struct
 
 W, H = 1024, 8

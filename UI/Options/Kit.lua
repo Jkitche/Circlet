@@ -29,7 +29,11 @@ local TOGGLE_WIDTH = 1.5
 
 local function Toggle(order, key, name, desc, onSet)
     return {
-        type = "toggle", order = order, name = name, desc = desc, width = TOGGLE_WIDTH,
+        type = "toggle",
+        order = order,
+        name = name,
+        desc = desc,
+        width = TOGGLE_WIDTH,
         get = function() return db[key] end,
         set = function(_, value)
             db[key] = value
@@ -40,19 +44,34 @@ end
 
 local function Range(order, key, name, min, max, step, desc, extra)
     local option = {
-        type = "range", order = order, name = name, desc = desc, width = 1.55,
-        min = min, max = max, step = step, bigStep = step,
+        type = "range",
+        order = order,
+        name = name,
+        desc = desc,
+        width = 1.55,
+        min = min,
+        max = max,
+        step = step,
+        bigStep = step,
         get = function() return db[key] end,
         set = function(_, value) db[key] = value end,
     }
-    for k, v in pairs(extra or {}) do option[k] = v end
+    for k, v in pairs(extra or {}) do
+        option[k] = v
+    end
     return option
 end
 
 local function Select(order, key, name, values, sorting, desc)
     return {
-        type = "select", order = order, name = name, desc = desc, style = "dropdown", width = 1.2,
-        values = values, sorting = sorting,
+        type = "select",
+        order = order,
+        name = name,
+        desc = desc,
+        style = "dropdown",
+        width = 1.2,
+        values = values,
+        sorting = sorting,
         get = function() return db[key] end,
         set = function(_, value) db[key] = value end,
     }
@@ -62,7 +81,12 @@ end
 -- Reset replaces the tables).
 local function Color(order, group, name, label, desc, extra)
     local option = {
-        type = "color", order = order, name = label, desc = desc, hasAlpha = false, width = 1.1,
+        type = "color",
+        order = order,
+        name = label,
+        desc = desc,
+        hasAlpha = false,
+        width = 1.1,
         get = function()
             local c = db[group][name]
             return c.r, c.g, c.b
@@ -72,7 +96,9 @@ local function Color(order, group, name, label, desc, extra)
             c.r, c.g, c.b = r, g, b
         end,
     }
-    for k, v in pairs(extra or {}) do option[k] = v end
+    for k, v in pairs(extra or {}) do
+        option[k] = v
+    end
     return option
 end
 
@@ -80,9 +106,7 @@ local function Execute(order, name, func, desc, width)
     return { type = "execute", order = order, name = name, desc = desc, func = func, width = width or 1.1 }
 end
 
-local function Box(order, name, args)
-    return { type = "group", inline = true, order = order, name = name, args = args }
-end
+local function Box(order, name, args) return { type = "group", inline = true, order = order, name = name, args = args } end
 
 local function Spacer(order)
     return { type = "description", order = order, name = " ", fontSize = "small", width = "full" }
@@ -101,7 +125,9 @@ local function ResetRing(key)
         end
     end
     -- Text sizes (not in DEFAULTS: unset is 100%).
-    for _, r in ipairs(ns.TextRoles(key) or {}) do db[key .. r.id .. "Size"] = nil end
+    for _, r in ipairs(ns.TextRoles(key) or {}) do
+        db[key .. r.id .. "Size"] = nil
+    end
     -- Per-ring overrides inside a group (pin1X, totem2Size, ...).
     for k in pairs(CircletDB) do
         if type(k) == "string" and k:match("^" .. key .. "%d+%u") then CircletDB[k] = nil end
@@ -119,7 +145,9 @@ local LOOK_FIELDS = { "Style", "Fill", "Shape", "Rotation", "Reverse", "Thicknes
 local function ApplyLookToAll(key)
     for _, def in ipairs(ns.RINGS) do
         if def.key ~= key then
-            for _, field in ipairs(LOOK_FIELDS) do db[def.key .. field] = db[key .. field] end
+            for _, field in ipairs(LOOK_FIELDS) do
+                db[def.key .. field] = db[key .. field]
+            end
         end
     end
     ns.RefreshOptions()
@@ -130,18 +158,28 @@ end
 local function TopRow(key, what, preview, previewDesc)
     return {
         edit = {
-            type = "execute", order = 1, width = 1.1,
+            type = "execute",
+            order = 1,
+            width = 1.1,
             name = function() return ns.FindRing(key).edit.get() and "|cff33ff33Finish editing|r" or "Edit mode" end,
-            desc = "Keep the " .. what .. " on screen cycling through sample changes, so color, size and other "
+            desc = "Keep the "
+                .. what
+                .. " on screen cycling through sample changes, so color, size and other "
                 .. "settings show live as you change them here, and drag the ring to move it "
-                .. "(right-click it to reset its position). Also /circ edit " .. key .. ".",
+                .. "(right-click it to reset its position). Also /circ edit "
+                .. key
+                .. ".",
             func = function() ns.ToggleRingEditing(key) end,
         },
         preview = Execute(2, "Preview", preview, previewDesc),
         resetRing = {
-            type = "execute", order = 3, width = 1.1, name = "Reset this ring",
+            type = "execute",
+            order = 3,
+            width = 1.1,
+            name = "Reset this ring",
             desc = "Put this ring's colors, look, options and position back to their defaults.",
-            confirm = true, confirmText = "Reset every setting of the " .. what .. " to its default?",
+            confirm = true,
+            confirmText = "Reset every setting of the " .. what .. " to its default?",
             func = function() ResetRing(key) end,
         },
     }
@@ -151,54 +189,125 @@ end
 -- RingTab puts it on the page right after.
 local function SizeBox(order, key, what, xTip)
     local look = Box(order, "Appearance", {
-        style     = Select(0.5, key .. "Style", "Ring style", ns.RING_STYLE_NAMES, ns.RING_STYLE_ORDER,
-            "Smooth: a solid band. Segmented: 24 notches with small gaps. Thin: a slim band around the edge."),
-        fill      = Select(0.52, key .. "Fill", "Fill", { solid = "Solid", gradient = "Gradient" }, { "solid", "gradient" },
-            "Solid: one flat color. Gradient: the color shades from darker at the ring's start to full at its end."),
-        shape     = Select(0.55, key .. "Shape", "Shape", ns.RING_SHAPE_NAMES, ns.RING_SHAPE_ORDER,
+        style = Select(
+            0.5,
+            key .. "Style",
+            "Ring style",
+            ns.RING_STYLE_NAMES,
+            ns.RING_STYLE_ORDER,
+            "Smooth: a solid band. Segmented: 24 notches with small gaps. Thin: a slim band around the edge."
+        ),
+        fill = Select(
+            0.52,
+            key .. "Fill",
+            "Fill",
+            { solid = "Solid", gradient = "Gradient" },
+            { "solid", "gradient" },
+            "Solid: one flat color. Gradient: the color shades from darker at the ring's start to full at its end."
+        ),
+        shape = Select(
+            0.55,
+            key .. "Shape",
+            "Shape",
+            ns.RING_SHAPE_NAMES,
+            ns.RING_SHAPE_ORDER,
             "Ring: a full circle. Arc: three quarters of a circle. Half arc: half a circle. "
-            .. "The ring fills clockwise from one end to the other, or counter-clockwise with Fill backwards."),
-        rotation  = Range(0.58, key .. "Rotation", "Rotation (degrees)", 0, 359, 1,
-            "Turn the " .. what .. " clockwise by this many degrees. At 0 a ring's fill starts at 12 o'clock "
-            .. "and an arc opens at the bottom; at the default, 180, the fill starts at 6 o'clock and an arc "
-            .. "opens at the top. Drag snaps to 15 degrees; type in the box under the slider for any value.",
-            { bigStep = 15, get = function() return (tonumber(db[key .. "Rotation"]) or 0) % 360 end }),
-        reverse   = {
-            type = "toggle", order = 0.59, width = 0.75, name = "Fill backwards",
-            desc = "Fill the " .. what .. " counter-clockwise, starting from the other end. The gradient "
+                .. "The ring fills clockwise from one end to the other, or counter-clockwise with Fill backwards."
+        ),
+        rotation = Range(
+            0.58,
+            key .. "Rotation",
+            "Rotation (degrees)",
+            0,
+            359,
+            1,
+            "Turn the "
+                .. what
+                .. " clockwise by this many degrees. At 0 a ring's fill starts at 12 o'clock "
+                .. "and an arc opens at the bottom; at the default, 180, the fill starts at 6 o'clock and an arc "
+                .. "opens at the top. Drag snaps to 15 degrees; type in the box under the slider for any value.",
+            { bigStep = 15, get = function() return (tonumber(db[key .. "Rotation"]) or 0) % 360 end }
+        ),
+        reverse = {
+            type = "toggle",
+            order = 0.59,
+            width = 0.75,
+            name = "Fill backwards",
+            desc = "Fill the "
+                .. what
+                .. " counter-clockwise, starting from the other end. The gradient "
                 .. "and segments follow the fill.",
             get = function() return db[key .. "Reverse"] end,
             set = function(_, v) db[key .. "Reverse"] = v end,
         },
-        styleGap  = { type = "description", order = 0.6, name = "", width = "full" },
-        size      = Range(1, key .. "Size", "Ring size", 60, 300, 10, "Diameter of the " .. what .. "."),
+        styleGap = { type = "description", order = 0.6, name = "", width = "full" },
+        size = Range(1, key .. "Size", "Ring size", 60, 300, 10, "Diameter of the " .. what .. "."),
         thickness = Range(2, key .. "Thickness", "Ring thickness", 4, 40, 2, "Width of the " .. what .. "."),
-        border    = Range(2.5, key .. "Border", "Black border", 0, 6, 1,
-            "A black outline around the " .. what .. " and its icon, so they stand out against bright "
-            .. "backgrounds. With the segmented style each notch gets its own outline. 0 turns it off."),
-        opacity   = Range(3, key .. "Opacity", "Opacity", 10, 100, 5,
-            "How see-through the " .. what .. " is, including its text and icon."),
-        gradient  = Range(3.5, key .. "Gradient", "Gradient strength", 0, 100, 5,
+        border = Range(
+            2.5,
+            key .. "Border",
+            "Black border",
+            0,
+            6,
+            1,
+            "A black outline around the "
+                .. what
+                .. " and its icon, so they stand out against bright "
+                .. "backgrounds. With the segmented style each notch gets its own outline. 0 turns it off."
+        ),
+        opacity = Range(
+            3,
+            key .. "Opacity",
+            "Opacity",
+            10,
+            100,
+            5,
+            "How see-through the " .. what .. " is, including its text and icon."
+        ),
+        gradient = Range(
+            3.5,
+            key .. "Gradient",
+            "Gradient strength",
+            0,
+            100,
+            5,
             "How much darker the start of the " .. what .. " is than its end, with the gradient fill.",
-            { hidden = function() return db[key .. "Fill"] ~= "gradient" end }),
-        hold      = Range(4, key .. "Hold", "Stay on screen (seconds)", 1, 10, 1,
-            "How long the ring stays after a change."),
-        applyAll  = {
-            type = "execute", order = 9, width = 1.6, name = "Apply this look to all rings",
+            { hidden = function() return db[key .. "Fill"] ~= "gradient" end }
+        ),
+        hold = Range(4, key .. "Hold", "Stay on screen (seconds)", 1, 10, 1, "How long the ring stays after a change."),
+        applyAll = {
+            type = "execute",
+            order = 9,
+            width = 1.6,
+            name = "Apply this look to all rings",
             desc = "Copy this ring's style, shape, rotation, fill direction, thickness, border, opacity and fill to every other ring. "
                 .. "Sizes, colors and positions stay as they are.",
-            confirm = true, confirmText = "Give every ring the " .. what .. "'s style, shape, rotation, fill direction, "
+            confirm = true,
+            confirmText = "Give every ring the "
+                .. what
+                .. "'s style, shape, rotation, fill direction, "
                 .. "thickness, border, opacity and fill?",
             func = function() ApplyLookToAll(key) end,
         },
     })
     look._key = key
     look._position = Box(order + 0.5, "Position", {
-        x         = Range(5, key .. "X", "Horizontal position", -1600, 1600, 10, xTip),
-        fromTop   = Range(6, key .. "FromTop", "Distance from top", 0, 1400, 10,
-            "Gap between the top of the screen and the top of the ring."),
-        reset     = Execute(7, "Reset position", function() ns.ResetPosition(key) end,
-            "Move only the " .. what .. " back to its default spot. Also /circ resetpos " .. key .. "."),
+        x = Range(5, key .. "X", "Horizontal position", -1600, 1600, 10, xTip),
+        fromTop = Range(
+            6,
+            key .. "FromTop",
+            "Distance from top",
+            0,
+            1400,
+            10,
+            "Gap between the top of the screen and the top of the ring."
+        ),
+        reset = Execute(
+            7,
+            "Reset position",
+            function() ns.ResetPosition(key) end,
+            "Move only the " .. what .. " back to its default spot. Also /circ resetpos " .. key .. "."
+        ),
     })
     return look
 end
@@ -224,9 +333,16 @@ local function RingTab(order, name, header, intro, args)
             local box = {}
             for i, r in ipairs(roles) do
                 local k = key .. r.id .. "Size"
-                box[r.id] = Range(i, k, r.name .. " (%)", 50, 200, 5,
+                box[r.id] = Range(
+                    i,
+                    k,
+                    r.name .. " (%)",
+                    50,
+                    200,
+                    5,
                     r.desc .. " As a percentage of its usual size, which follows the ring's.",
-                    { get = function() return tonumber(db[k]) or 100 end })
+                    { get = function() return tonumber(db[k]) or 100 end }
+                )
             end
             args.text = Box((args.size.order or 4) + 0.3, "Text sizes", box)
         end
@@ -252,21 +368,35 @@ local function RingTab(order, name, header, intro, args)
             args.iconBox = iconBox
             box = iconBox
             box.args.iconBg = {
-                type = "toggle", order = 45, width = TOGGLE_WIDTH, name = "Icon as background",
+                type = "toggle",
+                order = 45,
+                width = TOGGLE_WIDTH,
+                name = "Icon as background",
                 desc = "Show the icon filling the middle of the ring, behind its text, instead of as a badge "
-                    .. "on its top edge." .. (ib.note and (" " .. ib.note) or ""),
+                    .. "on its top edge."
+                    .. (ib.note and (" " .. ib.note) or ""),
                 get = function() return db[key .. "IconBg"] end,
                 set = function(_, v) db[key .. "IconBg"] = v end,
                 disabled = ib.disabled,
             }
-            box.args.iconBgAlpha = Range(46, key .. "IconBgAlpha", "Background icon opacity", 10, 100, 5,
+            box.args.iconBgAlpha = Range(
+                46,
+                key .. "IconBgAlpha",
+                "Background icon opacity",
+                10,
+                100,
+                5,
                 "How strongly the background icon shows. Lower keeps the ring's text easier to read.",
-                { disabled = function() return not db[key .. "IconBg"] or (ib.disabled and ib.disabled()) end })
+                { disabled = function() return not db[key .. "IconBg"] or (ib.disabled and ib.disabled()) end }
+            )
         end
         box = args.general or args.size
         if gameBar then
             box.args.hideDefault = {
-                type = "toggle", order = 49, width = "full", name = "Hide " .. gameBar,
+                type = "toggle",
+                order = 49,
+                width = "full",
+                name = "Hide " .. gameBar,
                 desc = "Hide " .. gameBar .. ", since this ring shows the same thing. Turn it off to bring it back.",
                 get = function() return db[key .. "HideDefault"] end,
                 set = function(_, v) db[key .. "HideDefault"] = v end,
@@ -274,11 +404,17 @@ local function RingTab(order, name, header, intro, args)
         end
         if not def.alwaysInCombat then
             box.args.combat = {
-                type = "toggle", order = 50, width = TOGGLE_WIDTH, name = "Show in combat",
+                type = "toggle",
+                order = 50,
+                width = TOGGLE_WIDTH,
+                name = "Show in combat",
                 desc = "Keep this ring on screen while you're in combat. Off: it fades out when combat starts "
                     .. "and comes back when it ends.",
                 get = function() return db[key .. "Combat"] ~= false end,
-                set = function(_, v) db[key .. "Combat"] = v; ns.ApplyAllOpacity() end,
+                set = function(_, v)
+                    db[key .. "Combat"] = v
+                    ns.ApplyAllOpacity()
+                end,
             }
         end
     end
@@ -286,14 +422,26 @@ local function RingTab(order, name, header, intro, args)
 end
 
 local function MergeTop(top, rest)
-    for k, v in pairs(top) do rest[k] = v end
+    for k, v in pairs(top) do
+        rest[k] = v
+    end
     return rest
 end
 
 -- Shared with the files loaded after this one.
 ns.O = {
-    Toggle = Toggle, Range = Range, Select = Select, Color = Color, Execute = Execute, Box = Box,
-    Spacer = Spacer, Intro = Intro, TopRow = TopRow, SizeBox = SizeBox, RingTab = RingTab, MergeTop = MergeTop,
+    Toggle = Toggle,
+    Range = Range,
+    Select = Select,
+    Color = Color,
+    Execute = Execute,
+    Box = Box,
+    Spacer = Spacer,
+    Intro = Intro,
+    TopRow = TopRow,
+    SizeBox = SizeBox,
+    RingTab = RingTab,
+    MergeTop = MergeTop,
 }
 ns.ResetDefaults = ResetDefaults
 ns.ResetRing = ResetRing

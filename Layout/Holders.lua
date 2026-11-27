@@ -67,7 +67,9 @@ holderFader:RegisterEvent("PLAYER_REGEN_ENABLED")
 holderFader:SetScript("OnEvent", function(_, event)
     inCombat = event == "PLAYER_REGEN_DISABLED"
     if not CircletDB then return end
-    for key in pairs(ringHolders) do ApplyOpacity(key) end
+    for key in pairs(ringHolders) do
+        ApplyOpacity(key)
+    end
 end)
 
 -- Shared with the files loaded after this one.
@@ -79,4 +81,8 @@ ns.SetRingDim = function(key, mult)
     dim[key] = mult ~= 1 and mult or nil
     ApplyOpacity(key)
 end
-ns.ApplyAllOpacity = function() for key in pairs(ringHolders) do ApplyOpacity(key) end end
+ns.ApplyAllOpacity = function()
+    for key in pairs(ringHolders) do
+        ApplyOpacity(key)
+    end
+end

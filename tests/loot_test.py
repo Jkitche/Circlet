@@ -1,4 +1,5 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -11,10 +12,14 @@ function RollOnLoot(id, rollType) end
 hooksecurefunc = hooksecurefunc or function(name, fn) local orig = _G[name]; _G[name] = function(...) orig(...) fn(...) end end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
 # Remember every texture and the frame it's on, to find the dice badge.
-lua.execute('TEXS = {}; local ct = RegionMethods.CreateTexture; RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(TEXS, t); return t end')
+lua.execute(
+    'TEXS = {}; local ct = RegionMethods.CreateTexture; RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(TEXS, t); return t end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)
@@ -59,4 +64,5 @@ End(8); CircletDB.lootIconBg = false; Advance(2)
 Slash("loot"); Advance(1); S("preview")
 Advance(8); S("preview, rolled")
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -19,8 +19,8 @@ local db, CreateLiveRing, SafeCall, Clean = ns.db, ns.CreateLiveRing, ns.SafeCal
 
 local HEARTH_SPELLS = { [8690] = true, [556] = true } -- Hearthstone, Astral Recall
 local DEFAULT_CAST = 10 -- seconds, when the cast's own timing can't be read
-local DONE_SHOW = 2.2   -- seconds "Home!" stays up
-local LOST_SHOW = 1.5   -- seconds an interrupted cast stays up
+local DONE_SHOW = 2.2 -- seconds "Home!" stays up
+local LOST_SHOW = 1.5 -- seconds an interrupted cast stays up
 
 local hearthNames -- built on first use, once spell names can be read
 local function IsHearth(spellID)
@@ -31,7 +31,9 @@ local function IsHearth(spellID)
         local names, any = {}, false
         for id in pairs(HEARTH_SPELLS) do
             local n = ns.SpellName(id)
-            if n then names[n], any = true, true end
+            if n then
+                names[n], any = true, true
+            end
         end
         if not any then return false end
         hearthNames = names
@@ -56,18 +58,22 @@ local function Begin(spellID, guid)
     if type(startMS) == "number" and type(endMS) == "number" and endMS > startMS then
         start, finish = startMS / 1000, endMS / 1000
     end
-    cast = { guid = Clean(guid), spellID = spellID, icon = ns.SpellIcon(spellID), start = start, finish = finish,
-             name = ns.SpellName(spellID),
-             home = BindLocation() }
+    cast = {
+        guid = Clean(guid),
+        spellID = spellID,
+        icon = ns.SpellIcon(spellID),
+        start = start,
+        finish = finish,
+        name = ns.SpellName(spellID),
+        home = BindLocation(),
+    }
 end
 
 local function Finish(how)
     if not cast or cast.endedAt then return end
     local now = GetTime()
     cast.how, cast.endedAt = how, now
-    if how ~= "done" then
-        cast.lost = math.max(0, math.min(1, (now - cast.start) / (cast.finish - cast.start)))
-    end
+    if how ~= "done" then cast.lost = math.max(0, math.min(1, (now - cast.start) / (cast.finish - cast.start))) end
 end
 
 local function Ours(guid)
@@ -80,8 +86,16 @@ end
 -- doneAt: GetTime() it went off (for the icon's burst; held still from frame to frame).
 local function State(phase, frac, left, age, icon, home, doneAt, name)
     local c = db.hearthColors
-    local st = { hearth = true, phase = phase, frac = frac, age = age, icon = icon, hold = 0.6,
-                 title = name or "Hearthstone", color = c.fill }
+    local st = {
+        hearth = true,
+        phase = phase,
+        frac = frac,
+        age = age,
+        icon = icon,
+        hold = 0.6,
+        title = name or "Hearthstone",
+        color = c.fill,
+    }
     if phase == "cast" then
         st.value = string.format("%.1fs", left)
         st.label = home or "Going home"
@@ -116,7 +130,10 @@ local hearthRing = CreateLiveRing({
         end
         local span = h.finish - h.start
         local frac = math.max(0, math.min(1, (now - h.start) / span))
-        if now > h.finish + 3 then cast = nil return nil end -- never heard how it ended
+        if now > h.finish + 3 then
+            cast = nil
+            return nil
+        end -- never heard how it ended
         return State("cast", frac, math.max(0, h.finish - now), nil, h.icon, h.home, nil, h.name)
     end,
     sample = function(t)
@@ -160,21 +177,36 @@ local function BuildFx(frame)
     fx.core = Tex(frame, "ARTWORK", 2, true)
     fx.wave = Tex(frame, "OVERLAY", 2, true)
     for i = 1, ARMS * PER_ARM do
-        fx.motes[i] = { tex = Tex(frame, "ARTWORK", 3), arm = (i - 1) % ARMS, k = math.floor((i - 1) / ARMS) / PER_ARM,
-                        size = 0.7 + (i * 0.53) % 0.6, wobble = (i * 0.37) % 1 }
+        fx.motes[i] = {
+            tex = Tex(frame, "ARTWORK", 3),
+            arm = (i - 1) % ARMS,
+            k = math.floor((i - 1) / ARMS) / PER_ARM,
+            size = 0.7 + (i * 0.53) % 0.6,
+            wobble = (i * 0.37) % 1,
+        }
     end
     for c = 1, COMETS do
         local comet = { offset = (c - 1) / COMETS, parts = {} }
-        for j = 1, TAIL do comet.parts[j] = Tex(frame, "OVERLAY", 3) end
+        for j = 1, TAIL do
+            comet.parts[j] = Tex(frame, "OVERLAY", 3)
+        end
         fx.comets[c] = comet
     end
 end
 
 local function HideFx()
     if not fx then return end
-    fx.glow:Hide(); fx.core:Hide(); fx.wave:Hide()
-    for _, m in ipairs(fx.motes) do m.tex:Hide() end
-    for _, c in ipairs(fx.comets) do for _, p in ipairs(c.parts) do p:Hide() end end
+    fx.glow:Hide()
+    fx.core:Hide()
+    fx.wave:Hide()
+    for _, m in ipairs(fx.motes) do
+        m.tex:Hide()
+    end
+    for _, c in ipairs(fx.comets) do
+        for _, p in ipairs(c.parts) do
+            p:Hide()
+        end
+    end
     fx.last = nil
 end
 
@@ -201,8 +233,8 @@ local function DrawHearthFx(st, frame, geom)
     local charge, fade, collapse, scatter = st.frac or 0, 1, 0, 0
     if phase == "done" then
         charge = 1
-        collapse = math.min(1, age / 0.3)          -- motes rush into the heart...
-        scatter = math.max(0, (age - 0.3) / 1.1)   -- ...then fly apart
+        collapse = math.min(1, age / 0.3) -- motes rush into the heart...
+        scatter = math.max(0, (age - 0.3) / 1.1) -- ...then fly apart
         fade = 1 - math.min(1, math.max(0, (age - 0.3) / 1.4))
     elseif phase == "lost" then
         fade = 1 - math.min(1, age / 0.8)
@@ -221,7 +253,7 @@ local function DrawHearthFx(st, frame, geom)
     local coreSize, coreAlpha = ri * (0.35 + 0.35 * charge) * breathe, (0.35 + 0.5 * charge) * fade
     if phase == "done" then
         local f = math.min(1, age / 0.45)
-        coreSize = ri * (0.7 + 2.0 * math.sin(math.pi * math.min(1, f)) ) -- swell and settle
+        coreSize = ri * (0.7 + 2.0 * math.sin(math.pi * math.min(1, f))) -- swell and settle
         coreAlpha = 1 - math.min(1, math.max(0, (age - 0.2) / 0.8))
     end
     Put(fx.core, frame, 0, 0, coreSize, Mix(c.r, 1, 0.6), Mix(c.g, 1, 0.6), Mix(c.b, 1, 0.6), coreAlpha)
@@ -260,9 +292,17 @@ local function DrawHearthFx(st, frame, geom)
             local k = 1 - (j - 1) / TAIL
             local s = geom.T * (0.9 + 1.1 * charge) * (0.4 + 0.6 * k)
             local cr, cg, cb = MixC(c, VIOLET, (j - 1) / TAIL)
-            Put(p, frame, math.sin(a) * geom.R, math.cos(a) * geom.R, s,
-                Mix(cr, 1, 0.5 * k), Mix(cg, 1, 0.5 * k), Mix(cb, 1, 0.5 * k),
-                k * (0.5 + 0.5 * charge) * (phase == "done" and (1 - collapse) or fade))
+            Put(
+                p,
+                frame,
+                math.sin(a) * geom.R,
+                math.cos(a) * geom.R,
+                s,
+                Mix(cr, 1, 0.5 * k),
+                Mix(cg, 1, 0.5 * k),
+                Mix(cb, 1, 0.5 * k),
+                k * (0.5 + 0.5 * charge) * (phase == "done" and (1 - collapse) or fade)
+            )
         end
     end
 end
@@ -272,8 +312,13 @@ ns.HearthFxParts = function() return fx end -- for the tests
 ---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
-ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_STOP:player", "UNIT_SPELLCAST_SUCCEEDED:player",
-            "UNIT_SPELLCAST_INTERRUPTED:player", "UNIT_SPELLCAST_FAILED:player" }, function(event, _, guid, spellID)
+ns.Listen({
+    "UNIT_SPELLCAST_START:player",
+    "UNIT_SPELLCAST_STOP:player",
+    "UNIT_SPELLCAST_SUCCEEDED:player",
+    "UNIT_SPELLCAST_INTERRUPTED:player",
+    "UNIT_SPELLCAST_FAILED:player",
+}, function(event, _, guid, spellID)
     if not CircletDB or not db.hearthEnabled then return end
     if event == "UNIT_SPELLCAST_START" then
         if IsHearth(spellID) then Begin(spellID, guid) end
@@ -294,51 +339,89 @@ ns.PreviewHearthRing = function() hearthRing.Preview(SAMPLE_CAST + DONE_SHOW + 0
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "hearth", name = "Hearthstone", order = 11.65, since = "1.4.0",
+    key = "hearth",
+    name = "Hearthstone",
+    order = 11.65,
+    since = "1.4.0",
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = hearthRing,
-    preview = ns.PreviewHearthRing, slash = { "hearth", "hs" }, help = "preview the hearthstone ring",
+    preview = ns.PreviewHearthRing,
+    slash = { "hearth", "hs" },
+    help = "preview the hearthstone ring",
     toggle = { "Hearthstone ring", "Casting your Hearthstone home, with a swirling portal." },
     defaults = {
         -- Hearthstone ring: in the cast ring's place (the cast ring leaves Hearthstones to it).
-        hearthEnabled   = true,
-        hearthFx        = true, -- the swirling portal
-        hearthSize      = 120,
+        hearthEnabled = true,
+        hearthFx = true, -- the swirling portal
+        hearthSize = 120,
         hearthThickness = 10,
-        hearthOpacity   = 100,
-        hearthX         = 0,
-        hearthFromTop   = 265,
-        hearthHold      = 0.6,
-        hearthStyle     = "smooth",
-        hearthBorder    = 2,
+        hearthOpacity = 100,
+        hearthX = 0,
+        hearthFromTop = 265,
+        hearthHold = 0.6,
+        hearthStyle = "smooth",
+        hearthBorder = 2,
         hearthColors = {
             fill = { r = 0.35, g = 0.60, b = 1.00 },
             home = { r = 0.55, g = 0.95, b = 1.00 },
         },
     },
-    page = { folder = "travel", order = 1.5, build = function(O)
+    page = {
+        folder = "travel",
+        order = 1.5,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.75, "Hearthstone", "Hearthstone Ring",
+            local tab = RingTab(
+                10.75,
+                "Hearthstone",
+                "Hearthstone Ring",
                 "While you cast your Hearthstone (or Astral Recall), the ring fills and counts down with "
-                .. "where you're bound to, then says Home! and bursts. The cast ring leaves these casts to it.",
-                MergeTop(TopRow("hearth", "hearthstone ring", ns.PreviewHearthRing,
-                    "Show a sample Hearthstone cast. Also /circ hearth."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "hearthEnabled", "Show hearthstone ring",
-                            "Show the ring while you cast your Hearthstone. Off: the cast ring shows it instead."),
-                        fx = Toggle(2, "hearthFx", "Swirling portal",
-                            "Spiral arms of arcane motes turn in the middle, comets race round the ring, and it "
-                            .. "collapses into a flash and a shockwave when you go home."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "hearthColors", "fill", "Casting", "Ring color while you cast."),
-                        home = Color(2, "hearthColors", "home", "Home", "Ring and label color when the cast goes off."),
-                    }),
-                    size = SizeBox(4, "hearth", "hearthstone ring",
-                        "Offset from the center of the screen. By default it sits where the cast ring does."),
-                }))
+                    .. "where you're bound to, then says Home! and bursts. The cast ring leaves these casts to it.",
+                MergeTop(
+                    TopRow(
+                        "hearth",
+                        "hearthstone ring",
+                        ns.PreviewHearthRing,
+                        "Show a sample Hearthstone cast. Also /circ hearth."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "hearthEnabled",
+                                "Show hearthstone ring",
+                                "Show the ring while you cast your Hearthstone. Off: the cast ring shows it instead."
+                            ),
+                            fx = Toggle(
+                                2,
+                                "hearthFx",
+                                "Swirling portal",
+                                "Spiral arms of arcane motes turn in the middle, comets race round the ring, and it "
+                                    .. "collapses into a flash and a shockwave when you go home."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "hearthColors", "fill", "Casting", "Ring color while you cast."),
+                            home = Color(
+                                2,
+                                "hearthColors",
+                                "home",
+                                "Home",
+                                "Ring and label color when the cast goes off."
+                            ),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "hearth",
+                            "hearthstone ring",
+                            "Offset from the center of the screen. By default it sits where the cast ring does."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the cast ends."
             return tab
-        end },
+        end,
+    },
 })

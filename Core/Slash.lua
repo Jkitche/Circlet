@@ -12,7 +12,9 @@ local Print = ns.Print
 -- Each ring's first slash name, for messages.
 local function RingNames()
     local names = {}
-    for _, def in ipairs(ns.RINGS) do table.insert(names, def.slash and def.slash[1] or def.key) end
+    for _, def in ipairs(ns.RINGS) do
+        table.insert(names, def.slash and def.slash[1] or def.key)
+    end
     return table.concat(names, ", ")
 end
 

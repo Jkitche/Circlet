@@ -52,4 +52,5 @@ Go(2006, "g5", 10, "done")      -- animation off: the plain ring
 CircletDB.castRezFx = true
 Slash("cast"); Advance(7.5); P("preview rez: " .. FX()); Advance(2.0); P("preview rez done: " .. FX())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

@@ -21,13 +21,13 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 local WELCOMING = { ["Welcoming Campfire"] = true }
 local RESTED = { ["Well Rested"] = true, ["Well-Rested"] = true }
 local DEFAULT_DURATION = 60 -- seconds of rest before the camp's buffs (the usual minute)
-local RESTED_WINDOW = 5     -- Well Rested this soon after Welcoming Campfire ends counts as finishing it
+local RESTED_WINDOW = 5 -- Well Rested this soon after Welcoming Campfire ends counts as finishing it
 local EMBERS = 14
 
 local welcome, rested, dirty = nil, false, true -- welcome: { icon, duration, expires }
-local since         -- GetTime() when Welcoming Campfire was first seen
-local lastWelcome   -- GetTime() when Welcoming Campfire was last on you (for RESTED_WINDOW)
-local doneAt        -- when you became Well Rested from this rest (for the burst)
+local since -- GetTime() when Welcoming Campfire was first seen
+local lastWelcome -- GetTime() when Welcoming Campfire was last on you (for RESTED_WINDOW)
+local doneAt -- when you became Well Rested from this rest (for the burst)
 local doneIcon
 
 local function Scan()
@@ -150,15 +150,22 @@ local function Build(frame)
         t:SetBlendMode("ADD")
         t:Hide()
         -- Fixed per ember so they don't move in lockstep.
-        fx.embers[i] = { tex = t, speed = 1 / (1.6 + (i * 0.37) % 1.2), phase = (i * 0.618) % 1,
-                         side = ((i * 0.437) % 1) * 2 - 1, size = 0.6 + (i * 0.53) % 0.7 }
+        fx.embers[i] = {
+            tex = t,
+            speed = 1 / (1.6 + (i * 0.37) % 1.2),
+            phase = (i * 0.618) % 1,
+            side = ((i * 0.437) % 1) * 2 - 1,
+            size = 0.6 + (i * 0.53) % 0.7,
+        }
     end
 end
 
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
-    for _, e in ipairs(fx.embers) do e.tex:Hide() end
+    for _, e in ipairs(fx.embers) do
+        e.tex:Hide()
+    end
 end
 
 local function DrawCampFx(st, frame, geom)
@@ -211,50 +218,79 @@ ns.PreviewCampRing = function() campRing.Preview(11) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "camp", name = "Campfire", order = 11.6,
+    key = "camp",
+    name = "Campfire",
+    order = 11.6,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = campRing,
-    preview = ns.PreviewCampRing, slash = { "camp", "campfire" }, help = "preview the campfire ring",
+    preview = ns.PreviewCampRing,
+    slash = { "camp", "campfire" },
+    help = "preview the campfire ring",
     toggle = { "Campfire ring", "Resting at a campfire until you're Well Rested." },
     defaults = {
         -- Campfire ring: while you rest at a camp. Left of the food & drink ring.
-        campEnabled   = true,
-        campFx        = true, -- firelight and rising embers
-        campSize      = 110,
+        campEnabled = true,
+        campFx = true, -- firelight and rising embers
+        campSize = 110,
         campThickness = 11,
-        campOpacity   = 100,
-        campX         = -510,
-        campFromTop   = 260,
-        campHold      = 2,
-        campStyle     = "smooth",
-        campBorder    = 2,
+        campOpacity = 100,
+        campX = -510,
+        campFromTop = 260,
+        campHold = 2,
+        campStyle = "smooth",
+        campBorder = 2,
         campColors = {
-            fill   = { r = 1.00, g = 0.55, b = 0.20 },
+            fill = { r = 1.00, g = 0.55, b = 0.20 },
             rested = { r = 0.35, g = 0.90, b = 0.40 },
         },
     },
-    page = { folder = "comfort", order = 2, build = function(O)
+    page = {
+        folder = "comfort",
+        order = 2,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.7, "Campfire", "Campfire Ring",
+            local tab = RingTab(
+                10.7,
+                "Campfire",
+                "Campfire Ring",
                 "While you rest at a campfire (the Welcoming Campfire buff), the ring fills and counts down "
-                .. "until you're Well Rested, then bursts. Stand up early and it fades out showing how far you got.",
-                MergeTop(TopRow("camp", "campfire ring", ns.PreviewCampRing,
-                    "Show a sample rest. Also /circ camp."), {
+                    .. "until you're Well Rested, then bursts. Stand up early and it fades out showing how far you got.",
+                MergeTop(TopRow("camp", "campfire ring", ns.PreviewCampRing, "Show a sample rest. Also /circ camp."), {
                     general = Box(2, "General", {
-                        enabled = Toggle(1, "campEnabled", "Show campfire ring",
-                            "Show the ring while you rest at a campfire."),
-                        fx = Toggle(2, "campFx", "Firelight and embers",
-                            "A flickering glow in the middle of the ring with embers rising through it."),
+                        enabled = Toggle(
+                            1,
+                            "campEnabled",
+                            "Show campfire ring",
+                            "Show the ring while you rest at a campfire."
+                        ),
+                        fx = Toggle(
+                            2,
+                            "campFx",
+                            "Firelight and embers",
+                            "A flickering glow in the middle of the ring with embers rising through it."
+                        ),
                     }),
                     colors = Box(3, "Colors", {
                         fill = Color(1, "campColors", "fill", "Resting", "Ring color while you rest."),
-                        rested = Color(2, "campColors", "rested", "Well Rested", "Ring and label color once you're Well Rested."),
+                        rested = Color(
+                            2,
+                            "campColors",
+                            "rested",
+                            "Well Rested",
+                            "Ring and label color once you're Well Rested."
+                        ),
                     }),
-                    size = SizeBox(4, "camp", "campfire ring",
-                        "Offset from the center of the screen. By default it sits left of the food & drink ring."),
-                }))
+                    size = SizeBox(
+                        4,
+                        "camp",
+                        "campfire ring",
+                        "Offset from the center of the screen. By default it sits left of the food & drink ring."
+                    ),
+                })
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after you stand up."
             return tab
-        end },
+        end,
+    },
 })

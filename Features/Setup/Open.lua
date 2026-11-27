@@ -30,7 +30,9 @@ local function OpenNew(all)
     if #items == 0 and all then
         local every = NewItems(false)
         local newest = every[1] and every[1].since
-        for _, it in ipairs(every) do if it.since == newest then table.insert(items, it) end end
+        for _, it in ipairs(every) do
+            if it.since == newest then table.insert(items, it) end
+        end
     end
     if #items == 0 then return false end
     StopShowing()
@@ -62,7 +64,11 @@ end
 SU.Click = function(id)
     if id == "next" then
         StopShowing()
-        if SU.step < STEPS then SU.step = SU.step + 1 else return Finish() end
+        if SU.step < STEPS then
+            SU.step = SU.step + 1
+        else
+            return Finish()
+        end
     elseif id == "back" then
         StopShowing()
         SU.step = math.max(1, SU.step - 1)
@@ -76,8 +82,14 @@ SU.Click = function(id)
     else
         local _, _, items = Current()
         for _, item in ipairs(items) do
-            if item.id == id and item.onClick then item.onClick() break end
-            if item.showId == id and item.onShow then item.onShow() break end
+            if item.id == id and item.onClick then
+                item.onClick()
+                break
+            end
+            if item.showId == id and item.onShow then
+                item.onShow()
+                break
+            end
         end
     end
     SU.Render()
@@ -99,12 +111,19 @@ local function OpenPending()
     if InCombatLockdown and InCombatLockdown() then return end -- PLAYER_REGEN_ENABLED tries again
     local what = pending
     pending = nil
-    if what == "wizard" then OpenWizard() else OpenNew(false) end
+    if what == "wizard" then
+        OpenWizard()
+    else
+        OpenNew(false)
+    end
 end
 
 ns.Listen({ "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_ENABLED" }, function(event, isLogin, isReload)
     if not CircletDB then return end
-    if event == "PLAYER_REGEN_ENABLED" then OpenPending() return end
+    if event == "PLAYER_REGEN_ENABLED" then
+        OpenPending()
+        return
+    end
     if not (isLogin or isReload) then return end -- just changing zones
     pending = Decide()
     if pending and C_Timer then C_Timer.After(db.loginFx and 6 or 2, OpenPending) end
@@ -119,23 +138,38 @@ end, "what's new in this version")
 ns.OpenSetup = OpenWizard
 ns.OpenWhatsNew = function() return OpenNew(true) end
 ns.Setup = {
-    frame = frame, Click = SU.Click, Open = OpenWizard, OpenNew = OpenNew,
+    frame = frame,
+    Click = SU.Click,
+    Open = OpenWizard,
+    OpenNew = OpenNew,
     -- The current page as text: title, subtitle, then one line per item and the footer.
     Lines = function()
         local title, subtitle, items, buttons = Current()
         local out = { title, subtitle }
         for _, item in ipairs(items) do
             local pre = (item.col == 2) and "      | " or ""
-            if item.kind == "header" then table.insert(out, pre .. "== " .. item.text)
-            elseif item.kind == "note" then table.insert(out, pre .. "(" .. (item.text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) .. ")")
+            if item.kind == "header" then
+                table.insert(out, pre .. "== " .. item.text)
+            elseif item.kind == "note" then
+                table.insert(out, pre .. "(" .. (item.text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) .. ")")
             elseif item.kind == "check" then
-                table.insert(out, pre .. (item.info and " *  " or item.on and "[x] " or "[ ] ") .. item.text
-                    .. (item.showId and (item.showOn and "  <Hide>" or "  <Show>") or ""))
-            elseif item.kind == "choice" then table.insert(out, pre .. (item.selected and "(*) " or "( ) ") .. item.text)
-            elseif item.kind == "button" then table.insert(out, pre .. "[" .. item.text .. "]") end
+                table.insert(
+                    out,
+                    pre
+                        .. (item.info and " *  " or item.on and "[x] " or "[ ] ")
+                        .. item.text
+                        .. (item.showId and (item.showOn and "  <Hide>" or "  <Show>") or "")
+                )
+            elseif item.kind == "choice" then
+                table.insert(out, pre .. (item.selected and "(*) " or "( ) ") .. item.text)
+            elseif item.kind == "button" then
+                table.insert(out, pre .. "[" .. item.text .. "]")
+            end
         end
         local b = {}
-        for _, spec in ipairs(buttons) do table.insert(b, spec.enabled == false and ("{" .. spec.text .. "}") or ("[" .. spec.text .. "]")) end
+        for _, spec in ipairs(buttons) do
+            table.insert(b, spec.enabled == false and ("{" .. spec.text .. "}") or ("[" .. spec.text .. "]"))
+        end
         table.insert(out, "footer: " .. table.concat(b, " "))
         return out
     end,

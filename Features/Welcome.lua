@@ -71,7 +71,9 @@ local info, startedAt = nil, 0
 local function Ease(t) return 1 - (1 - math.max(0, math.min(1, t))) ^ 3 end
 
 local function SetColor(layer, c, a)
-    for _, l in ipairs(layer) do l:SetColorTexture(c.r, c.g, c.b, a) end
+    for _, l in ipairs(layer) do
+        l:SetColorTexture(c.r, c.g, c.b, a)
+    end
 end
 
 -- An arc from `from` of length `len` (fractions of the circle), wrapping past the top.
@@ -83,7 +85,9 @@ local function DrawSpinArc(spec, from, len, alpha)
     if from + len > 1 then
         DrawArc(spec.b, 0, from + len - 1, fx, spec.geom)
     else
-        for _, l in ipairs(spec.b) do l:Hide() end
+        for _, l in ipairs(spec.b) do
+            l:Hide()
+        end
     end
 end
 
@@ -99,8 +103,12 @@ local function DrawFrame(t)
         if len > 0.002 and alpha > 0 then
             DrawSpinArc(spec, t * spec[4] + i * 0.17, len, open * alpha)
         else
-            for _, l in ipairs(spec.a) do l:Hide() end
-            for _, l in ipairs(spec.b) do l:Hide() end
+            for _, l in ipairs(spec.a) do
+                l:Hide()
+            end
+            for _, l in ipairs(spec.b) do
+                l:Hide()
+            end
         end
     end
 
@@ -173,9 +181,7 @@ local function Gather(sample)
     if level and not IsSecret(level) then table.insert(parts, "Level " .. level) end
     if className and not IsSecret(className) then table.insert(parts, className) end
     local line1 = table.concat(parts, " ")
-    if zone and zone ~= "" and not IsSecret(zone) then
-        line1 = line1 ~= "" and (line1 .. "  ·  " .. zone) or zone
-    end
+    if zone and zone ~= "" and not IsSecret(zone) then line1 = line1 ~= "" and (line1 .. "  ·  " .. zone) or zone end
 
     local bits = {}
     local rest, max = GetXPExhaustion and GetXPExhaustion(), UnitXPMax("player")

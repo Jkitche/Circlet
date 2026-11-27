@@ -32,7 +32,7 @@ local COL_W = BODY_W / 2
 local ROW_H = 46
 
 UI.current = "general" -- the page shown: "general", "profiles", "<folder>" or "<folder>.<ring>"
-local tabOf = {}          -- page -> the tab picked on it
+local tabOf = {} -- page -> the tab picked on it
 
 local function Eval(v, info, ...)
     if type(v) == "function" then return v(info, ...) end
@@ -56,7 +56,9 @@ end
 
 local function PageAt(path)
     local node = UI.root
-    for part in path:gmatch("[^.]+") do node = node and node.args and node.args[part] end
+    for part in path:gmatch("[^.]+") do
+        node = node and node.args and node.args[part]
+    end
     return node
 end
 
@@ -74,7 +76,9 @@ local function PageModel(path)
     local m = { buttons = {}, sections = {} }
     if not page then return m end
     local parts = {}
-    for part in path:gmatch("[^.]+") do parts[#parts + 1] = part end
+    for part in path:gmatch("[^.]+") do
+        parts[#parts + 1] = part
+    end
     local pinfo = Info(page, unpack(parts))
     m.name = Eval(page.name, pinfo)
     m.title = m.name
@@ -99,7 +103,9 @@ local function PageModel(path)
             loose = nil
             if opt.inline then -- other groups are pages of their own, in the sidebar
                 local section = { key = key, title = Eval(opt.name, info), group = opt, items = {} }
-                for _, c in ipairs(Sorted(opt.args)) do Add(section.items, c, path, key, c.key) end
+                for _, c in ipairs(Sorted(opt.args)) do
+                    Add(section.items, c, path, key, c.key)
+                end
                 if #section.items > 0 then m.sections[#m.sections + 1] = section end
             end
         elseif opt.type == "description" and not tostring(Eval(opt.name, info) or ""):find("%S") then
@@ -134,7 +140,10 @@ local function Tabs(m)
     for _, s in ipairs(m.sections) do
         local t = TabOf(UI.current, s)
         s.tab = t
-        if not seen[t] then seen[t] = true; tabs[#tabs + 1] = t end
+        if not seen[t] then
+            seen[t] = true
+            tabs[#tabs + 1] = t
+        end
     end
     table.sort(tabs, function(a, b) return (TAB_ORDER[a] or 9) < (TAB_ORDER[b] or 9) end)
     local pick = tabOf[UI.current]
@@ -147,11 +156,15 @@ local function Signature(m, tab)
     for _, s in ipairs(m.sections) do
         if s.tab == tab then
             parts[#parts + 1] = s.key
-            for _, e in ipairs(s.items) do parts[#parts + 1] = e.key end
+            for _, e in ipairs(s.items) do
+                parts[#parts + 1] = e.key
+            end
         end
     end
     parts[#parts + 1] = "|"
-    for _, e in ipairs(m.buttons) do parts[#parts + 1] = e.key end
+    for _, e in ipairs(m.buttons) do
+        parts[#parts + 1] = e.key
+    end
     return table.concat(parts, ",")
 end
 
@@ -159,9 +172,16 @@ end
 -- (Only our own key: assigning the StaticPopupDialogs global itself, even to the same table,
 -- would taint it for every Blizzard popup.)
 StaticPopupDialogs.CIRCLET_OPTIONS_CONFIRM = {
-    text = "%s", button1 = YES or "Yes", button2 = NO or "No",
-    OnAccept = function(_, data) if data then data() end end,
-    timeout = 0, whileDead = true, hideOnEscape = true, preferredIndex = 3,
+    text = "%s",
+    button1 = YES or "Yes",
+    button2 = NO or "No",
+    OnAccept = function(_, data)
+        if data then data() end
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
 }
 
 -- Sets an option (or runs a button), asking first if it has a confirm.

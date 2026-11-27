@@ -31,8 +31,8 @@ local function ArrangeX(key, frame)
         for _ = 1, 4 do -- a few passes, in case clearing one ring lands on another
             local moved = false
             for otherKey, other in pairs(RING_FRAMES) do
-                local older = other.shownAt and (other.shownAt < frame.shownAt
-                    or (other.shownAt == frame.shownAt and otherKey < key))
+                local older = other.shownAt
+                    and (other.shownAt < frame.shownAt or (other.shownAt == frame.shownAt and otherKey < key))
                 if other ~= frame and older and other:IsShown() and now - (other.arrangeSeen or 0) < 0.5 then
                     local ox, oy, orad = HomeCenter(otherKey)
                     ox = ox + (other.arrangeX or 0)

@@ -23,14 +23,30 @@ local db, CreateLiveRing, SafeCall, Clean, CleanNumber = ns.db, ns.CreateLiveRin
 -- cast you just made is only a stand-in until one of those answers (see KindOf).
 
 local KINDS = {
-    rock  = { name = "Rockbiter",   spell = "Rockbiter Weapon",   spellID = 8017,
-              ids = { 29, 6, 1, 503, 1663, 683, 1664 } },
-    flame = { name = "Flametongue", spell = "Flametongue Weapon", spellID = 8024,
-              ids = { 5, 4, 3, 523, 1665, 1666 } },
-    frost = { name = "Frostbrand",  spell = "Frostbrand Weapon",  spellID = 8033,
-              ids = { 2, 12, 524, 1667, 1668 } },
-    wind  = { name = "Windfury",    spell = "Windfury Weapon",    spellID = 8232,
-              ids = { 283, 284, 525, 1669 } },
+    rock = {
+        name = "Rockbiter",
+        spell = "Rockbiter Weapon",
+        spellID = 8017,
+        ids = { 29, 6, 1, 503, 1663, 683, 1664 },
+    },
+    flame = {
+        name = "Flametongue",
+        spell = "Flametongue Weapon",
+        spellID = 8024,
+        ids = { 5, 4, 3, 523, 1665, 1666 },
+    },
+    frost = {
+        name = "Frostbrand",
+        spell = "Frostbrand Weapon",
+        spellID = 8033,
+        ids = { 2, 12, 524, 1667, 1668 },
+    },
+    wind = {
+        name = "Windfury",
+        spell = "Windfury Weapon",
+        spellID = 8232,
+        ids = { 283, 284, 525, 1669 },
+    },
 }
 local ORDER = { "rock", "flame", "frost", "wind" }
 local DEFAULT_TOTAL = 300 -- imbues last 5 minutes
@@ -38,11 +54,17 @@ local WARN = 30
 local FADED_SHOW = 4
 
 local byEnchant = {}
-for kind, k in pairs(KINDS) do for _, id in ipairs(k.ids) do byEnchant[id] = kind end end
+for kind, k in pairs(KINDS) do
+    for _, id in ipairs(k.ids) do
+        byEnchant[id] = kind
+    end
+end
 
 -- Enchants learned from casts by earlier versions: some were learned wrong (683 as
 -- Frostbrand, 1667 as Windfury), and they outranked the known ranks. Dropped once loaded.
-ns.Listen({ "PLAYER_LOGIN" }, function() if CircletDB then CircletDB.imbueLearned = nil end end)
+ns.Listen({ "PLAYER_LOGIN" }, function()
+    if CircletDB then CircletDB.imbueLearned = nil end
+end)
 
 -- Which kind a spell is (any rank, by name), or nil.
 local function KindOfSpell(spellID)
@@ -76,9 +98,9 @@ local function KindFromTooltip()
     return loose
 end
 
-local current        -- { kind, endsAt (GetTime()), total, enchant, sure }
+local current -- { kind, endsAt (GetTime()), total, enchant, sure }
 local castKind, castAt
-local faded          -- { kind, at }
+local faded -- { kind, at }
 
 -- Which imbue an enchant is, and whether that's certain: the weapon's tooltip (the game's
 -- own words), then the known ranks above, then enchants learned from the tooltip before (for
@@ -115,14 +137,17 @@ local function Read()
     local fresh = not current or enchant ~= current.enchant or left > (current.endsAt - now) + 2
     if fresh then
         local kind, sure = KindOf(enchant)
-        current = { kind = kind, sure = sure, enchant = enchant, total = math.max(DEFAULT_TOTAL, left), endsAt = now + left }
+        current =
+            { kind = kind, sure = sure, enchant = enchant, total = math.max(DEFAULT_TOTAL, left), endsAt = now + left }
         faded = nil
     else
         current.endsAt = now + left
         -- Not certain yet (the tooltip can lag the enchant): look again.
         if not current.sure then
             local kind, sure = KindOf(enchant)
-            if kind then current.kind, current.sure = kind, sure end
+            if kind then
+                current.kind, current.sure = kind, sure
+            end
         end
     end
 end
@@ -141,9 +166,18 @@ local function State(kind, left, total)
     local k = KINDS[kind]
     local warn = left <= WARN
     local color = warn and c.warn or (kind and c[kind]) or c.rock
-    return { title = k and k.name or "Imbue", icon = ns.SpellIcon(k and k.spellID or 8017),
-             frac = math.max(0, math.min(1, left / total)), value = Clock(left), label = "",
-             color = color, labelColor = warn and c.warn or nil, hold = 1, imbue = kind, imbueWarn = warn }
+    return {
+        title = k and k.name or "Imbue",
+        icon = ns.SpellIcon(k and k.spellID or 8017),
+        frac = math.max(0, math.min(1, left / total)),
+        value = Clock(left),
+        label = "",
+        color = color,
+        labelColor = warn and c.warn or nil,
+        hold = 1,
+        imbue = kind,
+        imbueWarn = warn,
+    }
 end
 
 local imbueRing
@@ -154,7 +188,9 @@ imbueRing = CreateLiveRing({
         Read()
         if current then
             local left = current.endsAt - now
-            if left <= 0 then faded = { kind = current.kind, at = now }; current = nil
+            if left <= 0 then
+                faded = { kind = current.kind, at = now }
+                current = nil
             elseif db.imbueAlways or left <= WARN or current.total - left < 4 then
                 return State(current.kind, left, current.total)
             else
@@ -219,39 +255,61 @@ local function Build(frame)
         -- spread so they don't look spaced out like clockwork. jit: how far a piece sits
         -- off its even slot around the ring (-1..1 of a slot).
         -- speed: 0.4..1.6, so some pieces drift at a quarter of the pace of others.
-        fx.pieces[i] = { glow = Tex(frame, "ARTWORK", 2, GLOW_TEX, true), star = Tex(frame, "ARTWORK", 3, STAR_TEX, true),
-                         flame = Tex(frame, "ARTWORK", 2, FLAME_TEX .. ((i - 1) % 3 + 1), true),
-                         lava = Tex(frame, "ARTWORK", 3, LAVA_TEX .. ((i - 1) % 3 + 1), false),
-                         core = Tex(frame, "ARTWORK", 3, FLAME_TEX .. ((i + 1) % 3 + 1), true),
-                         block = Tex(frame, "ARTWORK", 2, ROCK_TEX .. ((i - 1) % 4 + 1), false),
-                         grit = Tex(frame, "ARTWORK", 1, ROCK_TEX .. ((i + 1) % 4 + 1), false),
-                         phase = Hash(i, 1), speed = 0.4 + Hash(i, 2) * 1.2, size = 0.6 + Hash(i, 3) * 0.7,
-                         lane = Hash(i, 4) * 2 - 1, jit = Hash(i, 5) * 2 - 1,
-                         -- dir: which way it goes round the ring (about 4 in 10 go backwards);
-                         -- spin: which way it turns on its own axis (picked separately).
-                         dir = Hash(i, 6) < 0.4 and -1 or 1, spin = Hash(i, 7) < 0.5 and -1 or 1 }
+        fx.pieces[i] = {
+            glow = Tex(frame, "ARTWORK", 2, GLOW_TEX, true),
+            star = Tex(frame, "ARTWORK", 3, STAR_TEX, true),
+            flame = Tex(frame, "ARTWORK", 2, FLAME_TEX .. ((i - 1) % 3 + 1), true),
+            lava = Tex(frame, "ARTWORK", 3, LAVA_TEX .. ((i - 1) % 3 + 1), false),
+            core = Tex(frame, "ARTWORK", 3, FLAME_TEX .. ((i + 1) % 3 + 1), true),
+            block = Tex(frame, "ARTWORK", 2, ROCK_TEX .. ((i - 1) % 4 + 1), false),
+            grit = Tex(frame, "ARTWORK", 1, ROCK_TEX .. ((i + 1) % 4 + 1), false),
+            phase = Hash(i, 1),
+            speed = 0.4 + Hash(i, 2) * 1.2,
+            size = 0.6 + Hash(i, 3) * 0.7,
+            lane = Hash(i, 4) * 2 - 1,
+            jit = Hash(i, 5) * 2 - 1,
+            -- dir: which way it goes round the ring (about 4 in 10 go backwards);
+            -- spin: which way it turns on its own axis (picked separately).
+            dir = Hash(i, 6) < 0.4 and -1 or 1,
+            spin = Hash(i, 7) < 0.5 and -1 or 1,
+        }
         fx.bits[i] = Tex(frame, "ARTWORK", 4, STAR_TEX, true)
     end
     -- Flametongue's lava stream: overlapping blobs, each a molten glow with a crust over it,
     -- half pouring down each side of the ring.
     fx.flow = {}
     for j = 1, FLOW do
-        fx.flow[j] = { hot = Tex(frame, "ARTWORK", 1, GLOW_TEX, true),
-                       crust = Tex(frame, "ARTWORK", 3, LAVA_TEX .. ((j - 1) % 3 + 1), false),
-                       side = j % 2 == 0 and 1 or -1, off = (math.ceil(j / 2) - 1 + Hash(j, 8) * 0.7) / (FLOW / 2),
-                       size = Hash(j, 9), speed = Hash(j, 10), turn = Hash(j, 11) * 6.28 }
+        fx.flow[j] = {
+            hot = Tex(frame, "ARTWORK", 1, GLOW_TEX, true),
+            crust = Tex(frame, "ARTWORK", 3, LAVA_TEX .. ((j - 1) % 3 + 1), false),
+            side = j % 2 == 0 and 1 or -1,
+            off = (math.ceil(j / 2) - 1 + Hash(j, 8) * 0.7) / (FLOW / 2),
+            size = Hash(j, 9),
+            speed = Hash(j, 10),
+            turn = Hash(j, 11) * 6.28,
+        }
     end
 end
 
 local function HideFlow()
-    for _, b in ipairs(fx.flow) do b.hot:Hide(); b.crust:Hide() end
+    for _, b in ipairs(fx.flow) do
+        b.hot:Hide()
+        b.crust:Hide()
+    end
 end
 
 local function HideAll()
     if not fx then return end
     fx.glow:Hide()
     for i, p in ipairs(fx.pieces) do
-        p.glow:Hide(); p.star:Hide(); p.flame:Hide(); p.lava:Hide(); p.core:Hide(); p.block:Hide(); p.grit:Hide(); fx.bits[i]:Hide()
+        p.glow:Hide()
+        p.star:Hide()
+        p.flame:Hide()
+        p.lava:Hide()
+        p.core:Hide()
+        p.block:Hide()
+        p.grit:Hide()
+        fx.bits[i]:Hide()
     end
     HideFlow()
 end
@@ -272,7 +330,9 @@ local DRAW = {}
 -- grit (tiny stones) falling away from them.
 function DRAW.rock(frame, now, R, T, warn)
     for i, p in ipairs(fx.pieces) do
-        p.flame:Hide(); p.lava:Hide(); p.core:Hide()
+        p.flame:Hide()
+        p.lava:Hide()
+        p.core:Hide()
         if i <= 8 then
             -- Each stone orbits at its own pace and some the other way, so they drift
             -- together, pass each other and part.
@@ -290,9 +350,12 @@ function DRAW.rock(frame, now, R, T, warn)
             if p.grit.SetRotation then p.grit:SetRotation(now * 3 * -p.spin + i) end
             p.grit:SetAlpha((1 - u) * 0.9)
         else
-            p.block:Hide(); p.grit:Hide()
+            p.block:Hide()
+            p.grit:Hide()
         end
-        p.glow:Hide(); p.star:Hide(); fx.bits[i]:Hide()
+        p.glow:Hide()
+        p.star:Hide()
+        fx.bits[i]:Hide()
     end
     Put(fx.glow, frame, 0, 0, R * 1.6)
     fx.glow:SetVertexColor(0.6, 0.45, 0.25)
@@ -330,7 +393,11 @@ function DRAW.flame(frame, now, R, T, warn)
         b.crust:SetAlpha((0.2 + 0.75 * pos) * fade)
     end
     for i, p in ipairs(fx.pieces) do
-        p.star:Hide(); p.block:Hide(); p.grit:Hide(); p.flame:Hide(); p.lava:Hide()
+        p.star:Hide()
+        p.block:Hide()
+        p.grit:Hide()
+        p.flame:Hide()
+        p.lava:Hide()
         if i <= 10 then
             -- A drip off the bottom: hangs and stretches, lets go, falls.
             local u = (now * (0.1 + 0.1 * p.speed) + p.phase) % 1
@@ -403,7 +470,12 @@ function DRAW.frost(frame, now, R, T, warn)
         p.star:SetVertexColor(0.7, 0.9, 1)
         if p.star.SetRotation then p.star:SetRotation(now * (0.4 + 0.3 * p.speed) * p.spin + i) end
         p.star:SetAlpha(0.35 + 0.65 * tw)
-        p.glow:Hide(); p.flame:Hide(); p.lava:Hide(); p.core:Hide(); p.block:Hide(); p.grit:Hide()
+        p.glow:Hide()
+        p.flame:Hide()
+        p.lava:Hide()
+        p.core:Hide()
+        p.block:Hide()
+        p.grit:Hide()
         -- Snow: falling across the whole ring, swaying.
         local u = (now * p.speed * 0.25 + p.phase) % 1
         local sx = p.lane * R * 0.9 + math.sin(now * 1.4 + i) * T * 0.8
@@ -436,7 +508,13 @@ function DRAW.wind(frame, now, R, T, warn)
         if p.glow.SetRotation then p.glow:SetRotation(-a) end
         p.glow:SetVertexColor(0.75, 1, 0.95)
         p.glow:SetAlpha((0.7 - seg * 0.16) * gust)
-        p.star:Hide(); p.flame:Hide(); p.lava:Hide(); p.core:Hide(); p.block:Hide(); p.grit:Hide(); fx.bits[i]:Hide()
+        p.star:Hide()
+        p.flame:Hide()
+        p.lava:Hide()
+        p.core:Hide()
+        p.block:Hide()
+        p.grit:Hide()
+        fx.bits[i]:Hide()
     end
     Put(fx.glow, frame, 0, 0, R * 1.6)
     fx.glow:SetVertexColor(0.6, 0.95, 0.9)
@@ -458,7 +536,9 @@ ns.DrawImbueFx = DrawImbueFx
 ---------------------------------------------------------------------------
 ns.Listen({ "UNIT_SPELLCAST_SUCCEEDED:player" }, function(_, _, _, spellID)
     local kind = KindOfSpell(spellID)
-    if kind then castKind, castAt = kind, GetTime() end
+    if kind then
+        castKind, castAt = kind, GetTime()
+    end
 end)
 
 ns.imbueRing = imbueRing
@@ -468,59 +548,91 @@ ns.PreviewImbueRing = function() imbueRing.Preview(16) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "imbue", name = "Imbue", order = 14.15, since = "1.5.0",
+    key = "imbue",
+    name = "Imbue",
+    order = 14.15,
+    since = "1.5.0",
     class = { SHAMAN = true },
     iconBg = true,
     ring = imbueRing,
-    preview = ns.PreviewImbueRing, slash = { "imbue" }, help = "preview the weapon imbue ring",
+    preview = ns.PreviewImbueRing,
+    slash = { "imbue" },
+    help = "preview the weapon imbue ring",
     toggle = { "Weapon imbue ring", "Time left on your weapon imbue, with an animation for each kind." },
     defaults = {
         -- Weapon imbue ring (shamans): right of the target cast ring, across from the shot ring.
-        imbueEnabled   = true,
-        imbueAlways    = true, -- the whole time; off: just the last 30 seconds, and when you put it on
-        imbueFx        = true,
-        imbueSize      = 80,
+        imbueEnabled = true,
+        imbueAlways = true, -- the whole time; off: just the last 30 seconds, and when you put it on
+        imbueFx = true,
+        imbueSize = 80,
         imbueThickness = 8,
-        imbueOpacity   = 100,
-        imbueX         = 255,
-        imbueFromTop   = 385,
-        imbueHold      = 1,
-        imbueStyle     = "smooth",
-        imbueBorder    = 2,
+        imbueOpacity = 100,
+        imbueX = 255,
+        imbueFromTop = 385,
+        imbueHold = 1,
+        imbueStyle = "smooth",
+        imbueBorder = 2,
         imbueColors = {
-            rock  = { r = 0.72, g = 0.55, b = 0.35 },
+            rock = { r = 0.72, g = 0.55, b = 0.35 },
             flame = { r = 1.00, g = 0.45, b = 0.10 },
             frost = { r = 0.50, g = 0.80, b = 1.00 },
-            wind  = { r = 0.70, g = 0.95, b = 0.85 },
-            warn  = { r = 1.00, g = 0.30, b = 0.25 },
+            wind = { r = 0.70, g = 0.95, b = 0.85 },
+            warn = { r = 1.00, g = 0.30, b = 0.25 },
         },
     },
-    page = { folder = "class", order = 2, build = function(O)
+    page = {
+        folder = "class",
+        order = 2,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            return RingTab(13.55, "Weapon imbue", "Weapon Imbue Ring",
+            return RingTab(
+                13.55,
+                "Weapon imbue",
+                "Weapon Imbue Ring",
                 "While your main hand has a weapon imbue, the ring drains over it with the imbue's name and the time "
-                .. "left, turning red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own "
-                .. "animation: orbiting stones for Rockbiter, bubbling, dripping lava for Flametongue, ice crystals and snow "
-                .. "for Frostbrand, and whipping wind for Windfury.",
-                MergeTop(TopRow("imbue", "weapon imbue ring", ns.PreviewImbueRing,
-                    "Show each imbue in turn. Also /circ imbue."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "imbueEnabled", "Show weapon imbue ring",
-                            "Show the ring while your weapon has an imbue."),
-                        always = Toggle(2, "imbueAlways", "Show for the whole time",
-                            "Off: only when you put it on, in its last 30 seconds, and when it fades."),
-                        fx = Toggle(3, "imbueFx", "Animations",
-                            "Orbiting stones, molten lava, ice and snow, or whipping wind, by imbue."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        rock = Color(1, "imbueColors", "rock", "Rockbiter", "Ring color for Rockbiter."),
-                        flame = Color(2, "imbueColors", "flame", "Flametongue", "Ring color for Flametongue."),
-                        frost = Color(3, "imbueColors", "frost", "Frostbrand", "Ring color for Frostbrand."),
-                        wind = Color(4, "imbueColors", "wind", "Windfury", "Ring color for Windfury."),
-                        warn = Color(5, "imbueColors", "warn", "Running out", "Ring color in the last 30 seconds."),
-                    }),
-                    size = SizeBox(4, "imbue", "weapon imbue ring", "Offset from the center of the screen."),
-                }))
-        end },
+                    .. "left, turning red in the last 30 seconds, and says Faded when it's gone. Each imbue has its own "
+                    .. "animation: orbiting stones for Rockbiter, bubbling, dripping lava for Flametongue, ice crystals and snow "
+                    .. "for Frostbrand, and whipping wind for Windfury.",
+                MergeTop(
+                    TopRow(
+                        "imbue",
+                        "weapon imbue ring",
+                        ns.PreviewImbueRing,
+                        "Show each imbue in turn. Also /circ imbue."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "imbueEnabled",
+                                "Show weapon imbue ring",
+                                "Show the ring while your weapon has an imbue."
+                            ),
+                            always = Toggle(
+                                2,
+                                "imbueAlways",
+                                "Show for the whole time",
+                                "Off: only when you put it on, in its last 30 seconds, and when it fades."
+                            ),
+                            fx = Toggle(
+                                3,
+                                "imbueFx",
+                                "Animations",
+                                "Orbiting stones, molten lava, ice and snow, or whipping wind, by imbue."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            rock = Color(1, "imbueColors", "rock", "Rockbiter", "Ring color for Rockbiter."),
+                            flame = Color(2, "imbueColors", "flame", "Flametongue", "Ring color for Flametongue."),
+                            frost = Color(3, "imbueColors", "frost", "Frostbrand", "Ring color for Frostbrand."),
+                            wind = Color(4, "imbueColors", "wind", "Windfury", "Ring color for Windfury."),
+                            warn = Color(5, "imbueColors", "warn", "Running out", "Ring color in the last 30 seconds."),
+                        }),
+                        size = SizeBox(4, "imbue", "weapon imbue ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
+        end,
+    },
 })

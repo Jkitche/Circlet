@@ -33,8 +33,12 @@ local function MakeSkillRing(key, samples)
             local label, labelColor = SKILL_STYLE[e.kind].label, c
             if e.change == "tier" then
                 local tier = SKILL_TIERS[e.max]
-                return { fill = c, rank = c, labelColor = cap,
-                         label = tier and ("Now " .. tier .. "!") or ("New cap: " .. e.max) }
+                return {
+                    fill = c,
+                    rank = c,
+                    labelColor = cap,
+                    label = tier and ("Now " .. tier .. "!") or ("New cap: " .. e.max),
+                }
             end
             if capped and finished then
                 -- Kept short to fit inside the ring.
@@ -46,25 +50,76 @@ local function MakeSkillRing(key, samples)
     })
 end
 
-local skillRing = MakeSkillRing("skill", function()
-    return {
-        { id = "edit-s2", skillID = 186, name = "Mining", kind = "profession", from = 112, to = 115, max = 150 },
-        { id = "edit-s3", skillID = 356, name = "Fishing", kind = "secondary", from = 40, to = 41, max = 150 },
-        { id = "edit-s4", skillID = 185, name = "Cooking", kind = "secondary", from = 74, to = 75, max = 75,
-          editTime = 4 },
-        { id = "edit-s5", skillID = 197, name = "Tailoring", kind = "profession", from = 75, to = 75, max = 150,
-          change = "tier", segment = "tier150", gainText = "+75 cap", editTime = 4 },
-    }
-end)
+local skillRing = MakeSkillRing(
+    "skill",
+    function()
+        return {
+            { id = "edit-s2", skillID = 186, name = "Mining", kind = "profession", from = 112, to = 115, max = 150 },
+            { id = "edit-s3", skillID = 356, name = "Fishing", kind = "secondary", from = 40, to = 41, max = 150 },
+            {
+                id = "edit-s4",
+                skillID = 185,
+                name = "Cooking",
+                kind = "secondary",
+                from = 74,
+                to = 75,
+                max = 75,
+                editTime = 4,
+            },
+            {
+                id = "edit-s5",
+                skillID = 197,
+                name = "Tailoring",
+                kind = "profession",
+                from = 75,
+                to = 75,
+                max = 150,
+                change = "tier",
+                segment = "tier150",
+                gainText = "+75 cap",
+                editTime = 4,
+            },
+        }
+    end
+)
 
-local weaponRing = MakeSkillRing("weapon", function()
-    return {
-        { id = "edit-w1", skillID = 43, name = "Swords", kind = "weapon", from = 141, to = 143, max = 150, glyph = "sword" },
-        { id = "edit-w2", skillID = 45, name = "Bows", kind = "weapon", from = 88, to = 89, max = 150, glyph = "bow" },
-        { id = "edit-w3", skillID = 95, name = "Defense", kind = "weapon", from = 148, to = 150, max = 150,
-          editTime = 4 },
-    }
-end)
+local weaponRing = MakeSkillRing(
+    "weapon",
+    function()
+        return {
+            {
+                id = "edit-w1",
+                skillID = 43,
+                name = "Swords",
+                kind = "weapon",
+                from = 141,
+                to = 143,
+                max = 150,
+                glyph = "sword",
+            },
+            {
+                id = "edit-w2",
+                skillID = 45,
+                name = "Bows",
+                kind = "weapon",
+                from = 88,
+                to = 89,
+                max = 150,
+                glyph = "bow",
+            },
+            {
+                id = "edit-w3",
+                skillID = 95,
+                name = "Defense",
+                kind = "weapon",
+                from = 148,
+                to = 150,
+                max = 150,
+                editTime = 4,
+            },
+        }
+    end
+)
 
 local skillSnapshot
 
@@ -83,14 +138,31 @@ local function CheckSkills()
         local ring = s.kind == "weapon" and weaponRing or skillRing
         if was and (s.kind == "weapon" or db[SKILL_STYLE[s.kind].opt]) then
             if s.rank > was.rank then
-                ring.Queue({ id = id, skillID = id, name = s.name, kind = s.kind, from = was.rank, to = s.rank,
-                                  max = s.max, glyph = WEAPON_GLYPHS[id] })
+                ring.Queue({
+                    id = id,
+                    skillID = id,
+                    name = s.name,
+                    kind = s.kind,
+                    from = was.rank,
+                    to = s.rank,
+                    max = s.max,
+                    glyph = WEAPON_GLYPHS[id],
+                })
             elseif s.max > was.max and s.kind ~= "weapon" then
                 -- Trained to a new tier. (Weapon caps rise by themselves with every
                 -- character level, so those are left out.)
-                ring.Queue({ id = id, skillID = id, name = s.name, kind = s.kind, from = s.rank, to = s.rank,
-                                  max = s.max, change = "tier", segment = "tier" .. s.max,
-                                  gainText = "+" .. (s.max - was.max) .. " cap" })
+                ring.Queue({
+                    id = id,
+                    skillID = id,
+                    name = s.name,
+                    kind = s.kind,
+                    from = s.rank,
+                    to = s.rank,
+                    max = s.max,
+                    change = "tier",
+                    segment = "tier" .. s.max,
+                    gainText = "+" .. (s.max - was.max) .. " cap",
+                })
             end
         end
     end
@@ -110,8 +182,18 @@ local function PreviewSkillRing()
     skillRing.Preview({
         { id = -2, skillID = 186, name = "Mining", kind = "profession", from = 112, to = 115, max = 150 },
         { id = -3, skillID = 185, name = "Cooking", kind = "secondary", from = 74, to = 75, max = 75 },
-        { id = -4, skillID = 197, name = "Tailoring", kind = "profession", from = 75, to = 75, max = 150,
-          change = "tier", segment = "tier150", gainText = "+75 cap" },
+        {
+            id = -4,
+            skillID = 197,
+            name = "Tailoring",
+            kind = "profession",
+            from = 75,
+            to = 75,
+            max = 150,
+            change = "tier",
+            segment = "tier150",
+            gainText = "+75 cap",
+        },
     })
 end
 

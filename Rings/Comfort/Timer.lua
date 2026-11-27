@@ -21,9 +21,23 @@ local db, Print, CreateLiveRing, FormatTime = ns.db, ns.Print, ns.CreateLiveRing
 
 local ICON = "Interface\\Icons\\INV_Misc_PocketWatch_01"
 local MAX = 24 * 3600 -- a day at most
-local UNITS = { s = 1, sec = 1, secs = 1, second = 1, seconds = 1,
-                m = 60, min = 60, mins = 60, minute = 60, minutes = 60,
-                h = 3600, hr = 3600, hrs = 3600, hour = 3600, hours = 3600 }
+local UNITS = {
+    s = 1,
+    sec = 1,
+    secs = 1,
+    second = 1,
+    seconds = 1,
+    m = 60,
+    min = 60,
+    mins = 60,
+    minute = 60,
+    minutes = 60,
+    h = 3600,
+    hr = 3600,
+    hrs = 3600,
+    hour = 3600,
+    hours = 3600,
+}
 
 -- Seconds for one word of time ("90", "5m", "1h30m", "1:30"), or nil.
 local function ParseWord(w)
@@ -42,7 +56,9 @@ local function ParseWord(w)
     local n = tonumber(w)
     if n then return n end
     local total, rest = 0, w:lower()
-    for num, unit in w:lower():gmatch("(%d+%.?%d*)([hms])") do total = total + tonumber(num) * UNITS[unit] end
+    for num, unit in w:lower():gmatch("(%d+%.?%d*)([hms])") do
+        total = total + tonumber(num) * UNITS[unit]
+    end
     rest = rest:gsub("%d+%.?%d*[hms]", "")
     if rest ~= "" or total == 0 then return nil end
     return total
@@ -79,7 +95,8 @@ end
 
 local function Save()
     if run and not run.doneAt then
-        db.timerRun = { endsAt = time() + math.floor(run.endsAt - GetTime() + 0.5), total = run.total, label = run.label }
+        db.timerRun =
+            { endsAt = time() + math.floor(run.endsAt - GetTime() + 0.5), total = run.total, label = run.label }
     else
         db.timerRun = nil
     end
@@ -95,12 +112,14 @@ end
 -- Time's up: the sound and the big text on screen (each optional), and a chat line.
 local function Ring()
     local name = run.label or "Timer"
-    if db.timerSound and PlaySound then
-        pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
-    end
+    if db.timerSound and PlaySound then pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master") end
     if db.timerAlert and RaidNotice_AddMessage and RaidWarningFrame then
-        pcall(RaidNotice_AddMessage, RaidWarningFrame, name .. ": time's up!",
-            (ChatTypeInfo and ChatTypeInfo.RAID_WARNING) or { r = 1, g = 0.8, b = 0.3 })
+        pcall(
+            RaidNotice_AddMessage,
+            RaidWarningFrame,
+            name .. ": time's up!",
+            (ChatTypeInfo and ChatTypeInfo.RAID_WARNING) or { r = 1, g = 0.8, b = 0.3 }
+        )
     end
     Print("Time's up: " .. name .. ".")
 end
@@ -119,7 +138,8 @@ local function State(left, total, label, done, doneAt)
     if warn then
         -- Pulse twice a second, brightening toward white.
         local p = 0.5 + 0.5 * math.sin(GetTime() * 2 * math.pi * 2)
-        col = { r = col.r + (1 - col.r) * p * 0.5, g = col.g + (1 - col.g) * p * 0.5, b = col.b + (1 - col.b) * p * 0.5 }
+        col =
+            { r = col.r + (1 - col.r) * p * 0.5, g = col.g + (1 - col.g) * p * 0.5, b = col.b + (1 - col.b) * p * 0.5 }
     end
     st.value = left < 60 and tostring(math.ceil(left)) or Short(left)
     st.label = warn and "almost done" or "remaining"
@@ -145,7 +165,10 @@ local timerRing = CreateLiveRing({
         end
         -- The result is handed to the ring once, for a moment; the ring then holds it.
         run.resultAt = run.resultAt or now
-        if now - run.resultAt > 0.1 then run = nil return nil end
+        if now - run.resultAt > 0.1 then
+            run = nil
+            return nil
+        end
         return State(0, run.total, run.label, true, run.doneAt)
     end,
     sample = function(t)
@@ -169,13 +192,23 @@ local function Start(secs, label, add)
     Save()
     timerRing.frame:Show()
     local left = run.endsAt - GetTime()
-    Print((add and "Timer now " or "Timer started: ") .. Short(left) .. (run.label and (" (" .. run.label .. ")") or "") .. ".")
-    if not db.timerEnabled then Print("The timer ring is turned off: turn it on in the options (Timer > Show timer ring).") end
+    Print(
+        (add and "Timer now " or "Timer started: ")
+            .. Short(left)
+            .. (run.label and (" (" .. run.label .. ")") or "")
+            .. "."
+    )
+    if not db.timerEnabled then
+        Print("The timer ring is turned off: turn it on in the options (Timer > Show timer ring).")
+    end
 end
 
 local function Stop()
     Load()
-    if not run or run.doneAt then Print("No timer running.") return end
+    if not run or run.doneAt then
+        Print("No timer running.")
+        return
+    end
     run = nil
     Save()
     Print("Timer stopped.")
@@ -189,7 +222,13 @@ local function Command(arg, raw)
     if word == "" then
         Load()
         if run and not run.doneAt then
-            Print("Timer: " .. Short(run.endsAt - GetTime()) .. " left" .. (run.label and (" (" .. run.label .. ")") or "") .. ".")
+            Print(
+                "Timer: "
+                    .. Short(run.endsAt - GetTime())
+                    .. " left"
+                    .. (run.label and (" (" .. run.label .. ")") or "")
+                    .. "."
+            )
         else
             Print(USAGE)
         end
@@ -199,14 +238,23 @@ local function Command(arg, raw)
     local add = raw:sub(1, 1) == "+"
     if add then raw = strtrim(raw:sub(2)) end
     local secs, label = Parse(raw)
-    if not secs or secs <= 0 then Print("Couldn't read that time. " .. USAGE) return end
-    if secs > MAX then Print("That's more than a day; the timer goes up to 24 hours.") return end
+    if not secs or secs <= 0 then
+        Print("Couldn't read that time. " .. USAGE)
+        return
+    end
+    if secs > MAX then
+        Print("That's more than a day; the timer goes up to 24 hours.")
+        return
+    end
     Start(secs, label, add)
 end
 
-ns.RegisterCommand({ "timer", "countdown" }, Command,
+ns.RegisterCommand(
+    { "timer", "countdown" },
+    Command,
     "start a countdown ring: 5m, 1:30, 90, 1h20m, with a label after; +2m adds time; stop",
-    "timer <time> [label]")
+    "timer <time> [label]"
+)
 
 local function PreviewTimerRing() timerRing.Preview(14) end
 
@@ -221,7 +269,10 @@ ns.ParseTimer = Parse
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "timer", name = "Timer", order = 11.8, since = "1.3.0",
+    key = "timer",
+    name = "Timer",
+    order = 11.8,
+    since = "1.3.0",
     alwaysInCombat = true, -- a timer you started should stay up in a fight
     iconBg = true, -- "Icon as background": the pocket watch fills the ring's middle
     ring = timerRing,
@@ -229,59 +280,100 @@ ns.RegisterRing({
     toggle = { "Timer ring", "A countdown you start yourself: /circ timer 5m Tea." },
     defaults = {
         -- Timer ring: a countdown started with /circ timer. Right of the timed quest ring.
-        timerEnabled   = true,
-        timerIcon      = true, -- the pocket watch
-        timerSound     = true, -- a sound when time's up
-        timerAlert     = true, -- the label in big text on screen when time's up
-        timerWarn      = 10,   -- seconds left when it starts pulsing in the warning color
-        timerSize      = 110,
+        timerEnabled = true,
+        timerIcon = true, -- the pocket watch
+        timerSound = true, -- a sound when time's up
+        timerAlert = true, -- the label in big text on screen when time's up
+        timerWarn = 10, -- seconds left when it starts pulsing in the warning color
+        timerSize = 110,
         timerThickness = 11,
-        timerOpacity   = 100,
-        timerX         = 510,
-        timerFromTop   = 260,
-        timerHold      = 8,    -- seconds "Time's up!" stays
-        timerStyle     = "smooth",
-        timerBorder    = 2,
+        timerOpacity = 100,
+        timerX = 510,
+        timerFromTop = 260,
+        timerHold = 8, -- seconds "Time's up!" stays
+        timerStyle = "smooth",
+        timerBorder = 2,
         timerColors = {
             fill = { r = 0.40, g = 0.80, b = 1.00 },
             warn = { r = 1.00, g = 0.55, b = 0.20 },
             done = { r = 0.40, g = 0.90, b = 0.40 },
         },
     },
-    page = { folder = "comfort", order = 4, build = function(O)
+    page = {
+        folder = "comfort",
+        order = 4,
+        build = function(O)
             local Toggle, Range, Color, Execute, Box = O.Toggle, O.Range, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.85, "Timer", "Timer Ring",
+            local tab = RingTab(
+                10.85,
+                "Timer",
+                "Timer Ring",
                 "A countdown you start yourself. Type |cffffd100/circ timer 5m Tea|r (or 1:30, 90, 1h20m, "
-                .. "10 min Pull...) or use the buttons below; |cffffd100/circ timer +2m|r adds time and "
-                .. "|cffffd100/circ timer stop|r stops it. The ring drains as the time runs out, pulses near the end, "
-                .. "and when time's up it bursts, plays a sound and shows the label on screen. It keeps going "
-                .. "through a reload or a relog.",
-                MergeTop(TopRow("timer", "timer ring", ns.PreviewTimerRing,
-                    "Show a sample timer counting down to time's up."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "timerEnabled", "Show timer ring", "Show the ring while a timer runs."),
-                        icon = Toggle(2, "timerIcon", "Show pocket watch icon", "The pocket watch on the ring."),
-                        sound = Toggle(3, "timerSound", "Sound when time's up", "Play a sound when the timer runs out."),
-                        alert = Toggle(4, "timerAlert", "Big text when time's up",
-                            "Show the timer's label in large text on screen when it runs out."),
-                        warn = Range(5, "timerWarn", "Pulse from (seconds left)", 0, 60, 1,
-                            "In the last this many seconds the ring pulses in the warning color. 0: never."),
-                    }),
-                    start = Box(2.5, "Start a timer", {
-                        one = Execute(1, "1 minute", function() ns.StartTimer(60) end, "Start a 1 minute timer."),
-                        five = Execute(2, "5 minutes", function() ns.StartTimer(300) end, "Start a 5 minute timer."),
-                        ten = Execute(3, "10 minutes", function() ns.StartTimer(600) end, "Start a 10 minute timer."),
-                        stop = Execute(4, "Stop", function() ns.StopTimer() end, "Stop the running timer."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "timerColors", "fill", "Counting down", "Ring color while time is left."),
-                        warn = Color(2, "timerColors", "warn", "Almost done", "Color it pulses in near the end."),
-                        done = Color(3, "timerColors", "done", "Time's up", "Ring color when time's up."),
-                    }),
-                    size = SizeBox(4, "timer", "timer ring", "Offset from the center of the screen."),
-                }))
-            tab.args.size.args.hold.desc = "How long \"Time's up!\" stays before the ring fades."
+                    .. "10 min Pull...) or use the buttons below; |cffffd100/circ timer +2m|r adds time and "
+                    .. "|cffffd100/circ timer stop|r stops it. The ring drains as the time runs out, pulses near the end, "
+                    .. "and when time's up it bursts, plays a sound and shows the label on screen. It keeps going "
+                    .. "through a reload or a relog.",
+                MergeTop(
+                    TopRow(
+                        "timer",
+                        "timer ring",
+                        ns.PreviewTimerRing,
+                        "Show a sample timer counting down to time's up."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(1, "timerEnabled", "Show timer ring", "Show the ring while a timer runs."),
+                            icon = Toggle(2, "timerIcon", "Show pocket watch icon", "The pocket watch on the ring."),
+                            sound = Toggle(
+                                3,
+                                "timerSound",
+                                "Sound when time's up",
+                                "Play a sound when the timer runs out."
+                            ),
+                            alert = Toggle(
+                                4,
+                                "timerAlert",
+                                "Big text when time's up",
+                                "Show the timer's label in large text on screen when it runs out."
+                            ),
+                            warn = Range(
+                                5,
+                                "timerWarn",
+                                "Pulse from (seconds left)",
+                                0,
+                                60,
+                                1,
+                                "In the last this many seconds the ring pulses in the warning color. 0: never."
+                            ),
+                        }),
+                        start = Box(2.5, "Start a timer", {
+                            one = Execute(1, "1 minute", function() ns.StartTimer(60) end, "Start a 1 minute timer."),
+                            five = Execute(
+                                2,
+                                "5 minutes",
+                                function() ns.StartTimer(300) end,
+                                "Start a 5 minute timer."
+                            ),
+                            ten = Execute(
+                                3,
+                                "10 minutes",
+                                function() ns.StartTimer(600) end,
+                                "Start a 10 minute timer."
+                            ),
+                            stop = Execute(4, "Stop", function() ns.StopTimer() end, "Stop the running timer."),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(1, "timerColors", "fill", "Counting down", "Ring color while time is left."),
+                            warn = Color(2, "timerColors", "warn", "Almost done", "Color it pulses in near the end."),
+                            done = Color(3, "timerColors", "done", "Time's up", "Ring color when time's up."),
+                        }),
+                        size = SizeBox(4, "timer", "timer ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
+            tab.args.size.args.hold.desc = 'How long "Time\'s up!" stays before the ring fades.'
             return tab
-        end },
+        end,
+    },
 })

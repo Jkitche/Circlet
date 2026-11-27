@@ -10,25 +10,25 @@ local ADDON_NAME, ns = ...
 
 local DEFAULTS = {
     optionsAutoEdit = true, -- options window: a ring's page puts that ring in edit mode while it's open
-    optionsScale = 100,     -- options window: its size, in percent
+    optionsScale = 100, -- options window: its size, in percent
     summaryOnLogout = true, -- show the session summary when you start logging out
     sessions = {}, -- per character: what's been gained this session (for /circ summary)
-    loginFx     = true, -- the welcome animation when you log in
-    lastSeen    = {},   -- per character: when you last logged out (for the welcome)
-    discoverFx  = true, -- the "Discovered" animation when you explore a new area
+    loginFx = true, -- the welcome animation when you log in
+    lastSeen = {}, -- per character: when you last logged out (for the welcome)
+    discoverFx = true, -- the "Discovered" animation when you explore a new area
     autoArrange = true, -- rings that pop at the same time slide apart instead of overlapping
-    snapGrid    = true, -- edit mode: rings snap to a grid while you drag them
-    gridSize    = 20,   -- grid spacing, in UI units (measured out from the screen's centre)
+    snapGrid = true, -- edit mode: rings snap to a grid while you drag them
+    gridSize = 20, -- grid spacing, in UI units (measured out from the screen's centre)
 }
 
 -- Settings every ring has, added for each registered ring once they're all loaded.
 local RING_COMMON = {
-    Shape    = "ring",     -- full ring, three-quarter arc or half arc (Draw/Ring.lua)
-    Rotation = 180,        -- degrees clockwise to turn the ring (or arc)
-    Reverse  = false,      -- true: the ring fills counter-clockwise, from the other end
-    Combat   = true,       -- false: the ring fades out while you're in combat
-    Fill     = "gradient", -- "solid" color or a "gradient" along the ring
-    Gradient = 50,         -- gradient: % darker at the ring's start than its end
+    Shape = "ring", -- full ring, three-quarter arc or half arc (Draw/Ring.lua)
+    Rotation = 180, -- degrees clockwise to turn the ring (or arc)
+    Reverse = false, -- true: the ring fills counter-clockwise, from the other end
+    Combat = true, -- false: the ring fades out while you're in combat
+    Fill = "gradient", -- "solid" color or a "gradient" along the ring
+    Gradient = 50, -- gradient: % darker at the ring's start than its end
 }
 
 local function FinalizeDefaults()
@@ -42,9 +42,7 @@ local function FinalizeDefaults()
             DEFAULTS[def.key .. "IconBgAlpha"] = 40
         end
         -- Rings with a game bar of their own can hide it (Features/DefaultUI.lua); off by default.
-        if def.gameBar and DEFAULTS[def.key .. "HideDefault"] == nil then
-            DEFAULTS[def.key .. "HideDefault"] = false
-        end
+        if def.gameBar and DEFAULTS[def.key .. "HideDefault"] == nil then DEFAULTS[def.key .. "HideDefault"] = false end
     end
 end
 
@@ -57,9 +55,7 @@ local function FillDefaults()
     for _, group in ipairs(ns.COLOR_GROUPS) do
         if type(CircletDB[group]) ~= "table" then CircletDB[group] = {} end
         for name, color in pairs(DEFAULTS[group]) do
-            if type(CircletDB[group][name]) ~= "table" then
-                CircletDB[group][name] = CopyTable(color)
-            end
+            if type(CircletDB[group][name]) ~= "table" then CircletDB[group][name] = CopyTable(color) end
         end
     end
 end
@@ -74,7 +70,7 @@ end
 -- read as <group>N<Setting> and map onto the shared <group><Setting>, offset per ring:
 -- quest rings (pin) stack downward, totem rings (totem) sit side by side.
 local GROUPS = {
-    pin   = { axis = "FromTop", gap = 12 },
+    pin = { axis = "FromTop", gap = 12 },
     totem = { axis = "X", gap = 8 },
 }
 local function GroupKey(k)
@@ -84,9 +80,7 @@ local function GroupKey(k)
     return group, tonumber(i), field, g
 end
 
-local function GroupOffset(group, i, g)
-    return (i - 1) * ((CircletDB[group .. "Size"] or 0) + g.gap)
-end
+local function GroupOffset(group, i, g) return (i - 1) * ((CircletDB[group .. "Size"] or 0) + g.gap) end
 
 local db = setmetatable({}, {
     __index = function(_, k)
@@ -108,7 +102,6 @@ local db = setmetatable({}, {
         CircletDB[k] = v
     end,
 })
-
 
 -- Shared with the files loaded after this one.
 ns.DEFAULTS = DEFAULTS

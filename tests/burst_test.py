@@ -4,7 +4,9 @@ local orig = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = orig(self, ...); t._parent = self; table.insert(ALL_TEX, t); return t end
 '''
 head = open('breath_test.py').read().split("lua.execute('''\nFire(\"ADDON_LOADED\"")[0]
-head = head.replace("lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1)
+head = head.replace(
+    "lua.execute(open('mock.lua').read())", "lua.execute(open('mock.lua').read())\nlua.execute(HOOK)", 1
+)
 exec(head)
 lua.execute('''
 local names = { [3365]="Opening", [133]="Fireball", [2575]="Mining", [7620]="Fishing", [3275]="Linen Bandage" }
@@ -98,4 +100,5 @@ CircletDB.fishEnabled = true
 -- Crafting previews: the batch that finishes bursts.
 CircletDB.craftIconBg = true; Slash("craft"); Advance(6.1); P("craft, batch done:  " .. Icon("craft")); Advance(0.65); P("craft, +0.7s:       " .. Icon("craft")); Advance(20)
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

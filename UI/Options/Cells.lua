@@ -19,8 +19,8 @@ local BUILD = {}
 
 local function CellUpdateCommon(c)
     local opt, info = c.opt, c.info
-    c.isDisabled = (c.pageOff or Eval(opt.disabled, info) or (c.group and Eval(c.group.disabled, info)))
-        and true or false
+    c.isDisabled = (c.pageOff or Eval(opt.disabled, info) or (c.group and Eval(c.group.disabled, info))) and true
+        or false
     c:SetAlpha(c.isDisabled and 0.38 or 1)
     if c.label then c.label:SetText(tostring(Eval(opt.name, info) or "")) end
 end
@@ -44,7 +44,11 @@ local function NewCell(kind, parent)
     c.tipText = function() return c.opt and Eval(c.opt.desc, c.info) end
     function c:OnHover(on)
         self.hover:SetShown(on and not self.isText and not self.isDisabled)
-        if on and not self.isText then W.ShowTip(self, self.tipTitle, self.tipText) else W.HideTip() end
+        if on and not self.isText then
+            W.ShowTip(self, self.tipTitle, self.tipText)
+        else
+            W.HideTip()
+        end
     end
     c:SetScript("OnEnter", function(self) self:OnHover(true) end)
     c:SetScript("OnLeave", function(self) self:OnHover(false) end)
@@ -67,23 +71,32 @@ end
 
 local function ReleaseAll()
     for kind, list in pairs(pools) do
-        for _, c in ipairs(list) do c:Hide(); c.opt = nil end
+        for _, c in ipairs(list) do
+            c:Hide()
+            c.opt = nil
+        end
         used[kind] = 0
     end
 end
 
 local function EachCell(fn)
     for kind, list in pairs(pools) do
-        for i = 1, used[kind] or 0 do fn(list[i]) end
+        for i = 1, used[kind] or 0 do
+            fn(list[i])
+        end
     end
 end
 
 BUILD.toggle = function(c)
-    c.switch = W.Switch(c, function(_, v) if not c.isDisabled then Commit(c.opt, c.info, v) end end)
+    c.switch = W.Switch(c, function(_, v)
+        if not c.isDisabled then Commit(c.opt, c.info, v) end
+    end)
     c.switch:SetPoint("RIGHT", c, "RIGHT", -18, 0)
     W.PassHover(c.switch, c)
     c.label:SetPoint("RIGHT", c.switch, "LEFT", -14, 0)
-    c:SetScript("OnClick", function(self) if not self.isDisabled then self.switch:Click() end end)
+    c:SetScript("OnClick", function(self)
+        if not self.isDisabled then self.switch:Click() end
+    end)
     c.Update = function(self)
         CellUpdateCommon(self)
         self.switch:SetOn(self.opt.get(self.info))
@@ -97,7 +110,9 @@ local function ParseNumber(opt, text)
     if not v then return nil end
     if opt.isPercent then v = v / 100 end
     local min, max = opt.min or -math.huge, opt.max or math.huge
-    if opt.step and opt.step > 0 and opt.min then v = opt.min + math.floor((v - opt.min) / opt.step + 0.5) * opt.step end
+    if opt.step and opt.step > 0 and opt.min then
+        v = opt.min + math.floor((v - opt.min) / opt.step + 0.5) * opt.step
+    end
     return math.max(min, math.min(max, v))
 end
 
@@ -130,7 +145,9 @@ BUILD.range = function(c)
 end
 
 BUILD.select = function(c)
-    c.drop = W.Dropdown(c, 184, function(v) if not c.isDisabled then Commit(c.opt, c.info, v) end end)
+    c.drop = W.Dropdown(c, 184, function(v)
+        if not c.isDisabled then Commit(c.opt, c.info, v) end
+    end)
     c.drop:SetPoint("RIGHT", c, "RIGHT", -18, 0)
     W.PassHover(c.drop, c)
     c.label:SetPoint("RIGHT", c.drop, "LEFT", -14, 0)
@@ -145,14 +162,14 @@ BUILD.select = function(c)
                 if values[k] ~= nil then items[#items + 1] = { k, tostring(values[k]) } end
             end
         else
-            for k, text in pairs(values) do items[#items + 1] = { k, tostring(text) } end
+            for k, text in pairs(values) do
+                items[#items + 1] = { k, tostring(text) }
+            end
             table.sort(items, function(a, b) return a[2] < b[2] end)
         end
         local value = opt.get(info)
         self.drop:SetItems(items, value)
-        if value == nil or values[value] == nil then
-            self.drop.label:SetText("|cff777a80Choose...|r")
-        end
+        if value == nil or values[value] == nil then self.drop.label:SetText("|cff777a80Choose...|r") end
         self.drop.disabled = self.isDisabled
     end
 end
@@ -197,7 +214,9 @@ BUILD.execute = function(c)
     c.button = W.Button(c, COL_W - 36, 28, "", function() Commit(c.opt, c.info) end)
     c.button:SetPoint("CENTER")
     c.button.tipTitle, c.button.tipText = c.tipTitle, c.tipText
-    c:SetScript("OnClick", function(self) if not self.isDisabled then self.button:Click() end end)
+    c:SetScript("OnClick", function(self)
+        if not self.isDisabled then self.button:Click() end
+    end)
     c.Update = function(self)
         CellUpdateCommon(self)
         self:SetAlpha(1)
@@ -236,8 +255,16 @@ BUILD.subhead = function(c)
     end
 end
 
-local CELL_KIND = { toggle = "toggle", range = "range", select = "select", color = "color", input = "input",
-                    execute = "execute", description = "text", header = "subhead" }
+local CELL_KIND = {
+    toggle = "toggle",
+    range = "range",
+    select = "select",
+    color = "color",
+    input = "input",
+    execute = "execute",
+    description = "text",
+    header = "subhead",
+}
 
 ---------------------------------------------------------------- section titles
 local heads, headsUsed = {}, 0
@@ -254,7 +281,9 @@ local function Head(parent)
 end
 
 local function ReleaseHeads()
-    for i = 1, headsUsed do heads[i]:Hide() end
+    for i = 1, headsUsed do
+        heads[i]:Hide()
+    end
     headsUsed = 0
 end
 

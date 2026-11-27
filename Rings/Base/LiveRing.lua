@@ -14,8 +14,8 @@ local FLASH_TIME, FLASH_BLINKS = 1.4, 3
 -- two look quite the same.
 local POP_TIME, BURST_TIME, BURST_SPARKS = 0.35, 0.7, 8
 local OPAQUE_TIME = 0.15 -- a dimmed background icon reaches full opacity this fast
-local MAX_NOTCHES = 60  -- a state's notches beyond this fall back to the usual 24
-local LINES = 2 * 72    -- enough segments for MAX_NOTCHES notches (2 per notch past 36)
+local MAX_NOTCHES = 60 -- a state's notches beyond this fall back to the usual 24
+local LINES = 2 * 72 -- enough segments for MAX_NOTCHES notches (2 per notch past 36)
 
 -- cfg.key: settings prefix (<key>Size, <key>X, ...).
 -- cfg.read(now): returns the state to draw, or nil when there's nothing to show.
@@ -70,7 +70,11 @@ local function CreateLiveRing(cfg)
         end
         frame:EnableMouse(true)
         if frame.SetPassThroughButtons then
-            if editingNow then frame:SetPassThroughButtons() else frame:SetPassThroughButtons("LeftButton") end
+            if editingNow then
+                frame:SetPassThroughButtons()
+            else
+                frame:SetPassThroughButtons("LeftButton")
+            end
         end
     end
     if cfg.onRightClick then
@@ -165,7 +169,9 @@ local function CreateLiveRing(cfg)
     local function HideBurst()
         if not badge.burstGlow then return end
         badge.burstGlow:Hide()
-        for _, t in ipairs(badge.sparks) do t:Hide() end
+        for _, t in ipairs(badge.sparks) do
+            t:Hide()
+        end
     end
 
     -- A new burst's random turn and per-spark variation, picked once (stable while it plays).
@@ -179,7 +185,7 @@ local function CreateLiveRing(cfg)
             badge.burstVary[i] = {
                 angle = (math.random() - 0.5) * spread * 0.5, -- up to a quarter of the gap either way
                 reach = 0.75 + math.random() * 0.5,
-                size  = 0.8 + math.random() * 0.4,
+                size = 0.8 + math.random() * 0.4,
             }
         end
     end
@@ -284,7 +290,11 @@ local function CreateLiveRing(cfg)
         geom.notches = notches
         local inner = ns.UpdateGeometry(frame, key, size, notches)
         if not inner then return end
-        frame.value:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Value", inner * (cfg.valueScale or 0.25), 9), "OUTLINE")
+        frame.value:SetFont(
+            STANDARD_TEXT_FONT,
+            ns.FontSize(key, "Value", inner * (cfg.valueScale or 0.25), 9),
+            "OUTLINE"
+        )
         frame.title:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Title", inner * 0.12, 7), "OUTLINE")
         frame.label:SetFont(STANDARD_TEXT_FONT, ns.FontSize(key, "Label", inner * 0.115, 7), "OUTLINE")
         frame.title:SetWidth(inner * 0.9)
@@ -308,15 +318,21 @@ local function CreateLiveRing(cfg)
         if not st then return end
         -- No track: hide it and the border; when it comes back, the next layout redraws them.
         if st.noTrack then
-            for _, l in ipairs(frame.bg) do l:Hide() end
-            for _, l in ipairs(frame.sqBorder or {}) do l:Hide() end
+            for _, l in ipairs(frame.bg) do
+                l:Hide()
+            end
+            for _, l in ipairs(frame.sqBorder or {}) do
+                l:Hide()
+            end
             frame.trackHidden = true
         elseif frame.trackHidden then
             frame.trackHidden = nil
             frame.layoutKey = nil
         end
         local c = st.color
-        for _, l in ipairs(frame.fill) do l:SetColorTexture(c.r, c.g, c.b, 1) end
+        for _, l in ipairs(frame.fill) do
+            l:SetColorTexture(c.r, c.g, c.b, 1)
+        end
         DrawArc(frame.fill, 0, st.frac or 0, frame, geom, nil, ns.Shade(key, c))
         -- fillGate(pos): each drawn segment's alpha from where it sits along the arc (0..1).
         -- The value may be a secret: SetAlpha takes those from addon code, so a ring can show
@@ -327,7 +343,9 @@ local function CreateLiveRing(cfg)
             end
             frame.fillGated = true
         elseif frame.fillGated then
-            for _, l in ipairs(frame.fill) do l:SetAlpha(1) end
+            for _, l in ipairs(frame.fill) do
+                l:SetAlpha(1)
+            end
             frame.fillGated = nil
         end
 
@@ -342,10 +360,14 @@ local function CreateLiveRing(cfg)
             end
         end
         if flashAlpha > 0 then
-            for _, l in ipairs(frame.flash) do l:SetColorTexture(1, 1, 1, flashAlpha) end
+            for _, l in ipairs(frame.flash) do
+                l:SetColorTexture(1, 1, 1, flashAlpha)
+            end
             DrawArc(frame.flash, st.flashFrom, st.flashTo, frame, geom, true)
         else
-            for _, l in ipairs(frame.flash) do l:Hide() end
+            for _, l in ipairs(frame.flash) do
+                l:Hide()
+            end
         end
         frame.title:SetText(st.title or "")
         frame.title:SetTextColor(1, 0.82, 0)
@@ -414,9 +436,7 @@ local function CreateLiveRing(cfg)
         if self.t < every then return end
         self.t = 0
         if not CircletDB or frame:IsShown() then return end
-        if opt("Enabled") and cfg.read(GetTime()) then
-            frame:Show()
-        end
+        if opt("Enabled") and cfg.read(GetTime()) then frame:Show() end
     end)
 
     local ring = { frame = frame }
@@ -425,8 +445,10 @@ local function CreateLiveRing(cfg)
         frame.isEditing = editing
         SetClickMode(editing)
         if frame.editHint then
-            frame.editHint:SetText((cfg.locked and cfg.locked()) and "Position locked"
-                or "Drag to move  ·  Shift: no snap  ·  Right-click to reset")
+            frame.editHint:SetText(
+                (cfg.locked and cfg.locked()) and "Position locked"
+                    or "Drag to move  ·  Shift: no snap  ·  Right-click to reset"
+            )
         end
         frame.editHint:SetShown(editing)
         frame:SetFrameStrata(editing and EDIT_STRATA or ns.RING_STRATA)

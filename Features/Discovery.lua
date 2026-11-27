@@ -77,7 +77,9 @@ local current, startedAt, queue = nil, 0, {}
 local function Ease(t) return 1 - (1 - math.max(0, math.min(1, t))) ^ 3 end
 
 local function SetRingColor(layer, c, a)
-    for _, l in ipairs(layer) do l:SetColorTexture(c.r, c.g, c.b, a) end
+    for _, l in ipairs(layer) do
+        l:SetColorTexture(c.r, c.g, c.b, a)
+    end
 end
 
 local function DrawFrame(t)
@@ -96,8 +98,8 @@ local function DrawFrame(t)
     SetRingColor(fx.ring, GOLD, alpha)
     SetRingColor(fx.ring2, GOLD, alpha)
     local half = sweep / 2
-    DrawArc(fx.ring, 0, half, fx, geom)       -- right side, top down
-    DrawArc(fx.ring2, 1 - half, 1, fx, geom)  -- left side, top down
+    DrawArc(fx.ring, 0, half, fx, geom) -- right side, top down
+    DrawArc(fx.ring2, 1 - half, 1, fx, geom) -- left side, top down
 
     -- Glints: a pair of bright arcs bouncing up and down both sides of the ring together
     -- once it's closed: down to the bottom, where they meet, back up to the top, where they
@@ -115,8 +117,12 @@ local function DrawFrame(t)
         DrawArc(fx.glint, math.max(0, p - len / 2), math.min(0.5, p + len / 2), fx, glintGeom, true)
         DrawArc(fx.glint2, math.max(0.5, 1 - p - len / 2), math.min(1, 1 - p + len / 2), fx, glintGeom, true)
     else
-        for _, l in ipairs(fx.glint) do l:Hide() end
-        for _, l in ipairs(fx.glint2) do l:Hide() end
+        for _, l in ipairs(fx.glint) do
+            l:Hide()
+        end
+        for _, l in ipairs(fx.glint2) do
+            l:Hide()
+        end
     end
 
     -- Ticks grow out as the sweep passes them: north first, east and west together,
@@ -172,7 +178,11 @@ fx:SetScript("OnUpdate", function()
     if t >= TOTAL then
         current = nil
         local nextEntry = table.remove(queue, 1)
-        if nextEntry then Start(nextEntry) else fx:Hide() end
+        if nextEntry then
+            Start(nextEntry)
+        else
+            fx:Hide()
+        end
         return
     end
     DrawFrame(t)
@@ -195,7 +205,11 @@ local function PlayDiscovery(area, xp, force)
         end
     end
     local entry = { area = area, xp = xp }
-    if current then table.insert(queue, entry) else Start(entry) end
+    if current then
+        table.insert(queue, entry)
+    else
+        Start(entry)
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -212,9 +226,12 @@ end
 
 local PATTERNS = {}
 for _, entry in ipairs({
-    { ERR_ZONE_EXPLORED_XP, true }, { ERR_ZONE_EXPLORED, false },
-    { "Discovered %s: %d experience gained", true }, { "Discovered %s: %d experience gained.", true },
-    { "Discovered: %s", false }, { "Discovered %s", false },
+    { ERR_ZONE_EXPLORED_XP, true },
+    { ERR_ZONE_EXPLORED, false },
+    { "Discovered %s: %d experience gained", true },
+    { "Discovered %s: %d experience gained.", true },
+    { "Discovered: %s", false },
+    { "Discovered %s", false },
 }) do
     local p = ToPattern(entry[1])
     if p then table.insert(PATTERNS, { p, entry[2] }) end
@@ -237,9 +254,7 @@ ns.Listen({ "CHAT_MSG_COMBAT_XP_GAIN", "CHAT_MSG_SYSTEM", "UI_INFO_MESSAGE" }, f
     if area then PlayDiscovery(area, xp) end
 end)
 
-local function PreviewDiscovery()
-    PlayDiscovery("Thelsamar", 120, true)
-end
+local function PreviewDiscovery() PlayDiscovery("Thelsamar", 120, true) end
 
 ns.RegisterCommand({ "discover", "discovered", "explore" }, PreviewDiscovery, "preview the discovered area animation")
 

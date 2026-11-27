@@ -2,7 +2,8 @@
 -- thinner band inside it.
 local ADDON_NAME, ns = ...
 
-local db, CreateLiveRing, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.CreateLiveRing, ns.SafeCall, ns.Clean, ns.CleanNumber, ns.IsSecret
+local db, CreateLiveRing, SafeCall, Clean, CleanNumber, IsSecret =
+    ns.db, ns.CreateLiveRing, ns.SafeCall, ns.Clean, ns.CleanNumber, ns.IsSecret
 local NewRingLayer, DrawArc, TRACK = ns.NewRingLayer, ns.DrawArc, ns.TRACK
 
 -- Shared by the health rings' files (Rings/Health/*.lua after Fx.lua and Auras.lua), which load
@@ -48,9 +49,7 @@ local function CheckScale()
     if type(UnitHealthPercent) ~= "function" then return end
     local hp, max = SafeCall(UnitHealth, "player"), SafeCall(UnitHealthMax, "player")
     local p = SafeCall(UnitHealthPercent, "player")
-    if Readable(hp, max, p) and max > 0 and hp > 0 then
-        H.percentScale = (p > 1.001) and 100 or 1
-    end
+    if Readable(hp, max, p) and max > 0 and hp > 0 then H.percentScale = (p > 1.001) and 100 or 1 end
 end
 
 local stepCurves = {} -- by threshold (in 1/400ths): 0 below it, 1 from it on
@@ -66,9 +65,7 @@ local function StepCurve(t)
     return cv
 end
 
-local function CurvesWork()
-    return C_CurveUtil and type(C_CurveUtil.CreateCurve) == "function"
-end
+local function CurvesWork() return C_CurveUtil and type(C_CurveUtil.CreateCurve) == "function" end
 
 -- A fill gate (each segment's alpha from where it sits round the ring) for a hidden value,
 -- or nil if this client can't do it. pct(curve) runs the hidden percentage through a curve.
@@ -104,8 +101,10 @@ end
 
 -- Health color: the ring's own, or the unit's class color (players) / reaction (NPCs).
 local REACTION = {
-    hostile = { r = 0.85, g = 0.2, b = 0.15 }, neutral = { r = 0.95, g = 0.8, b = 0.2 },
-    friendly = { r = 0.25, g = 0.8, b = 0.3 }, tapped = { r = 0.5, g = 0.5, b = 0.5 },
+    hostile = { r = 0.85, g = 0.2, b = 0.15 },
+    neutral = { r = 0.95, g = 0.8, b = 0.2 },
+    friendly = { r = 0.25, g = 0.8, b = 0.3 },
+    tapped = { r = 0.5, g = 0.5, b = 0.5 },
 }
 local function HealthColor(key, unit)
     local c = db[key .. "Colors"]
@@ -115,15 +114,22 @@ local function HealthColor(key, unit)
     if Clean(SafeCall(UnitIsPlayer, unit)) then
         local _, class = SafeCall(UnitClass, unit)
         class = Clean(class)
-        local cc = class and ((C_ClassColor and C_ClassColor.GetClassColor and C_ClassColor.GetClassColor(class))
-            or (RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]))
+        local cc = class
+            and (
+                (C_ClassColor and C_ClassColor.GetClassColor and C_ClassColor.GetClassColor(class))
+                or (RAID_CLASS_COLORS and RAID_CLASS_COLORS[class])
+            )
         if cc then return { r = cc.r, g = cc.g, b = cc.b } end
         return c.health
     end
     if Clean(SafeCall(UnitIsTapDenied, unit)) then return REACTION.tapped end
     local reaction = CleanNumber(SafeCall(UnitReaction, unit, "player"))
     if reaction then
-        if reaction <= 3 then return REACTION.hostile elseif reaction == 4 then return REACTION.neutral end
+        if reaction <= 3 then
+            return REACTION.hostile
+        elseif reaction == 4 then
+            return REACTION.neutral
+        end
         return REACTION.friendly
     end
     return c.health
@@ -131,8 +137,15 @@ end
 
 local function PowerColor(key, token)
     local c = db[key .. "Colors"]
-    if token == "MANA" then return c.mana elseif token == "RAGE" then return c.rage
-    elseif token == "ENERGY" then return c.energy elseif token == "FOCUS" then return c.focus end
+    if token == "MANA" then
+        return c.mana
+    elseif token == "RAGE" then
+        return c.rage
+    elseif token == "ENERGY" then
+        return c.energy
+    elseif token == "FOCUS" then
+        return c.focus
+    end
     local pc = PowerBarColor and token and PowerBarColor[token]
     if pc and pc.r then return { r = pc.r, g = pc.g, b = pc.b } end
     return c.mana

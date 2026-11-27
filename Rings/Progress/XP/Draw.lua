@@ -45,9 +45,13 @@ local function DrawRing(value)
     local shadeR, shadeN = ns.Shade("xp", STATE_COLORS.rested), ns.Shade("xp", STATE_COLORS.normal)
     if not shadeR then
         local c = STATE_COLORS.rested
-        for _, l in ipairs(xpRing.fillRested) do l:SetColorTexture(c.r, c.g, c.b, 1) end
+        for _, l in ipairs(xpRing.fillRested) do
+            l:SetColorTexture(c.r, c.g, c.b, 1)
+        end
         c = STATE_COLORS.normal
-        for _, l in ipairs(xpRing.fillNormal) do l:SetColorTexture(c.r, c.g, c.b, 1) end
+        for _, l in ipairs(xpRing.fillNormal) do
+            l:SetColorTexture(c.r, c.g, c.b, 1)
+        end
     end
     DrawArc(xpRing.fillRested, 0, blueTo, nil, nil, nil, shadeR)
     DrawArc(xpRing.fillNormal, blueTo, frac, nil, nil, nil, shadeN)
@@ -140,14 +144,19 @@ xpRing:SetScript("OnUpdate", function(self, elapsed)
     end
     DrawRing(anim.shown)
     DrawGainFx(now, moving and not landed, landed)
-    UpdateRestIcon((IsResting and IsResting()) or (XP.xpEditing and XP.xpSampleRested == false), ring.R + ring.T / 2,
-        XPSize())
+    UpdateRestIcon(
+        (IsResting and IsResting()) or (XP.xpEditing and XP.xpSampleRested == false),
+        ring.R + ring.T / 2,
+        XPSize()
+    )
 
     if XP.xpEditing then
         local a = self:GetAlpha()
         if a < 1 then self:SetAlpha(math.min(1, a + elapsed / 0.2)) end
         anim.idleSince = nil
-        for _, t in ipairs(XP_TEXTS) do t:SetAlpha(1) end
+        for _, t in ipairs(XP_TEXTS) do
+            t:SetAlpha(1)
+        end
         if now >= XP.xpSampleAt then XP.XPSample() end
         return
     end
@@ -174,7 +183,9 @@ xpRing:SetScript("OnUpdate", function(self, elapsed)
     local ta = XP_TEXTS[1]:GetAlpha() or 1
     if ta ~= textTarget then
         ta = textTarget > ta and math.min(1, ta + elapsed / 0.25) or math.max(0, ta - elapsed / 0.6)
-        for _, t in ipairs(XP_TEXTS) do t:SetAlpha(ta) end
+        for _, t in ipairs(XP_TEXTS) do
+            t:SetAlpha(ta)
+        end
     end
 
     local a = self:GetAlpha()
@@ -183,9 +194,7 @@ xpRing:SetScript("OnUpdate", function(self, elapsed)
     elseif (AlwaysOn() or RestingShow()) and db.xpEnabled then
         -- Permanent ring (or resting at an inn): stay up, and once the gain has had its time, go back to idle.
         if a < 1 then self:SetAlpha(math.min(1, a + elapsed / 0.2)) end
-        if anim.preview or anim.session ~= 0 or anim.restGain then
-            XP.ShowXPIdle(true)
-        end
+        if anim.preview or anim.session ~= 0 or anim.restGain then XP.ShowXPIdle(true) end
     else
         a = a - elapsed / 0.6
         if a <= 0 then
@@ -213,8 +222,8 @@ local function PlayXPRing(fromValue, toValue, gain, restBefore, maxBefore, force
 
     local gainFrom = 0
     if xpRing:IsShown() and anim.session > 0 then
-        fromValue = anim.shown     -- keep going from wherever the fill currently is
-        gainFrom = anim.gainShown  -- ...and keep counting from the number on screen
+        fromValue = anim.shown -- keep going from wherever the fill currently is
+        gainFrom = anim.gainShown -- ...and keep counting from the number on screen
     else
         anim.session = 0
         anim.sessionFrom = fromValue

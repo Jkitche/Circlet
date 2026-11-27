@@ -1,11 +1,18 @@
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
-lua.execute('local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end')
+lua.execute(
+    'local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; return f end'
+)
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end')
-import subprocess; subprocess.run(['python3','make_bundle.py'])
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end; RegionMethods.EnableMouse = function(s, v) s._mouse = v end'
+)
+import subprocess
+
+subprocess.run(['python3', 'make_bundle.py'])
 chunk = lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())
 chunk("Circlet", lua.table())
 lua.execute('''
@@ -39,4 +46,5 @@ CircletDB.gridSize = 50; Advance(0.5); P("grid 50: " .. GridLines())
 CircletDB.snapGrid = false; Advance(0.5); P("snap off: " .. GridLines())
 CircletDB.snapGrid = true; Slash("edit xp"); Advance(0.3); P("after edit off: " .. GridLines())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

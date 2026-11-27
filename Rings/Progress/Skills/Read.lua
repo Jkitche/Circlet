@@ -21,23 +21,45 @@ local SKILL_CATEGORY = { [6] = "weapon", [9] = "secondary", [11] = "profession" 
 -- hidden under collapsed headers in the Skills tab.
 local KNOWN_SKILLS = {
     -- Weapon skills (and Defense)
-    [43] = "weapon", [44] = "weapon", [45] = "weapon", [46] = "weapon", [54] = "weapon",
-    [55] = "weapon", [95] = "weapon", [136] = "weapon", [160] = "weapon", [162] = "weapon",
-    [172] = "weapon", [173] = "weapon", [176] = "weapon", [226] = "weapon", [228] = "weapon",
-    [229] = "weapon", [473] = "weapon",
+    [43] = "weapon",
+    [44] = "weapon",
+    [45] = "weapon",
+    [46] = "weapon",
+    [54] = "weapon",
+    [55] = "weapon",
+    [95] = "weapon",
+    [136] = "weapon",
+    [160] = "weapon",
+    [162] = "weapon",
+    [172] = "weapon",
+    [173] = "weapon",
+    [176] = "weapon",
+    [226] = "weapon",
+    [228] = "weapon",
+    [229] = "weapon",
+    [473] = "weapon",
     -- Professions
-    [164] = "profession", [165] = "profession", [171] = "profession", [182] = "profession",
-    [186] = "profession", [197] = "profession", [202] = "profession", [333] = "profession",
+    [164] = "profession",
+    [165] = "profession",
+    [171] = "profession",
+    [182] = "profession",
+    [186] = "profession",
+    [197] = "profession",
+    [202] = "profession",
+    [333] = "profession",
     [393] = "profession",
     -- Secondary skills: First Aid, Cooking, Fishing, Riding
-    [129] = "secondary", [185] = "secondary", [356] = "secondary", [762] = "secondary",
+    [129] = "secondary",
+    [185] = "secondary",
+    [356] = "secondary",
+    [762] = "secondary",
 }
 
 local SKILL_STYLE = {
     -- Colors live in db.skillColors so they can be changed in the options panel.
-    weapon     = { label = "Weapon skill" },
-    profession = { label = "Profession",      opt = "skillProfessions" },
-    secondary  = { label = "Secondary skill", opt = "skillSecondary" },
+    weapon = { label = "Weapon skill" },
+    profession = { label = "Profession", opt = "skillProfessions" },
+    secondary = { label = "Secondary skill", opt = "skillSecondary" },
 }
 
 -- Header names as a last resort (English, plus the game's own strings if present).
@@ -51,7 +73,9 @@ local function HeaderKind(name)
 end
 
 local skillKinds = {} -- skillID -> kind, for every skill seen (seeded with the known IDs)
-for id, kind in pairs(KNOWN_SKILLS) do skillKinds[id] = kind end
+for id, kind in pairs(KNOWN_SKILLS) do
+    skillKinds[id] = kind
+end
 
 local function SnapshotLine(info, kind)
     local rank, max, name = info.rank, info.maxRank, info.name
@@ -61,9 +85,7 @@ local function SnapshotLine(info, kind)
 end
 
 local function ReadSkills()
-    if not (C_SkillInfo and C_SkillInfo.GetNumSkillLines and C_SkillInfo.GetSkillLineInfo) then
-        return nil
-    end
+    if not (C_SkillInfo and C_SkillInfo.GetNumSkillLines and C_SkillInfo.GetSkillLineInfo) then return nil end
     local out = {}
     local headerKind
     for i = 1, C_SkillInfo.GetNumSkillLines() do
@@ -88,9 +110,7 @@ local function ReadSkills()
         for id, kind in pairs(skillKinds) do
             if out[id] == nil then
                 local ok, info = pcall(C_SkillInfo.GetSkillLineInfoByID, id)
-                if ok and type(info) == "table" then
-                    out[id] = SnapshotLine(info, kind)
-                end
+                if ok and type(info) == "table" then out[id] = SnapshotLine(info, kind) end
             end
         end
     end
@@ -106,9 +126,13 @@ local function ReadSkills()
                 byName[s.name] = id
             else
                 local keep
-                if KNOWN_SKILLS[id] and not KNOWN_SKILLS[other] then keep = id
-                elseif KNOWN_SKILLS[other] and not KNOWN_SKILLS[id] then keep = other
-                else keep = math.min(id, other) end
+                if KNOWN_SKILLS[id] and not KNOWN_SKILLS[other] then
+                    keep = id
+                elseif KNOWN_SKILLS[other] and not KNOWN_SKILLS[id] then
+                    keep = other
+                else
+                    keep = math.min(id, other)
+                end
                 out[keep == id and other or id] = nil
                 byName[s.name] = keep
             end
@@ -124,18 +148,37 @@ end
 -- type's icon, then to the drawn glyph.
 local SKILL_ICONS = {
     -- Professions
-    [164] = "Trade_BlackSmithing", [165] = "Trade_LeatherWorking", [171] = "Trade_Alchemy",
-    [182] = "Trade_Herbalism", [186] = "Trade_Mining", [197] = "Trade_Tailoring",
-    [202] = "Trade_Engineering", [333] = "Trade_Engraving", [393] = "INV_Misc_Pelt_Wolf_01",
+    [164] = "Trade_BlackSmithing",
+    [165] = "Trade_LeatherWorking",
+    [171] = "Trade_Alchemy",
+    [182] = "Trade_Herbalism",
+    [186] = "Trade_Mining",
+    [197] = "Trade_Tailoring",
+    [202] = "Trade_Engineering",
+    [333] = "Trade_Engraving",
+    [393] = "INV_Misc_Pelt_Wolf_01",
     -- Secondary skills
-    [129] = "Spell_Holy_SealOfSacrifice", [185] = "INV_Misc_Food_15", [356] = "Trade_Fishing",
+    [129] = "Spell_Holy_SealOfSacrifice",
+    [185] = "INV_Misc_Food_15",
+    [356] = "Trade_Fishing",
     [762] = "Spell_Nature_Swiftness",
     -- Weapon skills
-    [43] = "INV_Sword_04", [55] = "INV_Sword_39", [44] = "INV_Axe_01", [172] = "INV_Axe_09",
-    [54] = "INV_Mace_01", [160] = "INV_Hammer_16", [173] = "INV_Weapon_ShortBlade_05",
-    [136] = "INV_Staff_08", [229] = "INV_Spear_06", [45] = "INV_Weapon_Bow_02",
-    [226] = "INV_Weapon_Crossbow_01", [46] = "INV_Weapon_Rifle_01", [176] = "INV_ThrowingKnife_02",
-    [228] = "INV_Wand_04", [473] = "INV_Misc_MonsterClaw_02", [162] = "INV_Gauntlets_04",
+    [43] = "INV_Sword_04",
+    [55] = "INV_Sword_39",
+    [44] = "INV_Axe_01",
+    [172] = "INV_Axe_09",
+    [54] = "INV_Mace_01",
+    [160] = "INV_Hammer_16",
+    [173] = "INV_Weapon_ShortBlade_05",
+    [136] = "INV_Staff_08",
+    [229] = "INV_Spear_06",
+    [45] = "INV_Weapon_Bow_02",
+    [226] = "INV_Weapon_Crossbow_01",
+    [46] = "INV_Weapon_Rifle_01",
+    [176] = "INV_ThrowingKnife_02",
+    [228] = "INV_Wand_04",
+    [473] = "INV_Misc_MonsterClaw_02",
+    [162] = "INV_Gauntlets_04",
     [95] = "Ability_Defend",
 }
 local SKILL_TYPE_ICONS = { weapon = "INV_Sword_04", profession = "Trade_BlackSmithing", secondary = "Trade_Fishing" }
@@ -156,9 +199,7 @@ local function IconPath(name)
 end
 
 -- The game icon for a skill line, or nil if neither it nor its type's icon exists.
-local function SkillIconPath(skillID, kind)
-    return IconPath(SKILL_ICONS[skillID]) or IconPath(SKILL_TYPE_ICONS[kind])
-end
+local function SkillIconPath(skillID, kind) return IconPath(SKILL_ICONS[skillID]) or IconPath(SKILL_TYPE_ICONS[kind]) end
 
 local SKILL_GLYPH = { weapon = "sword", profession = "hammer", secondary = "hook" }
 -- Profession / secondary skill tiers, by the cap training raises you to.

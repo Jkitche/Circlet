@@ -50,7 +50,7 @@ local FX = ns.HealthFx
 -- two seconds; with energy hidden, a tick is any energy change that isn't one of your casts.
 
 local TEX = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Textures\\"
-local GLOW = TEX .. "GlowRing"       -- a soft band peaking at 0.70 of its half-width
+local GLOW = TEX .. "GlowRing" -- a soft band peaking at 0.70 of its half-width
 local GLOW_AT = 0.70
 local STAR = "Interface\\Cooldown\\star4"
 local SOFT = "Interface\\GLUES\\Models\\UI_Draenei\\GenericGlow64"
@@ -59,14 +59,26 @@ local SKULL = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull"
 local SWORDS = "Interface\\CharacterFrame\\UI-StateIcon"
 
 local ON = {
-    Combo = { targetHp = true }, Mark = { playerHp = true, targetHp = true, totHp = true, petHp = true },
-    Aggro = { targetHp = true }, Execute = { targetHp = true }, LowHealth = { playerHp = true },
-    Death = { playerHp = true, targetHp = true, totHp = true, petHp = true }, Flare = { playerHp = true },
-    Heal = { playerHp = true, targetHp = true, petHp = true }, Jolt = { playerHp = true, targetHp = true, petHp = true },
-    Avoid = { playerHp = true, targetHp = true, petHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
-    FullMana = { playerHp = true }, Skin = { targetHp = true },
-    Quest = { targetHp = true }, Range = { targetHp = true }, Tapped = { targetHp = true },
-    Loot = { targetHp = true }, Stance = { playerHp = true }, Faction = { targetHp = true },
+    Combo = { targetHp = true },
+    Mark = { playerHp = true, targetHp = true, totHp = true, petHp = true },
+    Aggro = { targetHp = true },
+    Execute = { targetHp = true },
+    LowHealth = { playerHp = true },
+    Death = { playerHp = true, targetHp = true, totHp = true, petHp = true },
+    Flare = { playerHp = true },
+    Heal = { playerHp = true, targetHp = true, petHp = true },
+    Jolt = { playerHp = true, targetHp = true, petHp = true },
+    Avoid = { playerHp = true, targetHp = true, petHp = true },
+    EnergyTick = { playerHp = true },
+    Rage = { playerHp = true },
+    FullMana = { playerHp = true },
+    Skin = { targetHp = true },
+    Quest = { targetHp = true },
+    Range = { targetHp = true },
+    Tapped = { targetHp = true },
+    Loot = { targetHp = true },
+    Stance = { playerHp = true },
+    Faction = { targetHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -76,18 +88,46 @@ local function On(key, name) return ON[name][key] and db[key .. "Fx" .. name] en
 -- ring in its options (<key>Pos<Badge>; the defaults are where they've always been). Two badges
 -- never share a spot: picking a taken one swaps them (ns.SetBadgeSpot). The top is also where
 -- combo points go, and the aura arc sits on whichever side it's set to.
-local BADGE_SPOTS = { top = 90, topright = 45, right = 0, bottomright = 315,
-                      bottom = 270, bottomleft = 225, left = 180, topleft = 135 }
+local BADGE_SPOTS = {
+    top = 90,
+    topright = 45,
+    right = 0,
+    bottomright = 315,
+    bottom = 270,
+    bottomleft = 225,
+    left = 180,
+    topleft = 135,
+}
 local BADGE_SPOT_ORDER = { "topleft", "top", "topright", "right", "bottomright", "bottom", "bottomleft", "left" }
-local BADGE_SPOT_NAMES = { topleft = "Top left", top = "Top", topright = "Top right", right = "Right",
-                           bottomright = "Bottom right", bottom = "Bottom", bottomleft = "Bottom left", left = "Left" }
+local BADGE_SPOT_NAMES = {
+    topleft = "Top left",
+    top = "Top",
+    topright = "Top right",
+    right = "Right",
+    bottomright = "Bottom right",
+    bottom = "Bottom",
+    bottomleft = "Bottom left",
+    left = "Left",
+}
 -- Each badge: its label, what it is, and its default spot on each ring that has it.
 local BADGES = {
-    Level = { "Level badge", "The level disc (with the elite dragon on it for elites).",
-              playerHp = "bottomleft", targetHp = "bottomright", totHp = "bottomright", petHp = "bottomleft" },
+    Level = {
+        "Level badge",
+        "The level disc (with the elite dragon on it for elites).",
+        playerHp = "bottomleft",
+        targetHp = "bottomright",
+        totHp = "bottomright",
+        petHp = "bottomleft",
+    },
     Combat = { "In-combat indicator", "The crossed swords while you're in combat.", playerHp = "topright" },
-    Mark = { "Raid marker", "The raid target icon (skull, cross...).",
-             playerHp = "topleft", targetHp = "topleft", totHp = "topleft", petHp = "topleft" },
+    Mark = {
+        "Raid marker",
+        "The raid target icon (skull, cross...).",
+        playerHp = "topleft",
+        targetHp = "topleft",
+        totHp = "topleft",
+        petHp = "topleft",
+    },
     Stance = { "Stance or form", "Your stance, form, aura or stealth.", playerHp = "bottomright" },
     Skin = { "Skinnable", "The skinning (or herb, ore, parts) badge.", targetHp = "topright" },
     Quest = { "Quest target", "The quest ! and its progress.", targetHp = "bottomleft" },
@@ -110,20 +150,32 @@ local function SetBadgeSpot(key, badge, spot)
     if not BADGE_SPOTS[spot] then return end
     local old = BadgeSpot(key, badge)
     for other, b in pairs(BADGES) do
-        if other ~= badge and b[key] and BadgeSpot(key, other) == spot then
-            db[key .. "Pos" .. other] = old
-        end
+        if other ~= badge and b[key] and BadgeSpot(key, other) == spot then db[key .. "Pos" .. other] = old end
     end
     db[key .. "Pos" .. badge] = spot
 end
 
-ns.VitalsBadges = { spots = BADGE_SPOTS, spotOrder = BADGE_SPOT_ORDER, spotNames = BADGE_SPOT_NAMES,
-                    badges = BADGES, order = BADGE_ORDER, Spot = BadgeSpot, Angle = BadgeAngle, Set = SetBadgeSpot }
+ns.VitalsBadges = {
+    spots = BADGE_SPOTS,
+    spotOrder = BADGE_SPOT_ORDER,
+    spotNames = BADGE_SPOT_NAMES,
+    badges = BADGES,
+    order = BADGE_ORDER,
+    Spot = BadgeSpot,
+    Angle = BadgeAngle,
+    Set = SetBadgeSpot,
+}
 
 -- Event times, by ring key.
-local hits = {}   -- key -> { heal = t, jolt = t, block = t, dodge = t, parry = t, flare = t }
-local function Mark(key, what) hits[key] = hits[key] or {}; hits[key][what] = GetTime() end
-local function Since(key, what) local h = hits[key] return h and h[what] and GetTime() - h[what] or math.huge end
+local hits = {} -- key -> { heal = t, jolt = t, block = t, dodge = t, parry = t, flare = t }
+local function Mark(key, what)
+    hits[key] = hits[key] or {}
+    hits[key][what] = GetTime()
+end
+local function Since(key, what)
+    local h = hits[key]
+    return h and h[what] and GetTime() - h[what] or math.huge
+end
 ns.VitalsFxMark = Mark -- tests and previews
 
 ---------------------------------------------------------------------------
@@ -171,7 +223,10 @@ local function At(t, frame, x, y, w, h)
 end
 
 -- x, y at <deg> degrees (0 = right, counter-clockwise) and radius r.
-local function Polar(deg, r) local a = math.rad(deg) return r * math.cos(a), r * math.sin(a) end
+local function Polar(deg, r)
+    local a = math.rad(deg)
+    return r * math.cos(a), r * math.sin(a)
+end
 
 -- A glow ring texture sized to sit on a ring of radius r.
 local function GlowOn(t, frame, r, x, y) At(t, frame, x or 0, y or 0, 2 * r / GLOW_AT) end
@@ -198,7 +253,9 @@ end
 local function HealthUnder(st, t)
     if st.dead then return false end
     if st.hpFrac then return st.hpFrac < t end
-    if not (st.unit and type(UnitHealthPercent) == "function" and ns.VitalsCurves and ns.VitalsCurves.Work()) then return nil end
+    if not (st.unit and type(UnitHealthPercent) == "function" and ns.VitalsCurves and ns.VitalsCurves.Work()) then
+        return nil
+    end
     local ok, v = pcall(UnitHealthPercent, st.unit, false, Curve(t, 1, 0))
     if ok then return v end
 end
@@ -207,7 +264,10 @@ end
 -- A hidden value can't be compared or tested, so it's checked for first and passed on.
 local function Gate(t, g)
     if IsSecret(g) then
-        if not pcall(t.SetAlpha, t, g) then t:Hide() return false end
+        if not pcall(t.SetAlpha, t, g) then
+            t:Hide()
+            return false
+        end
         t:Show()
         return true
     end

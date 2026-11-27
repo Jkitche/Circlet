@@ -170,9 +170,7 @@ end
 -- Rested XP grows while you sit in an inn; keep the "before" value fresh between gains.
 -- Skipped during combat so a kill's rested use isn't counted before its XP arrives.
 local function OnRestedChanged()
-    if not XP.xpInCombat then
-        xpState.rest = LiveRestedXP()
-    end
+    if not XP.xpInCombat then xpState.rest = LiveRestedXP() end
 end
 
 local function OnXPUpdate()
@@ -191,9 +189,7 @@ local function OnXPUpdate()
     end
 
     -- XP went down on the same level: a level-up the API hasn't reported yet.
-    if level == xpState.level and cur < xpState.cur then
-        level = xpState.level + 1
-    end
+    if level == xpState.level and cur < xpState.cur then level = xpState.level + 1 end
 
     local gain
     if level > xpState.level then
@@ -248,8 +244,15 @@ local function PreviewXPRing()
 end
 
 -- Events: XP, levels, rest state and combat.
-ns.Listen({ "PLAYER_XP_UPDATE:player", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "PLAYER_UPDATE_RESTING",
-            "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "PLAYER_ENTERING_WORLD" }, function(event, arg1)
+ns.Listen({
+    "PLAYER_XP_UPDATE:player",
+    "PLAYER_LEVEL_UP",
+    "UPDATE_EXHAUSTION",
+    "PLAYER_UPDATE_RESTING",
+    "PLAYER_REGEN_DISABLED",
+    "PLAYER_REGEN_ENABLED",
+    "PLAYER_ENTERING_WORLD",
+}, function(event, arg1)
     if event == "PLAYER_XP_UPDATE" then
         OnXPUpdate()
     elseif event == "PLAYER_LEVEL_UP" then
@@ -264,7 +267,7 @@ ns.Listen({ "PLAYER_XP_UPDATE:player", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "
         OnXPCombatEnd()
     elseif event == "PLAYER_ENTERING_WORLD" then
         OnXPUpdate() -- baseline (or catch up after a loading screen)
-        XP.ShowXPIdle()  -- permanent XP ring, if turned on
+        XP.ShowXPIdle() -- permanent XP ring, if turned on
         if IsResting and IsResting() then OnRestingChanged() end -- rested baseline if logging in at an inn
     end
 end)
@@ -291,10 +294,17 @@ local function ShowXPNow()
     xpRing:Show()
     DrawRing(v)
     local rested = LiveRestedXP()
-    ns.Print(string.format("Level %d: %s / %s XP (%.1f%%), %s to go%s.", xpState.level,
-        BreakUpLargeNumbers(xpState.cur), BreakUpLargeNumbers(xpState.max), XPFraction(xpState.cur, xpState.max) * 100,
-        BreakUpLargeNumbers(xpState.max - xpState.cur),
-        rested > 0 and (", " .. BreakUpLargeNumbers(rested) .. " rested") or ""))
+    ns.Print(
+        string.format(
+            "Level %d: %s / %s XP (%.1f%%), %s to go%s.",
+            xpState.level,
+            BreakUpLargeNumbers(xpState.cur),
+            BreakUpLargeNumbers(xpState.max),
+            XPFraction(xpState.cur, xpState.max) * 100,
+            BreakUpLargeNumbers(xpState.max - xpState.cur),
+            rested > 0 and (", " .. BreakUpLargeNumbers(rested) .. " rested") or ""
+        )
+    )
 end
 
 ns.RegisterCommand({ "showxp", "myxp" }, ShowXPNow, "show your current XP on the ring for a few seconds")

@@ -1,5 +1,6 @@
 import math
 from lupa import LuaRuntime
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -14,8 +15,10 @@ local ct = RegionMethods.CreateTexture
 RegionMethods.CreateTexture = function(self, ...) local t = ct(self, ...); t._parent = self; table.insert(ALL_TEX, t); return t end
 ''')
 s = open('liveedit_test.py').read()
-exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")])
-lua.execute('OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end')
+exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")])
+lua.execute(
+    'OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end'
+)
 lua.eval('function(s) return load(s, "@b") end')(open('bundle.lua').read())("Circlet", lua.table())
 lua.execute('''
 NOW = 0
@@ -53,4 +56,5 @@ CircletDB.clockSunMoon = false; NOW = NOW + 3600 * 10; Advance(0.5); P("10:20 PM
 CircletDB.clockEnabled = false; Advance(2); P("turned off: " .. Face())
 Slash("clock"); Advance(1); P("preview while off: " .. Face()); Advance(9); P("preview over: " .. Face())
 ''')
-print("\n".join(lua.eval("OUT").values())); print("ERRORS:", dict(lua.eval("ERRORS")))
+print("\n".join(lua.eval("OUT").values()))
+print("ERRORS:", dict(lua.eval("ERRORS")))

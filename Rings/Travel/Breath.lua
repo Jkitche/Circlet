@@ -26,8 +26,13 @@ local function Track(name, value, maxValue, scale, paused)
     if type(name) ~= "string" or IsSecret(name) or not KINDS[name] then return end
     value, maxValue, scale = CleanNumber(value), CleanNumber(maxValue), CleanNumber(scale)
     if not (value and maxValue and maxValue > 0) then return end
-    timers[name] = { value = value / 1000, max = maxValue / 1000, scale = scale or -1,
-                     paused = paused and paused ~= 0 and paused ~= false, at = GetTime() }
+    timers[name] = {
+        value = value / 1000,
+        max = maxValue / 1000,
+        scale = scale or -1,
+        paused = paused and paused ~= 0 and paused ~= false,
+        at = GetTime(),
+    }
 end
 
 -- Seconds left on a timer right now: the game's own count when it gives one, else ours.
@@ -110,7 +115,10 @@ for i = 1, BUBBLES do
     b.lines = {}
     for s = 1, SIDES do
         local line = b:CreateLine(nil, "OVERLAY", nil, 6)
-        if line.SetSnapToPixelGrid then line:SetSnapToPixelGrid(false); line:SetTexelSnappingBias(0) end
+        if line.SetSnapToPixelGrid then
+            line:SetSnapToPixelGrid(false)
+            line:SetTexelSnappingBias(0)
+        end
         line:SetColorTexture(0.80, 0.93, 1.00, 0.9)
         b.lines[s] = line
     end
@@ -143,7 +151,9 @@ end
 local clock = 0
 holder:SetScript("OnUpdate", function(_, elapsed)
     if not bubbling then
-        for _, b in ipairs(bubbles) do b:Hide() end
+        for _, b in ipairs(bubbles) do
+            b:Hide()
+        end
         return
     end
     clock = clock + elapsed
@@ -169,26 +179,29 @@ end)
 ---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
-ns.Listen({ "MIRROR_TIMER_START", "MIRROR_TIMER_STOP", "MIRROR_TIMER_PAUSE", "PLAYER_ENTERING_WORLD" }, function(event, name, value, maxValue, scale, paused)
-    if event == "MIRROR_TIMER_START" then
-        Track(name, value, maxValue, scale, paused)
-    elseif event == "MIRROR_TIMER_STOP" then
-        if type(name) == "string" and not IsSecret(name) then timers[name] = nil end
-    elseif event == "MIRROR_TIMER_PAUSE" then
-        -- Re-read the timers: pausing changes whether they're counting.
-        for i = 1, (MIRRORTIMER_NUMTIMERS or 3) do
-            local n, v, m, s, p = SafeCall(GetMirrorTimerInfo, i)
-            if n and timers[n] then Track(n, v, m, s, p) end
-        end
-    else
-        -- Logging in or zoning: pick up timers already running.
-        wipe(timers)
-        for i = 1, (MIRRORTIMER_NUMTIMERS or 3) do
-            local n, v, m, s, p = SafeCall(GetMirrorTimerInfo, i)
-            if n and n ~= "UNKNOWN" then Track(n, v, m, s, p) end
+ns.Listen(
+    { "MIRROR_TIMER_START", "MIRROR_TIMER_STOP", "MIRROR_TIMER_PAUSE", "PLAYER_ENTERING_WORLD" },
+    function(event, name, value, maxValue, scale, paused)
+        if event == "MIRROR_TIMER_START" then
+            Track(name, value, maxValue, scale, paused)
+        elseif event == "MIRROR_TIMER_STOP" then
+            if type(name) == "string" and not IsSecret(name) then timers[name] = nil end
+        elseif event == "MIRROR_TIMER_PAUSE" then
+            -- Re-read the timers: pausing changes whether they're counting.
+            for i = 1, (MIRRORTIMER_NUMTIMERS or 3) do
+                local n, v, m, s, p = SafeCall(GetMirrorTimerInfo, i)
+                if n and timers[n] then Track(n, v, m, s, p) end
+            end
+        else
+            -- Logging in or zoning: pick up timers already running.
+            wipe(timers)
+            for i = 1, (MIRRORTIMER_NUMTIMERS or 3) do
+                local n, v, m, s, p = SafeCall(GetMirrorTimerInfo, i)
+                if n and n ~= "UNKNOWN" then Track(n, v, m, s, p) end
+            end
         end
     end
-end)
+)
 
 -- Shared with the files loaded after this one.
 ns.breathRing = breathRing
@@ -198,56 +211,102 @@ ns.PreviewBreathRing = function() breathRing.Preview(12) end
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "breath", name = "Breath", order = 11,
+    key = "breath",
+    name = "Breath",
+    order = 11,
     ring = breathRing,
-    preview = ns.PreviewBreathRing, slash = { "breath", "bubbles" }, help = "preview the breath ring",
+    preview = ns.PreviewBreathRing,
+    slash = { "breath", "bubbles" },
+    help = "preview the breath ring",
     toggle = { "Breath ring", "Breath underwater, deep-water fatigue and Feign Death." },
     gameBar = "the game's breath bar",
     defaults = {
         -- Breath ring: breath, fatigue and Feign Death timers. Shares the corpse ring's
         -- spot (a ghost has no breath to hold).
-        breathEnabled   = true,
-        breathBubbles   = true, -- bubbles rising off the ring while you hold your breath
-        breathSize      = 110,
+        breathEnabled = true,
+        breathBubbles = true, -- bubbles rising off the ring while you hold your breath
+        breathSize = 110,
         breathThickness = 11,
-        breathOpacity   = 100,
-        breathX         = -170,
-        breathFromTop   = 260,
-        breathHold      = 2,
-        breathStyle     = "smooth",
-        breathBorder    = 2,
+        breathOpacity = 100,
+        breathX = -170,
+        breathFromTop = 260,
+        breathHold = 2,
+        breathStyle = "smooth",
+        breathBorder = 2,
         breathColors = {
-            fill     = { r = 0.35, g = 0.75, b = 1.00 },
-            low      = { r = 1.00, g = 0.60, b = 0.15 },
+            fill = { r = 0.35, g = 0.75, b = 1.00 },
+            low = { r = 1.00, g = 0.60, b = 0.15 },
             critical = { r = 1.00, g = 0.20, b = 0.20 },
-            fatigue  = { r = 0.85, g = 0.70, b = 0.30 },
-            feign    = { r = 0.70, g = 0.70, b = 0.75 },
+            fatigue = { r = 0.85, g = 0.70, b = 0.30 },
+            feign = { r = 0.70, g = 0.70, b = 0.75 },
         },
     },
-    page = { folder = "travel", order = 4, build = function(O)
+    page = {
+        folder = "travel",
+        order = 4,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(10.5, "Breath", "Breath Ring",
+            local tab = RingTab(
+                10.5,
+                "Breath",
+                "Breath Ring",
                 "Underwater, the ring drains with your breath (orange when it's low, red when it's nearly gone) with "
-                .. "bubbles rising off it, then fills back up when you surface. Deep-water fatigue and Feign Death "
-                .. "show the same way.",
-                MergeTop(TopRow("breath", "breath ring", ns.PreviewBreathRing,
-                    "Show a sample dive. Also /circ breath."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "breathEnabled", "Show breath ring", "Show the ring while a breath, fatigue or Feign Death timer runs."),
-                        bubbles = Toggle(2, "breathBubbles", "Bubbles", "Little bubbles rising off the ring while you hold your breath."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "breathColors", "fill", "Breath", "Ring color with plenty of breath left, and while it refills."),
-                        low = Color(2, "breathColors", "low", "Running low", "Ring color under 30% breath."),
-                        critical = Color(3, "breathColors", "critical", "Nearly gone", "Ring color under 15% breath."),
-                        fatigue = Color(4, "breathColors", "fatigue", "Fatigue", "Ring color in deep water, before fatigue sets in."),
-                        feign = Color(5, "breathColors", "feign", "Feign Death", "Ring color while you play dead."),
-                    }),
-                    size = SizeBox(4, "breath", "breath ring",
-                        "Offset from the center of the screen. By default it shares the corpse ring's spot."),
-                }))
+                    .. "bubbles rising off it, then fills back up when you surface. Deep-water fatigue and Feign Death "
+                    .. "show the same way.",
+                MergeTop(
+                    TopRow("breath", "breath ring", ns.PreviewBreathRing, "Show a sample dive. Also /circ breath."),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "breathEnabled",
+                                "Show breath ring",
+                                "Show the ring while a breath, fatigue or Feign Death timer runs."
+                            ),
+                            bubbles = Toggle(
+                                2,
+                                "breathBubbles",
+                                "Bubbles",
+                                "Little bubbles rising off the ring while you hold your breath."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(
+                                1,
+                                "breathColors",
+                                "fill",
+                                "Breath",
+                                "Ring color with plenty of breath left, and while it refills."
+                            ),
+                            low = Color(2, "breathColors", "low", "Running low", "Ring color under 30% breath."),
+                            critical = Color(
+                                3,
+                                "breathColors",
+                                "critical",
+                                "Nearly gone",
+                                "Ring color under 15% breath."
+                            ),
+                            fatigue = Color(
+                                4,
+                                "breathColors",
+                                "fatigue",
+                                "Fatigue",
+                                "Ring color in deep water, before fatigue sets in."
+                            ),
+                            feign = Color(5, "breathColors", "feign", "Feign Death", "Ring color while you play dead."),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "breath",
+                            "breath ring",
+                            "Offset from the center of the screen. By default it shares the corpse ring's spot."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the timer ends."
             return tab
-        end },
+        end,
+    },
 })

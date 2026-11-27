@@ -5,6 +5,7 @@ bottom-up (the TGA layout games read most reliably).
 
     python tools/make_ring_textures.py
 """
+
 import math, os, struct
 
 SIZE = 256
@@ -13,6 +14,7 @@ SAMPLES = 4  # per axis, for smooth edges
 here = os.path.dirname(os.path.abspath(__file__))
 out_dir = os.path.join(os.path.dirname(here), 'Textures')
 os.makedirs(out_dir, exist_ok=True)
+
 
 def ring(inner_frac):
     c = SIZE / 2
@@ -37,6 +39,7 @@ def ring(inner_frac):
     # descriptor 8 (8 alpha bits, bottom-left origin: rows bottom-up).
     header = struct.pack('<BBBHHBHHHHBB', 0, 0, 2, 0, 0, 0, 0, 0, SIZE, SIZE, 32, 8)
     return header + b''.join(reversed(rows))
+
 
 for pct in range(40, 97, 4):
     path = os.path.join(out_dir, 'Ring%d.tga' % pct)

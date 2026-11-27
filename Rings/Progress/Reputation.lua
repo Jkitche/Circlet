@@ -35,9 +35,7 @@ local function StandingName(reaction)
 end
 
 local function StandingColor(reaction)
-    if db.repUseStanding then
-        return STANDING_COLORS[reaction] or STANDING_COLORS[4]
-    end
+    if db.repUseStanding then return STANDING_COLORS[reaction] or STANDING_COLORS[4] end
     return db.repColors.custom
 end
 
@@ -46,33 +44,39 @@ end
 -- (Alliance / Horde banner, goblin coin for Steamwheedle); otherwise no badge.
 local FACTION_ICONS = {
     -- Alliance capitals
-    [72]  = "Achievement_Character_Human_Male",     -- Stormwind
-    [47]  = "Achievement_Character_Dwarf_Male",     -- Ironforge
-    [69]  = "Achievement_Character_Nightelf_Female", -- Darnassus
-    [54]  = "Achievement_Character_Gnome_Male",     -- Gnomeregan Exiles
+    [72] = "Achievement_Character_Human_Male", -- Stormwind
+    [47] = "Achievement_Character_Dwarf_Male", -- Ironforge
+    [69] = "Achievement_Character_Nightelf_Female", -- Darnassus
+    [54] = "Achievement_Character_Gnome_Male", -- Gnomeregan Exiles
     -- Horde capitals
-    [76]  = "Achievement_Character_Orc_Male",       -- Orgrimmar
-    [81]  = "Achievement_Character_Tauren_Male",    -- Thunder Bluff
-    [68]  = "Achievement_Character_Undead_Female",  -- Undercity
-    [530] = "Achievement_Character_Troll_Male",     -- Darkspear Trolls
+    [76] = "Achievement_Character_Orc_Male", -- Orgrimmar
+    [81] = "Achievement_Character_Tauren_Male", -- Thunder Bluff
+    [68] = "Achievement_Character_Undead_Female", -- Undercity
+    [530] = "Achievement_Character_Troll_Male", -- Darkspear Trolls
     -- Steamwheedle Cartel towns
-    [21]  = "INV_Misc_Coin_01", [369] = "INV_Misc_Coin_01",  -- Booty Bay, Gadgetzan
-    [470] = "INV_Misc_Coin_01", [577] = "INV_Misc_Coin_01",  -- Ratchet, Everlook
+    [21] = "INV_Misc_Coin_01",
+    [369] = "INV_Misc_Coin_01", -- Booty Bay, Gadgetzan
+    [470] = "INV_Misc_Coin_01",
+    [577] = "INV_Misc_Coin_01", -- Ratchet, Everlook
     -- Other vanilla factions
-    [529] = "INV_Jewelry_Talisman_07",              -- Argent Dawn
-    [59]  = "INV_Ingot_07",                         -- Thorium Brotherhood
-    [576] = "INV_Misc_Horn_01",                     -- Timbermaw Hold
-    [609] = "Spell_Nature_Regeneration",            -- Cenarion Circle
-    [270] = "INV_Misc_Coin_08",                     -- Zandalar Tribe
-    [749] = "Spell_Frost_SummonWaterElemental",     -- Hydraxian Waterlords
-    [910] = "INV_Misc_Head_Dragon_Bronze",          -- Brood of Nozdormu
-    [87]  = "INV_Misc_Bandana_03",                  -- Bloodsail Buccaneers
-    [349] = "Ability_Stealth",                      -- Ravenholdt
-    [589] = "Ability_Mount_WhiteTiger",             -- Wintersaber Trainers
-    [809] = "INV_Misc_Book_11",                     -- Shen'dralar
+    [529] = "INV_Jewelry_Talisman_07", -- Argent Dawn
+    [59] = "INV_Ingot_07", -- Thorium Brotherhood
+    [576] = "INV_Misc_Horn_01", -- Timbermaw Hold
+    [609] = "Spell_Nature_Regeneration", -- Cenarion Circle
+    [270] = "INV_Misc_Coin_08", -- Zandalar Tribe
+    [749] = "Spell_Frost_SummonWaterElemental", -- Hydraxian Waterlords
+    [910] = "INV_Misc_Head_Dragon_Bronze", -- Brood of Nozdormu
+    [87] = "INV_Misc_Bandana_03", -- Bloodsail Buccaneers
+    [349] = "Ability_Stealth", -- Ravenholdt
+    [589] = "Ability_Mount_WhiteTiger", -- Wintersaber Trainers
+    [809] = "INV_Misc_Book_11", -- Shen'dralar
     -- Battleground factions
-    [890] = "INV_BannerPVP_02", [730] = "INV_BannerPVP_02", [509] = "INV_BannerPVP_02", -- Silverwing, Stormpike, Arathor
-    [889] = "INV_BannerPVP_01", [729] = "INV_BannerPVP_01", [510] = "INV_BannerPVP_01", -- Warsong, Frostwolf, Defilers
+    [890] = "INV_BannerPVP_02",
+    [730] = "INV_BannerPVP_02",
+    [509] = "INV_BannerPVP_02", -- Silverwing, Stormpike, Arathor
+    [889] = "INV_BannerPVP_01",
+    [729] = "INV_BannerPVP_01",
+    [510] = "INV_BannerPVP_01", -- Warsong, Frostwolf, Defilers
 }
 local FACTION_GROUP_ICONS = { alliance = "INV_BannerPVP_02", horde = "INV_BannerPVP_01", goblin = "INV_Misc_Coin_01" }
 local LOSS_COLOR = { r = 0.90, g = 0.20, b = 0.20 }
@@ -97,12 +101,42 @@ local repRing = CreateProgressRing({
     key = "rep",
     samples = function()
         return {
-            { id = "edit-r1", factionID = 72, group = "alliance", name = "Stormwind", reaction = 5, segment = 5,
-              from = 2150, to = 2400, max = 6000 },
-            { id = "edit-r2", factionID = 69, group = "alliance", name = "Darnassus", reaction = 6, segment = 6,
-              from = 0, to = 350, max = 12000, change = "up", gainOffset = 120, editTime = 4 },
-            { id = "edit-r3", factionID = 21, group = "goblin", name = "Booty Bay", reaction = 4, segment = 4,
-              from = 1800, to = 1775, max = 3000 },
+            {
+                id = "edit-r1",
+                factionID = 72,
+                group = "alliance",
+                name = "Stormwind",
+                reaction = 5,
+                segment = 5,
+                from = 2150,
+                to = 2400,
+                max = 6000,
+            },
+            {
+                id = "edit-r2",
+                factionID = 69,
+                group = "alliance",
+                name = "Darnassus",
+                reaction = 6,
+                segment = 6,
+                from = 0,
+                to = 350,
+                max = 12000,
+                change = "up",
+                gainOffset = 120,
+                editTime = 4,
+            },
+            {
+                id = "edit-r3",
+                factionID = 21,
+                group = "goblin",
+                name = "Booty Bay",
+                reaction = 4,
+                segment = 4,
+                from = 1800,
+                to = 1775,
+                max = 3000,
+            },
         }
     end,
     icon = function(e)
@@ -110,8 +144,11 @@ local repRing = CreateProgressRing({
         local texture = FactionIconPath(e.factionID or e.id, e.group)
         if not texture then return nil end -- no drawn fallback for factions
         local loss = e.change == "down" or e.to < e.from
-        return { texture = texture, color = loss and LOSS_COLOR or StandingColor(e.reaction),
-                 celebrate = e.change == "up" }
+        return {
+            texture = texture,
+            color = loss and LOSS_COLOR or StandingColor(e.reaction),
+            celebrate = e.change == "up",
+        }
     end,
     style = function(e, finished)
         local c = StandingColor(e.reaction)
@@ -141,16 +178,18 @@ end
 -- once it has been seen under a recognised header.
 
 local function ReadFactions()
-    if not (C_Reputation and C_Reputation.GetNumFactions and C_Reputation.GetFactionDataByIndex) then
-        return nil
-    end
+    if not (C_Reputation and C_Reputation.GetNumFactions and C_Reputation.GetFactionDataByIndex) then return nil end
     local out = {}
     local group -- group of the header we're under
     for i = 1, C_Reputation.GetNumFactions() do
         local d = C_Reputation.GetFactionDataByIndex(i)
         if type(d) == "table" and d.isHeader then
             local g = FactionGroup(d.name)
-            if g then group = g elseif not d.isChild then group = nil end
+            if g then
+                group = g
+            elseif not d.isChild then
+                group = nil
+            end
         end
         local s = FactionSnapshot(d)
         if s then
@@ -192,14 +231,22 @@ local function CheckFactions()
         local was = prev[id]
         if was and s.cur ~= was.cur then
             if ns.SessionAdd then ns.SessionAdd("rep", s.name, s.cur - was.cur) end -- session summary
-            local entry = { id = id, factionID = id, group = s.group, name = s.name, reaction = s.reaction,
-                            segment = s.reaction, to = s.cur - s.low, max = s.high - s.low }
+            local entry = {
+                id = id,
+                factionID = id,
+                group = s.group,
+                name = s.name,
+                reaction = s.reaction,
+                segment = s.reaction,
+                to = s.cur - s.low,
+                max = s.high - s.low,
+            }
             if s.reaction > was.reaction then
                 entry.from, entry.change = 0, "up"
                 entry.gainOffset = was.high - was.cur -- the part earned finishing the old standing
             elseif s.reaction < was.reaction then
                 entry.from, entry.change = entry.max, "down"
-                entry.gainOffset = was.low - was.cur  -- the part lost emptying the old standing
+                entry.gainOffset = was.low - was.cur -- the part lost emptying the old standing
             else
                 entry.from = was.cur - was.low
             end
@@ -220,17 +267,49 @@ end
 
 local function PreviewRepRing()
     repRing.Preview({
-        { id = -11, factionID = 72, group = "alliance", name = "Stormwind", reaction = 5, segment = 5,
-          from = 2150, to = 2400, max = 6000 },
-        { id = -12, factionID = 69, group = "alliance", name = "Darnassus", reaction = 6, segment = 6,
-          from = 0, to = 350, max = 12000, change = "up", gainOffset = 120 },
-        { id = -13, factionID = 21, group = "goblin", name = "Booty Bay", reaction = 4, segment = 4,
-          from = 1800, to = 1775, max = 3000 },
+        {
+            id = -11,
+            factionID = 72,
+            group = "alliance",
+            name = "Stormwind",
+            reaction = 5,
+            segment = 5,
+            from = 2150,
+            to = 2400,
+            max = 6000,
+        },
+        {
+            id = -12,
+            factionID = 69,
+            group = "alliance",
+            name = "Darnassus",
+            reaction = 6,
+            segment = 6,
+            from = 0,
+            to = 350,
+            max = 12000,
+            change = "up",
+            gainOffset = 120,
+        },
+        {
+            id = -13,
+            factionID = 21,
+            group = "goblin",
+            name = "Booty Bay",
+            reaction = 4,
+            segment = 4,
+            from = 1800,
+            to = 1775,
+            max = 3000,
+        },
     })
 end
 
 -- Reputation changes, and a first read on login.
-ns.Listen({ "UPDATE_FACTION", "CHAT_MSG_COMBAT_FACTION_CHANGE", "PLAYER_ENTERING_WORLD" }, function() QueueCheckFactions() end)
+ns.Listen(
+    { "UPDATE_FACTION", "CHAT_MSG_COMBAT_FACTION_CHANGE", "PLAYER_ENTERING_WORLD" },
+    function() QueueCheckFactions() end
+)
 
 -- Shared with the files loaded after this one.
 ns.FACTION_ICONS = FACTION_ICONS
@@ -242,56 +321,110 @@ ns.repRing = repRing
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "rep", name = "Reputation", order = 1,
+    key = "rep",
+    name = "Reputation",
+    order = 1,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = repRing,
-    preview = PreviewRepRing, slash = { "rep", "reputation" }, help = "preview the reputation ring",
+    preview = PreviewRepRing,
+    slash = { "rep", "reputation" },
+    help = "preview the reputation ring",
     toggle = { "Reputation ring", "Fills (or drains) when your reputation changes." },
     gameBar = "the game's reputation bar",
     defaults = {
-        repEnabled     = true,
+        repEnabled = true,
         repAfterCombat = true,
-        repShowDelta   = false,
-        repIcons       = true, -- the faction's icon as a badge on the ring
+        repShowDelta = false,
+        repIcons = true, -- the faction's icon as a badge on the ring
         repUseStanding = true,
-        repSize        = 120,
-        repThickness   = 12,
-        repOpacity     = 100, -- percent
-        repX           = -340,
-        repFromTop     = 50,
-        repHold        = 3,
-        repStyle       = "smooth",
-        repBorder      = 2, -- black border width (0 = none)
-        repColors      = { custom = { r = 0.30, g = 0.80, b = 0.30 } },
-        repKnown       = {}, -- faction IDs seen, so collapsed headers don't hide them later
+        repSize = 120,
+        repThickness = 12,
+        repOpacity = 100, -- percent
+        repX = -340,
+        repFromTop = 50,
+        repHold = 3,
+        repStyle = "smooth",
+        repBorder = 2, -- black border width (0 = none)
+        repColors = { custom = { r = 0.30, g = 0.80, b = 0.30 } },
+        repKnown = {}, -- faction IDs seen, so collapsed headers don't hide them later
     },
-    page = { folder = "progress", order = 5, build = function(O)
+    page = {
+        folder = "progress",
+        order = 5,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(5, "Reputation", "Reputation Ring",
+            local tab = RingTab(
+                5,
+                "Reputation",
+                "Reputation Ring",
                 "A donut that fills (or drains) when your reputation with a faction changes, colored by standing.",
-                MergeTop(TopRow("rep", "reputation ring", PreviewRepRing, "Show examples: a gain, reaching a new "
-                    .. "standing, and a loss. Also /circ rep."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "repEnabled", "Show reputation ring", "Pop up and fill when your reputation changes."),
-                        afterCombat = Toggle(2, "repAfterCombat", "Wait until combat ends",
-                            "Hold reputation earned in a fight and show it once combat ends."),
-                        delta = Toggle(3, "repShowDelta", "Show gain as %",
-                            "Add a line under the gain showing it as a share of the current standing, e.g. +4.2%."),
-                        icons = Toggle(4, "repIcons", "Show faction icon",
-                            "The faction's icon as a round badge on the ring's top edge. Border in the standing color, red for a loss."),
-                        list = Execute(5, "Show icon list", function() ns.ToggleIconGrid() end,
-                            "Show every game icon the rings use, marked found or missing in this client. Also /circ icons."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        standing = Toggle(1, "repUseStanding", "Color by standing",
-                            "Hated red through Exalted purple. Turn off to use one color for every faction."),
-                        custom = Color(2, "repColors", "custom", "Single color", "Ring color when Color by standing is off.",
-                            { disabled = function() return db.repUseStanding end }),
-                    }),
-                    size = SizeBox(4, "rep", "reputation ring",
-                        "Offset from the center of the screen. The default sits just left of the quest ring."),
-                }))
+                MergeTop(
+                    TopRow(
+                        "rep",
+                        "reputation ring",
+                        PreviewRepRing,
+                        "Show examples: a gain, reaching a new " .. "standing, and a loss. Also /circ rep."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "repEnabled",
+                                "Show reputation ring",
+                                "Pop up and fill when your reputation changes."
+                            ),
+                            afterCombat = Toggle(
+                                2,
+                                "repAfterCombat",
+                                "Wait until combat ends",
+                                "Hold reputation earned in a fight and show it once combat ends."
+                            ),
+                            delta = Toggle(
+                                3,
+                                "repShowDelta",
+                                "Show gain as %",
+                                "Add a line under the gain showing it as a share of the current standing, e.g. +4.2%."
+                            ),
+                            icons = Toggle(
+                                4,
+                                "repIcons",
+                                "Show faction icon",
+                                "The faction's icon as a round badge on the ring's top edge. Border in the standing color, red for a loss."
+                            ),
+                            list = Execute(
+                                5,
+                                "Show icon list",
+                                function() ns.ToggleIconGrid() end,
+                                "Show every game icon the rings use, marked found or missing in this client. Also /circ icons."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            standing = Toggle(
+                                1,
+                                "repUseStanding",
+                                "Color by standing",
+                                "Hated red through Exalted purple. Turn off to use one color for every faction."
+                            ),
+                            custom = Color(
+                                2,
+                                "repColors",
+                                "custom",
+                                "Single color",
+                                "Ring color when Color by standing is off.",
+                                { disabled = function() return db.repUseStanding end }
+                            ),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "rep",
+                            "reputation ring",
+                            "Offset from the center of the screen. The default sits just left of the quest ring."
+                        ),
+                    }
+                )
+            )
             return tab
-        end },
+        end,
+    },
 })

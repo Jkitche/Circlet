@@ -1,6 +1,7 @@
 import math
 from lupa import LuaRuntime
 from PIL import Image, ImageDraw, ImageFont
+
 lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open('mock.lua').read())
 lua.execute('''
@@ -30,37 +31,64 @@ function VisibleRings()
   return out
 end
 ''')
-chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')((__import__('subprocess').run(['python3','make_bundle.py']), open('bundle.lua').read())[1])
+chunk = lua.eval('function(s) return load(s, "@SideQuest.lua") end')(
+    (__import__('subprocess').run(['python3', 'make_bundle.py']), open('bundle.lua').read())[1]
+)
 chunk("Circlet", lua.table())
 lua.execute('Fire("ADDON_LOADED", "Circlet"); Fire("PLAYER_ENTERING_WORLD"); Advance(1)')
-LAYER = {"BACKGROUND":0,"BORDER":1,"ARTWORK":2,"OVERLAY":3}
+LAYER = {"BACKGROUND": 0, "BORDER": 1, "ARTWORK": 2, "OVERLAY": 3}
 big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+
+
 def render_all(label):
     imgs = []
     for ring in lua.eval('VisibleRings()').values():
-        W=150; S=3
-        im = Image.new("RGB",(W*S,W*S),(50,40,30)); d = ImageDraw.Draw(im)
-        items = sorted(((LAYER[l._layer], l._sub, l) for l in ring.lines.values()), key=lambda t:(t[0],t[1]))
-        for _,_,l in items:
-            x1,y1,x2,y2,T = l._x1,l._y1,l._x2,l._y2,l._t; c = l._c
-            dx,dy=x2-x1,y2-y1; L=math.hypot(dx,dy) or 1; nx,ny=-dy/L*T/2,dx/L*T/2
-            pts=[((W/2+px)*S,(W/2-py)*S) for px,py in [(x1+nx,y1+ny),(x2+nx,y2+ny),(x2-nx,y2-ny),(x1-nx,y1-ny)]]
-            d.polygon(pts, fill=(int(c[1]*255),int(c[2]*255),int(c[3]*255)))
+        W = 150
+        S = 3
+        im = Image.new("RGB", (W * S, W * S), (50, 40, 30))
+        d = ImageDraw.Draw(im)
+        items = sorted(((LAYER[l._layer], l._sub, l) for l in ring.lines.values()), key=lambda t: (t[0], t[1]))
+        for _, _, l in items:
+            x1, y1, x2, y2, T = l._x1, l._y1, l._x2, l._y2, l._t
+            c = l._c
+            dx, dy = x2 - x1, y2 - y1
+            L = math.hypot(dx, dy) or 1
+            nx, ny = -dy / L * T / 2, dx / L * T / 2
+            pts = [
+                ((W / 2 + px) * S, (W / 2 - py) * S)
+                for px, py in [(x1 + nx, y1 + ny), (x2 + nx, y2 + ny), (x2 - nx, y2 - ny), (x1 - nx, y1 - ny)]
+            ]
+            d.polygon(pts, fill=(int(c[1] * 255), int(c[2] * 255), int(c[3] * 255)))
         texts = list(ring.texts.values())
-        y = im.height/2 - 14*len(texts)
+        y = im.height / 2 - 14 * len(texts)
         for f in texts:
-            c = f._tc; col = (int(c[1]*255),int(c[2]*255),int(c[3]*255)) if c else (255,255,255)
-            t = str(f._text); w = d.textlength(t, font=big); d.text(((im.width-w)/2, y), t, fill=col, font=big); y += 28
-        d.text((8,8), label, fill=(230,230,230), font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18))
+            c = f._tc
+            col = (int(c[1] * 255), int(c[2] * 255), int(c[3] * 255)) if c else (255, 255, 255)
+            t = str(f._text)
+            w = d.textlength(t, font=big)
+            d.text(((im.width - w) / 2, y), t, fill=col, font=big)
+            y += 28
+        d.text(
+            (8, 8),
+            label,
+            fill=(230, 230, 230),
+            font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 18),
+        )
         imgs.append(im)
     return imgs
 
+
 shots = []
-def shot(label): shots.extend(render_all(label))
+
+
+def shot(label):
+    shots.extend(render_all(label))
+
 
 # XP: 15 @ 90% -> level-up to 16 @ 13.6% (expect +23.6%)
 lua.execute('XP = 900; XPMAX = 1000; Fire("PLAYER_XP_UPDATE", "player"); Advance(8)')
-lua.execute('XP = 150; XPMAX = 1100; Fire("PLAYER_XP_UPDATE", "player"); Advance(2.8)'); shot("XP default: % on")
+lua.execute('XP = 150; XPMAX = 1100; Fire("PLAYER_XP_UPDATE", "player"); Advance(2.8)')
+shot("XP default: % on")
 lua.execute('Advance(8)')
 # Quest 3->5/8 (expect +25.0%), percent objective (no delta)
 lua.execute("""
@@ -71,25 +99,37 @@ C_QuestLog.GetQuestObjectives = function(id) return QUEST.objectives end
 Fire("QUEST_LOG_UPDATE"); Advance(1)
 QUEST.objectives[1].numFulfilled = 5; QUEST.objectives[1].text = "5/8 Screecher Feather"; Fire("QUEST_LOG_UPDATE"); Advance(2.2)""")
 shot("quest default: % off")
-lua.execute('Advance(8); QUEST.objectives[2].numFulfilled = 65; Fire("QUEST_LOG_UPDATE"); Advance(2.2)'); shot("percent objective: no delta")
+lua.execute('Advance(8); QUEST.objectives[2].numFulfilled = 65; Fire("QUEST_LOG_UPDATE"); Advance(2.2)')
+shot("percent objective: no delta")
 lua.execute('Advance(8)')
 # Skill 141->143/150 (+1.3%)
-lua.execute('SetSkill(43, 143); Fire("SKILL_LINES_CHANGED"); Advance(2.2)'); shot("skill default: off")
+lua.execute('SetSkill(43, 143); Fire("SKILL_LINES_CHANGED"); Advance(2.2)')
+shot("skill default: off")
 lua.execute('Advance(8)')
 # Rep: +250/6000 (+4.2%), loss -25/3000 (-0.8%), cross-standing +650 into 12000 (+5.4%)
-lua.execute('SetRep(72, 3000 + 2400); Fire("UPDATE_FACTION"); Advance(2.2)'); shot("rep default: off")
-lua.execute('Advance(8); SetRep(21, 1775); Fire("UPDATE_FACTION"); Advance(2.2)'); shot("rep loss default: off")
-lua.execute('Advance(8); SetRep(69, 9000 + 150); Fire("UPDATE_FACTION"); Advance(2.4)'); shot("rep standing up (default: no %)")
+lua.execute('SetRep(72, 3000 + 2400); Fire("UPDATE_FACTION"); Advance(2.2)')
+shot("rep default: off")
+lua.execute('Advance(8); SetRep(21, 1775); Fire("UPDATE_FACTION"); Advance(2.2)')
+shot("rep loss default: off")
+lua.execute('Advance(8); SetRep(69, 9000 + 150); Fire("UPDATE_FACTION"); Advance(2.4)')
+shot("rep standing up (default: no %)")
 lua.execute('Advance(8)')
 # Live toggles while a ring is on screen
-lua.execute('QUEST.objectives[1].numFulfilled = 6; QUEST.objectives[1].text = "6/8 Screecher Feather"; Fire("QUEST_LOG_UPDATE"); Advance(1.0)')
-lua.execute('CircletDB.questShowDelta = true; Advance(1.2)'); shot("quest: % turned ON live")
+lua.execute(
+    'QUEST.objectives[1].numFulfilled = 6; QUEST.objectives[1].text = "6/8 Screecher Feather"; Fire("QUEST_LOG_UPDATE"); Advance(1.0)'
+)
+lua.execute('CircletDB.questShowDelta = true; Advance(1.2)')
+shot("quest: % turned ON live")
 lua.execute('Advance(8); XP = 400; Fire("PLAYER_XP_UPDATE", "player"); Advance(1.0)')
-lua.execute('CircletDB.xpShowDelta = false; Advance(1.8)'); shot("XP: % turned OFF live")
+lua.execute('CircletDB.xpShowDelta = false; Advance(1.8)')
+shot("XP: % turned OFF live")
 
 out = Image.new("RGB", (sum(i.width for i in shots), max(i.height for i in shots)))
 x = 0
-for i in shots: out.paste(i, (x, 0)); x += i.width
+for i in shots:
+    out.paste(i, (x, 0))
+    x += i.width
 out = out.resize((out.width * 2 // 3, out.height * 2 // 3))
 out.save('/tmp/delta_toggle.png')
-errs = lua.eval('ERRORS'); print("ERRORS:", dict(errs) if list(errs.keys()) else "none")
+errs = lua.eval('ERRORS')
+print("ERRORS:", dict(errs) if list(errs.keys()) else "none")

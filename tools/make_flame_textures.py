@@ -10,6 +10,7 @@ softened. Supersampled, then scaled down for smooth edges.
 
     python tools/make_flame_textures.py
 """
+
 import math, os, random, struct
 import numpy as np
 from PIL import Image, ImageFilter
@@ -54,8 +55,11 @@ def flame(seed):
     tc = np.clip(t, 0, 1)
     half = 0.86 * np.sqrt(np.clip(t * 3.2 + 0.08, 0, 1)) * (1 - tc) ** pr.uniform(0.9, 1.25)
     # Ragged licks up the sides.
-    lick = 1 + 0.16 * np.sin(t * pr.uniform(14, 20) + pr.uniform(0, 6)) * tc \
-             + 0.08 * np.sin(t * pr.uniform(27, 35) + pr.uniform(0, 6)) * tc
+    lick = (
+        1
+        + 0.16 * np.sin(t * pr.uniform(14, 20) + pr.uniform(0, 6)) * tc
+        + 0.08 * np.sin(t * pr.uniform(27, 35) + pr.uniform(0, 6)) * tc
+    )
     half = half * lick
     d = np.abs(x - mid) / np.maximum(half, 1e-3)  # 0 on the middle line, 1 at the edge
     # A split tip: a notch down from the top, now and then.
@@ -64,8 +68,8 @@ def flame(seed):
         d = d + notch * 1.2
     inside = np.clip(1 - d, 0, 1) * (t >= -0.06) * (t <= 1)
     # Brightness: soft toward the edges, fading up the tongue, a dimmer rim at the very base.
-    body = inside ** 0.7
-    rise = np.clip(1 - tc ** 1.6, 0, 1)
+    body = inside**0.7
+    rise = np.clip(1 - tc**1.6, 0, 1)
     foot = np.clip((t + 0.06) / 0.14, 0, 1)
     alpha = body * (0.35 + 0.65 * rise) * foot
     img = Image.fromarray((np.clip(alpha, 0, 1) * 255).astype(np.uint8), 'L')

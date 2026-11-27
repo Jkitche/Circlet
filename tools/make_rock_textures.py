@@ -9,12 +9,13 @@ lighter mineral and a darker rim. Supersampled, then scaled down for smooth edge
 
     python tools/make_rock_textures.py
 """
+
 import math, os, random, struct
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-SIZE = 64      # in game
-SS = 4         # supersampling
+SIZE = 64  # in game
+SS = 4  # supersampling
 BIG = SIZE * SS
 here = os.path.dirname(os.path.abspath(__file__))
 out_dir = os.path.join(os.path.dirname(here), 'Textures')
@@ -64,9 +65,13 @@ def rock(seed, base):
     mask = np.asarray(mask_img, dtype=np.float32) / 255
 
     # Height: distance in from the edge (a rounded dome), plus lumps and pits.
-    inside = np.asarray(mask_img.point(lambda v: 255 if v > 127 else 0).filter(ImageFilter.GaussianBlur(SS * 7)),
-                        dtype=np.float32) / 255
-    h = inside ** 0.6
+    inside = (
+        np.asarray(
+            mask_img.point(lambda v: 255 if v > 127 else 0).filter(ImageFilter.GaussianBlur(SS * 7)), dtype=np.float32
+        )
+        / 255
+    )
+    h = inside**0.6
     h += 0.30 * (value_noise(rng, 4) - 0.5) + 0.14 * (value_noise(rng, 9) - 0.5) + 0.04 * (value_noise(rng, 19) - 0.5)
     # Facets: a couple of flat planes cut across it (chipped faces).
     yy, xx = np.mgrid[0:BIG, 0:BIG].astype(np.float32) / BIG
@@ -79,22 +84,25 @@ def rock(seed, base):
     # Light from the top left (and toward the viewer).
     gy, gx = np.gradient(h * BIG * 0.22)
     nx, ny, nz = -gx, -gy, np.ones_like(h)
-    ln = np.sqrt(nx ** 2 + ny ** 2 + nz ** 2)
+    ln = np.sqrt(nx**2 + ny**2 + nz**2)
     nx, ny, nz = nx / ln, ny / ln, nz / ln
-    L = np.array([-0.55, -0.6, 0.58]); L = L / np.linalg.norm(L)
+    L = np.array([-0.55, -0.6, 0.58])
+    L = L / np.linalg.norm(L)
     diffuse = np.clip(nx * L[0] + ny * L[1] + nz * L[2], 0, 1)
-    shade = 0.18 + 1.05 * diffuse ** 1.2
+    shade = 0.18 + 1.05 * diffuse**1.2
     shade *= 0.55 + 0.45 * np.clip(inside * 1.6, 0, 1)  # occlusion toward the edge
 
     # Color: the base stone, mottled, with light mineral flecks and dark pits.
     mottle = value_noise(rng, 9)
     col = np.array(base, dtype=np.float32)[None, None, :] * (0.82 + 0.3 * mottle[..., None])
     flecks = (rng.random((BIG, BIG)) > 0.99965).astype(np.float32)
-    flecks = np.asarray(Image.fromarray((flecks * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5)),
-                        dtype=np.float32) / 255
+    flecks = (
+        np.asarray(Image.fromarray((flecks * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(5)), dtype=np.float32)
+        / 255
+    )
     col = col * (1 - flecks[..., None] * 0.35) + flecks[..., None] * 0.35 * np.array([0.9, 0.86, 0.78])
     pits = np.clip((value_noise(rng, 17) - 0.78) * 3, 0, 1)
-    col *= (1 - 0.45 * pits[..., None])
+    col *= 1 - 0.45 * pits[..., None]
     # A crack or two.
     crack = Image.new('L', (BIG, BIG), 0)
     d = ImageDraw.Draw(crack)
@@ -109,12 +117,12 @@ def rock(seed, base):
             line.append((x, y))
         d.line(line, fill=255, width=SS)
     crack = np.asarray(crack.filter(ImageFilter.GaussianBlur(SS * 0.5)), dtype=np.float32) / 255
-    col *= (1 - 0.4 * crack[..., None])
+    col *= 1 - 0.4 * crack[..., None]
 
     rgb = np.clip(col * shade[..., None], 0, 1)
     # A darker rim where the edge falls away.
     rim = np.clip(1 - inside * 3, 0, 1)
-    rgb *= (1 - 0.35 * rim[..., None])
+    rgb *= 1 - 0.35 * rim[..., None]
     out = np.dstack([rgb, mask]) * 255
     img = Image.fromarray(out.astype(np.uint8), 'RGBA').resize((SIZE, SIZE), Image.LANCZOS)
     return img

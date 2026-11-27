@@ -7,6 +7,7 @@ track, border, segments and text. Game textures (item and spell icons, glows) ar
     python3 tools/render_rings.py quest xp   # just these
 Needs: pip install lupa pillow, and the DejaVu fonts.
 """
+
 import math, os, subprocess, sys
 from lupa import LuaRuntime
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -15,34 +16,39 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTS = os.path.join(ROOT, "tests")
 OUT = os.path.join(ROOT, "docs", "images")
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-SCALE = 3          # pixels per UI unit
+SCALE = 3  # pixels per UI unit
 BG = (24, 26, 32)  # dark backdrop, like a night zone
 
 # ring -> (slash command, class, seconds to let the preview run before the snapshot, setup lua)
 RINGS = {
-    "xp":      ("xp", "WARRIOR", 1.6, ""),
-    "quest":   ("quest", "WARRIOR", 1.6, ""),
-    "pins":    ("pins", "WARRIOR", 1.6, ""),
-    "skill":   ("skill", "WARRIOR", 1.6, ""),
-    "weapon":  ("weapon", "WARRIOR", 1.6, ""),
-    "rep":     ("rep", "WARRIOR", 1.6, ""),
-    "pet":     ("pet", "HUNTER", 1.6, ""),
-    "ammo":    ("ammo", "HUNTER", 1.6, ""),
-    "flight":  ("flight", "WARRIOR", 3.0, ""),
-    "timed":   ("timed", "WARRIOR", 3.0, ""),
-    "corpse":  ("corpse", "WARRIOR", 2.5, ""),
-    "breath":  ("breath", "WARRIOR", 3.0, ""),
-    "craft":   ("craft", "WARRIOR", 2.5, ""),
-    "gather":  ("gather", "WARRIOR", 1.2, ""),
-    "cast":    ("cast", "MAGE", 1.0, ""),
-    "totems":  ("totems", "SHAMAN", 2.0, ""),
-    "food":    ("food", "WARRIOR", 9.0, ""),
-    "camp":    ("camp", "WARRIOR", 4.0, ""),
-    "clock":   ("clock", "WARRIOR", 1.0, '''
+    "xp": ("xp", "WARRIOR", 1.6, ""),
+    "quest": ("quest", "WARRIOR", 1.6, ""),
+    "pins": ("pins", "WARRIOR", 1.6, ""),
+    "skill": ("skill", "WARRIOR", 1.6, ""),
+    "weapon": ("weapon", "WARRIOR", 1.6, ""),
+    "rep": ("rep", "WARRIOR", 1.6, ""),
+    "pet": ("pet", "HUNTER", 1.6, ""),
+    "ammo": ("ammo", "HUNTER", 1.6, ""),
+    "flight": ("flight", "WARRIOR", 3.0, ""),
+    "timed": ("timed", "WARRIOR", 3.0, ""),
+    "corpse": ("corpse", "WARRIOR", 2.5, ""),
+    "breath": ("breath", "WARRIOR", 3.0, ""),
+    "craft": ("craft", "WARRIOR", 2.5, ""),
+    "gather": ("gather", "WARRIOR", 1.2, ""),
+    "cast": ("cast", "MAGE", 1.0, ""),
+    "totems": ("totems", "SHAMAN", 2.0, ""),
+    "food": ("food", "WARRIOR", 9.0, ""),
+    "camp": ("camp", "WARRIOR", 4.0, ""),
+    "clock": (
+        "clock",
+        "WARRIOR",
+        1.0,
+        '''
 EPOCH = os.time({ year = 2026, month = 11, day = 13, hour = 18, min = 29, sec = 40 })
 date = function(f, t) return os.date(f, t or EPOCH) end
 GetGameTime = function() return 21, 29 end
-'''),
+''',
+    ),
 }
 
 PRELUDE = r'''
@@ -100,8 +106,17 @@ def ring_of(obj):
     return None
 
 
-POINT = {"CENTER": (0, 0), "TOP": (0, 1), "BOTTOM": (0, -1), "LEFT": (-1, 0), "RIGHT": (1, 0),
-         "TOPLEFT": (-1, 1), "TOPRIGHT": (1, 1), "BOTTOMLEFT": (-1, -1), "BOTTOMRIGHT": (1, -1)}
+POINT = {
+    "CENTER": (0, 0),
+    "TOP": (0, 1),
+    "BOTTOM": (0, -1),
+    "LEFT": (-1, 0),
+    "RIGHT": (1, 0),
+    "TOPLEFT": (-1, 1),
+    "TOPRIGHT": (1, 1),
+    "BOTTOMLEFT": (-1, -1),
+    "BOTTOMRIGHT": (1, -1),
+}
 
 
 class Layout:
@@ -130,7 +145,7 @@ class Layout:
             return self.cache[key]
         self.cache[key] = (0, 0)  # guards against anchor loops
         a = r._anchor
-        rel = (a.rel if a is not None and a.rel is not None else r._parent)
+        rel = a.rel if a is not None and a.rel is not None else r._parent
         if a is None:
             c = self.center(rel, depth + 1)
         else:
@@ -152,6 +167,7 @@ def Layout_center_of(r):
 
 def clean(text):
     import re
+
     text = text.replace("|n", "\n")
     return re.sub(r"\|c\w{8}|\|r|\|T[^|]*\|t", "", text)
 
@@ -202,9 +218,9 @@ def snapshot(name):
         path = str(t._texpath or "")
         if t._solid is None:
             if "TempPortraitAlphaMask" in path:
-                t._kindr = "circle"   # a plain disc in its vertex color
+                t._kindr = "circle"  # a plain disc in its vertex color
             elif "GenericGlow" in path or "star4" in path:
-                t._kindr = "glow"     # a soft light, added on top
+                t._kindr = "glow"  # a soft light, added on top
             else:
                 continue
         elif max(t._solid[1], t._solid[2], t._solid[3]) < 0.1:
@@ -229,8 +245,9 @@ def snapshot(name):
 
 def draw_ring(parts):
     lines = parts["lines"]
-    ext = max(max(abs(l._x1 + dx), abs(l._x2 + dx), abs(l._y1 + dy), abs(l._y2 + dy)) + (l._t or 1)
-              for l, a, dx, dy in lines)
+    ext = max(
+        max(abs(l._x1 + dx), abs(l._x2 + dx), abs(l._y1 + dy), abs(l._y2 + dy)) + (l._t or 1) for l, a, dx, dy in lines
+    )
     for t, a, tx, ty in parts.get("solids", []):
         ext = max(ext, abs(tx) + 4, abs(ty) + 4)
     half = ext + 8
@@ -258,8 +275,10 @@ def draw_ring(parts):
             col = (vc[1], vc[2], vc[3]) if vc else (1, 1, 1)
             size = (t._w or 10) * SCALE
             blob = Image.new("RGBA", (int(size) + 2, int(size) + 2), (0, 0, 0, 0))
-            ImageDraw.Draw(blob).ellipse([size * 0.2, size * 0.2, size * 0.8, size * 0.8],
-                                         fill=(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a)))
+            ImageDraw.Draw(blob).ellipse(
+                [size * 0.2, size * 0.2, size * 0.8, size * 0.8],
+                fill=(int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(255 * a)),
+            )
             blob = blob.filter(ImageFilter.GaussianBlur(size * 0.12))
             px, py = P(tx, ty)
             ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
@@ -318,8 +337,16 @@ def draw_ring(parts):
         tc = f._tc
         col = tuple(int(v * 255) for v in (tc[1], tc[2], tc[3])) if tc else (255, 255, 255)
         text = clean(str(f._text))
-        d.multiline_text((x, y), text, font=font, fill=col + (int(255 * a),), anchor="mm", align="center",
-                         stroke_width=max(1, int(size / 10)), stroke_fill=(0, 0, 0, int(255 * a)))
+        d.multiline_text(
+            (x, y),
+            text,
+            font=font,
+            fill=col + (int(255 * a),),
+            anchor="mm",
+            align="center",
+            stroke_width=max(1, int(size / 10)),
+            stroke_fill=(0, 0, 0, int(255 * a)),
+        )
     return im
 
 

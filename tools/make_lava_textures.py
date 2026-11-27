@@ -10,6 +10,7 @@ the blob's rim glows a little, as if the molten core shows round it. Supersample
 
     python tools/make_lava_textures.py
 """
+
 import math, os, random, struct
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
@@ -60,8 +61,12 @@ def lava(seed):
     ImageDraw.Draw(mask_img).polygon(pts, fill=255)
     mask_img = mask_img.filter(ImageFilter.GaussianBlur(SS * 2.2))
     mask = np.asarray(mask_img, dtype=np.float32) / 255
-    inner = np.asarray(mask_img.point(lambda v: 255 if v > 127 else 0).filter(ImageFilter.GaussianBlur(SS * 6)),
-                       dtype=np.float32) / 255
+    inner = (
+        np.asarray(
+            mask_img.point(lambda v: 255 if v > 127 else 0).filter(ImageFilter.GaussianBlur(SS * 6)), dtype=np.float32
+        )
+        / 255
+    )
 
     # Plates: distance to the nearest and second-nearest of a scatter of seeds (warped a bit
     # so the cracks wander).
@@ -73,14 +78,14 @@ def lava(seed):
     d.sort(axis=0)
     edge = (d[1] - d[0]) / BIG  # 0 on a crack
     crack = np.clip(1 - edge / 0.035, 0, 1) ** 1.5  # 1 in the crack, fading out
-    halo = np.clip(1 - edge / 0.12, 0, 1) ** 2       # warmth spreading into the crust
+    halo = np.clip(1 - edge / 0.12, 0, 1) ** 2  # warmth spreading into the crust
 
     mottle = value_noise(rng, 7) * 0.6 + value_noise(rng, 15) * 0.4
     crust = np.array([0.10, 0.035, 0.02])[None, None, :] * (0.7 + 0.6 * mottle[..., None])
     warm = np.array([0.55, 0.10, 0.02])[None, None, :]
     rgb = crust * (1 - halo[..., None]) + warm * halo[..., None] * 0.8
     # Cracks: yellow-white in the middle, orange, red at the edge.
-    hot = np.stack([np.ones_like(crack), 0.35 + 0.6 * crack, 0.05 + 0.45 * crack ** 2], axis=-1)
+    hot = np.stack([np.ones_like(crack), 0.35 + 0.6 * crack, 0.05 + 0.45 * crack**2], axis=-1)
     rgb = rgb * (1 - crack[..., None]) + hot * crack[..., None]
     # The rim glows where the crust thins.
     rim = np.clip((1 - inner) * 1.4, 0, 1) * mask

@@ -14,9 +14,27 @@ local DEFAULTS, Print = ns.DEFAULTS, ns.Print
 
 -- Saved data the addon learns as you play, not settings: not part of profiles, and
 -- resets leave it alone.
-local LEARNED = { repKnown = true, flightTimes = true, sessions = true, restBase = true, pinned = true,
-                  lastSeen = true, totemSpells = true, castTimes = true, targetCastTimes = true, manaSpells = true, flightLog = true, fishSavedCVars = true,
-                  setupDone = true, seenNew = true, timerRun = true, soulstoneRun = true, imbueLearned = true, imbueTipLearned = true, skinKnown = true } -- the setup wizard and New in page (Features/Setup/Setup.lua)
+local LEARNED = {
+    repKnown = true,
+    flightTimes = true,
+    sessions = true,
+    restBase = true,
+    pinned = true,
+    lastSeen = true,
+    totemSpells = true,
+    castTimes = true,
+    targetCastTimes = true,
+    manaSpells = true,
+    flightLog = true,
+    fishSavedCVars = true,
+    setupDone = true,
+    seenNew = true,
+    timerRun = true,
+    soulstoneRun = true,
+    imbueLearned = true,
+    imbueTipLearned = true,
+    skinKnown = true,
+} -- the setup wizard and New in page (Features/Setup/Setup.lua)
 
 local current -- this character's profile name
 
@@ -104,7 +122,10 @@ local function NewProfile(name)
     name = CleanName(name)
     if not name then return end
     local P = Store()
-    if P.profiles[name] then Print("There's already a profile called " .. name .. ".") return end
+    if P.profiles[name] then
+        Print("There's already a profile called " .. name .. ".")
+        return
+    end
     SaveProfile()
     P.profiles[name] = Snapshot()
     SwitchProfile(name)
@@ -138,7 +159,10 @@ local function RenameProfile(name)
     name = CleanName(name)
     local P = Store()
     if not name or name == current then return end
-    if P.profiles[name] then Print("There's already a profile called " .. name .. ".") return end
+    if P.profiles[name] then
+        Print("There's already a profile called " .. name .. ".")
+        return
+    end
     SaveProfile()
     P.profiles[name], P.profiles[current] = P.profiles[current], nil
     for char, used in pairs(P.chars) do
@@ -154,7 +178,10 @@ end
 local function ProfileList(except)
     local list, order = {}, {}
     for name in pairs(Store().profiles) do
-        if name ~= except then list[name] = name; table.insert(order, name) end
+        if name ~= except then
+            list[name] = name
+            table.insert(order, name)
+        end
     end
     table.sort(order)
     return list, order
@@ -176,12 +203,23 @@ ns.Listen({ "PLAYER_LOGOUT" }, SaveProfile)
 ns.RegisterCommand({ "profile", "profiles" }, function(arg)
     if arg ~= "" then
         local match
-        for name in pairs((ProfileList())) do if name:lower() == arg:lower() then match = name end end
-        if match then SwitchProfile(match) else Print("No profile called " .. arg .. ".") end
+        for name in pairs((ProfileList())) do
+            if name:lower() == arg:lower() then match = name end
+        end
+        if match then
+            SwitchProfile(match)
+        else
+            Print("No profile called " .. arg .. ".")
+        end
     else
         local _, order = ProfileList()
-        Print("Profile: |cffffd100" .. tostring(current) .. "|r. All: " .. table.concat(order, ", ")
-            .. ". Switch with /circ profile <name>.")
+        Print(
+            "Profile: |cffffd100"
+                .. tostring(current)
+                .. "|r. All: "
+                .. table.concat(order, ", ")
+                .. ". Switch with /circ profile <name>."
+        )
     end
 end, "show or switch profiles", "profile [name]")
 

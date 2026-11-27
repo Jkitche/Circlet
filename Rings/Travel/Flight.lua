@@ -35,7 +35,9 @@ local function NodeIDByName(name)
     if not name then return nil end
     if not nodeByName then
         nodeByName = {}
-        for id, n in pairs(ns.FLIGHT_NODES or {}) do nodeByName[n] = id end
+        for id, n in pairs(ns.FLIGHT_NODES or {}) do
+            nodeByName[n] = id
+        end
     end
     return nodeByName[name]
 end
@@ -47,7 +49,9 @@ local function NodeIDForSlot(slot)
         local nodes = ns.SafeCall(C_TaxiMap.GetAllTaxiNodes, GetTaxiMapID())
         if type(nodes) == "table" then
             for _, n in ipairs(nodes) do
-                if n.slotIndex == slot and type(n.nodeID) == "number" and not IsSecret(n.nodeID) then return n.nodeID end
+                if n.slotIndex == slot and type(n.nodeID) == "number" and not IsSecret(n.nodeID) then
+                    return n.nodeID
+                end
             end
         end
     end
@@ -87,7 +91,10 @@ local function TripSeconds(dest)
             local s, yards, delay = HopSeconds(a, b)
             if hop == 1 then info.nodes[1] = a or "?" end
             info.nodes[hop + 1] = b or "?"
-            if not s then total = nil break end
+            if not s then
+                total = nil
+                break
+            end
             total, info.yards, info.delay = total + s, info.yards + yards, info.delay + delay
         end
     end
@@ -106,20 +113,18 @@ local geom = flight.geom
 flight.fill = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, flight)
 flight.fill2 = NewRingLayer("ARTWORK", 0, { r = 1, g = 1, b = 1 }, 1, flight) -- the spinner's wrap-around piece
 
-flight.dest = ns.RingText(flight)  -- destination, small, above the time
-flight.time = ns.RingText(flight)  -- 1:23, big
+flight.dest = ns.RingText(flight) -- destination, small, above the time
+flight.time = ns.RingText(flight) -- 1:23, big
 flight.label = ns.RingText(flight) -- "remaining" / "No route data" / "Arrived"
 
 -- What's being shown. Real flights fill `trip`; edit mode and previews use samples.
-local trip = nil      -- { dest, start, total (nil = not in the data), landed }
+local trip = nil -- { dest, start, total (nil = not in the data), landed }
 local pendingRoute = nil -- { dest, total, at } picked on the flight map, waiting for takeoff
 local editing, previewUntil, sampleT = false, 0, 0
 local holdUntil = 0
 
 -- Short place name: "Ironforge, Dun Morogh" -> "Ironforge".
-local function ShortName(name)
-    return name and (name:match("^([^,]+)") or name) or nil
-end
+local function ShortName(name) return name and (name:match("^([^,]+)") or name) or nil end
 
 -- Picking a destination on the flight map: work out the trip now, while the map (and
 -- its hops) can still be read, and keep it until takeoff.
@@ -134,9 +139,7 @@ local function OnTakeTaxiNode(index)
     if IsSecret(from) then from = nil end
     pendingRoute = { dest = dest, from = from, total = ok and total or nil, info = ok and info or nil, at = GetTime() }
 end
-if hooksecurefunc and TakeTaxiNode then
-    hooksecurefunc("TakeTaxiNode", OnTakeTaxiNode)
-end
+if hooksecurefunc and TakeTaxiNode then hooksecurefunc("TakeTaxiNode", OnTakeTaxiNode) end
 
 ---------------------------------------------------------------- drawing
 -- The flight ring's texts, top to bottom, for their size settings.
@@ -185,7 +188,9 @@ end
 
 local function BuildFx()
     fx = { clouds = {}, streaks = {}, trail = {}, dust = {} }
-    for i = 1, CLOUDS do fx.clouds[i] = FxTex(GLOW_TEX, "BACKGROUND", -4, "BLEND") end
+    for i = 1, CLOUDS do
+        fx.clouds[i] = FxTex(GLOW_TEX, "BACKGROUND", -4, "BLEND")
+    end
     for i = 1, STREAKS do
         local l = flight:CreateLine(nil, "ARTWORK", nil, 1)
         if l.SetBlendMode then l:SetBlendMode("ADD") end
@@ -198,7 +203,9 @@ local function BuildFx()
         l:Hide()
         fx.trail[i] = l
     end
-    for i = 1, DUST do fx.dust[i] = FxTex(GLOW_TEX, "ARTWORK", 3, "BLEND") end
+    for i = 1, DUST do
+        fx.dust[i] = FxTex(GLOW_TEX, "ARTWORK", 3, "BLEND")
+    end
     fx.glow = FxTex(GLOW_TEX, "ARTWORK", 4, "ADD")
     fx.arrow = flight:CreateTexture(nil, "OVERLAY", nil, 7)
     fx.isArrow = fx.arrow:SetTexture("Interface\\Minimap\\MinimapArrow") ~= false
@@ -208,10 +215,18 @@ end
 
 local function HideFx()
     if not fx then return end
-    for _, t in ipairs(fx.clouds) do t:Hide() end
-    for _, l in ipairs(fx.streaks) do l:Hide() end
-    for _, l in ipairs(fx.trail) do l:Hide() end
-    for _, t in ipairs(fx.dust) do t:Hide() end
+    for _, t in ipairs(fx.clouds) do
+        t:Hide()
+    end
+    for _, l in ipairs(fx.streaks) do
+        l:Hide()
+    end
+    for _, l in ipairs(fx.trail) do
+        l:Hide()
+    end
+    for _, t in ipairs(fx.dust) do
+        t:Hide()
+    end
     fx.glow:Hide()
     fx.arrow:Hide()
 end
@@ -324,9 +339,7 @@ local function Current(now)
     if editing or now < previewUntil then
         -- A route in the data counting down, then one that isn't counting up.
         local cycle = sampleT % 16
-        if cycle < 10 then
-            return "Ironforge", 30 + cycle * 9, 150, false
-        end
+        if cycle < 10 then return "Ironforge", 30 + cycle * 9, 150, false end
         return "Southshore", (cycle - 10) * 7 + 12, nil, false
     end
     if not trip then return nil end
@@ -339,10 +352,14 @@ local function Draw(now)
     local dest, elapsed, total, landed = Current(now)
     if not elapsed then return HideFx() end
     local c = db.flightColors
-    for _, l in ipairs(flight.fill2) do l:Hide() end
+    for _, l in ipairs(flight.fill2) do
+        l:Hide()
+    end
 
     if landed then
-        for _, l in ipairs(flight.fill) do l:SetColorTexture(c.fill.r, c.fill.g, c.fill.b, 1) end
+        for _, l in ipairs(flight.fill) do
+            l:SetColorTexture(c.fill.r, c.fill.g, c.fill.b, 1)
+        end
         DrawArc(flight.fill, 0, 1, flight, geom, nil, ns.Shade("flight", c.fill))
         flight.time:SetText(FormatTime(elapsed))
         flight.time:SetTextColor(1, 1, 1)
@@ -351,7 +368,9 @@ local function Draw(now)
         DrawFlightFx(now, 1, c.fill, trip and trip.landed and now - trip.landed or TOUCHDOWN)
     elseif total then
         local frac = math.min(1, elapsed / math.max(1, total))
-        for _, l in ipairs(flight.fill) do l:SetColorTexture(c.fill.r, c.fill.g, c.fill.b, 1) end
+        for _, l in ipairs(flight.fill) do
+            l:SetColorTexture(c.fill.r, c.fill.g, c.fill.b, 1)
+        end
         DrawArc(flight.fill, 0, frac, flight, geom, nil, ns.Shade("flight", c.fill))
         local left = total - elapsed
         flight.time:SetText(left > 0 and FormatTime(left) or "0:00")
@@ -362,11 +381,15 @@ local function Draw(now)
     else
         -- Route not in the data: a quarter arc circling, and the time in the air.
         local spin = (elapsed * 0.35) % 1
-        for _, l in ipairs(flight.fill) do l:SetColorTexture(c.learning.r, c.learning.g, c.learning.b, 1) end
+        for _, l in ipairs(flight.fill) do
+            l:SetColorTexture(c.learning.r, c.learning.g, c.learning.b, 1)
+        end
         DrawArc(flight.fill, spin, math.min(1, spin + 0.25), flight, geom)
         if spin + 0.25 > 1 then
             -- Wraps past 12 o'clock: the rest goes on the second layer.
-            for _, l in ipairs(flight.fill2) do l:SetColorTexture(c.learning.r, c.learning.g, c.learning.b, 1) end
+            for _, l in ipairs(flight.fill2) do
+                l:SetColorTexture(c.learning.r, c.learning.g, c.learning.b, 1)
+            end
             DrawArc(flight.fill2, 0, spin + 0.25 - 1, flight, geom)
         end
         flight.time:SetText(FormatTime(elapsed))
@@ -389,11 +412,20 @@ LogFlight = function(t, duration)
     db.flightLog = db.flightLog or {}
     local i = t.info
     table.insert(db.flightLog, {
-        when = date and date("%Y-%m-%d %H:%M") or "?", from = t.from, to = t.dest,
-        nodes = table.concat(i.nodes, ">"), hops = i.hops, yards = i.yards, stops = i.delay,
-        predicted = t.total, actual = math.floor(duration * 10 + 0.5) / 10, speed = SPEED,
+        when = date and date("%Y-%m-%d %H:%M") or "?",
+        from = t.from,
+        to = t.dest,
+        nodes = table.concat(i.nodes, ">"),
+        hops = i.hops,
+        yards = i.yards,
+        stops = i.delay,
+        predicted = t.total,
+        actual = math.floor(duration * 10 + 0.5) / 10,
+        speed = SPEED,
     })
-    while #db.flightLog > LOG_SIZE do table.remove(db.flightLog, 1) end
+    while #db.flightLog > LOG_SIZE do
+        table.remove(db.flightLog, 1)
+    end
 end
 
 local function StartFlight(now)
@@ -401,8 +433,13 @@ local function StartFlight(now)
     pendingRoute = nil
     -- Only trust a route picked in the last minute (the map click that started this).
     if route and now - route.at > 60 then route = nil end
-    trip = { dest = route and route.dest, from = route and route.from, start = now, total = route and route.total,
-             info = route and route.info }
+    trip = {
+        dest = route and route.dest,
+        from = route and route.from,
+        start = now,
+        total = route and route.total,
+        info = route and route.info,
+    }
 end
 
 local function EndFlight(now)
@@ -482,22 +519,39 @@ end
 -- /circ flightlog: the last flights, predicted against real, with the speed each implies.
 local function ShowFlightLog()
     local log = db.flightLog or {}
-    if #log == 0 then ns.Print("No flights logged yet: fly somewhere and check again.") return end
+    if #log == 0 then
+        ns.Print("No flights logged yet: fly somewhere and check again.")
+        return
+    end
     ns.Print(string.format("Last %d flights (timed at %.1f yards/second):", math.min(10, #log), SPEED))
     local yards, secs = 0, 0
     for i = math.max(1, #log - 9), #log do
         local f = log[i]
         local flying = f.actual - (f.stops or 0)
-        print(string.format("  %s > %s: %d hop%s, %d yd%s  predicted %s, took %.1fs (%+.1fs)  = %.1f yd/s",
-            ShortName(f.from) or "?", ShortName(f.to) or "?", f.hops or 0, (f.hops or 0) == 1 and "" or "s",
-            f.yards or 0, (f.stops or 0) > 0 and (" + " .. f.stops .. "s stops") or "",
-            f.predicted and (f.predicted .. "s") or "?", f.actual, f.actual - (f.predicted or f.actual),
-            flying > 0 and (f.yards or 0) / flying or 0))
+        print(
+            string.format(
+                "  %s > %s: %d hop%s, %d yd%s  predicted %s, took %.1fs (%+.1fs)  = %.1f yd/s",
+                ShortName(f.from) or "?",
+                ShortName(f.to) or "?",
+                f.hops or 0,
+                (f.hops or 0) == 1 and "" or "s",
+                f.yards or 0,
+                (f.stops or 0) > 0 and (" + " .. f.stops .. "s stops") or "",
+                f.predicted and (f.predicted .. "s") or "?",
+                f.actual,
+                f.actual - (f.predicted or f.actual),
+                flying > 0 and (f.yards or 0) / flying or 0
+            )
+        )
     end
     for _, f in ipairs(log) do
-        if (f.yards or 0) > 0 then yards, secs = yards + f.yards, secs + f.actual - (f.stops or 0) end
+        if (f.yards or 0) > 0 then
+            yards, secs = yards + f.yards, secs + f.actual - (f.stops or 0)
+        end
     end
-    if secs > 0 then ns.Print(string.format("All %d logged flights together: %.1f yards/second.", #log, yards / secs)) end
+    if secs > 0 then
+        ns.Print(string.format("All %d logged flights together: %.1f yards/second.", #log, yards / secs))
+    end
 end
 ns.RegisterCommand({ "flightlog" }, ShowFlightLog) -- the flight log (for checking the speed)
 
@@ -511,51 +565,90 @@ ns.FlightFxParts = function() return fx end -- for the tests
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "flight", name = "Flight", order = 8,
+    key = "flight",
+    name = "Flight",
+    order = 8,
     edit = { set = SetFlightEditing, get = ns.IsFlightEditing },
-    preview = PreviewFlightRing, slash = { "flight", "taxi" }, help = "preview the flight ring",
+    preview = PreviewFlightRing,
+    slash = { "flight", "taxi" },
+    help = "preview the flight ring",
     toggle = { "Flight ring", "Counts down to landing while you're on a flight path." },
     defaults = {
         -- Flight ring: a countdown to landing on flight paths.
-        flightEnabled     = true,
-        flightFx          = true, -- the arrow and contrail, clouds and wind, and the touchdown
-        flightSize        = 120,
-        flightThickness   = 12,
-        flightOpacity     = 100,
-        flightX           = 170,  -- right of the crafting ring
-        flightFromTop     = 255,
-        flightHold        = 3,    -- seconds it stays after landing
-        flightStyle       = "smooth",
-        flightBorder      = 2, -- black border width (0 = none)
+        flightEnabled = true,
+        flightFx = true, -- the arrow and contrail, clouds and wind, and the touchdown
+        flightSize = 120,
+        flightThickness = 12,
+        flightOpacity = 100,
+        flightX = 170, -- right of the crafting ring
+        flightFromTop = 255,
+        flightHold = 3, -- seconds it stays after landing
+        flightStyle = "smooth",
+        flightBorder = 2, -- black border width (0 = none)
         flightColors = {
-            fill     = { r = 0.45, g = 0.75, b = 1.00 },
+            fill = { r = 0.45, g = 0.75, b = 1.00 },
             learning = { r = 0.75, g = 0.75, b = 0.80 }, -- a route not in the data
         },
     },
-    page = { folder = "travel", order = 1, build = function(O)
+    page = {
+        folder = "travel",
+        order = 1,
+        build = function(O)
             local Toggle, Color, Box = O.Toggle, O.Color, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(8, "Flight", "Flight Ring",
+            local tab = RingTab(
+                8,
+                "Flight",
+                "Flight Ring",
                 "Counts down to landing while you're on a flight path. Flight times come from the game's own "
-                .. "flight path data (the length of every hop of the trip, at flying speed). A route that isn't in "
-                .. "the data counts up the time in the air instead.",
-                MergeTop(TopRow("flight", "flight ring", ns.PreviewFlightRing,
-                    "Show the ring counting down a route, then one that isn't in the data. Also /circ flight."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "flightEnabled", "Show flight ring", "Show the ring while you're on a flight path."),
-                        fx = Toggle(2, "flightFx", "Animations",
-                            "The player arrow flies along the end of the fill with a contrail behind it, clouds drift "
-                            .. "through the middle of the ring and wind streaks past, and when you land the arrow touches "
-                            .. "down in a glow and a puff of dust as the clouds part."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "flightColors", "fill", "Countdown", "Ring color while counting down to landing."),
-                        learning = Color(2, "flightColors", "learning", "No route data",
-                            "Color of the circling arc on a route that isn't in the flight data."),
-                    }),
-                    size = SizeBox(4, "flight", "flight ring", "Offset from the center of the screen."),
-                }))
+                    .. "flight path data (the length of every hop of the trip, at flying speed). A route that isn't in "
+                    .. "the data counts up the time in the air instead.",
+                MergeTop(
+                    TopRow(
+                        "flight",
+                        "flight ring",
+                        ns.PreviewFlightRing,
+                        "Show the ring counting down a route, then one that isn't in the data. Also /circ flight."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "flightEnabled",
+                                "Show flight ring",
+                                "Show the ring while you're on a flight path."
+                            ),
+                            fx = Toggle(
+                                2,
+                                "flightFx",
+                                "Animations",
+                                "The player arrow flies along the end of the fill with a contrail behind it, clouds drift "
+                                    .. "through the middle of the ring and wind streaks past, and when you land the arrow touches "
+                                    .. "down in a glow and a puff of dust as the clouds part."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(
+                                1,
+                                "flightColors",
+                                "fill",
+                                "Countdown",
+                                "Ring color while counting down to landing."
+                            ),
+                            learning = Color(
+                                2,
+                                "flightColors",
+                                "learning",
+                                "No route data",
+                                "Color of the circling arc on a route that isn't in the flight data."
+                            ),
+                        }),
+                        size = SizeBox(4, "flight", "flight ring", "Offset from the center of the screen."),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after you land."
             return tab
-        end },
+        end,
+    },
 })

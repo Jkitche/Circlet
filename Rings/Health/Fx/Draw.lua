@@ -34,8 +34,12 @@ local DrawFaction = FX.DrawFaction
 ---------------------------------------------------------------------------
 function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     local fx = Pieces(v, frame)
-    for _, t in pairs(fx.t) do t.used = false end
-    for _, f in pairs(fx.frames) do f.used = false end
+    for _, t in pairs(fx.t) do
+        t.used = false
+    end
+    for _, f in pairs(fx.frames) do
+        f.used = false
+    end
     fx.root:Show()
     if On(key, "Death") then DrawDeath(key, fx, st, frame, geom, d, now) end
     if not st.dead then
@@ -52,8 +56,11 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
         end
     end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
-    if On(key, "Range") then DrawRange(key, fx, st, frame, geom, d, now)
-    elseif ns.SetRingDim then ns.SetRingDim(key, 1) end
+    if On(key, "Range") then
+        DrawRange(key, fx, st, frame, geom, d, now)
+    elseif ns.SetRingDim then
+        ns.SetRingDim(key, 1)
+    end
     if On(key, "Loot") then DrawLoot(key, fx, st, frame, geom, d, now) end
     if On(key, "Stance") then DrawStance(key, fx, st, frame, geom, d, now) end
     if On(key, "Faction") then DrawFaction(key, fx, st, frame, geom, d, now) end
@@ -69,7 +76,12 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     end
     for _, f in pairs(fx.frames) do
         local any = false
-        for _, t in pairs(fx.t) do if t.used and t:GetParent() == f then any = true break end end
+        for _, t in pairs(fx.t) do
+            if t.used and t:GetParent() == f then
+                any = true
+                break
+            end
+        end
         if not any then f:Hide() end
     end
 end
@@ -79,7 +91,9 @@ function ns.HideVitalsFx(v, frame)
     if not fx then return end
     fx.root:Hide()
     -- The halos live under the ring (on the ring frame or frames of their own), not on fx.root.
-    for _, t in pairs(fx.t) do if t:GetParent() ~= fx.root then t:Hide() end end
+    for _, t in pairs(fx.t) do
+        if t:GetParent() ~= fx.root then t:Hide() end
+    end
     Restore(fx, frame)
 end
 
@@ -95,12 +109,17 @@ ns.Listen({ "UNIT_COMBAT" }, function(_, unit, action, flag)
     local key = UNIT_KEY[unit]
     if not key then return end
     action, flag = Clean(action), Clean(flag)
-    if action == "HEAL" then Mark(key, "heal")
+    if action == "HEAL" then
+        Mark(key, "heal")
     elseif action == "WOUND" and (flag == "CRITICAL" or flag == "CRUSHING") then
         if JoltOn(key) then Mark(key, "jolt") end
-    elseif action == "BLOCK" then Mark(key, "block")
-    elseif action == "DODGE" then Mark(key, "dodge")
-    elseif action == "PARRY" then Mark(key, "parry") end
+    elseif action == "BLOCK" then
+        Mark(key, "block")
+    elseif action == "DODGE" then
+        Mark(key, "dodge")
+    elseif action == "PARRY" then
+        Mark(key, "parry")
+    end
 end)
 
 ns.Listen({ "PLAYER_REGEN_DISABLED" }, function() Mark("playerHp", "flare") end)

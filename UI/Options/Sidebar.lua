@@ -15,18 +15,35 @@ local Info = UI.Info
 local NAV = {
     { path = "general", text = "General", icon = "Interface\\Icons\\INV_Misc_Gear_01" },
     { path = "profiles", text = "Profiles", icon = "Interface\\Icons\\INV_Misc_Book_09" },
-    { text = "Edit all rings", icon = "Interface\\Icons\\INV_Jewelry_Ring_03",
-      tip = "Put every ring on screen at once to arrange them. Also /circ edit.",
-      func = function() ns.ToggleAllEditing() end,
-      active = function()
-          for _, def in ipairs(ns.RINGS) do if def.edit.get() then return true end end
-      end },
-    { text = "What's new", icon = "Interface\\Icons\\INV_Scroll_03",
-      tip = "The rings and features added in the latest version. Also /circ new.",
-      func = function() UI.win:Hide(); ns.OpenWhatsNew() end },
-    { text = "Setup wizard", icon = "Interface\\Icons\\Trade_Engineering",
-      tip = "Pick your rings, hide the game bars they replace, and set their look, in four short steps. Also /circ setup.",
-      func = function() UI.win:Hide(); ns.OpenSetup() end },
+    {
+        text = "Edit all rings",
+        icon = "Interface\\Icons\\INV_Jewelry_Ring_03",
+        tip = "Put every ring on screen at once to arrange them. Also /circ edit.",
+        func = function() ns.ToggleAllEditing() end,
+        active = function()
+            for _, def in ipairs(ns.RINGS) do
+                if def.edit.get() then return true end
+            end
+        end,
+    },
+    {
+        text = "What's new",
+        icon = "Interface\\Icons\\INV_Scroll_03",
+        tip = "The rings and features added in the latest version. Also /circ new.",
+        func = function()
+            UI.win:Hide()
+            ns.OpenWhatsNew()
+        end,
+    },
+    {
+        text = "Setup wizard",
+        icon = "Interface\\Icons\\Trade_Engineering",
+        tip = "Pick your rings, hide the game bars they replace, and set their look, in four short steps. Also /circ setup.",
+        func = function()
+            UI.win:Hide()
+            ns.OpenSetup()
+        end,
+    },
 }
 
 local function SideRow(parent, h)
@@ -38,7 +55,8 @@ local function SideRow(parent, h)
     b.sel = W.Solid(b, "BACKGROUND", A.r, A.g, A.b, 0.16, 1)
     b.sel:SetAllPoints()
     b.bar = W.Solid(b, "ARTWORK", A.r, A.g, A.b, 1)
-    b.bar:SetPoint("TOPLEFT"); b.bar:SetPoint("BOTTOMLEFT")
+    b.bar:SetPoint("TOPLEFT")
+    b.bar:SetPoint("BOTTOMLEFT")
     b.bar:SetWidth(3)
     b.text = W.Text(b, 13, 0.85, 0.86, 0.88)
     b.text:SetWordWrap(false)
@@ -51,7 +69,10 @@ local function SideRow(parent, h)
         if not self.selected then self.hi:Show() end
         if self.tip then W.ShowTip(self, self.text:GetText(), self.tip) end
     end)
-    b:SetScript("OnLeave", function(self) self.hi:Hide(); W.HideTip() end)
+    b:SetScript("OnLeave", function(self)
+        self.hi:Hide()
+        W.HideTip()
+    end)
     b:SetSelected(false)
     return b
 end
@@ -80,8 +101,15 @@ local function RingRow(parent)
         end)
         b.dot:SetScript("OnEnter", function(self)
             local on = db[self.def.key .. "Enabled"]
-            W.ShowTip(self, self.def.toggle[1], (on and "|cff33ff33On|r" or "|cff999999Off|r") .. ": click to turn "
-                .. (on and "off." or "on.") .. "\n" .. self.def.toggle[2])
+            W.ShowTip(
+                self,
+                self.def.toggle[1],
+                (on and "|cff33ff33On|r" or "|cff999999Off|r")
+                    .. ": click to turn "
+                    .. (on and "off." or "on.")
+                    .. "\n"
+                    .. self.def.toggle[2]
+            )
         end)
         b.dot:SetScript("OnLeave", W.HideTip)
         b.chev = W.Chevron(b, 7, 0.78, 0.62, 1, true)
@@ -124,13 +152,17 @@ end
 
 local function RefreshSidebar()
     local list = UI.win.ringList
-    for i = 1, #sideRows do sideRows[i]:Hide() end
+    for i = 1, #sideRows do
+        sideRows[i]:Hide()
+    end
     sideUsed = 0
     local child = list.child
     local y = -4
     local needle = UI.search:lower()
     local folders = {}
-    for key, f in pairs(FOLDERS) do folders[#folders + 1] = { key = key, f = f } end
+    for key, f in pairs(FOLDERS) do
+        folders[#folders + 1] = { key = key, f = f }
+    end
     table.sort(folders, function(a, b) return a.f.order < b.f.order end)
     for _, entry in ipairs(folders) do
         local folderPage = UI.root.args[entry.key]
@@ -165,7 +197,10 @@ local function RefreshSidebar()
                 local byClass, order = {}, {}
                 for _, r in ipairs(rings) do
                     local class = RingClass(ns.FindRing(r.key))
-                    if not byClass[class] then byClass[class] = {}; order[#order + 1] = class end
+                    if not byClass[class] then
+                        byClass[class] = {}
+                        order[#order + 1] = class
+                    end
                     table.insert(byClass[class], r)
                 end
                 local _, mine = UnitClass("player")
@@ -177,68 +212,81 @@ local function RefreshSidebar()
                 for _, class in ipairs(order) do
                     shown[#shown + 1] = { classHead = class, count = #byClass[class] }
                     if needle ~= "" or not collapsedClass[class] then
-                        for _, r in ipairs(byClass[class]) do shown[#shown + 1] = r end
+                        for _, r in ipairs(byClass[class]) do
+                            shown[#shown + 1] = r
+                        end
                     end
                 end
             end
             for _, r in ipairs(shown) do
-              if r.classHead then
-                local class = r.classHead
-                local open = needle ~= "" or not collapsedClass[class]
-                local row = RingRow(child)
-                row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
-                row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
-                row:SetHeight(26)
-                row.text:ClearAllPoints()
-                row.text:SetPoint("LEFT", row, "LEFT", 40, 0)
-                row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
-                row.text:SetText(class == "OTHER" and "Other" or ClassName(class))
-                row.text:SetTextColor(ClassColor(class))
-                row.dot:Hide()
-                row.chev:ClearAllPoints(); row.chev:SetPoint("LEFT", row, "LEFT", 26, 0)
-                row.chevDown:ClearAllPoints(); row.chevDown:SetPoint("LEFT", row, "LEFT", 26, 0)
-                row.chev:SetShown(not open)
-                row.chevDown:SetShown(open)
-                row.tip = (open and "Click to hide " or "Click to show ") .. "this class's rings ("
-                    .. r.count .. ")."
-                row:SetSelected(false)
-                row:SetScript("OnClick", function()
-                    collapsedClass[class] = not collapsedClass[class] or nil
-                    RefreshSidebar()
-                end)
-                y = y - 26
-              else
-                local path = entry.key .. "." .. r.key
-                local row = RingRow(child)
-                row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
-                row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
-                row:SetHeight(26)
-                row.text:ClearAllPoints()
-                row.text:SetPoint("LEFT", row, "LEFT", entry.key == "class" and 42 or 30, 0)
-                row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
-                row.text:SetText(r.name)
-                local def = ns.FindRing(r.key)
-                local selected = UI.current == path
-                row:SetSelected(selected)
-                row.chev:Hide()
-                if def and def.key == r.key and ns.HiddenForClass(def) then
-                    -- another class's ring: its page opens (greyed out), but no on/off dot
+                if r.classHead then
+                    local class = r.classHead
+                    local open = needle ~= "" or not collapsedClass[class]
+                    local row = RingRow(child)
+                    row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
+                    row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
+                    row:SetHeight(26)
+                    row.text:ClearAllPoints()
+                    row.text:SetPoint("LEFT", row, "LEFT", 40, 0)
+                    row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
+                    row.text:SetText(class == "OTHER" and "Other" or ClassName(class))
+                    row.text:SetTextColor(ClassColor(class))
                     row.dot:Hide()
-                    row.text:SetTextColor(selected and 0.8 or 0.42, selected and 0.8 or 0.43, selected and 0.8 or 0.46)
-                elseif def and def.key == r.key and def.toggle then
-                    local on = db[def.key .. "Enabled"]
-                    row.dot.def = def
-                    row.dot.ring:SetVertexColor(on and 0.35 or 0.32, on and 0.85 or 0.33, on and 0.45 or 0.36, 1)
-                    row.dot:Show()
-                    row.text:SetTextColor(selected and 1 or (on and 0.86 or 0.55), selected and 1 or (on and 0.87 or 0.56),
-                        selected and 1 or (on and 0.89 or 0.6))
+                    row.chev:ClearAllPoints()
+                    row.chev:SetPoint("LEFT", row, "LEFT", 26, 0)
+                    row.chevDown:ClearAllPoints()
+                    row.chevDown:SetPoint("LEFT", row, "LEFT", 26, 0)
+                    row.chev:SetShown(not open)
+                    row.chevDown:SetShown(open)
+                    row.tip = (open and "Click to hide " or "Click to show ")
+                        .. "this class's rings ("
+                        .. r.count
+                        .. ")."
+                    row:SetSelected(false)
+                    row:SetScript("OnClick", function()
+                        collapsedClass[class] = not collapsedClass[class] or nil
+                        RefreshSidebar()
+                    end)
+                    y = y - 26
                 else
-                    row.dot:Hide()
-                    row.text:SetTextColor(selected and 1 or 0.86, selected and 1 or 0.87, selected and 1 or 0.89)
+                    local path = entry.key .. "." .. r.key
+                    local row = RingRow(child)
+                    row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
+                    row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
+                    row:SetHeight(26)
+                    row.text:ClearAllPoints()
+                    row.text:SetPoint("LEFT", row, "LEFT", entry.key == "class" and 42 or 30, 0)
+                    row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
+                    row.text:SetText(r.name)
+                    local def = ns.FindRing(r.key)
+                    local selected = UI.current == path
+                    row:SetSelected(selected)
+                    row.chev:Hide()
+                    if def and def.key == r.key and ns.HiddenForClass(def) then
+                        -- another class's ring: its page opens (greyed out), but no on/off dot
+                        row.dot:Hide()
+                        row.text:SetTextColor(
+                            selected and 0.8 or 0.42,
+                            selected and 0.8 or 0.43,
+                            selected and 0.8 or 0.46
+                        )
+                    elseif def and def.key == r.key and def.toggle then
+                        local on = db[def.key .. "Enabled"]
+                        row.dot.def = def
+                        row.dot.ring:SetVertexColor(on and 0.35 or 0.32, on and 0.85 or 0.33, on and 0.45 or 0.36, 1)
+                        row.dot:Show()
+                        row.text:SetTextColor(
+                            selected and 1 or (on and 0.86 or 0.55),
+                            selected and 1 or (on and 0.87 or 0.56),
+                            selected and 1 or (on and 0.89 or 0.6)
+                        )
+                    else
+                        row.dot:Hide()
+                        row.text:SetTextColor(selected and 1 or 0.86, selected and 1 or 0.87, selected and 1 or 0.89)
+                    end
+                    row:SetScript("OnClick", function() UI.SelectPage(path) end)
+                    y = y - 26
                 end
-                row:SetScript("OnClick", function() UI.SelectPage(path) end)
-                y = y - 26
-              end
             end
         end
     end
@@ -250,7 +298,8 @@ local function RefreshSidebar()
         row.text:SetPoint("LEFT", row, "LEFT", 18, 0)
         row.text:SetText("No rings match.")
         row.text:SetTextColor(0.5, 0.5, 0.55)
-        row.dot:Hide(); row.chev:Hide()
+        row.dot:Hide()
+        row.chev:Hide()
         row:SetSelected(false)
         row:SetScript("OnClick", nil)
         y = y - 30

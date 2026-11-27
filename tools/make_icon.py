@@ -1,14 +1,18 @@
 """Draws Circlet's logo: three nested progress rings (XP, quest, skill) on a dark tile.
 python3 tools/make_icon.py  ->  docs/images/logo.png (512x512)"""
+
 import math, os
 from PIL import Image, ImageDraw, ImageFilter
 
-SS = 4                      # supersampling
+SS = 4  # supersampling
 N = 512 * SS
 C = N / 2
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "images", "logo.png")
 
-def lerp(a, b, t): return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+def lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
 
 def arc(img, r, w, start, frac, c0, c1, steps=720):
     """A thick arc from `start` degrees (0 = bottom, clockwise), `frac` of the circle,
@@ -17,18 +21,22 @@ def arc(img, r, w, start, frac, c0, c1, steps=720):
     d = ImageDraw.Draw(img)
     n = max(2, int(steps * frac))
     ri, ro = r - w / 2, r + w / 2
+
     def pt(rad, t):
         a = math.radians(start + 360 * frac * t)
         return (C - math.sin(a) * rad, C + math.cos(a) * rad)
+
     for i in range(n):
         t0, t1 = i / n, min(1, (i + 1.6) / n)  # overlap a little so the quads leave no seams
         d.polygon([pt(ri, t0), pt(ro, t0), pt(ro, t1), pt(ri, t1)], fill=lerp(c0, c1, i / n) + (255,))
     x, y = pt(r, 1)
     d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=c1 + (255,))
 
+
 def ring_track(img, r, w, col):
     d = ImageDraw.Draw(img)
     d.ellipse([C - r - w / 2, C - r - w / 2, C + r + w / 2, C + r + w / 2], outline=col + (255,), width=int(w))
+
 
 img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
 
@@ -44,25 +52,31 @@ tile = Image.alpha_composite(tile, Image.composite(glow, Image.new("RGBA", (N, N
 img = Image.alpha_composite(img, tile)
 
 rings = [  # radius, width, fraction, colour start, colour end
-    (162, 42, 0.78, (95, 40, 120), (190, 80, 230)),    # XP: purple
-    (108, 36, 0.62, (150, 110, 10), (255, 205, 40)),   # quest: gold (segmented)
-    (60, 30, 0.42, (30, 110, 45), (90, 220, 100)),     # skill: green
+    (162, 42, 0.78, (95, 40, 120), (190, 80, 230)),  # XP: purple
+    (108, 36, 0.62, (150, 110, 10), (255, 205, 40)),  # quest: gold (segmented)
+    (60, 30, 0.42, (30, 110, 45), (90, 220, 100)),  # skill: green
 ]
 START = 180  # Circlet's default rotation: fill starts at the top
 
 layer = Image.new("RGBA", (N, N), (0, 0, 0, 0))
 for r, w, frac, c0, c1 in rings:
     r, w = r * SS, w * SS
-    ring_track(layer, r, w + 10 * SS, (5, 5, 8))          # black border
-    ring_track(layer, r, w, (34, 32, 46))                 # empty track
+    ring_track(layer, r, w + 10 * SS, (5, 5, 8))  # black border
+    ring_track(layer, r, w, (34, 32, 46))  # empty track
     arc(layer, r, w, START, frac, c0, c1)
     if c0 == (150, 110, 10):  # notch the quest ring into segments, like the segmented style
         d = ImageDraw.Draw(layer)
         for k in range(12):
             a = math.radians(START + 30 * k)
             dx, dy = -math.sin(a), math.cos(a)
-            d.line([(C + dx * (r - w / 2 - 2), C + dy * (r - w / 2 - 2)), (C + dx * (r + w / 2 + 2), C + dy * (r + w / 2 + 2))],
-                   fill=(5, 5, 8, 255), width=int(7 * SS))
+            d.line(
+                [
+                    (C + dx * (r - w / 2 - 2), C + dy * (r - w / 2 - 2)),
+                    (C + dx * (r + w / 2 + 2), C + dy * (r + w / 2 + 2)),
+                ],
+                fill=(5, 5, 8, 255),
+                width=int(7 * SS),
+            )
 # Rested band ahead of the XP fill.
 arc(layer, 162 * SS, 42 * SS, START + 360 * 0.78, 0.09, (45, 85, 150), (70, 120, 200), 200)
 arc(layer, 162 * SS, 42 * SS, START, 0.78, (95, 40, 120), (190, 80, 230))  # XP on top of the band's cap
@@ -85,7 +99,10 @@ sd = ImageDraw.Draw(spark)
 for ang, ln in [(0, 40), (90, 40), (45, 18), (135, 18)]:
     t = math.radians(ang)
     dx, dy = math.cos(t) * ln * SS, math.sin(t) * ln * SS
-    sd.polygon([(sx - dx, sy - dy), (sx + dy * 0.12, sy - dx * 0.12), (sx + dx, sy + dy), (sx - dy * 0.12, sy + dx * 0.12)], fill=(255, 250, 255, 255))
+    sd.polygon(
+        [(sx - dx, sy - dy), (sx + dy * 0.12, sy - dx * 0.12), (sx + dx, sy + dy), (sx - dy * 0.12, sy + dx * 0.12)],
+        fill=(255, 250, 255, 255),
+    )
 img = Image.alpha_composite(img, spark)
 
 img = img.resize((512, 512), Image.LANCZOS)

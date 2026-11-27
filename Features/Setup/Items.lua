@@ -41,58 +41,134 @@ local GROUPS = {
 -- Everything else in a release that isn't a ring of its own: with a setting, an on/off box
 -- (and show: a ring to show it on); without one, just the news (fixes, changes, commands).
 local NEW_FEATURES = {
-    { id = "corpseReviveFx", since = "1.2.0", name = "Corpse ring: revive animation",
-      desc = "Your soul drifts back into the ring when you revive in your own body.",
-      setting = "corpseReviveFx", show = "corpse" },
+    {
+        id = "corpseReviveFx",
+        since = "1.2.0",
+        name = "Corpse ring: revive animation",
+        desc = "Your soul drifts back into the ring when you revive in your own body.",
+        setting = "corpseReviveFx",
+        show = "corpse",
+    },
     -- 1.4.0
-    { id = "craftFx", since = "1.4.0", name = "Crafting animations",
-      desc = "Each crafting profession gets its own animation on the crafting ring: bubbling potions, a hammer "
-          .. "and sparks, lightning, runes, a stitching needle, flames and steam and more.",
-      setting = "craftFx", show = "craft" },
-    { id = "xpGainFx", since = "1.4.0", name = "XP ring: gain animation",
-      desc = "A glowing comet rides the end of the fill as XP comes in, with a flare where it lands.",
-      setting = "xpGainFx", show = "xp" },
-    { id = "regenFx", since = "1.4.0", name = "Mana regen ring: animation",
-      desc = "A spark charges while the five-second rule holds your regen back; mana spirals in when it starts again.",
-      setting = "regenFx", show = "regen" },
-    { id = "flightFx", since = "1.4.0", name = "Flight ring: animation",
-      desc = "The arrow flies along the fill with a contrail through clouds and wind, then touches down in a puff of dust.",
-      setting = "flightFx", show = "flight" },
-    { id = "lootFx", since = "1.4.0", name = "Loot roll ring: dice",
-      desc = "Two dice rattle while you decide, then tumble and land on their numbers when you roll.",
-      setting = "lootFx", show = "loot" },
-    { id = "timedFx", since = "1.4.0", name = "Timed quest ring: hourglass",
-      desc = "Sand trickles from the end of the fill and piles up as time runs out.",
-      setting = "timedFx", show = "timed" },
-    { id = "skillFx", since = "1.4.0", name = "Profession skill ring: animation",
-      desc = "A spark rides the fill shedding glitter, then bursts; a new tier or the cap sends a gold shimmer round.",
-      setting = "skillFx", show = "skill" },
-    { id = "weaponFx", since = "1.4.0", name = "Weapon skill ring: animation",
-      desc = "A steel swoosh, a clang and a spray of sparks; capping a skill sends a blade glint round the ring.",
-      setting = "weaponFx", show = "weapon" },
-    { id = "swingHideDefault", since = "1.4.0", name = "Hide the game's swing timer bars",
-      desc = "Let the swing timer ring replace WoW Forever's own melee swing timer bars.",
-      setting = "swingHideDefault", show = "swing" },
-    { id = "shotHideDefault", since = "1.4.0", name = "Hide the game's ranged swing timer bar",
-      desc = "Let the shot timer ring replace WoW Forever's own ranged swing timer bar.",
-      setting = "shotHideDefault", show = "shot" },
-    { id = "flightTimesFixed", since = "1.4.0", name = "Flight times fixed",
-      desc = "The flight ring counted down about 11% too fast; it now lands within a second of the real time.",
-      show = "flight" },
-    { id = "showxpCommand", since = "1.4.0", name = "/circ showxp",
-      desc = "Brings the XP ring up for a few seconds at your current XP and prints your XP to chat." },
-    { id = "optionsFolders", since = "1.4.0", name = "Tidier options window",
-      desc = "Rings sorted into six folders, ring checkboxes grouped by folder, and checkboxes two to a row "
-          .. "with their explanations in tooltips." },
-    { id = "editAllSaved", since = "1.4.0", name = "Edit all rings: one message",
-      desc = "Finishing Edit all rings says \"All ring positions saved.\" once, not a line for every ring." },
+    {
+        id = "craftFx",
+        since = "1.4.0",
+        name = "Crafting animations",
+        desc = "Each crafting profession gets its own animation on the crafting ring: bubbling potions, a hammer "
+            .. "and sparks, lightning, runes, a stitching needle, flames and steam and more.",
+        setting = "craftFx",
+        show = "craft",
+    },
+    {
+        id = "xpGainFx",
+        since = "1.4.0",
+        name = "XP ring: gain animation",
+        desc = "A glowing comet rides the end of the fill as XP comes in, with a flare where it lands.",
+        setting = "xpGainFx",
+        show = "xp",
+    },
+    {
+        id = "regenFx",
+        since = "1.4.0",
+        name = "Mana regen ring: animation",
+        desc = "A spark charges while the five-second rule holds your regen back; mana spirals in when it starts again.",
+        setting = "regenFx",
+        show = "regen",
+    },
+    {
+        id = "flightFx",
+        since = "1.4.0",
+        name = "Flight ring: animation",
+        desc = "The arrow flies along the fill with a contrail through clouds and wind, then touches down in a puff of dust.",
+        setting = "flightFx",
+        show = "flight",
+    },
+    {
+        id = "lootFx",
+        since = "1.4.0",
+        name = "Loot roll ring: dice",
+        desc = "Two dice rattle while you decide, then tumble and land on their numbers when you roll.",
+        setting = "lootFx",
+        show = "loot",
+    },
+    {
+        id = "timedFx",
+        since = "1.4.0",
+        name = "Timed quest ring: hourglass",
+        desc = "Sand trickles from the end of the fill and piles up as time runs out.",
+        setting = "timedFx",
+        show = "timed",
+    },
+    {
+        id = "skillFx",
+        since = "1.4.0",
+        name = "Profession skill ring: animation",
+        desc = "A spark rides the fill shedding glitter, then bursts; a new tier or the cap sends a gold shimmer round.",
+        setting = "skillFx",
+        show = "skill",
+    },
+    {
+        id = "weaponFx",
+        since = "1.4.0",
+        name = "Weapon skill ring: animation",
+        desc = "A steel swoosh, a clang and a spray of sparks; capping a skill sends a blade glint round the ring.",
+        setting = "weaponFx",
+        show = "weapon",
+    },
+    {
+        id = "swingHideDefault",
+        since = "1.4.0",
+        name = "Hide the game's swing timer bars",
+        desc = "Let the swing timer ring replace WoW Forever's own melee swing timer bars.",
+        setting = "swingHideDefault",
+        show = "swing",
+    },
+    {
+        id = "shotHideDefault",
+        since = "1.4.0",
+        name = "Hide the game's ranged swing timer bar",
+        desc = "Let the shot timer ring replace WoW Forever's own ranged swing timer bar.",
+        setting = "shotHideDefault",
+        show = "shot",
+    },
+    {
+        id = "flightTimesFixed",
+        since = "1.4.0",
+        name = "Flight times fixed",
+        desc = "The flight ring counted down about 11% too fast; it now lands within a second of the real time.",
+        show = "flight",
+    },
+    {
+        id = "showxpCommand",
+        since = "1.4.0",
+        name = "/circ showxp",
+        desc = "Brings the XP ring up for a few seconds at your current XP and prints your XP to chat.",
+    },
+    {
+        id = "optionsFolders",
+        since = "1.4.0",
+        name = "Tidier options window",
+        desc = "Rings sorted into six folders, ring checkboxes grouped by folder, and checkboxes two to a row "
+            .. "with their explanations in tooltips.",
+    },
+    {
+        id = "editAllSaved",
+        since = "1.4.0",
+        name = "Edit all rings: one message",
+        desc = 'Finishing Edit all rings says "All ring positions saved." once, not a line for every ring.',
+    },
 }
 
-local STYLES = { { "keep", "Keep each ring's own" }, { "smooth", "Smooth" }, { "segmented", "Segmented" }, { "thin", "Thin" } }
-local SIZES = { { "keep", "Keep each ring's own" }, { "smaller", "Smaller" }, { "default", "Default" }, { "larger", "Larger" } }
+local STYLES =
+    { { "keep", "Keep each ring's own" }, { "smooth", "Smooth" }, { "segmented", "Segmented" }, { "thin", "Thin" } }
+local SIZES =
+    { { "keep", "Keep each ring's own" }, { "smaller", "Smaller" }, { "default", "Default" }, { "larger", "Larger" } }
 local SIZE_FACTOR = { smaller = 0.85, default = 1, larger = 1.2 }
-local PLACES = { { "keep", "Keep where they are" }, { "reset", "Reset to the default layout" },
-                 { "arrange", "Arrange them myself after Finish" } }
+local PLACES = {
+    { "keep", "Keep where they are" },
+    { "reset", "Reset to the default layout" },
+    { "arrange", "Arrange them myself after Finish" },
+}
 local STEPS = 4
 
 ---------------------------------------------------------------- helpers
@@ -105,8 +181,14 @@ local function VersionParts(v)
 end
 local function Newer(a, b) -- is version string a newer than b?
     local x, y = VersionParts(a), VersionParts(b)
-    if not x then return false elseif not y then return true end
-    for i = 1, 3 do if x[i] ~= y[i] then return x[i] > y[i] end end
+    if not x then
+        return false
+    elseif not y then
+        return true
+    end
+    for i = 1, 3 do
+        if x[i] ~= y[i] then return x[i] > y[i] end
+    end
     return false
 end
 local function AddonVersion()
@@ -115,7 +197,10 @@ local function AddonVersion()
     return VersionParts(v) and (v:gsub("^v", "")) or nil
 end
 
-local function Def(key) local d = ns.FindRing(key) return d and d.key == key and d or nil end
+local function Def(key)
+    local d = ns.FindRing(key)
+    return d and d.key == key and d or nil
+end
 local function Shown(def) return def.toggle and not ns.HiddenForClass(def) end
 
 -- Everything that's new: rings with `since` and NEW_FEATURES, newest release first.
@@ -124,8 +209,16 @@ local function NewItems(unseenOnly)
     local list = {}
     for _, def in ipairs(ns.RINGS) do
         if def.since and Shown(def) then
-            table.insert(list, { id = def.key, since = def.since, name = def.toggle[1], desc = def.toggle[2],
-                                 setting = def.key .. "Enabled", onSet = def.toggle[3], show = def.key, rank = 1 })
+            table.insert(list, {
+                id = def.key,
+                since = def.since,
+                name = def.toggle[1],
+                desc = def.toggle[2],
+                setting = def.key .. "Enabled",
+                onSet = def.toggle[3],
+                show = def.key,
+                rank = 1,
+            })
         end
     end
     for i, f in ipairs(NEW_FEATURES) do
@@ -137,7 +230,9 @@ local function NewItems(unseenOnly)
     end
     if unseenOnly then
         local seen = db.seenNew or {}
-        for i = #list, 1, -1 do if seen[list[i].id] then table.remove(list, i) end end
+        for i = #list, 1, -1 do
+            if seen[list[i].id] then table.remove(list, i) end
+        end
     end
     -- Newest release first; in each, new rings (by name), then new settings, then the news.
     table.sort(list, function(a, b)
@@ -151,7 +246,9 @@ end
 
 local function MarkAllSeen()
     db.seenNew = db.seenNew or {}
-    for _, item in ipairs(NewItems(false)) do db.seenNew[item.id] = true end
+    for _, item in ipairs(NewItems(false)) do
+        db.seenNew[item.id] = true
+    end
 end
 
 -- The version the New in page names: this build's, or (a dev build) the newest item's.
@@ -163,9 +260,9 @@ end
 
 ---------------------------------------------------------------- state
 SU.step = 1
-SU.choice = {}     -- the Look and Placement choices: style, size, place
-local showing = {}    -- rings the wizard put in edit mode to show them
-SU.newItems = {}   -- what the New in page lists
+SU.choice = {} -- the Look and Placement choices: style, size, place
+local showing = {} -- rings the wizard put in edit mode to show them
+SU.newItems = {} -- what the New in page lists
 
 local function StopShowing()
     for key in pairs(showing) do

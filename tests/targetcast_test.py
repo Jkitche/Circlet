@@ -1,12 +1,15 @@
 from lupa import LuaRuntime
 
+
 def boot(before=''):
     """A game with Circlet loaded, an enemy target, and cooldowns that record what they're told."""
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(open('mock.lua').read())
-    lua.execute('local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; f._kind2 = k; return f end')
+    lua.execute(
+        'local cf = CreateFrame; CreateFrame = function(k, n, p, t) local f = cf(k, n, p, t); f._parent = p; f._kind2 = k; return f end'
+    )
     s = open('liveedit_test.py').read()
-    exec(s[s.index("lua.execute('''\nUIParent._w"):s.index("chunk = lua.eval")], {'lua': lua})
+    exec(s[s.index("lua.execute('''\nUIParent._w") : s.index("chunk = lua.eval")], {'lua': lua})
     lua.execute('''
 OUT = {}; function P(...) local t = {} for i=1,select("#",...) do t[i]=tostring((select(i,...))) end table.insert(OUT, table.concat(t," ")) end
 RegionMethods.EnableMouse = function(s, v) s._mouse = v end
@@ -65,12 +68,14 @@ function StopCast() CASTING = nil; Fire("UNIT_SPELLCAST_STOP", "target", "Cast-1
 ''')
     return lua
 
+
 def report(lua, title):
     print("######## " + title)
     print("\n".join(lua.eval("OUT").values()))
     d = lua.eval("CircletDB.targetCastDiag")
     print("diag:", sorted((k, v) for k, v in dict(d).items() if k != "at") if d else "none")  # (not its time)
     print("ERRORS:", dict(lua.eval("ERRORS")))
+
 
 # 1. Times readable: the ring's own fill, no game timer.
 lua = boot()
@@ -79,7 +84,9 @@ report(lua, "readable")
 
 # 2. Hidden, full ring: the game's sweep on the ring band at normal speed.
 lua = boot()
-lua.execute('HIDE = true; CircletDB.targetCastShape = "ring"; Cast(); Advance(1); S("hidden, ring"); StopCast(); S("after the cast")')
+lua.execute(
+    'HIDE = true; CircletDB.targetCastShape = "ring"; Cast(); Advance(1); S("hidden, ring"); StopCast(); S("after the cast")'
+)
 report(lua, "hidden ring")
 
 # 3. Hidden, half arc: the sweep slowed to half, so it covers just the arc; numbers from the second cooldown.
@@ -90,12 +97,16 @@ report(lua, "hidden arcs")
 
 # 4. No C_DurationUtil: the cooldown's own rate instead.
 lua = boot('C_DurationUtil = nil')
-lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("half arc, SetCooldown rate"); StopCast()')
+lua.execute(
+    'HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("half arc, SetCooldown rate"); StopCast()'
+)
 report(lua, "no duration util")
 
 # 5. Neither works: a disc in the arc's middle.
 lua = boot('C_DurationUtil = nil; NO_SETCOOLDOWN = true')
-lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("half arc, can\'t slow it"); StopCast()')
+lua.execute(
+    'HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("half arc, can\'t slow it"); StopCast()'
+)
 report(lua, "disc fallback")
 
 # 6. The game has curves: the ring's own segments fill, gated by the cast's progress through
@@ -145,10 +156,14 @@ report(lua, "curves")
 
 # 7. The duration's progress turns out readable: used as is.
 lua = boot(CURVES + 'READABLE = true')
-lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("readable percent, 1s of 4"); StopCast()')
+lua.execute(
+    'HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("readable percent, 1s of 4"); StopCast()'
+)
 report(lua, "readable percent")
 
 # 8. Percentages from 0 to 100 (found from a duration of Circlet's own): same result.
 lua = boot(CURVES + 'PSCALE = 100')
-lua.execute('HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("0-100 percent, half arc, 1s of 4"); StopCast()')
+lua.execute(
+    'HIDE = true; CircletDB.targetCastShape = "half"; Cast(); Advance(1); S("0-100 percent, half arc, 1s of 4"); StopCast()'
+)
 report(lua, "percent 0-100")

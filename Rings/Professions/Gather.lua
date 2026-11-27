@@ -16,11 +16,11 @@ local SafeCall, SpellName = ns.SafeCall, ns.SpellName
 -- Spells counted as gathering, by name (so every rank and client version matches):
 -- the names are looked up from known spell IDs at load.
 local GATHER_SPELLS = {
-    { id = 2575, kind = "mining" },  -- Mining
-    { id = 2366, kind = "herb" },    -- Herb Gathering
+    { id = 2575, kind = "mining" }, -- Mining
+    { id = 2366, kind = "herb" }, -- Herb Gathering
     { id = 8613, kind = "skinning" }, -- Skinning
     { id = 7620, kind = "fishing" }, -- Fishing
-    { id = 2656, kind = "mining" },  -- Smelting is crafting, not gathering: excluded below
+    { id = 2656, kind = "mining" }, -- Smelting is crafting, not gathering: excluded below
 }
 local GATHER_ICONS = {
     mining = "Interface\\Icons\\Trade_Mining",
@@ -41,7 +41,9 @@ local function GatherKind(name, spellID)
             if n and s.id ~= 2656 then kindByName[n] = s.kind end
         end
         -- English names as a fallback if the lookups fail.
-        for kind, label in pairs(LABELS) do kindByName[label] = kindByName[label] or kind end
+        for kind, label in pairs(LABELS) do
+            kindByName[label] = kindByName[label] or kind
+        end
     end
     if type(name) == "string" and not IsSecret(name) then return kindByName[name] end
 end
@@ -72,7 +74,9 @@ local function State(kind, title, frac, channel, ended, how, lost, endedAt, loot
             -- The catch comes in as loot just after the bobber goes; nothing means it got away.
             st.value = ""
             st.label = waiting and "Reeling in" or "Got away"
-            if not waiting then st.color, st.labelColor, st.frac = c.fishing, nil, 0 end
+            if not waiting then
+                st.color, st.labelColor, st.frac = c.fishing, nil, 0
+            end
         else
             st.value, st.label = "", kind == "fishing" and "Caught!" or "Gathered"
         end
@@ -118,30 +122,64 @@ local gatherRing = CreateLiveRing({
             return nil -- end state shown; the ring holds it
         end
         local waiting = g.lootUntil and now < g.lootUntil - 0.15
-        local st = State(g.kind, LABELS[g.kind], Progress(now), g.channel, g.endedAt ~= nil, g.how, g.lost, g.endedAt,
-            db.gatherLoot and g.loot or nil, waiting, g.loot ~= nil,
-            g.finish and math.max(0, g.finish - now) or nil, g.doneAt)
+        local st = State(
+            g.kind,
+            LABELS[g.kind],
+            Progress(now),
+            g.channel,
+            g.endedAt ~= nil,
+            g.how,
+            g.lost,
+            g.endedAt,
+            db.gatherLoot and g.loot or nil,
+            waiting,
+            g.loot ~= nil,
+            g.finish and math.max(0, g.finish - now) or nil,
+            g.doneAt
+        )
         return WithFx(st, g.kind, g.start, g.start and g.finish and g.finish - g.start, g.endedAt, g.how == "done")
     end,
     sample = function(t)
         -- Skinning, then mining, each with what you got, then an herb on its way.
         local now, cycle = GetTime(), t % 12
-        if cycle < 3 then
-            return WithFx(State("skinning", "Skinning", cycle / 3, false), "skinning", now - cycle, 3)
-        end
+        if cycle < 3 then return WithFx(State("skinning", "Skinning", cycle / 3, false), "skinning", now - cycle, 3) end
         if cycle < 5.5 then
-            local st = State("skinning", "Skinning", 1, false, true, "done", nil, nil,
+            local st = State(
+                "skinning",
+                "Skinning",
+                1,
+                false,
+                true,
+                "done",
+                nil,
+                nil,
                 { name = "Light Leather", count = 1, icon = "Interface\\Icons\\INV_Misc_LeatherScrap_03" },
-                nil, nil, nil, now - (cycle - 3))
+                nil,
+                nil,
+                nil,
+                now - (cycle - 3)
+            )
             return WithFx(st, "skinning", now - cycle, 3, now - (cycle - 3), true)
         end
         if cycle < 8 then
             return WithFx(State("mining", "Mining", (cycle - 5.5) / 2.5, false), "mining", now - (cycle - 5.5), 2.5)
         end
         if cycle < 10.5 then
-            local st = State("mining", "Mining", 1, false, true, "done", nil, nil,
+            local st = State(
+                "mining",
+                "Mining",
+                1,
+                false,
+                true,
+                "done",
+                nil,
+                nil,
                 { name = "Copper Ore", count = 2, icon = "Interface\\Icons\\INV_Ore_Copper_01" },
-                nil, nil, nil, now - (cycle - 8))
+                nil,
+                nil,
+                nil,
+                now - (cycle - 8)
+            )
             return WithFx(st, "mining", now - (cycle - 5.5), 2.5, now - (cycle - 8), true)
         end
         return WithFx(State("herb", "Herb Gathering", (cycle - 10.5) / 1.5, false), "herb", now - (cycle - 10.5), 1.5)
@@ -179,7 +217,10 @@ local function OnLoot(msg)
     if not (g and g.endedAt and g.how == "done") or IsSecret(msg) or type(msg) ~= "string" then return end
     if GetTime() - g.endedAt > 3 then return end
     local link, count = msg:match(LOOT_MULTI or "^$")
-    if not link then link = msg:match(LOOT_ONE or "^$") count = 1 end
+    if not link then
+        link = msg:match(LOOT_ONE or "^$")
+        count = 1
+    end
     if not link then return end
     local name = link:match("%[(.-)%]") or link
     local itemID = tonumber(link:match("item:(%d+)"))
@@ -201,7 +242,15 @@ end
 ---------------------------------------------------------------------------
 -- Events
 ---------------------------------------------------------------------------
-ns.Listen({ "UNIT_SPELLCAST_START:player", "UNIT_SPELLCAST_SUCCEEDED:player", "UNIT_SPELLCAST_INTERRUPTED:player", "UNIT_SPELLCAST_FAILED:player", "UNIT_SPELLCAST_CHANNEL_START:player", "UNIT_SPELLCAST_CHANNEL_STOP:player", "CHAT_MSG_LOOT" }, function(event, unit, castGUID, spellID)
+ns.Listen({
+    "UNIT_SPELLCAST_START:player",
+    "UNIT_SPELLCAST_SUCCEEDED:player",
+    "UNIT_SPELLCAST_INTERRUPTED:player",
+    "UNIT_SPELLCAST_FAILED:player",
+    "UNIT_SPELLCAST_CHANNEL_START:player",
+    "UNIT_SPELLCAST_CHANNEL_STOP:player",
+    "CHAT_MSG_LOOT",
+}, function(event, unit, castGUID, spellID)
     if not CircletDB or not db.gatherEnabled then return end
     if event == "CHAT_MSG_LOOT" then
         OnLoot(unit)
@@ -237,69 +286,120 @@ ns.gatherRing = gatherRing
 ns.GatherActive = function() return g ~= nil and g.endedAt == nil end
 ns.PreviewGatherRing = function() gatherRing.Preview(14) end
 
-
 ---------------------------------------------------------------------------
 -- Registration (see Core/Registry.lua)
 ---------------------------------------------------------------------------
 ns.RegisterRing({
-    key = "gather", name = "Gathering", order = 13,
+    key = "gather",
+    name = "Gathering",
+    order = 13,
     iconBg = true, -- the icon can be the ring's background (Core/Settings.lua, UI/Options/Kit.lua)
     ring = gatherRing,
-    preview = ns.PreviewGatherRing, slash = { "gather", "gathering" }, help = "preview the gathering ring",
+    preview = ns.PreviewGatherRing,
+    slash = { "gather", "gathering" },
+    help = "preview the gathering ring",
     toggle = { "Gathering ring", "Mining, herbalism, skinning and fishing, then what you got." },
     gameBar = "the game's cast bar while gathering",
     defaults = {
         -- Gathering ring: mining, herbalism, skinning and fishing casts, then what you got.
         -- Shares the crafting ring's spot (you never do both at once).
-        gatherEnabled   = true,
-        gatherIcon      = true,  -- profession / item icon in the middle
-        gatherLoot      = true,  -- show what you gathered when it finishes
-        gatherFx        = true,  -- an animation for each profession (Rings/Professions/GatherFx.lua)
-        gatherSize      = 110,
+        gatherEnabled = true,
+        gatherIcon = true, -- profession / item icon in the middle
+        gatherLoot = true, -- show what you gathered when it finishes
+        gatherFx = true, -- an animation for each profession (Rings/Professions/GatherFx.lua)
+        gatherSize = 110,
         gatherThickness = 11,
-        gatherOpacity   = 100,
-        gatherX         = 0,
-        gatherFromTop   = 260,
-        gatherHold      = 3,
-        gatherStyle     = "smooth",
-        gatherBorder    = 2,
+        gatherOpacity = 100,
+        gatherX = 0,
+        gatherFromTop = 260,
+        gatherHold = 3,
+        gatherStyle = "smooth",
+        gatherBorder = 2,
         gatherColors = {
-            fill    = { r = 0.45, g = 0.85, b = 0.35 },
+            fill = { r = 0.45, g = 0.85, b = 0.35 },
             fishing = { r = 0.30, g = 0.65, b = 1.00 },
-            done    = { r = 1.00, g = 0.82, b = 0.25 },
+            done = { r = 1.00, g = 0.82, b = 0.25 },
         },
     },
-    page = { folder = "professions", order = 2, build = function(O)
+    page = {
+        folder = "professions",
+        order = 2,
+        build = function(O)
             local Toggle, Range, Select, Color, Execute, Box = O.Toggle, O.Range, O.Select, O.Color, O.Execute, O.Box
             local RingTab, MergeTop, TopRow, SizeBox = O.RingTab, O.MergeTop, O.TopRow, O.SizeBox
-            local tab = RingTab(12, "Gathering", "Gathering Ring",
+            local tab = RingTab(
+                12,
+                "Gathering",
+                "Gathering Ring",
                 "While you mine, pick herbs or skin, the ring fills with the cast and shows the profession's icon. "
-                .. "Fishing drains as the bobber waits. When it finishes it shows what you got (Copper Ore ×2). "
-                .. "Interrupting a gather flashes the progress you lost.",
-                MergeTop(TopRow("gather", "gathering ring", ns.PreviewGatherRing,
-                    "Show a sample skinning, mining and herb gather. Also /circ gather."), {
-                    general = Box(2, "General", {
-                        enabled = Toggle(1, "gatherEnabled", "Show gathering ring", "Show the ring while gathering or fishing."),
-                        icon = Toggle(2, "gatherIcon", "Show icon",
-                            "The profession's icon while gathering, and the item's icon when it's done."),
-                        loot = Toggle(3, "gatherLoot", "Show what you got",
-                            "When the gather finishes, show the item and how many you got."),
-                        fx = Toggle(4, "gatherFx", "Profession animations",
-                            "An animation for each profession at the ring's top right while you gather. Skinning: a knife slashes along "
-                            .. "the ring, flicking off tufts of fur, and a cut runs round it spraying fur when it's done. "
-                            .. "Mining: a pickaxe strikes the ring's edge, throwing sparks and chips of rock, and the ring "
-                            .. "flashes as the vein breaks. Herbalism: pruning shears snip at the ring, leaves and petals "
-                            .. "fluttering off."),
-                    }),
-                    colors = Box(3, "Colors", {
-                        fill = Color(1, "gatherColors", "fill", "Gathering", "Ring color while mining, picking or skinning."),
-                        fishing = Color(2, "gatherColors", "fishing", "Fishing", "Ring color while fishing."),
-                        done = Color(3, "gatherColors", "done", "Done", "Ring and label color when you get the goods."),
-                    }),
-                    size = SizeBox(4, "gather", "gathering ring",
-                        "Offset from the center of the screen. By default it shares the crafting ring's spot."),
-                }))
+                    .. "Fishing drains as the bobber waits. When it finishes it shows what you got (Copper Ore ×2). "
+                    .. "Interrupting a gather flashes the progress you lost.",
+                MergeTop(
+                    TopRow(
+                        "gather",
+                        "gathering ring",
+                        ns.PreviewGatherRing,
+                        "Show a sample skinning, mining and herb gather. Also /circ gather."
+                    ),
+                    {
+                        general = Box(2, "General", {
+                            enabled = Toggle(
+                                1,
+                                "gatherEnabled",
+                                "Show gathering ring",
+                                "Show the ring while gathering or fishing."
+                            ),
+                            icon = Toggle(
+                                2,
+                                "gatherIcon",
+                                "Show icon",
+                                "The profession's icon while gathering, and the item's icon when it's done."
+                            ),
+                            loot = Toggle(
+                                3,
+                                "gatherLoot",
+                                "Show what you got",
+                                "When the gather finishes, show the item and how many you got."
+                            ),
+                            fx = Toggle(
+                                4,
+                                "gatherFx",
+                                "Profession animations",
+                                "An animation for each profession at the ring's top right while you gather. Skinning: a knife slashes along "
+                                    .. "the ring, flicking off tufts of fur, and a cut runs round it spraying fur when it's done. "
+                                    .. "Mining: a pickaxe strikes the ring's edge, throwing sparks and chips of rock, and the ring "
+                                    .. "flashes as the vein breaks. Herbalism: pruning shears snip at the ring, leaves and petals "
+                                    .. "fluttering off."
+                            ),
+                        }),
+                        colors = Box(3, "Colors", {
+                            fill = Color(
+                                1,
+                                "gatherColors",
+                                "fill",
+                                "Gathering",
+                                "Ring color while mining, picking or skinning."
+                            ),
+                            fishing = Color(2, "gatherColors", "fishing", "Fishing", "Ring color while fishing."),
+                            done = Color(
+                                3,
+                                "gatherColors",
+                                "done",
+                                "Done",
+                                "Ring and label color when you get the goods."
+                            ),
+                        }),
+                        size = SizeBox(
+                            4,
+                            "gather",
+                            "gathering ring",
+                            "Offset from the center of the screen. By default it shares the crafting ring's spot."
+                        ),
+                    }
+                )
+            )
             tab.args.size.args.hold.desc = "How long the ring stays after the gather ends."
             return tab
-        end },
+        end,
+    },
 })

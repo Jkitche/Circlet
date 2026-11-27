@@ -16,9 +16,9 @@ local anim = XP.anim
 --   rainbow: a rainbow comet swirls twice around the ring, then the whole ring
 --            flashes in rainbow, followed by rainbow shockwaves and sparks.
 
-local FX_GOLD   = { r = 1.00, g = 0.82, b = 0.20 }
-local FX_GLOW   = { r = 1.00, g = 0.95, b = 0.60 }
-local FX_WAVES  = 2
+local FX_GOLD = { r = 1.00, g = 0.82, b = 0.20 }
+local FX_GLOW = { r = 1.00, g = 0.95, b = 0.60 }
+local FX_WAVES = 2
 local FX_SPARKS = 18
 -- All timings below are in "effect time"; FX_SLOWDOWN stretches them in real time
 -- (2 = the whole effect plays at half speed, twice as long).
@@ -72,7 +72,9 @@ local function RainbowLayer(lines, t, alpha)
 end
 
 local function SolidLayer(lines, c)
-    for _, line in ipairs(lines) do line:SetColorTexture(c.r, c.g, c.b, 1) end
+    for _, line in ipairs(lines) do
+        line:SetColorTexture(c.r, c.g, c.b, 1)
+    end
 end
 
 fx.sparks = {}
@@ -101,16 +103,18 @@ local function PlayLevelUpEffect(styleOverride)
 
     if style == "gold" then
         SolidLayer(fx.glow.lines, FX_GLOW)
-        for _, w in ipairs(fx.waves) do SolidLayer(w.lines, FX_GOLD) end
+        for _, w in ipairs(fx.waves) do
+            SolidLayer(w.lines, FX_GOLD)
+        end
     end
 
     -- Each burst is a little different.
     for i, s in ipairs(fx.sparks) do
         s.angle = (i / FX_SPARKS) * 2 * math.pi + (math.random() - 0.5) * 0.3
-        s.dist  = 25 + math.random() * 45
-        s.life  = 0.7 + math.random() * 0.4
+        s.dist = 25 + math.random() * 45
+        s.life = 0.7 + math.random() * 0.4
         s.delay = math.random() * 0.15
-        s.size  = 10 + math.random() * 10
+        s.size = 10 + math.random() * 10
         if style == "rainbow" then
             s.tex:SetVertexColor(HueColor(i / FX_SPARKS))
         else

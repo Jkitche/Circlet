@@ -38,7 +38,9 @@ local function OnSent(target, castGUID, spellID)
     target, castGUID, spellID = Clean(target), Clean(castGUID), Clean(spellID)
     local guid, name = SoftNow()
     local now = GetTime()
-    if not guid and lastSoft and now - lastSoft.at < RECENT then guid, name = lastSoft.guid, lastSoft.name end
+    if not guid and lastSoft and now - lastSoft.at < RECENT then
+        guid, name = lastSoft.guid, lastSoft.name
+    end
     -- The cast must be at the soft target (an empty target, e.g. fishing or an item, isn't).
     if not guid or type(target) ~= "string" or target == "" or (name and target ~= name) then
         sent = nil
