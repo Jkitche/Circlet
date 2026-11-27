@@ -66,9 +66,18 @@ Rings\Progress\QuestPins.lua
 Rings\Class\Shaman\Totems.lua
 Rings\Class\Warlock\Soulstone.lua
 Rings\Class\Shaman\Imbue.lua
-Rings\Health\VitalsFx.lua
-Rings\Health\VitalsAuras.lua
-Rings\Health\Vitals.lua
+Rings\Health\Fx\Pieces.lua
+Rings\Health\Fx\Effects.lua
+Rings\Health\Fx\Target.lua
+Rings\Health\Fx\Draw.lua
+Rings\Health\Auras.lua
+Rings\Health\Hidden.lua
+Rings\Health\Bands.lua
+Rings\Health\Parts.lua
+Rings\Health\Draw.lua
+Rings\Health\Menus.lua
+Rings\Health\Events.lua
+Rings\Health\Register.lua
 
 UI\PanelSkin.lua
 UI\Widgets.lua

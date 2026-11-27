@@ -1,5 +1,5 @@
 """Writes Textures/EliteWing.tga: one dragon wing for the elite marker on the health rings'
-level badge (Rings/Health/Vitals.lua). The left wing, spreading up and out from the bottom right
+level badge (Rings/Health/Parts.lua). The left wing, spreading up and out from the bottom right
 corner (where it meets the badge); the right one is the same texture flipped. Greyscale
 with alpha, light, so the game can tint it gold (elite, boss) or silver (rare).
 

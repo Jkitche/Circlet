@@ -1,4 +1,4 @@
--- Circlet: The options window: a sidebar of pages, and each page's settings in two columns.
+-- Circlet: The options window's pages: its folders, the General and Profiles pages, and the table of them all.
 local ADDON_NAME, ns = ...
 
 local db, Print = ns.db, ns.Print
@@ -15,7 +15,7 @@ local Toggle, Range, Execute, Box, Spacer, Intro = O.Toggle, O.Range, O.Execute,
 ---------------------------------------------------------------------------
 -- The pages are option tables in AceConfig's format: the General and Profiles pages are
 -- here, and every ring's page comes from its own file (its registry entry's page.build).
--- The window that draws them is further down.
+-- The window that draws them is in the files after this one (Model.lua onwards).
 
 local APP = "Circlet"
 

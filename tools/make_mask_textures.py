@@ -1,7 +1,7 @@
 """Writes Textures/HalfPlane.tga: a mask that's solid on its left half and clear on its right,
 with a soft 1-pixel edge down the middle. It only changes from left to right, so it's 1024 wide
 and 8 tall: drawn on a square, the edge stays sharp even when the square is made very big (the
-moving edge's mask has to reach right along its bar). The health rings' eased bands (Rings/Health/Vitals.lua) turn
+moving edge's mask has to reach right along its bar). The health rings' eased bands (Rings/Health/Bands.lua) turn
 copies of it about its middle so its edge lies along a line through the ring's centre (a radial
 cut): to keep each piece of the band to its own slice of the ring, and as the fill's moving edge.
 

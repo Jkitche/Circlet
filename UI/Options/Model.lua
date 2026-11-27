@@ -14,6 +14,11 @@ local NOT_AVAILABLE = UI.NOT_AVAILABLE
 -- the page's buttons (Edit mode, Preview, Reset) and Close.
 -- The pages are the same option tables as before (AceConfig format, built by each ring's
 -- page.build with UI/Options/Kit.lua), drawn with UI/Widgets.lua.
+--
+-- What the window's files share is in ns.OptionsUI (UI here): what changes as it's used
+-- (UI.win, UI.root, UI.current, UI.lastSig, UI.search) and the two calls every file makes
+-- (UI.Refresh, UI.SelectPage, from Window.lua); everything else each file takes once at
+-- its top from the file that made it.
 
 local W = ns.W
 local A = W.ACCENT

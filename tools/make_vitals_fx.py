@@ -1,4 +1,4 @@
-"""Writes the health rings' effect textures (Rings/Health/VitalsFx.lua), white with alpha so the
+"""Writes the health rings' effect textures (Rings/Health/Fx/), white with alpha so the
 game tints them:
 
   Textures/GlowRing.tga   a soft halo band, its peak at 0.70 of the half-width (so drawn
