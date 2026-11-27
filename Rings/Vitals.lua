@@ -7,7 +7,7 @@ local NewRingLayer, DrawArc, TRACK = ns.NewRingLayer, ns.DrawArc, ns.TRACK
 
 ---------------------------------------------------------------------------
 -- Health & power rings (playerHp: you; targetHp: your target; totHp: its target, smaller;
--- petHp: your pet, smaller, for hunters and warlocks)
+-- petHp: your pet, smaller, for any class with one out)
 ---------------------------------------------------------------------------
 -- The outer band is health, the thinner band inside it power (mana, rage, energy, focus),
 -- with the health (and power) as text in the middle and, optionally, the unit's name.
@@ -1932,7 +1932,7 @@ Register({
 
 Register({
     key = "petHp", ring = petRing, title = "Pet health", order = 12.98, pageOrder = 4,
-    class = { HUNTER = true, WARLOCK = true }, since = "1.5.0",
+    since = "1.5.0", -- every class: charmed and mind-controlled mobs, and other temporary pets, count too
     show = "always", name = true, colorMode = "health", x = -360, fromTop = 490, size = 70, thickness = 8,
     level = true, float = true, menuWho = "your pet",
     preview = ns.PreviewPetHpRing, slash = { "pethp", "pethealth" }, help = "preview the pet health ring",
@@ -1940,7 +1940,8 @@ Register({
     gameBar = "the game's pet frame",
     pageName = "Pet health", header = "Pet Health Ring", what = "pet health ring",
     intro = "A smaller ring beside yours for your pet: its health round the ring and its focus, energy or mana "
-        .. "in a thinner band inside it, with its name. Hidden when you have no pet out.",
+        .. "in a thinner band inside it, with its name. Hidden when you have no pet out. For every class: "
+        .. "a mob you've charmed or mind-controlled counts as your pet too.",
     showDesc = "Whenever your pet is out; when you're in combat or it isn't at full health; or only in combat.",
     nameLabel = "Show name and level", nameDesc = "Your pet's name, and its level, above the health.",
     portraitLabel = "Use pet portrait as center frame",

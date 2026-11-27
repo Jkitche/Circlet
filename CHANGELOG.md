@@ -102,13 +102,15 @@
     debuffs, Damage & healing numbers, Animations, Effects.
   - Rings with an icon have an Icon box: show the icon, icon as background and its opacity.
   - The XP page has Always on & minimap and Resting boxes of their own.
-- **Pet health ring** (new, hunters and warlocks; Class > Pet health). A small ring for your
+- **Pet health ring** (new, every class; Health rings > Pet health). A small ring for your
   pet's health and power, with its name and level, the right-click pet menu, its portrait as
   the center if you like, and the health rings' effects (raid marker, death, heals, big hits,
-  dodges). Can hide the game's pet frame.
-- **Class section in the options.** The rings for one class's own tools have a folder of their
-  own: totems and weapon imbues (shamans), the soulstone (warlocks) and the pet (hunters). Only
-  your class's show; the folder's hidden for classes with none.
+  dodges). Any pet counts, a charmed or mind-controlled mob too. Can hide the game's pet frame.
+- **Classes section in the options.** The rings for one class's own tools have a folder of their
+  own, with a heading per class in the list on the left that folds away with a click: totems
+  and weapon imbues (shamans), the soulstone (warlocks) and the pet (hunters). Every class's
+  rings are listed; another class's are greyed out, with "Not available to this class" at the
+  top of their page.
 - **Text sizes for every ring** (Look & position > Text sizes). Every piece of text on every ring
   has its own size, 50% to 200% of its usual size (which still follows the ring's): the title,
   main text and bottom line on most rings, the name, gain, gain %, progress and bottom line on the

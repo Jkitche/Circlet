@@ -25,9 +25,9 @@ local FOLDERS = {
     combat = { order = 3.5, name = "Combat & casting",
         text = "Rings for your casts and your target's, your melee swings and shots, the five-second rule "
             .. "on mana, and your ammo." },
-    class = { order = 4, name = "Class",
-        text = "Rings for one class's own tools: shaman totems and weapon imbues, the warlock's soulstone "
-            .. "and the hunter's pet. Only your class's show." },
+    class = { order = 4, name = "Classes",
+        text = "Rings for one class's own tools, under a heading for each class: shaman totems and weapon "
+            .. "imbues, the warlock's soulstone and the hunter's pet. Only your class's show." },
     group = { order = 5, name = "Group",
         text = "Rings for playing with others: loot rolls and ready checks." },
     travel = { order = 6, name = "Travel & survival",
@@ -41,6 +41,16 @@ local FOLDERS = {
 
 local function Hidden(def)
     return function() return ns.HiddenForClass(def) end
+end
+
+-- Rings in the Classes folder show for every class, greyed out with a warning for the
+-- classes that can't use them; rings elsewhere that only some classes use stay hidden.
+local NOT_AVAILABLE = "|cffff5555Not available to this class|r"
+local function ClassFolder(def) return def.page and def.page.folder == "class" end
+local function Gate(option, def)
+    if not def.class then return option end
+    if ClassFolder(def) then option.disabled = Hidden(def) else option.hidden = Hidden(def) end
+    return option
 end
 
 -- The General page's ring checkboxes: one box per folder, three to a row, in the same
@@ -67,8 +77,7 @@ local function RingBoxes()
             local option = Toggle(def.page and def.page.order or def.order, def.key .. "Enabled",
                 Label(def), t[1] .. ": " .. t[2], t[3])
             option.width = 1
-            if def.class then option.hidden = Hidden(def) end
-            boxes[folder].args[def.key] = option
+            boxes[folder].args[def.key] = Gate(option, def)
         end
     end
     return boxes
@@ -241,7 +250,8 @@ local function ProfilesPage()
     }
 end
 
--- A folder's own page: a switch for each of its rings.
+-- A folder's own page: a switch for each of its rings. The Classes folder gets a box per
+-- class (named by the class's first ring classes, sorted), hidden when none of its rings show.
 local function FolderRings(folder)
     local args = {}
     for _, def in ipairs(ns.RINGS) do
@@ -249,27 +259,46 @@ local function FolderRings(folder)
             local t = def.toggle
             local option = Toggle(def.page.order, def.key .. "Enabled",
                 Label(def), t[1] .. ": " .. t[2], t[3])
-            if def.class then option.hidden = Hidden(def) end
-            args[def.key] = option
+            args[def.key] = Gate(option, def)
         end
     end
-    return Box(1, "Rings in this group", args)
+    if folder ~= "class" then return { rings = Box(1, "Rings in this group", args) } end
+    local boxes = {}
+    for key, option in pairs(args) do
+        local def = ns.FindRing(key)
+        local classes = {}
+        for class in pairs(def and def.class or { OTHER = true }) do classes[#classes + 1] = class end
+        table.sort(classes)
+        local class = classes[1]
+        local box = boxes[class]
+        if not box then
+            local names = LOCALIZED_CLASS_NAMES_MALE
+            local name = class == "OTHER" and "Other" or (names and names[class])
+                or (class:sub(1, 1) .. class:sub(2):lower())
+            box = Box(1, name, {})
+            boxes[class] = box
+        end
+        box.args[key] = option
+    end
+    local out = {}
+    for class, box in pairs(boxes) do out["rings_" .. class] = box end
+    return out
 end
 
 ---------------------------------------------------------------- the table
 local function BuildOptionsTable()
     local args = { general = GeneralPage(), profiles = ProfilesPage() }
     for key, f in pairs(FOLDERS) do
-        args[key] = { type = "group", order = f.order, name = f.name, childGroups = "tree",
-                      args = { header = { type = "header", order = 0, name = f.name }, intro = Intro(0.5, f.text),
-                               rings = FolderRings(key) } }
+        local folderArgs = { header = { type = "header", order = 0, name = f.name }, intro = Intro(0.5, f.text) }
+        for k, box in pairs(FolderRings(key)) do folderArgs[k] = box end
+        args[key] = { type = "group", order = f.order, name = f.name, childGroups = "tree", args = folderArgs }
     end
     for _, def in ipairs(ns.RINGS) do
         if def.page then
             local page = def.page.build(O)
             page.order = def.page.order
             if type(page.name) == "string" then LABEL_FOR[def.key] = page.name end
-            if def.class then page.hidden = Hidden(def) end
+            Gate(page, def)
             local parent = def.page.folder and args[def.page.folder].args or args
             parent[def.key] = page
         end
@@ -384,6 +413,11 @@ local function PageModel(path)
             loose.items[#loose.items + 1] = e
         end
     end
+    -- A whole page greyed out (another class's ring): the warning goes above its description.
+    if Eval(page.disabled, pinfo) then
+        m.disabled = true
+        m.intro = NOT_AVAILABLE .. ((m.intro and m.intro ~= "") and ("\n\n" .. m.intro) or "")
+    end
     return m
 end
 
@@ -466,7 +500,8 @@ local BUILD = {}
 
 local function CellUpdateCommon(c)
     local opt, info = c.opt, c.info
-    c.isDisabled = (Eval(opt.disabled, info) or (c.group and Eval(c.group.disabled, info))) and true or false
+    c.isDisabled = (c.pageOff or Eval(opt.disabled, info) or (c.group and Eval(c.group.disabled, info)))
+        and true or false
     c:SetAlpha(c.isDisabled and 0.38 or 1)
     if c.label then c.label:SetText(tostring(Eval(opt.name, info) or "")) end
 end
@@ -773,12 +808,41 @@ local function RingRow(parent)
         end)
         b.dot:SetScript("OnLeave", W.HideTip)
         b.chev = W.Chevron(b, 7, 0.78, 0.62, 1, true)
+        b.chevDown = W.Chevron(b, 7, 0.78, 0.62, 1, false)
         sideRows[sideUsed] = b
     end
     b:ClearAllPoints()
     b:Show()
     b.tip = nil
+    b.chevDown:Hide()
     return b
+end
+
+-- The Classes folder's rings are listed under a header per class, each one collapsible.
+local collapsedClass = {}
+
+local function ClassName(class)
+    local names = LOCALIZED_CLASS_NAMES_MALE
+    return (names and names[class]) or (class:sub(1, 1) .. class:sub(2):lower())
+end
+
+local function ClassColor(class)
+    local c = (C_ClassColor and C_ClassColor.GetClassColor and C_ClassColor.GetClassColor(class))
+        or (RAID_CLASS_COLORS and RAID_CLASS_COLORS[class])
+    if c then return c.r, c.g, c.b end
+    return 0.86, 0.87, 0.89
+end
+
+-- The class a ring is filed under: yours when it's one of its classes, else the first by name.
+local function RingClass(def)
+    if not (def and def.class) then return "OTHER" end
+    local _, mine = UnitClass("player")
+    if mine and def.class[mine] then return mine end
+    local best
+    for class in pairs(def.class) do
+        if not best or class < best then best = class end
+    end
+    return best or "OTHER"
 end
 
 local function RefreshSidebar()
@@ -817,21 +881,74 @@ local function RefreshSidebar()
             head:SetSelected(current == entry.key)
             head:SetScript("OnClick", function() SelectPage(entry.key) end)
             y = y - 36
-            for _, r in ipairs(rings) do
+            -- In the Classes folder, the rings go under a header per class (yours first, then
+            -- by name); clicking a header folds its rings away. A search shows them all.
+            local shown = rings
+            if entry.key == "class" then
+                local byClass, order = {}, {}
+                for _, r in ipairs(rings) do
+                    local class = RingClass(ns.FindRing(r.key))
+                    if not byClass[class] then byClass[class] = {}; order[#order + 1] = class end
+                    table.insert(byClass[class], r)
+                end
+                local _, mine = UnitClass("player")
+                table.sort(order, function(a, b)
+                    if (a == mine) ~= (b == mine) then return a == mine end
+                    return ClassName(a) < ClassName(b)
+                end)
+                shown = {}
+                for _, class in ipairs(order) do
+                    shown[#shown + 1] = { classHead = class, count = #byClass[class] }
+                    if needle ~= "" or not collapsedClass[class] then
+                        for _, r in ipairs(byClass[class]) do shown[#shown + 1] = r end
+                    end
+                end
+            end
+            for _, r in ipairs(shown) do
+              if r.classHead then
+                local class = r.classHead
+                local open = needle ~= "" or not collapsedClass[class]
+                local row = RingRow(child)
+                row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
+                row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
+                row:SetHeight(26)
+                row.text:ClearAllPoints()
+                row.text:SetPoint("LEFT", row, "LEFT", 40, 0)
+                row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
+                row.text:SetText(class == "OTHER" and "Other" or ClassName(class))
+                row.text:SetTextColor(ClassColor(class))
+                row.dot:Hide()
+                row.chev:ClearAllPoints(); row.chev:SetPoint("LEFT", row, "LEFT", 26, 0)
+                row.chevDown:ClearAllPoints(); row.chevDown:SetPoint("LEFT", row, "LEFT", 26, 0)
+                row.chev:SetShown(not open)
+                row.chevDown:SetShown(open)
+                row.tip = (open and "Click to hide " or "Click to show ") .. "this class's rings ("
+                    .. r.count .. ")."
+                row:SetSelected(false)
+                row:SetScript("OnClick", function()
+                    collapsedClass[class] = not collapsedClass[class] or nil
+                    RefreshSidebar()
+                end)
+                y = y - 26
+              else
                 local path = entry.key .. "." .. r.key
                 local row = RingRow(child)
                 row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
                 row:SetPoint("RIGHT", child, "RIGHT", 0, 0)
                 row:SetHeight(26)
                 row.text:ClearAllPoints()
-                row.text:SetPoint("LEFT", row, "LEFT", 30, 0)
+                row.text:SetPoint("LEFT", row, "LEFT", entry.key == "class" and 42 or 30, 0)
                 row.text:SetPoint("RIGHT", row, "RIGHT", -34, 0)
                 row.text:SetText(r.name)
                 local def = ns.FindRing(r.key)
                 local selected = current == path
                 row:SetSelected(selected)
                 row.chev:Hide()
-                if def and def.key == r.key and def.toggle then
+                if def and def.key == r.key and ns.HiddenForClass(def) then
+                    -- another class's ring: its page opens (greyed out), but no on/off dot
+                    row.dot:Hide()
+                    row.text:SetTextColor(selected and 0.8 or 0.42, selected and 0.8 or 0.43, selected and 0.8 or 0.46)
+                elseif def and def.key == r.key and def.toggle then
                     local on = db[def.key .. "Enabled"]
                     row.dot.def = def
                     row.dot.ring:SetVertexColor(on and 0.35 or 0.32, on and 0.85 or 0.33, on and 0.45 or 0.36, 1)
@@ -844,6 +961,7 @@ local function RefreshSidebar()
                 end
                 row:SetScript("OnClick", function() SelectPage(path) end)
                 y = y - 26
+              end
             end
         end
     end
@@ -923,7 +1041,7 @@ local function UpdateFooter(m)
         b.opt, b.info = e.opt, e.info
         b:SetText(tostring(Eval(e.opt.name, e.info) or ""))
         b:SetWidth(math.max(120, Num(b.label:GetStringWidth(), 80) + 40))
-        b:SetEnabled(not Eval(e.opt.disabled, e.info))
+        b:SetEnabled(not m.disabled and not Eval(e.opt.disabled, e.info))
         b:ClearAllPoints()
         b:SetPoint("BOTTOMLEFT", win, "BOTTOMLEFT", x, 13)
         x = x + Num(b:GetWidth(), 120) + 12
@@ -987,7 +1105,7 @@ local function Render(m, tabs, tab)
                     local text = tostring(Eval(e.opt.name, e.info) or "")
                     if text:find("%S") then
                         local c = Acquire(kind, child)
-                        c.opt, c.info, c.group = e.opt, e.info, s.group
+                        c.opt, c.info, c.group, c.pageOff = e.opt, e.info, s.group, m.disabled
                         c:SetPoint("TOPLEFT", child, "TOPLEFT", 0, y)
                         c:SetWidth(BODY_W)
                         c:SetHeight(kind == "subhead" and 30 or ROW_H)
@@ -997,7 +1115,7 @@ local function Render(m, tabs, tab)
                     end
                 else
                     local c = Acquire(kind, child)
-                    c.opt, c.info, c.group = e.opt, e.info, s.group
+                    c.opt, c.info, c.group, c.pageOff = e.opt, e.info, s.group, m.disabled
                     c:SetPoint("TOPLEFT", child, "TOPLEFT", col * COL_W, y)
                     c:SetSize(COL_W, ROW_H)
                     c.bg:SetColorTexture(1, 1, 1, row % 2 == 0 and 0.035 or 0.018)
@@ -1045,7 +1163,7 @@ local function FollowPage(path)
         ns.SetRingEditing(autoKey, false, true)
         autoKey = nil
     end
-    if def and db.optionsAutoEdit and not def.edit.get() then
+    if def and db.optionsAutoEdit and not def.edit.get() and not ns.HiddenForClass(def) then
         ns.SetRingEditing(key, true, true)
         autoKey = key
     end

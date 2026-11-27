@@ -21,10 +21,10 @@ combat (Combat & casting)
   shot (Shot timer)
   regen (Mana regen)
   ammo (Ammo)
-class (Class)
-  totem (Totems) [hidden]
-  imbue (Weapon imbue) [hidden]
-  soulstone (Soulstone) [hidden]
+class (Classes)
+  totem (Totems)
+  imbue (Weapon imbue)
+  soulstone (Soulstone)
   pet (Pet XP)
 group (Group)
   loot (Loot rolls)
