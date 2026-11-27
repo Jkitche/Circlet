@@ -56,8 +56,8 @@
       main attacks (a hunter's Auto Shot or Raptor Strike, a mage's Fireball or Frostbolt...).
     - *Tagged by others* (target): a mob someone else tagged first goes grey, whatever the color
       mode, and so does its portrait.
-    - *Lootable* (target): gold glints run round the ring, with a coin at the right, while your
-      dead target still has loot for you.
+    - *Lootable* (target): the whole ring sparkles gold, glints twinkling all over it, while
+      your dead target still has loot for you.
     - *Stance or form* (you): your stance, form, aura or stealth as a badge at the bottom right.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.

@@ -37,7 +37,8 @@ not tagged: health 0.25,0.85,0.30
 tagged by someone else: health 0.50,0.50,0.50
 tagged, effect off: health 0.25,0.85,0.30
 corpse, no loot: cracks skull veil
-corpse with loot: cracks loot lootGlint x3 lootGlow skull veil
+corpse with loot: cracks lootGlint x12 lootGlow skull veil
+loot sparkles: 12 lit, reaching 56px out; lit over time 12/12/12
 looted: cracks skull veil
 dead skull: at 0,0, 57.35px across, alpha 0.38
 no form: (none)
@@ -50,7 +51,7 @@ faction hidden after it was read: Interface\TargetingFrame\UI-PVP-Horde (crop 0.
 new target, faction hidden: none
 effect off: none
 spot: left, on by default: true
-defaults: target mark topleft(135), skin topright(45), quest bottomleft(225), level bottomright(315), loot right(0); you: level bottomleft(225), combat topright(45), stance bottomright(315)
+defaults: target mark topleft(135), skin topright(45), quest bottomleft(225), level bottomright(315); you: level bottomleft(225), combat topright(45), stance bottomright(315)
 stance moved to the left: 35,-35 -> -49,0 (left(180))
 stance onto the combat icon's spot: stance topright(45), combat left(180)
 target level onto the mark's spot: level topleft(135), mark bottomright(315)

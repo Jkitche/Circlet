@@ -35,7 +35,7 @@ local FX = ns.HealthFx
 --   Range      (target)   the ring dims while the target's out of range of your main attacks
 --   Tapped     (target)   a mob someone else tagged (no XP or loot for you) goes grey, whatever the
 --                         color mode, its portrait too
---   Loot       (target)   gold glints round a corpse that still has loot for you, a coin at the right
+--   Loot       (target)   the whole ring sparkles gold while a corpse still has loot for you
 --   Stance     (you)      your stance, form, aura or stealth as a badge at the bottom right
 --   Quest      (target)   a yellow ! at the bottom left when the target is part of one of
 --                         your active quests, with the objective's progress (3/10) under it
@@ -131,10 +131,9 @@ local BADGES = {
     Stance = { "Stance or form", "Your stance, form, aura or stealth.", playerHp = "bottomright" },
     Skin = { "Skinnable", "The skinning (or herb, ore, parts) badge.", targetHp = "topright" },
     Quest = { "Quest target", "The quest ! and its progress.", targetHp = "bottomleft" },
-    Loot = { "Lootable", "The coin on a corpse with loot for you.", targetHp = "right" },
     Faction = { "Faction", "The Alliance or Horde crest on a player of the other faction.", targetHp = "left" },
 }
-local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Loot", "Faction" }
+local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Faction" }
 
 -- The spot a badge is at on a ring, and its angle (degrees, 0 = right, counter-clockwise).
 local function BadgeSpot(key, badge)

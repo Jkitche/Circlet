@@ -386,9 +386,20 @@ end
 ns.VitalsRangeSpells = RANGE_SPELLS -- tests
 ns.Listen({ "PLAYER_TARGET_CHANGED", "SPELLS_CHANGED" }, function() rangeAt = -math.huge end)
 
--- Loot: gold glints running round a corpse that still has loot for you (CanLootUnit), and a
--- coin at the right. Checked twice a second.
+-- Loot: while a dead target still has loot for you (CanLootUnit, checked twice a second), the
+-- whole ring sparkles: a soft gold sheen over it and star glints twinkling in and out all over
+-- the frame, each turning up somewhere new every time it comes back.
+local STAR = FX.STAR
+local LOOT_GLINTS = 12
 local lootAt, lootHas, lootGuid = -math.huge, false, nil
+
+-- A steady "random" number in 0..1 for glint i on its n-th showing (so it moves each time,
+-- but the same way every run).
+local function Hash(i, n, salt)
+    local x = math.sin(i * 12.9898 + n * 78.233 + salt * 37.719) * 43758.5453
+    return x - math.floor(x)
+end
+
 local function DrawLoot(key, fx, st, frame, geom, d, now)
     local has
     if not st.unit then
@@ -403,22 +414,24 @@ local function DrawLoot(key, fx, st, frame, geom, d, now)
         has = lootHas
     end
     if not has then return end
-    local coin = RoundIcon(fx, "loot", "Interface\\Icons\\INV_Misc_Coin_01")
-    local x, y = Polar(BadgeAngle(key, "Loot"), geom.R)
-    At(coin, frame, x, y, d * 1.05)
-    coin:SetAlpha(1)
-    local halo = Tex(fx, "lootGlow", SOFT, "OVERLAY", 2, true)
-    At(halo, frame, x, y, d * 2)
-    halo:SetVertexColor(1, 0.8, 0.25)
-    halo:SetAlpha(0.4 + 0.25 * math.sin(now * 3))
-    for i = 1, 3 do
-        local g = Tex(fx, "lootGlint" .. i, SOFT, "OVERLAY", 4, true)
-        local deg = (now * 70 + i * 120) % 360
-        local gx, gy = Polar(deg, geom.R)
-        local tw = 0.5 + 0.5 * math.sin(now * 6 + i * 2)
-        At(g, frame, gx, gy, geom.T * (1.2 + tw))
-        g:SetVertexColor(1, 0.85, 0.35)
-        g:SetAlpha(0.35 + 0.5 * tw)
+    local sheen = Tex(fx, "lootGlow", SOFT, "OVERLAY", 1, true)
+    At(sheen, frame, 0, 0, (geom.R + geom.T) * 2.6)
+    sheen:SetVertexColor(1, 0.8, 0.3)
+    sheen:SetAlpha(0.22 + 0.1 * math.sin(now * 2))
+    local reach = geom.R + geom.T * 0.6 -- over the middle and the band
+    for i = 1, LOOT_GLINTS do
+        local period = 1.1 + 0.6 * Hash(i, 0, 1)
+        local t = now / period + Hash(i, 0, 2)
+        local n = math.floor(t)
+        local u = t - n -- 0..1 through this showing
+        local a = Hash(i, n, 3) * 2 * math.pi
+        local r = reach * math.sqrt(Hash(i, n, 4)) -- spread evenly over the disc
+        local tw = math.sin(u * math.pi) -- in and out
+        local g = Tex(fx, "lootGlint" .. i, STAR, "OVERLAY", 4, true)
+        At(g, frame, r * math.cos(a), r * math.sin(a), geom.T * (0.9 + 1.3 * tw) * (0.7 + 0.6 * Hash(i, n, 5)))
+        g:SetVertexColor(1, 0.86, 0.4)
+        g:SetAlpha(0.95 * tw)
+        if g.SetRotation then g:SetRotation(u * 1.5 + i) end
     end
 end
 

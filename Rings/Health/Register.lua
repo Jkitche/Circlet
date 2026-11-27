@@ -88,7 +88,7 @@ local FX_TEXT = {
     },
     Loot = {
         "Lootable",
-        "Gold glints run round the ring, with a coin at the right, while your dead target still has loot for you.",
+        "The whole ring sparkles gold, glints twinkling all over it, while your dead target still has loot for you.",
     },
     Stance = {
         "Stance or form",

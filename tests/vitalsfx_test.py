@@ -251,6 +251,14 @@ LOOT = false; CanLootUnit = function(g) return LOOT, LOOT end
 UNITS.target.guid = "Creature-0-1-2-3-299-0000AA"
 UNITS.target.dead = true; UNITS.target.hp = 0; Advance(0.6); P("corpse, no loot: " .. Fx("targetHp"))
 LOOT = true; Advance(0.6); P("corpse with loot: " .. Fx("targetHp"))
+do -- glints all over the ring: how far out they reach, and how many are lit
+  local f = Ring("targetHp"); local t = f.vit.fx.t; local far, lit = 0, 0
+  for i = 1, 12 do local g = t["lootGlint" .. i]; if g and g._shown ~= false and (g._alpha or 0) > 0.05 then
+    lit = lit + 1; local r = math.sqrt(g._pt.x ^ 2 + g._pt.y ^ 2); if r > far then far = r end end end
+  local spread = {} for _, dt in ipairs({ 0.3, 0.6, 0.9 }) do Advance(dt); local n = 0
+    for i = 1, 12 do local g = t["lootGlint" .. i]; if g and (g._alpha or 0) > 0.05 then n = n + 1 end end; spread[#spread + 1] = n end
+  P(string.format("loot sparkles: %d lit, reaching %.0fpx out; lit over time %s", lit, far, table.concat(spread, "/")))
+end
 LOOT = false; Advance(0.6); P("looted: " .. Fx("targetHp"))
 do local sk = Ring("targetHp").vit.fx.t.skull
   P(string.format("dead skull: at %.0f,%.0f, %spx across, alpha %s",
@@ -289,7 +297,7 @@ UnitIsPlayer = IsPlayerBefore; UnitFactionGroup = nil; Fire("PLAYER_TARGET_CHANG
 local B = NS.VitalsBadges
 local function Where(key, b) return B.Spot(key, b) .. "(" .. B.Angle(key, b) .. ")" end
 P("defaults: target mark " .. Where("targetHp", "Mark") .. ", skin " .. Where("targetHp", "Skin") .. ", quest " .. Where("targetHp", "Quest")
-  .. ", level " .. Where("targetHp", "Level") .. ", loot " .. Where("targetHp", "Loot") .. "; you: level " .. Where("playerHp", "Level")
+  .. ", level " .. Where("targetHp", "Level") .. "; you: level " .. Where("playerHp", "Level")
   .. ", combat " .. Where("playerHp", "Combat") .. ", stance " .. Where("playerHp", "Stance"))
 FORM = 2; Advance(0.3)
 local function At(key, name) local t = Ring(key).vit.fx.t[name]; return t and t._pt and string.format("%.0f,%.0f", t._pt.x, t._pt.y) or "-" end
