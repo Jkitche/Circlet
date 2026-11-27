@@ -29,7 +29,7 @@ local DEFAULTS = ns.DEFAULTS
 --   class     { HUNTER = true, ... }: only these classes see its page and toggle
 --   gameBar   "the game's XP bar": it can hide that (Features/DefaultUI.lua)
 --   since     "1.2.0": the release that added the ring. Players who had Circlet before see it
---             on the "New in" page once (Features/Setup/Setup.lua); rings without it are older.
+--             on the "New in" page once (Features/Setup/Items.lua); rings without it are older.
 --   alwaysInCombat  true: the ring is never faded out in combat, and its page has no
 --             "Show in combat" option (rings that are mostly for combat, like target casts)
 --   onLoaded  function run once the saved settings are loaded

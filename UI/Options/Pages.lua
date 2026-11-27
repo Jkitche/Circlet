@@ -20,7 +20,7 @@ local Toggle, Range, Execute, Box, Spacer, Intro = O.Toggle, O.Range, O.Execute,
 local APP = "Circlet"
 
 -- The folders in the list on the left, and what their pages say.
--- The same groups as the welcome setup's ring list (Features/Setup/Setup.lua).
+-- The same groups as the welcome setup's ring list (Features/Setup/Items.lua).
 local FOLDERS = {
     progress = { order = 2, name = "Progress",
         text = "Rings that pop up and fill as you gain XP, advance quests, and raise skills and reputation." },

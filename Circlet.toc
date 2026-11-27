@@ -65,7 +65,10 @@ Rings\Combat\CastSchools.lua
 Rings\Combat\Cast.lua
 Rings\Combat\Swing.lua
 Rings\Combat\Shot.lua
-Rings\Combat\TargetCast.lua
+Rings\Combat\TargetCast\Progress.lua
+Rings\Combat\TargetCast\Sweep.lua
+Rings\Combat\TargetCast\Ring.lua
+Rings\Combat\TargetCast\Register.lua
 Rings\Group\LootRoll.lua
 Rings\Group\ReadyCheck.lua
 Rings\Progress\QuestPins.lua
@@ -94,7 +97,10 @@ Features\DefaultUI.lua
 Features\Profiles.lua
 Features\Migrations.lua
 Layout\EditMode.lua
-Features\Setup\Setup.lua
+Features\Setup\Items.lua
+Features\Setup\Pages.lua
+Features\Setup\Window.lua
+Features\Setup\Open.lua
 Features\SwingProbe.lua
 
 UI\Options\Kit.lua

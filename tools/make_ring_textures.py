@@ -1,5 +1,5 @@
 """Writes Textures/RingNN.tga: white anti-aliased rings for the target cast ring's game
-timer (Rings/Combat/TargetCast.lua), one per band width; NN is the hollow's radius as a % of the
+timer (Rings/Combat/TargetCast/Sweep.lua), one per band width; NN is the hollow's radius as a % of the
 outer edge (40, 44 ... 96). 256x256, 32-bit uncompressed TGA, alpha = coverage, rows stored
 bottom-up (the TGA layout games read most reliably).
 
