@@ -33,7 +33,13 @@ Layout\Drag.lua
 Rings\Base\RingFrame.lua
 Rings\Base\ProgressRing.lua
 Rings\Base\LiveRing.lua
-Rings\Progress\XP.lua
+Rings\Progress\XP\Ring.lua
+Rings\Progress\XP\LevelUp.lua
+Rings\Progress\XP\Gain.lua
+Rings\Progress\XP\Rested.lua
+Rings\Progress\XP\Draw.lua
+Rings\Progress\XP\Play.lua
+Rings\Progress\XP\Register.lua
 Rings\Progress\Quest.lua
 Rings\Progress\Skills.lua
 Rings\Progress\Reputation.lua
