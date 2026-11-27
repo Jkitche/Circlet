@@ -548,6 +548,7 @@ local function Safe(f, method, ...)
     local ok, v = pcall(fn, f, ...)
     if not ok then return "denied" end
     if ns.IsSecret(v) then return "hidden" end
+    if type(v) == "table" or type(v) == "userdata" then return type(v) end
     return tostring(v)
 end
 ns.RegisterCommand({ "auradebug" }, function()
@@ -618,7 +619,46 @@ ns.RegisterCommand({ "auradebug" }, function()
                             type(btn) == "table" and Safe(btn, "GetAlpha") or "-"
                         )
                     )
+                    -- Where it is, and what the game put on its buttons' icons.
+                    local cx, cy = spot.win:GetCenter()
+                    local icons = {}
+                    for _, bb in ipairs(spot.buttons) do
+                        local p = spot.parts[bb]
+                        local tex = p and Safe(p.icon, "GetTexture") or "-"
+                        local on = Safe(bb, "IsVisible")
+                        if tex ~= "nil" or on == "true" then icons[#icons + 1] = on .. ":" .. tex end
+                        if #icons >= 4 then break end
+                    end
+                    ns.Print(
+                        string.format(
+                            "      at %s,%s alpha %s, container shown %s %sx%s; icons set: %s",
+                            cx and string.format("%.0f", cx) or "?",
+                            cy and string.format("%.0f", cy) or "?",
+                            Safe(spot.win, "GetEffectiveAlpha"),
+                            c and Safe(c, "IsVisible") or "-",
+                            c and Safe(c, "GetWidth") or "-",
+                            c and Safe(c, "GetHeight") or "-",
+                            #icons > 0 and table.concat(icons, ", ") or "none"
+                        )
+                    )
                 end
+            end
+            -- What the unit really has (readable only out of combat).
+            local get = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+            if unit and get then
+                local names = {}
+                for i = 1, 10 do
+                    local a = SafeCall(get, unit, i, filt)
+                    if ns.IsSecret(a) then
+                        names[#names + 1] = "(hidden)"
+                    elseif a == nil then
+                        break
+                    else
+                        local nm = a.name
+                        names[#names + 1] = ns.IsSecret(nm) and "(hidden)" or tostring(nm)
+                    end
+                end
+                ns.Print("    " .. unit .. " has: " .. (#names > 0 and table.concat(names, ", ") or "none"))
             end
         end
     end

@@ -115,21 +115,37 @@ auradebug runs: true
   | |cffffd100Circlet|r: targetHp: unit target, holder shown false, set up true, size 17, show both, max 8
   | |cffffd100Circlet|r:   debuffs: counted ids 1; spots made 8, shown 1
   | |cffffd100Circlet|r:     spot 1: window shown true 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 1 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
   | |cffffd100Circlet|r:     spot 2: window shown false 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 2 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
   | |cffffd100Circlet|r:     spot 3: window shown false 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 3 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
+  | |cffffd100Circlet|r:     target has: none
   | |cffffd100Circlet|r:   buffs: counted ids 2; spots made 8, shown 2
   | |cffffd100Circlet|r:     spot 1: window shown true 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 1 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
   | |cffffd100Circlet|r:     spot 2: window shown true 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 2 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
   | |cffffd100Circlet|r:     spot 3: window shown false 17x17, container yes unit target, group true broken nil, buttons 0 (dressed 0), button 3 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: none
+  | |cffffd100Circlet|r:     target has: none
   | |cffffd100Circlet|r: targetHp: unit target, holder shown true, set up true, size 17, show both, max 8
   | |cffffd100Circlet|r:   debuffs: counted ids 1; spots made 8, shown 1
   | |cffffd100Circlet|r:     spot 1: window shown true 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 1 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
   | |cffffd100Circlet|r:     spot 2: window shown false 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 2 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
   | |cffffd100Circlet|r:     spot 3: window shown false 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 3 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
+  | |cffffd100Circlet|r:     target has: none
   | |cffffd100Circlet|r:   buffs: counted ids 2; spots made 8, shown 2
   | |cffffd100Circlet|r:     spot 1: window shown true 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 1 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
   | |cffffd100Circlet|r:     spot 2: window shown true 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 2 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
   | |cffffd100Circlet|r:     spot 3: window shown false 17x17, container yes unit target, group true broken nil, buttons 10 (dressed 10), button 3 shown true alpha 1
+  | |cffffd100Circlet|r:       at ?,? alpha table, container shown true 100x10; icons set: true:table, true:table, true:table, true:table
+  | |cffffd100Circlet|r:     target has: none
 aura defaults: you nil, target true, direction down
 aura spacing, default: icons 19 apart (size 17), rows 19 apart
 aura spacing, 10 / 20: icons 27 apart (size 17), rows 37 apart
