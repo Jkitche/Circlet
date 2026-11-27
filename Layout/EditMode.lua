@@ -185,6 +185,8 @@ local function UpdateGrid(editing)
     end
 end
 
+local editingAll = false -- edit mode was turned on for every ring at once
+
 local function UpdateEditBar()
     local keys = EditingKeys()
     UpdateGrid(#keys > 0)
@@ -194,11 +196,18 @@ local function UpdateEditBar()
         editBar.closing = false
         return
     end
-    local names = {}
-    for _, key in ipairs(keys) do
-        table.insert(names, Name(key))
+    -- Names for a few; a count for more (so the line fits the bar); "all" for every ring.
+    if editingAll or #keys >= #RINGS then
+        editBar.text:SetText("Circlet: editing all rings")
+    elseif #keys > 3 then
+        editBar.text:SetText("Circlet: editing " .. #keys .. " rings")
+    else
+        local names = {}
+        for _, key in ipairs(keys) do
+            table.insert(names, Name(key))
+        end
+        editBar.text:SetText("Circlet: editing " .. table.concat(names, ", ") .. (#keys == 1 and " ring" or " rings"))
     end
-    editBar.text:SetText("Circlet: editing " .. table.concat(names, ", ") .. (#keys == 1 and " ring" or " rings"))
     if not editBar:IsShown() then PlaceEditBar() end
     editBar:Show()
 end
@@ -212,6 +221,7 @@ SetRingEditing = function(key, on, quiet)
     local editor = Editor(key)
     if not editor or editor.get() == on then return end
     editor.set(on)
+    if not on then editingAll = false end
     if not on and not quiet then Print(Name(key) .. " ring position saved.") end
     UpdateEditBar()
     ns.RefreshOptions() -- the Edit mode button's label
@@ -243,6 +253,8 @@ local function ToggleAllEditing()
         for _, def in ipairs(RINGS) do
             SetRingEditing(def.key, true)
         end
+        editingAll = #EditingKeys() > 0
+        UpdateEditBar()
     end
 end
 

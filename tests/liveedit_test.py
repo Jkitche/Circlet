@@ -83,6 +83,11 @@ bar._scripts.OnMouseUp(bar, "RightButton")
 P("right-click: saved " .. tostring(CircletDB.editBarPoint) .. ", at " .. Where())
 bar.GetCenter = nil
 Slash("edit"); Advance(0.3)
+-- What the bar says: names for a few rings, a count for more, "all" for edit all.
+Slash("edit quest"); Slash("edit xp"); Advance(0.2); P("bar: " .. tostring(bar.text._text))
+Slash("edit rep"); Slash("edit skill"); Advance(0.2); P("bar: " .. tostring(bar.text._text))
+Slash("edit"); Advance(0.3); Slash("edit"); Advance(0.3); P("bar: " .. tostring(bar.text._text))
+Slash("edit"); Advance(0.3)
 """)
 lua.execute('Slash("edit bogus")')
 print("\n".join(lua.eval("OUT").values()))

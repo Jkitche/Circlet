@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **The edit mode bar** ("Circlet: editing ... ring") can be dragged anywhere and remembers where;
+  it says "editing all rings" (or how many) rather than listing them all;
   right-click it to put it back.
 - **Health & power rings** (new; Health rings > Health & power, and Target health). Your
   health round the ring with your mana, rage, energy or focus in a thinner band inside it, and the
