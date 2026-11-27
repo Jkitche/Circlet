@@ -88,7 +88,7 @@
   - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings
     see and do (for bug reports).
 - **Badge positions** on the health rings. Each ring's Badges box has every badge (level,
-  in-combat, raid marker, stance, skinnable, quest, lootable, enemy faction) with its switch and
+  in-combat, raid marker, stance, skinnable, quest, enemy faction) with its switch and
   where it sits: any of eight spots round the ring. Picking a spot another badge has swaps the
   two; "Default positions" puts them all back.
 - **Enemy faction badge** (new; Target health > Badges). When your target is a player of the
