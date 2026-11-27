@@ -1,4 +1,4 @@
--- Circlet: Health ring effects about the target: skinnable or gatherable, quest target, out of range, lootable, and your stance.
+-- Circlet: Health ring effects about the target: skinnable or gatherable, quest target, out of range, lootable, its faction, and your stance.
 local _, ns = ...
 
 local db, SafeCall, Clean, CleanNumber, IsSecret = ns.db, ns.SafeCall, ns.Clean, ns.CleanNumber, ns.IsSecret
@@ -394,9 +394,54 @@ local function DrawStance(key, fx, st, frame, geom, d, now)
     t:SetAlpha(1)
 end
 
+-- Faction: when your target is a player of the other faction, its crest (the game's own, as on
+-- the target frame's PvP flag: the Alliance lion, the Horde emblem) on its own, at the left of
+-- the target ring. The game may hide the faction in combat; the last one read for this
+-- target is kept until you change targets. Previews show the other faction to yours. The
+-- crest sits in the top left of its texture: crop holds where.
+local FACTIONS = {
+    Alliance = { icon = "Interface\\TargetingFrame\\UI-PVP-Alliance", crop = { 0.07, 0.58, 0.06, 0.57 } },
+    Horde = { icon = "Interface\\TargetingFrame\\UI-PVP-Horde", crop = { 0.08, 0.58, 0.045, 0.545 } },
+}
+local OTHER = { Alliance = "Horde", Horde = "Alliance" }
+local targetFaction -- the faction last read for the current target (false: not a player)
+ns.Listen({ "PLAYER_TARGET_CHANGED" }, function() targetFaction = nil end)
+
+local function EnemyFaction(st)
+    local mine = Clean(SafeCall(UnitFactionGroup, "player"))
+    if not FACTIONS[mine] then return nil end
+    if not st.unit then return OTHER[mine] end -- previews
+    local isPlayer = Clean(SafeCall(UnitIsPlayer, st.unit))
+    local theirs = isPlayer and Clean(SafeCall(UnitFactionGroup, st.unit))
+    if isPlayer == false then
+        targetFaction = false
+    elseif FACTIONS[theirs] then
+        targetFaction = theirs
+    end
+    -- nil (hidden right now): keep what was read for this target
+    if targetFaction and targetFaction ~= mine then return targetFaction end
+end
+
+local function DrawFaction(key, fx, st, frame, geom, d, now)
+    local faction = EnemyFaction(st)
+    local f = faction and FACTIONS[faction]
+    if not f then return end
+    local x, y = Polar(BadgeAngle(key, "Faction"), geom.R)
+    local t = Tex(fx, "faction", f.icon, "OVERLAY", 3)
+    if t.faction ~= faction then
+        t.faction = faction
+        t:SetTexture(f.icon)
+        t:SetTexCoord(unpack(f.crop))
+    end
+    At(t, frame, x, y, d * 1.4)
+    t:SetAlpha(1)
+end
+ns.VitalsFxFaction = EnemyFaction -- tests
+
 -- For the files loaded after this one.
 FX.DrawSkin = DrawSkin
 FX.DrawQuest = DrawQuest
 FX.DrawRange = DrawRange
 FX.DrawLoot = DrawLoot
 FX.DrawStance = DrawStance
+FX.DrawFaction = DrawFaction

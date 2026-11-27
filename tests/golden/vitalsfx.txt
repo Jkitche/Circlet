@@ -43,6 +43,13 @@ dead skull: at 0,0, 57.35px across, alpha 0.38
 no form: (none)
 cat form: stance stanceBack Interface\Icons\Ability_Druid_CatForm
 stance off: (none)
+horde player (you alliance): Interface\TargetingFrame\UI-PVP-Horde (crop 0.08,0.58,0.045,0.545) at -49,0
+alliance player: none
+horde npc: none
+faction hidden after it was read: Interface\TargetingFrame\UI-PVP-Horde (crop 0.08,0.58,0.045,0.545) at -49,0
+new target, faction hidden: none
+effect off: none
+spot: left, on by default: true
 defaults: target mark topleft(135), skin topright(45), quest bottomleft(225), level bottomright(315), loot right(0); you: level bottomleft(225), combat topright(45), stance bottomright(315)
 stance moved to the left: 35,-35 -> -49,0 (left(180))
 stance onto the combat icon's spot: stance topright(45), combat left(180)

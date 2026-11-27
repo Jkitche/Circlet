@@ -259,6 +259,28 @@ Advance(0.3); P("no form: " .. Fx("playerHp"))
 FORM = 2; Advance(0.3); P("cat form: " .. Fx("playerHp") .. " " .. tostring(Ring("playerHp").vit.fx.t.stance.iconFile))
 CircletDB.playerHpFxStance = false; Advance(0.3); P("stance off: " .. Fx("playerHp")); CircletDB.playerHpFxStance = true
 FORM = 0; Advance(0.3)
+-- Enemy faction: the other faction's crest at the left of the target ring, players only.
+FACTION = { player = "Alliance", target = "Horde" }; IS_PLAYER = true
+UnitFactionGroup = function(u) return FACTION[u] end
+local IsPlayerBefore = UnitIsPlayer
+UnitIsPlayer = function(u) return u == "player" or (u == "target" and IS_PLAYER) end
+local function Crest()
+  local t = Ring("targetHp").vit.fx.t.faction
+  if not (t and t._shown) then return "none" end
+  local tc = t._tc4 or {}
+  return string.format("%s (crop %s,%s,%s,%s) at %.0f,%.0f", tostring(t._texpath), tostring(tc[1]), tostring(tc[2]),
+    tostring(tc[3]), tostring(tc[4]), t._pt.x, t._pt.y)
+end
+Fire("PLAYER_TARGET_CHANGED"); Advance(0.3); P("horde player (you alliance): " .. Crest())
+FACTION.target = "Alliance"; Fire("PLAYER_TARGET_CHANGED"); Advance(0.3); P("alliance player: " .. Crest())
+FACTION.target = "Horde"; IS_PLAYER = false; Fire("PLAYER_TARGET_CHANGED"); Advance(0.3); P("horde npc: " .. Crest())
+IS_PLAYER = true; Fire("PLAYER_TARGET_CHANGED"); Advance(0.3)
+FACTION.target = nil; Advance(0.3); P("faction hidden after it was read: " .. Crest())
+Fire("PLAYER_TARGET_CHANGED"); Advance(0.3); P("new target, faction hidden: " .. Crest())
+FACTION.target = "Horde"; CircletDB.targetHpFxFaction = false; Advance(0.3); P("effect off: " .. Crest())
+CircletDB.targetHpFxFaction = true; Advance(0.3)
+P("spot: " .. NS.VitalsBadges.Spot("targetHp", "Faction") .. ", on by default: " .. tostring(CircletDB.targetHpFxFaction))
+UnitIsPlayer = IsPlayerBefore; UnitFactionGroup = nil; Fire("PLAYER_TARGET_CHANGED"); Advance(0.3)
 -- Badge positions: each badge at its chosen spot; a taken spot swaps.
 local B = NS.VitalsBadges
 local function Where(key, b) return B.Spot(key, b) .. "(" .. B.Angle(key, b) .. ")" end

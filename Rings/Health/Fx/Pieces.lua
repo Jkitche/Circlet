@@ -39,6 +39,8 @@ local FX = ns.HealthFx
 --   Stance     (you)      your stance, form, aura or stealth as a badge at the bottom right
 --   Quest      (target)   a yellow ! at the bottom left when the target is part of one of
 --                         your active quests, with the objective's progress (3/10) under it
+--   Faction    (target)   the Alliance or Horde crest at the left when the target is a player
+--                         of the other faction
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
 -- hidden: thresholds (20%, 30%, full) are checked by running the hidden percentage through
@@ -64,7 +66,7 @@ local ON = {
     Avoid = { playerHp = true, targetHp = true, petHp = true }, EnergyTick = { playerHp = true }, Rage = { playerHp = true },
     FullMana = { playerHp = true }, Skin = { targetHp = true },
     Quest = { targetHp = true }, Range = { targetHp = true }, Tapped = { targetHp = true },
-    Loot = { targetHp = true }, Stance = { playerHp = true },
+    Loot = { targetHp = true }, Stance = { playerHp = true }, Faction = { targetHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -90,8 +92,9 @@ local BADGES = {
     Skin = { "Skinnable", "The skinning (or herb, ore, parts) badge.", targetHp = "topright" },
     Quest = { "Quest target", "The quest ! and its progress.", targetHp = "bottomleft" },
     Loot = { "Lootable", "The coin on a corpse with loot for you.", targetHp = "right" },
+    Faction = { "Faction", "The Alliance or Horde crest on a player of the other faction.", targetHp = "left" },
 }
-local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Loot" }
+local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Loot", "Faction" }
 
 -- The spot a badge is at on a ring, and its angle (degrees, 0 = right, counter-clockwise).
 local function BadgeSpot(key, badge)

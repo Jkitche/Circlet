@@ -31,7 +31,7 @@ end
 
 -- The effects (Rings/Health/Fx/): name, label, what it does, by the ring it's on.
 local FX_ORDER = { "Combo", "Mark", "Aggro", "Execute", "LowHealth", "Death", "Flare", "Heal", "Jolt", "Avoid",
-                   "EnergyTick", "Rage", "FullMana", "Skin", "Quest", "Range", "Tapped", "Loot", "Stance" }
+                   "EnergyTick", "Rage", "FullMana", "Skin", "Quest", "Range", "Tapped", "Loot", "Stance", "Faction" }
 local FX_TEXT = {
     Combo = { "Combo points", "Five pips over the ring for your combo points, popping as they light and pulsing gold at five (rogues and druids)." },
     Mark = { "Raid marker", "The unit's raid marker (skull, cross, star...) at the top left of the ring." },
@@ -50,6 +50,7 @@ local FX_TEXT = {
     Tapped = { "Tagged by others", "A mob someone else tagged first (no XP or loot for you) goes grey, whatever the color mode, and so does its portrait." },
     Loot = { "Lootable", "Gold glints run round the ring, with a coin at the right, while your dead target still has loot for you." },
     Stance = { "Stance or form", "Your stance, form, aura or stealth as a small badge at the bottom right of your ring." },
+    Faction = { "Enemy faction", "The Alliance or Horde crest at the left of the ring when your target is a player of the other faction." },
     Quest = { "Quest target", "A yellow ! at the bottom left when your target is part of one of your active quests, with the objective's progress (3/10) under it when the game shows it." },
     Skin = { "Skinnable", "A pelt badge at the top right when your target's corpse can be skinned (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. Creatures seen skinnable before get a faint badge while alive or not yet looted." },
 }

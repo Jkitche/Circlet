@@ -27,6 +27,7 @@ local DrawQuest = FX.DrawQuest
 local DrawRange = FX.DrawRange
 local DrawLoot = FX.DrawLoot
 local DrawStance = FX.DrawStance
+local DrawFaction = FX.DrawFaction
 
 ---------------------------------------------------------------------------
 -- Each frame
@@ -55,6 +56,7 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     elseif ns.SetRingDim then ns.SetRingDim(key, 1) end
     if On(key, "Loot") then DrawLoot(key, fx, st, frame, geom, d, now) end
     if On(key, "Stance") then DrawStance(key, fx, st, frame, geom, d, now) end
+    if On(key, "Faction") then DrawFaction(key, fx, st, frame, geom, d, now) end
     if On(key, "Skin") then DrawSkin(key, fx, st, frame, geom, d, now) end
     fx.questTextUsed = false
     if On(key, "Quest") then DrawQuest(key, fx, st, frame, geom, d, now) end
