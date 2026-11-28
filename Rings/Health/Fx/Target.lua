@@ -533,3 +533,6 @@ FX.DrawRange = DrawRange
 FX.DrawLoot = DrawLoot
 FX.DrawStance = DrawStance
 FX.DrawFaction = DrawFaction
+FX.FACTIONS = FACTIONS
+FX.RoundIcon = RoundIcon
+FX.Knows = Knows

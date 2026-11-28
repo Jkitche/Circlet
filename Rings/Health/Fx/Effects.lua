@@ -396,3 +396,4 @@ FX.DrawAvoid = DrawAvoid
 FX.DrawEnergyTick = DrawEnergyTick
 FX.DrawRage = DrawRage
 FX.DrawFullMana = DrawFullMana
+FX.DrawThreshold = DrawThreshold

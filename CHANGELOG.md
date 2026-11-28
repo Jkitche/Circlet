@@ -64,6 +64,22 @@
     - *Lootable* (target): the whole ring sparkles gold, glints twinkling all over it, while
       your dead target still has loot for you.
     - *Stance or form* (you): your stance, form, aura or stealth as a badge at the bottom right.
+    - *Threat* (target): while someone else is tanking your target, beads fill both sides of the
+      ring with your share of its threat: yellow, orange from 70%, red and pulsing from 90%.
+    - *Crowd control* (target): your crowd control's icon at the right when it works on the
+      target's kind of creature (Polymorph, Shackle Undead, Banish, Hibernate, Sap out of
+      combat, Scare Beast, Turn Undead).
+    - *Curable debuff* (both): a glow round the ring in the debuff's type color while it has a
+      debuff you can remove. Works in combat: the game picks the color.
+    - *Durability* (yours): an anvil badge at the left when your gear needs repair, yellow when
+      badly damaged, red and pulsing when broken.
+    - *Low mana heartbeat* (yours): a blue heartbeat on the mana band below 20% mana.
+    - *Group leader* (yours): the crown (or a raid assistant's icon) at the top while you lead,
+      with the loot bag beside it while you're master looter.
+    - *PvP flag* (yours): your faction's crest at the right while you're flagged, with the time
+      left under it once the flag is wearing off.
+    - *Resurrect or summon waiting* (yours): a breathing glow with circling glints round your ring,
+      gold for a resurrect, purple for a summon, with the summon's time left.
     Health and mana thresholds work in combat too: the hidden percentage runs through a step
     curve straight into the effect's opacity, as the rings fill.
   - **Damage and healing numbers** (your ring and the target's): each hit and heal the unit takes
@@ -88,6 +104,13 @@
     combat, when the game hides auras from addons (icon, sweep, stacks and the debuff-type
     border all come from the game). When the arc changes (a debuff row opening as combat
     starts, auras coming and going) the icons slide round the ring to their new places. On by default for the target ring, off for yours.
+    Hover an icon for the game's own tooltip, in combat too (clicks still go through). Shows
+    an enemy's buffs (including ones only nameplates usually show) and debuffs others cast on
+    you; an Enemy buffs dropdown (target ring) picks all of an enemy's buffs, only the ones you
+    can dispel or purge, or none. Buff borders take their dispel type's color (blue for magic),
+    so purgeable buffs stand out. Changing targets clears the last target's icons straight away.
+    `/circ auradebug` and `/circ auratest` report what the arcs and the game's containers are
+    doing (for bug reports).
   - **Target of target ring** (new): a smaller ring beside the target ring for who your target is
     after, with its health, power and name. Can hide the game's target of target frame.
   - `/circ hpdebug`, `/circ masktest` and `/circ curvetest` report what this client lets the rings

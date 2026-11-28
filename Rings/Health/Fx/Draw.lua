@@ -28,6 +28,15 @@ local DrawRange = FX.DrawRange
 local DrawLoot = FX.DrawLoot
 local DrawStance = FX.DrawStance
 local DrawFaction = FX.DrawFaction
+local DrawThreat = FX.DrawThreat
+local DrawCC = FX.DrawCC
+local DrawCure = FX.DrawCure
+local HideCure = FX.HideCure
+local DrawDurability = FX.DrawDurability
+local DrawLowMana = FX.DrawLowMana
+local DrawLeader = FX.DrawLeader
+local DrawPvP = FX.DrawPvP
+local DrawPending = FX.DrawPending
 
 ---------------------------------------------------------------------------
 -- Each frame
@@ -40,6 +49,9 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     for _, f in pairs(fx.frames) do
         f.used = false
     end
+    for _, fs in pairs(fx.texts or {}) do
+        fs.used = false
+    end
     fx.root:Show()
     if On(key, "Death") then DrawDeath(key, fx, st, frame, geom, d, now) end
     if not st.dead then
@@ -49,12 +61,24 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
         if On(key, "LowHealth") then DrawLowHealth(key, fx, st, frame, geom, d, now) end
         if On(key, "Heal") then DrawHeal(key, fx, st, frame, geom, d, now) end
         if On(key, "Avoid") then DrawAvoid(key, fx, st, frame, geom, d, now) end
+        if On(key, "Threat") then DrawThreat(key, fx, st, frame, geom, d, now) end
+        if On(key, "CC") then DrawCC(key, fx, st, frame, geom, d, now) end
         if v.g2 and v.g2.R and st.power then
             if On(key, "EnergyTick") then DrawEnergyTick(key, fx, st, frame, v.g2, now) end
             if On(key, "Rage") then DrawRage(key, fx, st, frame, v.g2, now) end
             if On(key, "FullMana") then DrawFullMana(key, fx, st, frame, v.g2, now) end
+            if On(key, "LowMana") then DrawLowMana(key, fx, st, frame, v.g2, now) end
         end
     end
+    if On(key, "Cure") then
+        DrawCure(key, fx, st, frame, geom, d, now)
+    else
+        HideCure(fx)
+    end
+    if On(key, "Durability") then DrawDurability(key, fx, st, frame, geom, d, now) end
+    if On(key, "Leader") then DrawLeader(key, fx, st, frame, geom, d, now) end
+    if On(key, "PvP") then DrawPvP(key, fx, st, frame, geom, d, now) end
+    if On(key, "Pending") then DrawPending(key, fx, st, frame, geom, d, now) end
     if On(key, "Mark") then DrawMark(key, fx, st, frame, geom, d) end
     if On(key, "Range") then
         DrawRange(key, fx, st, frame, geom, d, now)
@@ -68,6 +92,9 @@ function ns.DrawVitalsFx(key, v, st, frame, geom, d, now)
     fx.questTextUsed = false
     if On(key, "Quest") then DrawQuest(key, fx, st, frame, geom, d, now) end
     if fx.questText and not fx.questTextUsed then fx.questText:Hide() end
+    for _, fs in pairs(fx.texts or {}) do
+        if not fs.used then fs:Hide() end
+    end
     if On(key, "Flare") then DrawFlare(key, fx, st, frame, geom, d, now) end
     DrawJolt(key, fx, st, frame, geom, now) -- always called: it puts the ring back after a jolt
     -- Anything not drawn this frame goes.
@@ -94,6 +121,7 @@ function ns.HideVitalsFx(v, frame)
     for _, t in pairs(fx.t) do
         if t:GetParent() ~= fx.root then t:Hide() end
     end
+    HideCure(fx)
     Restore(fx, frame)
 end
 

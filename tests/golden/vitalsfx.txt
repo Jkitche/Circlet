@@ -71,7 +71,7 @@ you at 20%: lowHalo tick tickHalo
   halo: vertex alpha set false
 rage gain: ember x4
 full mana: fullManaHalo
-  hidden: fullManaHalo<1> lowHalo<0>
+  hidden: fullManaHalo<1> lowHalo<0> lowManaHalo<0>
 half mana: (none)
 your ghost: ghost wisp x6
 raid marker off: (none)

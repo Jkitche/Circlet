@@ -41,6 +41,19 @@ local FX = ns.HealthFx
 --                         your active quests, with the objective's progress (3/10) under it
 --   Faction    (target)   the Alliance or Horde crest at the left when the target is a player
 --                         of the other faction
+--   Threat     (target)   beads filling up both sides of the ring with your share of its threat
+--                         while something else is tanking it, orange then red near pulling it
+--   CC         (target)   your crowd control's icon at the right when it works on the target's
+--                         creature type (Polymorph on humanoids and beasts, Shackle on undead...)
+--   Cure       (yours, target) a glow in the debuff type's color while the unit has a debuff
+--                         you can remove
+--   Durability (you)      an anvil badge at the left, yellow when gear is damaged, red when broken
+--   LowMana    (you)      a blue heartbeat on the mana band below 20% mana
+--   Leader     (you)      the leader crown (or assistant icon) at the top, the master looter's
+--                         bag beside it
+--   PvP        (you)      your faction's crest at the right while you're flagged for PvP, with
+--                         the time left once it's wearing off
+--   Pending    (you)      a glow round your ring while a resurrect or summon waits for you
 --
 -- What the game hides from addons in combat shapes some of them. Health and power can be
 -- hidden: thresholds (20%, 30%, full) are checked by running the hidden percentage through
@@ -79,6 +92,14 @@ local ON = {
     Loot = { targetHp = true },
     Stance = { playerHp = true },
     Faction = { targetHp = true },
+    Threat = { targetHp = true },
+    CC = { targetHp = true },
+    Cure = { playerHp = true, targetHp = true },
+    Durability = { playerHp = true },
+    LowMana = { playerHp = true },
+    Leader = { playerHp = true },
+    PvP = { playerHp = true },
+    Pending = { playerHp = true },
 }
 ns.VITALS_FX = ON
 
@@ -132,8 +153,13 @@ local BADGES = {
     Skin = { "Skinnable", "The skinning (or herb, ore, parts) badge.", targetHp = "topright" },
     Quest = { "Quest target", "The quest ! and its progress.", targetHp = "bottomleft" },
     Faction = { "Faction", "The Alliance or Horde crest on a player of the other faction.", targetHp = "left" },
+    CC = { "Crowd control", "Your crowd control's icon when it works on the target.", targetHp = "right" },
+    Durability = { "Durability", "The anvil when your gear is damaged or broken.", playerHp = "left" },
+    Leader = { "Group leader", "The leader crown and master looter's bag.", playerHp = "top" },
+    PvP = { "PvP flag", "Your faction's crest while you're flagged for PvP.", playerHp = "right" },
 }
-local BADGE_ORDER = { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Faction" }
+local BADGE_ORDER =
+    { "Level", "Combat", "Mark", "Stance", "Skin", "Quest", "Faction", "CC", "Durability", "Leader", "PvP" }
 
 -- The spot a badge is at on a ring, and its angle (degrees, 0 = right, counter-clockwise).
 local function BadgeSpot(key, badge)
@@ -227,6 +253,28 @@ local function Polar(deg, r)
     return r * math.cos(a), r * math.sin(a)
 end
 
+-- A font string over the ring, made when first needed; one not asked for in a frame is hidden
+-- after it (Fx/Draw.lua).
+local function Text(fx, name)
+    fx.texts = fx.texts or {}
+    local fs = fx.texts[name]
+    if not fs then
+        fs = fx.root:CreateFontString(nil, "OVERLAY")
+        fs:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
+        fx.texts[name] = fs
+    end
+    fs.used = true
+    return fs
+end
+
+-- Sets a font string's size only when it changes.
+local function TextSize(fs, px)
+    if fs.px ~= px then
+        fs.px = px
+        fs:SetFont(STANDARD_TEXT_FONT, px, "OUTLINE")
+    end
+end
+
 -- A glow ring texture sized to sit on a ring of radius r.
 local function GlowOn(t, frame, r, x, y) At(t, frame, x or 0, y or 0, 2 * r / GLOW_AT) end
 
@@ -290,6 +338,8 @@ FX.SWORDS = SWORDS
 FX.BadgeAngle = BadgeAngle
 FX.Since = Since
 FX.Tex = Tex
+FX.Text = Text
+FX.TextSize = TextSize
 FX.At = At
 FX.Polar = Polar
 FX.GlowOn = GlowOn

@@ -1,7 +1,7 @@
 -- Circlet: buffs and debuffs in an arc round the health rings (yours and your target's).
 local ADDON_NAME, ns = ...
 
-local db, SafeCall = ns.db, ns.SafeCall
+local db, SafeCall, Clean = ns.db, ns.SafeCall, ns.Clean
 
 -- <key>Auras on, the arc centred on one side of the ring (<key>AuraDir: up, down, left, right,
 -- the same choice as the floating numbers), just outside the band and clear of the badges:
@@ -30,7 +30,9 @@ local EASE_RATE = 9 -- how fast a spot slides to a new place (higher is quicker;
 local MAX_SWEEP = math.rad(170) -- an arc never wraps further than this round the ring
 local LIVE_UNIT = { playerHp = "player", targetHp = "target" }
 local KINDS = { "debuffs", "buffs" }
-local FILTER = { debuffs = "HARMFUL", buffs = "HELPFUL" }
+-- INCLUDE_NAME_PLATE_ONLY: without it the game leaves out every aura it flags as one for
+-- nameplates only, which is most of an enemy's buffs (its own nameplates always ask for them).
+local FILTER = { debuffs = "HARMFUL|INCLUDE_NAME_PLATE_ONLY", buffs = "HELPFUL|INCLUDE_NAME_PLATE_ONLY" }
 local INNER_GAP = 4 -- px between the buttons inside a container's row (all but one clipped)
 local STYLE_PRESERVE = 3 -- Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset
 
@@ -75,7 +77,44 @@ local function Settings(key)
         rowGap = math.max(0, tonumber(db[key .. "AuraRowGap"]) or 2),
         time = db[key .. "AuraTime"] and true or false,
         text = (tonumber(db[key .. "AuraTextSize"]) or 100) / 100,
+        enemyBuffs = key == "targetHp" and db[key .. "AuraEnemyBuffs"] or "all",
     }
+end
+
+-- An enemy target's buffs (<key>AuraEnemyBuffs): all, only the ones that can be dispelled (the
+-- game's DISPELLABLE filter), or none. Friendly units always show all of theirs.
+local function KindFilter(kind, set, hostile)
+    local f = FILTER[kind] .. set.mine
+    if kind == "buffs" and hostile and set.enemyBuffs == "dispel" then f = f .. "|DISPELLABLE" end
+    return f
+end
+
+local function KindShown(kind, set, hostile)
+    if set.show ~= "both" and set.show ~= kind then return false end
+    return not (kind == "buffs" and hostile and set.enemyBuffs == "none")
+end
+
+-- A buff's border in its dispel type's color (blue for magic: what Purge takes), black for one
+-- with no type. The game picks the color from this map; Circlet never sees the type.
+local BUFF_BORDERS
+local function BuffBorders()
+    if BUFF_BORDERS ~= nil then return BUFF_BORDERS end
+    BUFF_BORDERS = false
+    if type(CreateColor) ~= "function" then return false end
+    local src = DebuffTypeColor
+        or {
+            Magic = { r = 0.2, g = 0.6, b = 1 },
+            Curse = { r = 0.6, g = 0, b = 1 },
+            Disease = { r = 0.6, g = 0.4, b = 0 },
+            Poison = { r = 0, g = 0.6, b = 0 },
+        }
+    local map = { None = CreateColor(0, 0, 0, 1) }
+    for _, name in ipairs({ "Magic", "Curse", "Disease", "Poison" }) do
+        local c = src[name]
+        if c then map[name] = CreateColor(c.r, c.g, c.b, 1) end
+    end
+    BUFF_BORDERS = map
+    return map
 end
 
 local function Holder(v, frame)
@@ -162,8 +201,15 @@ end
 local function Dress(spot, b, s, set)
     local parts = spot.parts[b]
     if not parts then
+        -- The game's own tooltip on mouse-over (clicks still pass through). Every button of
+        -- the spot's container has it: the window clips the mouse as it clips the drawing,
+        -- so only the one inside it answers. (Which one that is can't be told: the game
+        -- hides its buttons' places, and it reuses them as auras come and go.)
         NoMouse(b)
-        Try(b, "SetHideTooltipInCombat", true)
+        Try(b, "SetTooltipAnchorPoint", "ANCHOR_BOTTOMRIGHT")
+        Try(b, "SetHideTooltipInCombat", false)
+        local ok, err = pcall(b.SetMouseMotionEnabled, b, true)
+        if not ok then spot.mouseErr = tostring(err) end
         parts = {}
         parts.edge = b:CreateTexture(nil, "BACKGROUND")
         parts.edge:SetAllPoints(b)
@@ -198,7 +244,23 @@ local function Dress(spot, b, s, set)
                 parts.edge:SetColorTexture(0.8, 0.1, 0.1, 1)
             end
         else
-            parts.edge:SetColorTexture(0, 0, 0, 1)
+            -- Black, or (tinted by the game) its dispel type's color: a buff you can Purge shows.
+            parts.edge:SetColorTexture(1, 1, 1, 1)
+            local map = BuffBorders()
+            if
+                not (
+                    map
+                    and Try(b, "AddDispelTypeTexture", parts.edge, {
+                        style = STYLE_PRESERVE,
+                        showWhenHarmful = true,
+                        showWhenHelpful = true,
+                        showWithoutDispelType = true,
+                        customDispelColorMap = map,
+                    })
+                )
+            then
+                parts.edge:SetColorTexture(0, 0, 0, 1)
+            end
         end
         Try(b, "SetIcon", parts.icon)
         if parts.cd then Try(b, "SetDurationCooldown", parts.cd) end
@@ -239,15 +301,20 @@ local function Spot(A, kind, k, unit)
 end
 
 -- (Re)sets a spot's group from the settings. Out of combat only.
-local function SetUpSpot(spot, set, s)
+local function SetUpSpot(spot, set, s, hostile)
     local c = spot.c
     if not c then return end
-    local filter = FILTER[spot.kind] .. set.mine
+    local filter = KindFilter(spot.kind, set, hostile)
+    spot.filter = filter
     local layout = { elementWidth = s, elementHeight = s, elementSpacing = INNER_GAP }
     if not spot.group then
         local opts = {
             maxFrameCount = spot.k,
             layout = layout,
+            -- Every source, not just yours: the nameplates and DBM always give a group its
+            -- candidate filters, and auras others cast (a mob's debuff on you, an enemy's own
+            -- buffs) didn't show without them.
+            candidateFilters = {},
             initializeFrame = function(b)
                 spot.buttons[#spot.buttons + 1] = b
                 -- One the game makes in combat is dressed when it ends.
@@ -268,6 +335,8 @@ local function SetUpSpot(spot, set, s)
         Try(c, "SetAuraGroupFilterString", "a", filter)
         Try(c, "SetAuraGroupLayout", "a", layout)
     end
+    Try(c, "SetAuraGroupCandidateFilters", "a", {})
+    Try(c, "SetEnabled", true) -- (as the nameplates and DBM do once a container's set up)
     spot.s, spot.set = s, set
     for _, b in ipairs(spot.buttons) do
         pcall(Dress, spot, b, s, set)
@@ -419,15 +488,48 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
     local s = IconSize(geom, set)
     local sig =
         table.concat({ unit, set.show, set.mine, set.max, s, tostring(set.time), string.format("%.2f", set.text) }, "|")
+    -- Whether it's an enemy (the last answer, if the game won't say right now).
+    if unit ~= "player" then
+        local h = Clean(SafeCall(UnitCanAttack, "player", unit))
+        if h ~= nil then A.hostile = h and true or false end
+    else
+        A.hostile = false
+    end
+    local hostile = A.hostile
+    -- A new target: each container off, onto the unit again, back on (as the nameplates and
+    -- DBM do when a container's unit changes; allowed in combat).
+    if A.rebind then
+        A.rebind = nil
+        for _, kind in ipairs(KINDS) do
+            for _, spot in pairs(A.spots[kind]) do
+                if spot.c then
+                    Try(spot.c, "SetEnabled", false)
+                    Try(spot.c, "SetUnit", unit)
+                    if spot.group then Try(spot.c, "SetEnabled", true) end
+                end
+            end
+        end
+    end
     if A.sig ~= sig and not InCombat() then
         for _, kind in ipairs(KINDS) do
             if set.show == "both" or set.show == kind then
                 for k = 1, set.max do
-                    SetUpSpot(Spot(A, kind, k, unit), set, s)
+                    SetUpSpot(Spot(A, kind, k, unit), set, s, hostile)
                 end
             end
         end
         A.sig, A.s = sig, s
+    end
+    -- A new target of the other reaction: its buffs' filter follows (the game allows this in
+    -- combat; the nameplates do it).
+    for _, kind in ipairs(KINDS) do
+        local want = KindFilter(kind, set, hostile)
+        for _, spot in pairs(A.spots[kind]) do
+            if spot.group and spot.filter ~= want then
+                spot.filter = want
+                Try(spot.c, "SetAuraGroupFilterString", "a", want)
+            end
+        end
     end
     -- In combat the game's buttons keep the size they were set to; so do the windows.
     s = A.s or s
@@ -440,8 +542,8 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
     local rows, late = {}, {}
     for _, kind in ipairs(KINDS) do
         local list = A.spots[kind]
-        if (set.show == "both" or set.show == kind) and list[1] and not list[1].broken then
-            local n = CountOf(unit, FILTER[kind] .. set.mine, set.max)
+        if KindShown(kind, set, hostile) and list[1] and not list[1].broken then
+            local n = CountOf(unit, KindFilter(kind, set, hostile), set.max)
             local slots = 0
             for k in pairs(list) do
                 if k > slots then slots = k end
@@ -465,7 +567,14 @@ local function DrawLive(key, A, frame, geom, d, set, unit)
                 if n > 0 then
                     row.n = n
                     rows[#rows + 1] = row
+                elseif kind == "buffs" and hostile then
+                    -- Counted none on an enemy's buffs: the game counts none of them where its
+                    -- containers still show them, so the row's spots stay open, outside the
+                    -- others. An empty container shows nothing.
+                    row.n, row.open = 1, set.max
+                    late[#late + 1] = row
                 else
+                    -- Really none: the row's closed, so it doesn't push the others outward.
                     for _, spot in pairs(list) do
                         spot.win:Hide()
                     end
@@ -532,14 +641,53 @@ function ns.VitalsAurasDirty(key)
         f.sig = nil
     end
 end
--- A new target starts with nothing remembered about its rows.
+-- A new target starts with nothing remembered about its rows, and its containers are pointed
+-- at it afresh (DrawLive): left alone they keep the last target's auras until the new one's
+-- change.
 ns.Listen({ "PLAYER_TARGET_CHANGED" }, function()
-    for _, A in ipairs(ns.vitalsAuraHolders or {}) do
-        if A.key == "targetHp" then A.known = {} end
+    for _, A in pairs(ns.vitalsAuraHolders or {}) do
+        if A.key == "targetHp" then
+            A.known = {}
+            A.rebind = true
+        end
     end
 end)
 
 -- (A change asked for in combat is applied on the first frame after it ends: DrawLive.)
+
+-- Your target's nameplate unit (nameplate1...), if it has one showing: the nameplates read an
+-- enemy's auras through that, and the game may treat it differently from "target".
+local function TargetPlate()
+    if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
+        local plate = SafeCall(C_NamePlate.GetNamePlateForUnit, "target")
+        local token = plate and (plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit))
+        token = Clean(token)
+        if type(token) == "string" then return token end
+    end
+    for i = 1, 40 do
+        local token = "nameplate" .. i
+        if Clean(SafeCall(UnitIsUnit, token, "target")) then return token end
+    end
+end
+
+-- The names of a unit's auras through a filter (out of combat; hidden ones as "(hidden)").
+local function AuraNames(unit, filt)
+    local get = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
+    local names = {}
+    if not get then return "no API" end
+    for i = 1, 10 do
+        local a = SafeCall(get, unit, i, filt)
+        if ns.IsSecret(a) then
+            names[#names + 1] = "(hidden)"
+        elseif a == nil then
+            break
+        else
+            local nm = a.name
+            names[#names + 1] = ns.IsSecret(nm) and "(hidden)" or tostring(nm)
+        end
+    end
+    return #names > 0 and table.concat(names, ", ") or "none"
+end
 
 -- /circ auradebug: what the buff and debuff arcs are doing, for each ring (for bug reports).
 local function Safe(f, method, ...)
@@ -579,7 +727,7 @@ ns.RegisterCommand({ "auradebug" }, function()
                 made = made + 1
                 if spot.win:IsShown() then shown = shown + 1 end
             end
-            local filt = FILTER[kind] .. (set and set.mine or "")
+            local filt = set and KindFilter(kind, set, A.hostile) or FILTER[kind]
             ns.Print(
                 string.format(
                     "  %s: counted %s; spots made %d, shown %d",
@@ -641,25 +789,144 @@ ns.RegisterCommand({ "auradebug" }, function()
                             #icons > 0 and table.concat(icons, ", ") or "none"
                         )
                     )
+                    -- Which of its buttons has the mouse (for the tooltip), and why.
+                    local mice = {}
+                    for i, bb in ipairs(spot.buttons) do
+                        mice[#mice + 1] = i .. ":" .. Safe(bb, "IsMouseMotionEnabled")
+                    end
+                    ns.Print(
+                        string.format(
+                            "      mouse-over on its buttons: %s%s",
+                            #mice > 0 and table.concat(mice, " ") or "no buttons",
+                            spot.mouseErr and ("; refused: " .. spot.mouseErr) or ""
+                        )
+                    )
                 end
             end
-            -- What the unit really has (readable only out of combat).
-            local get = C_UnitAuras and C_UnitAuras.GetAuraDataByIndex
-            if unit and get then
-                local names = {}
-                for i = 1, 10 do
-                    local a = SafeCall(get, unit, i, filt)
-                    if ns.IsSecret(a) then
-                        names[#names + 1] = "(hidden)"
-                    elseif a == nil then
-                        break
-                    else
-                        local nm = a.name
-                        names[#names + 1] = ns.IsSecret(nm) and "(hidden)" or tostring(nm)
-                    end
+            -- What the unit really has (readable only out of combat), and for the target, what
+            -- its nameplate unit has (and without the nameplate filter word, to compare).
+            if unit then
+                ns.Print("    " .. unit .. " has: " .. AuraNames(unit, filt))
+                if unit == "target" then
+                    ns.Print(
+                        "    target, plain "
+                            .. FILTER[kind]:match("^%a+")
+                            .. ": "
+                            .. AuraNames(unit, FILTER[kind]:match("^%a+"))
+                    )
+                    local plate = TargetPlate()
+                    ns.Print(
+                        "    its nameplate " .. tostring(plate) .. " has: " .. (plate and AuraNames(plate, filt) or "-")
+                    )
                 end
-                ns.Print("    " .. unit .. " has: " .. (#names > 0 and table.concat(names, ", ") or "none"))
             end
         end
     end
 end, "what the buff and debuff arcs are doing (for bug reports)")
+
+-- /circ auratest: plain aura containers in the middle of the screen, set up the way other
+-- addons' (the nameplates', DBM's) are: the game's whole row, no clipping window, the icon made
+-- in the game's own setup call. Your debuffs on the left, your target's buffs on the right.
+-- If an aura shows here but not on the ring, Circlet's one-icon windows are what lose it.
+local tests
+local TESTS = {
+    { unit = "player", filter = "HARMFUL|INCLUDE_NAME_PLATE_ONLY", label = "Your debuffs", x = 0 },
+    { unit = "target", filter = "HELPFUL|INCLUDE_NAME_PLATE_ONLY", label = "Target's buffs", x = 0, y = 70 },
+    -- The same, through the target's nameplate unit (followed as the target changes).
+    {
+        plate = true,
+        filter = "HELPFUL|INCLUDE_NAME_PLATE_ONLY",
+        label = "Target's buffs (its nameplate)",
+        x = 0,
+        y = 140,
+    },
+}
+ns.RegisterCommand({ "auratest" }, function()
+    if tests then
+        local on = not tests[1]:IsShown()
+        for _, c in ipairs(tests) do
+            c:SetShown(on)
+            pcall(c.SetEnabled, c, on)
+        end
+        ns.Print("Aura test " .. (on and "shown." or "hidden."))
+        return
+    end
+    if InCombat() then
+        ns.Print("Aura test: the game only lets addons make these out of combat. Try again after it.")
+        return
+    end
+    tests = {}
+    for _, t in ipairs(TESTS) do
+        local ok, c = pcall(CreateFrame, "AuraContainer", nil, UIParent, "CustomAuraContainerTemplate")
+        if not (ok and c and c.AddAuraGroup) then
+            ns.Print("Aura test: this client can't make aura containers.")
+            tests = nil
+            return
+        end
+        c:SetSize(300, 36)
+        c:SetPoint("CENTER", UIParent, "CENTER", t.x, 120 - (t.y or 0))
+        local label = c:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        label:SetPoint("BOTTOM", c, "TOP", 0, 4)
+        label:SetText(t.label)
+        local bg = c:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints(c)
+        bg:SetColorTexture(0, 0, 0, 0.6)
+        local added, err = pcall(c.AddAuraGroup, c, "test", t.filter, {
+            maxFrameCount = 8,
+            candidateFilters = {},
+            layout = { elementWidth = 32, elementHeight = 32, elementSpacing = 4 },
+            initializeFrame = function(b)
+                -- A bright green frame of our own (shows whether the button's there at all),
+                -- then the icon set up as the nameplates do: sublevel -5, cropped, then handed over.
+                local edge = b:CreateTexture(nil, "BACKGROUND")
+                edge:SetPoint("TOPLEFT", b, "TOPLEFT", -2, 2)
+                edge:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", 2, -2)
+                edge:SetColorTexture(0.2, 1, 0.2, 1)
+                b.circletIcon = b:CreateTexture(nil, "ARTWORK", nil, -5)
+                b.circletIcon:SetAllPoints(b)
+                b.circletIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+                b:SetIcon(b.circletIcon)
+                local cdOk, cd = pcall(CreateFrame, "Cooldown", nil, b, "CooldownFrameTemplate")
+                if cdOk and cd then
+                    cd:SetAllPoints(b)
+                    pcall(b.SetDurationCooldown, b, cd)
+                end
+                local count = b:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+                count:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -1, 1)
+                pcall(b.SetApplicationCount, b, count)
+            end,
+        })
+        pcall(c.SetEnabled, c, false) -- (the nameplates' order: off, set the unit, then on)
+        if t.plate then
+            -- Follows the target's nameplate unit, checked five times a second (from a frame of
+            -- our own: the game won't let addons put scripts on its containers).
+            local at, driver, cur = 0, CreateFrame("Frame"), false
+            driver:SetScript("OnUpdate", function(_, elapsed)
+                at = at + elapsed
+                if at < 0.2 then return end
+                at = 0
+                local plate = TargetPlate()
+                if plate ~= cur then
+                    cur = plate
+                    pcall(c.SetUnit, c, plate)
+                    label:SetText(t.label .. ": " .. tostring(plate))
+                end
+            end)
+        else
+            pcall(c.SetUnit, c, t.unit)
+        end
+        pcall(c.SetEnabled, c, true)
+        c:Show()
+        tests[#tests + 1] = c
+        ns.Print(
+            string.format(
+                "Aura test: %s (%s, %s): %s",
+                t.label,
+                t.unit or "nameplate",
+                t.filter,
+                added and "set up" or tostring(err)
+            )
+        )
+    end
+    ns.Print("Aura test: /circ auratest again hides or shows them.")
+end, "plain aura containers in the middle of the screen, to compare with the rings' (for bug reports)")

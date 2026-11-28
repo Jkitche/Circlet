@@ -82,6 +82,9 @@ Rings\Class\Shaman\Imbue.lua
 Rings\Health\Fx\Pieces.lua
 Rings\Health\Fx\Effects.lua
 Rings\Health\Fx\Target.lua
+Rings\Health\Fx\Foe.lua
+Rings\Health\Fx\Yours.lua
+Rings\Health\Fx\Cure.lua
 Rings\Health\Fx\Draw.lua
 Rings\Health\Auras.lua
 Rings\Health\Hidden.lua

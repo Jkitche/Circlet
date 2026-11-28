@@ -51,6 +51,14 @@ local FX_ORDER = {
     "Loot",
     "Stance",
     "Faction",
+    "Threat",
+    "CC",
+    "Cure",
+    "Durability",
+    "LowMana",
+    "Leader",
+    "PvP",
+    "Pending",
 }
 local FX_TEXT = {
     Combo = {
@@ -106,6 +114,35 @@ local FX_TEXT = {
         "Skinnable",
         "A pelt badge at the top right when your target's corpse can be skinned (or herbs, ore or parts gathered), glowing in the tooltip's difficulty color. Creatures seen skinnable before get a faint badge while alive or not yet looted.",
     },
+    Threat = {
+        "Threat",
+        "While someone else is tanking your target, beads fill up both sides of the ring with your share of its threat: yellow, then orange from 70%, then red and pulsing from 90%, when you're about to pull it. (When you're the one it's attacking, the aggro warning shows instead.)",
+    },
+    CC = {
+        "Crowd control",
+        "Your crowd control's icon when it works on your target's kind of creature: Polymorph (humanoids, beasts), Shackle Undead, Banish (demons, elementals), Hibernate (beasts, dragonkin), Sap (humanoids out of combat), Scare Beast, Turn Undead.",
+    },
+    Cure = {
+        "Curable debuff",
+        "A glow round the ring in the debuff's type color (blue magic, green poison, purple curse, brown disease) while it has a debuff you can remove.",
+    },
+    Durability = {
+        "Durability",
+        "An anvil badge when your gear needs repair: yellow when something's badly damaged, red and pulsing when something's broken.",
+    },
+    LowMana = { "Low mana heartbeat", "A blue heartbeat on the mana band while you're below 20% mana." },
+    Leader = {
+        "Group leader",
+        "The crown while you lead your group (the assistant's icon in a raid you assist), and the loot bag beside it while you're master looter.",
+    },
+    PvP = {
+        "PvP flag",
+        "Your faction's crest while you're flagged for PvP, with the time left under it once the flag is wearing off.",
+    },
+    Pending = {
+        "Resurrect or summon waiting",
+        "A glow round your ring while a resurrect (gold) or summon (purple) waits for you to accept it, with the summon's time left.",
+    },
 }
 
 local function Register(spec)
@@ -137,6 +174,8 @@ local function Register(spec)
         [key .. "AuraDir"] = spec.auras ~= nil and "down" or nil,
         [key .. "AuraShow"] = spec.auras ~= nil and "both" or nil,
         [key .. "AuraMine"] = spec.auras ~= nil and false or nil,
+        -- An enemy target's buffs: all, only the ones that can be dispelled (Purge...), or none.
+        [key .. "AuraEnemyBuffs"] = key == "targetHp" and "all" or nil,
         [key .. "AuraMax"] = spec.auras ~= nil and 8 or nil,
         [key .. "AuraSize"] = spec.auras ~= nil and 100 or nil,
         [key .. "AuraGap"] = spec.auras ~= nil and 2 or nil, -- px between icons in a row
@@ -469,6 +508,28 @@ local function Register(spec)
                                                 "buffs",
                                                 "debuffs",
                                             }, "Which kinds to show."),
+                                            enemyBuffs = key == "targetHp"
+                                                    and Select(
+                                                        3.5,
+                                                        key .. "AuraEnemyBuffs",
+                                                        "Enemy buffs",
+                                                        {
+                                                            all = "All (what it casts on itself too)",
+                                                            dispel = "Only ones you can dispel",
+                                                            none = "None",
+                                                        },
+                                                        {
+                                                            "all",
+                                                            "dispel",
+                                                            "none",
+                                                        },
+                                                        "Which of an enemy target's buffs to show: all of them, including the ones it "
+                                                            .. "casts on itself; only the ones that can be dispelled (for Purge, Dispel "
+                                                            .. "Magic, Tranquilizing Shot); or none. A buff that can be dispelled is "
+                                                            .. "bordered in its type's color (blue for magic) either way. Friendly "
+                                                            .. "targets always show all their buffs."
+                                                    )
+                                                or nil,
                                             mine = Toggle(
                                                 4,
                                                 key .. "AuraMine",
